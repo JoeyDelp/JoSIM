@@ -10,6 +10,7 @@
 #include <iterator>
 #include <tuple>
 #include <cmath>
+#include <armadillo>
 
 #include "globals.hpp"
 #include "misc.hpp"
