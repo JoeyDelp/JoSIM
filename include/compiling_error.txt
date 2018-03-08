@@ -1,0 +1,6 @@
+/home/jdelport/Development/JoSIM/include/input.hpp:1:9: warning: #pragma once in main file
+ #pragma once
+         ^~~~
+/home/jdelport/Development/JoSIM/include/input.hpp:4:0: error: unterminated #ifndef
+ #ifndef input_H
+ 
