@@ -15,57 +15,57 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\components.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\errors.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\josim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\misc.cpp">
+    <ClCompile Include="..\j_components.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\simulation.cpp">
+    <ClCompile Include="..\j_errors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\models.cpp">
+    <ClCompile Include="..\j_input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\matrix.cpp">
+    <ClCompile Include="..\j_matrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\j_misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\j_models.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\j_simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\components.hpp">
+    <ClInclude Include="..\..\include\j_components.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\errors.hpp">
+    <ClInclude Include="..\..\include\j_errors.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\globals.hpp">
+    <ClInclude Include="..\..\include\j_globals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\input.hpp">
+    <ClInclude Include="..\..\include\j_input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\misc.hpp">
+    <ClInclude Include="..\..\include\j_matrix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\simulation.hpp">
+    <ClInclude Include="..\..\include\j_misc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\std_include.hpp">
+    <ClInclude Include="..\..\include\j_models.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\models.hpp">
+    <ClInclude Include="..\..\include\j_simulation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\matrix.hpp">
+    <ClInclude Include="..\..\include\j_std_include.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -70,28 +70,32 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\x86\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\x86\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\x64\</OutDir>
     <TargetName>$(ProjectName)_$(Platform)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_$(Platform)</TargetName>
+    <OutDir>$(SolutionDir)..\..\bin\win\$(Configuration)\x64\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;C:\Users\Joey\OneDrive\JD_no_Mirai\Projects\JoSIM\include\suitesparse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;USE_VENDOR_BLAS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\debug\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libamdd.lib;libbtfd.lib;libcamdd.lib;libccolamdd.lib;libcholmodd.lib;libcolamdd.lib;libcxsparsed.lib;libklud.lib;libldld.lib;libspqrd.lib;libumfpackd.lib;metisd.lib;suitesparseconfigd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -99,11 +103,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;C:\Users\Joey\OneDrive\JD_no_Mirai\Projects\JoSIM\include\suitesparse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;USE_VENDOR_BLAS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\debug\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libamdd.lib;libbtfd.lib;libcamdd.lib;libccolamdd.lib;libcholmodd.lib;libcolamdd.lib;libcxsparsed.lib;libklud.lib;libldld.lib;libspqrd.lib;libumfpackd.lib;metisd.lib;suitesparseconfigd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,13 +120,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;C:\Users\Joey\OneDrive\JD_no_Mirai\Projects\JoSIM\include\suitesparse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;USE_VENDOR_BLAS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\release\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libamd.lib;libbtf.lib;libcamd.lib;libccolamd.lib;libcholmod.lib;libcolamd.lib;libcxsparse.lib;libklu.lib;libldl.lib;libspqr.lib;libumfpack.lib;metis.lib;suitesparseconfig.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,35 +139,38 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;C:\Users\Joey\OneDrive\JD_no_Mirai\Projects\JoSIM\include\suitesparse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;USE_VENDOR_BLAS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libamd.lib;libbtf.lib;libcamd.lib;libccolamd.lib;libcholmod.lib;libcolamd.lib;libcxsparse.lib;libklu.lib;libldl.lib;libspqr.lib;libumfpack.lib;metis.lib;suitesparseconfig.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\components.cpp" />
-    <ClCompile Include="..\errors.cpp" />
-    <ClCompile Include="..\input.cpp" />
+    <ClCompile Include="..\j_components.cpp" />
+    <ClCompile Include="..\j_errors.cpp" />
+    <ClCompile Include="..\j_input.cpp" />
     <ClCompile Include="..\josim.cpp" />
-    <ClCompile Include="..\matrix.cpp" />
-    <ClCompile Include="..\misc.cpp" />
-    <ClCompile Include="..\models.cpp" />
-    <ClCompile Include="..\simulation.cpp" />
+    <ClCompile Include="..\j_matrix.cpp" />
+    <ClCompile Include="..\j_misc.cpp" />
+    <ClCompile Include="..\j_models.cpp" />
+    <ClCompile Include="..\j_simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\components.hpp" />
-    <ClInclude Include="..\..\include\errors.hpp" />
-    <ClInclude Include="..\..\include\globals.hpp" />
-    <ClInclude Include="..\..\include\input.hpp" />
-    <ClInclude Include="..\..\include\matrix.hpp" />
-    <ClInclude Include="..\..\include\misc.hpp" />
-    <ClInclude Include="..\..\include\models.hpp" />
-    <ClInclude Include="..\..\include\simulation.hpp" />
-    <ClInclude Include="..\..\include\std_include.hpp" />
+    <ClInclude Include="..\..\include\j_components.hpp" />
+    <ClInclude Include="..\..\include\j_errors.hpp" />
+    <ClInclude Include="..\..\include\j_globals.hpp" />
+    <ClInclude Include="..\..\include\j_input.hpp" />
+    <ClInclude Include="..\..\include\j_matrix.hpp" />
+    <ClInclude Include="..\..\include\j_misc.hpp" />
+    <ClInclude Include="..\..\include\j_models.hpp" />
+    <ClInclude Include="..\..\include\j_simulation.hpp" />
+    <ClInclude Include="..\..\include\j_std_include.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
