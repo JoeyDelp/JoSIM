@@ -75,31 +75,45 @@ void create_A_matrix(InputFile& iFile) {
 		catch (const std::out_of_range) {
 			invalid_component_errors(MISSING_NNODE, i);
 		}
+		/**************/
+		/** RESISTOR **/
+		/**************/
 		if (i[0] == 'R') {
+			/* Create a new matrix element for the resistor */
+			matrix_element e;
 			/* Check if value exists, if not it's a bad resistor definition */
 			try { value = modifier(devicetokens.at(3)); }
 			catch (const std::out_of_range) {
 				invalid_component_errors(RES_ERROR, i);
 			}
+			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
+				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameP);
+				/* Add the resistance value to the conductance map */
 				bMatrixConductanceMap[rNameP][label] = 0.0;
 				pGND = false;
 			}
 			else pGND = true;
+			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
+				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameN);
+				/* Add the resistance value to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = 0.0;
 				nGND = false;
 			}
 			else nGND = true;
-			matrix_element e;
+			/* Start of add elements to matrix section */
+			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
 				e.label = label;
@@ -107,6 +121,10 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameP);
 				e.value = 1 / value;
 				mElements.push_back(e);
+				/* Add the column index of the positive node to the positive node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
+				/* If positive and negative node is not grounded */
 				if (!nGND) {
 					/* Positive node row and negative node column */
 					e.label = label;
@@ -114,14 +132,21 @@ void create_A_matrix(InputFile& iFile) {
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = -1 / value;
 					mElements.push_back(e);
+					/* Add the column index of the negative node to the positive node row of the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
 					e.columnIndex = index_of(columnNames, cNameN);
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = -1 / value;
 					mElements.push_back(e);
+					/* Add the column index of the positive node to the negative node row of the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
 				}
 			}
+			/* If negative node is not grounded */
 			if (!nGND) {
 				/* Negative node row and column */
 				e.label = label;
@@ -129,28 +154,45 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameN);
 				e.value = 1 / value;
 				mElements.push_back(e);
+				/* Add the column index of the negative node to the negative node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 			}
+			/* End of add elements to matrix section */
 		}
+		/***************/
+		/** CAPACITOR **/
+		/***************/
 		else if (i[0] == 'C') {
+			/* Create a new matrix element for the resistor */
+			matrix_element e;
 			/* Check if value exists, if not it's a bad capactitor definition */
 			try { value = modifier(devicetokens.at(3)); }
 			catch (const std::out_of_range) {
 				invalid_component_errors(CAP_ERROR, i);
 			}
+			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
+				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameP);
+				/* Add the capacitance value to the conductance map */
 				bMatrixConductanceMap[rNameP][label] = value;
 				pGND = false;
 			}
 			else pGND = true;
+			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
+				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameN);
+				/* Add the capacitance value to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = -value;
 				nGND = false;
 			}
@@ -161,7 +203,8 @@ void create_A_matrix(InputFile& iFile) {
 				bMatrixNodeMap[rNameP][label + "-V"] = cNameP + "-" + cNameN;
 				bMatrixNodeMap[rNameN][label + "-V"] = cNameP + "-" + cNameN;
 			}
-			matrix_element e;
+			/* Start of add elements to matrix section */
+			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
 				e.label = label;
@@ -169,6 +212,9 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameP);
 				e.value = value / tsim.maxtstep;
 				mElements.push_back(e);
+				/* Add the column index of the positive node to the positive node row in the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
 				if (!nGND) {
 					/* Positive node row and negative node column */
 					e.label = label;
@@ -176,14 +222,21 @@ void create_A_matrix(InputFile& iFile) {
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = -value / tsim.maxtstep;
 					mElements.push_back(e);
+					/* Add the column index of the negative node to the positive node row in the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
 					e.columnIndex = index_of(columnNames, cNameN);
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = -value / tsim.maxtstep;
 					mElements.push_back(e);
+					/* Add the column index of the positive node to the negative node row in the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
 				}
 			}
+			/* If negative node is not grounded */
 			if (!nGND) {
 				/* Negative node row and column */
 				e.label = label;
@@ -191,9 +244,18 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameN);
 				e.value = value / tsim.maxtstep;
 				mElements.push_back(e);
+				/* Add the column index of the negative node to the negative node row in the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 			}
+			/* End of add elements to matrix section */
 		}
+		/**************/
+		/** INDUCTOR **/
+		/**************/
 		else if (i[0] == 'L') {
+			/* Create a new matrix element for the resistor */
+			matrix_element e;
 			/* Check if value exists, if not it's a bad inductor definition */
 			try { value = modifier(devicetokens.at(3)); }
 			catch (const std::out_of_range) {
@@ -201,23 +263,34 @@ void create_A_matrix(InputFile& iFile) {
 			}
 			cName = "C_I" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
+			/* Add the inductor as a row to the rows */
 			unique_push(rowNames, rName);
+			/* Add the inductor current column to the columns */
 			unique_push(columnNames, cName);
+			/* Add the inductor value to the conductance map */
 			bMatrixConductanceMap[rName][label] = -value;
+			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
+				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameP);
+				/* Add the 0.0 to the conductance map */
 				bMatrixConductanceMap[rNameP][label] = 0.0;
 				pGND = false;
 			}
 			else pGND = true;
+			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
+				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameN);
+				/* Add the 0.0 to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = 0.0;
 				nGND = false;
 			}
@@ -226,7 +299,8 @@ void create_A_matrix(InputFile& iFile) {
 			else if (pGND)	bMatrixNodeMap[rName][label + "-V"] = "GND-" + cNameN;
 			else bMatrixNodeMap[rName][label + "-V"] = cNameP + "-" + cNameN;
 			bMatrixNodeMap[rName][label + "-I"] = cName;
-			matrix_element e;
+			/* Start of add elements to matrix section */
+			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
 				e.label = label;
@@ -234,6 +308,9 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameP);
 				e.value = 0;
 				mElements.push_back(e);
+				/* Add the column index of the positive node to the positive node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
 				if (!nGND) {
 					/* Positive node row and negative node column */
 					e.label = label;
@@ -241,12 +318,18 @@ void create_A_matrix(InputFile& iFile) {
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = 0;
 					mElements.push_back(e);
+					/* Add the column index of the negative node to the positive node row of the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
 					e.columnIndex = index_of(columnNames, cNameN);
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = 0;
 					mElements.push_back(e);
+					/* Add the column index of the positive node to the negative node row of the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
 				}
 				/* Positive node row and inductor current node column */
 				e.label = label;
@@ -260,6 +343,9 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rName);
 				e.value = 1;
 				mElements.push_back(e);
+				/* Add the column index of the positive node to the inductor node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rName][label + "-VP"] = (double)e.columnIndex;
 			}
 			if (!nGND) {
 				/* Negative node row and column */
@@ -268,6 +354,9 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameN);
 				e.value = 0;
 				mElements.push_back(e);
+				/* Add the column index of the negative node to the negative node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 				/* Negative node row and inductor current node column */
 				e.label = label;
 				e.columnIndex = index_of(columnNames, cName);
@@ -280,6 +369,9 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rName);
 				e.value = -1;
 				mElements.push_back(e);
+				/* Add the column index of the negative node to the inductor node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rName][label + "-VN"] = (double)e.columnIndex;
 			}
 			/* Inductor node row and inductor current node column*/
 			e.label = label;
@@ -287,31 +379,50 @@ void create_A_matrix(InputFile& iFile) {
 			e.rowIndex = index_of(rowNames, rName);
 			e.value = (-2 * value) / tsim.maxtstep;
 			mElements.push_back(e);
+			/* Add the column index of the inductor current node to the inductor node row of the conductance map */
+			/* This will be used to identify the voltage later */
+			bMatrixConductanceMap[rName][label + "-I"] = (double)e.columnIndex;
+			/* End of add elements to matrix section */
 		}
+		/********************/
+		/** VOLTAGE SOURCE **/
+		/********************/
 		else if (i[0] == 'V') {
+			/* Create a new matrix element for the resistor */
+			matrix_element e;
+			/* Parse the function identified (if any)*/
 			sources[label] = function_parse(i);
 			cName = "C_" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
+			/* Add the voltage source as a row to the rows */
 			unique_push(rowNames, rName);
+			/* Add the voltage source as a column to the columns */
 			unique_push(columnNames, cName);
 			bMatrixNodeMap[rName][label] = label;
+			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
+				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameP);
 				pGND = false;
 			}
 			else pGND = true;
+			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
+				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameN);
 				nGND = false;
 			}
 			else nGND = true;
-			matrix_element e;
+			/* Start of add elements to matrix section */
+			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
 				e.label = label;
@@ -346,6 +457,7 @@ void create_A_matrix(InputFile& iFile) {
 				e.value = 1;
 				mElements.push_back(e);
 			}
+			/* If negative node is not grounded */
 			if (!nGND) {
 				/* Negative node row and column */
 				e.label = label;
@@ -372,48 +484,74 @@ void create_A_matrix(InputFile& iFile) {
 			e.rowIndex = index_of(rowNames, rName);
 			e.value = 0;
 			mElements.push_back(e);
+			/* Add the column index of the phase node to the junction node row of the conductance map */
+			/* This will be used to identify the voltage later */
+			bMatrixConductanceMap[rName][label] = (double)e.columnIndex;
+			/* End of add elements to matrix section */
 		}
+		/********************/
+		/** CURRENT SOURCE **/
+		/********************/
 		else if (i[0] == 'I') {
+			/* Parse the function identified (if any)*/
 			sources[label] = function_parse(i);
+			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
 				bMatrixNodeMap[rNameP][label] = label;
-				bMatrixConductanceMap[rNameP][label] = 1;
+				bMatrixConductanceMap[rNameP][label] = 1.0;
 				pGND = false;
 			}
 			else pGND = true;
+			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
 				bMatrixNodeMap[rNameN][label] = label;
-				bMatrixConductanceMap[rNameP][label] = 1;
+				bMatrixConductanceMap[rNameP][label] = 1.0;
 				nGND = false;
 			}
 			else nGND = true;
 		}
+		/************************/
+		/** JOSEPHSON JUNCTION **/
+		/************************/
 		else if (i[0] == 'B') {
+			/* Create a new matrix element for the resistor */
+			matrix_element e;
+			/* Identify the JJ parameters based on the model*/
 			double jj_cap, jj_rn, jj_rzero, jj_icrit;
 			jj_comp(devicetokens, "MAIN", jj_cap, jj_rn, jj_rzero, jj_icrit);
 			cName = "C_P" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
+			/* Add the junction as a row to the rows */
 			unique_push(rowNames, rName);
+			/* Add the junction phase as a column to the columns */
 			unique_push(columnNames, cName);
 			bMatrixNodeMap[rName][label + "-PHASE"] = cName;
+			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
+				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameP);
 				bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
 				bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
 				pGND = false;
 			}
 			else pGND = true;
+			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
+				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameN);
 				bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
 				bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
@@ -433,7 +571,8 @@ void create_A_matrix(InputFile& iFile) {
 				bMatrixNodeMap[rNameP][label + "-V"] = cNameP + "-" + cNameN;
 				bMatrixNodeMap[rNameN][label + "-V"] = cNameP + "-" + cNameN;
 			}
-			matrix_element e;
+			/* Start of add elements to matrix section */
+			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
 				e.label = label;
@@ -441,6 +580,9 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameP);
 				e.value = ((2 * jj_cap) / tsim.maxtstep) + (1 / jj_rzero);
 				mElements.push_back(e);
+				/* Add the column index of the positive node to the positive node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
 				if (!nGND) {
 					/* Positive node row and negative node column */
 					e.label = label;
@@ -448,12 +590,18 @@ void create_A_matrix(InputFile& iFile) {
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = ((-2 * jj_cap) / tsim.maxtstep) - (1 / jj_rzero);
 					mElements.push_back(e);
+					/* Add the column index of the negative node to the positive node row of the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
 					e.columnIndex = index_of(columnNames, cNameN);
 					e.rowIndex = index_of(rowNames, rNameP);
 					e.value = ((-2 * jj_cap) / tsim.maxtstep) - (1 / jj_rzero);
 					mElements.push_back(e);
+					/* Add the column index of the positive node to the negative node row of the conductance map */
+					/* This will be used to identify the voltage later */
+					bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
 				}
 				/* Positive node row and phase node column */
 				e.label = label;
@@ -461,13 +609,20 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameP);
 				e.value = 0;
 				mElements.push_back(e);
+				/* Add the column index of the phase node to the positive node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameP][label + "-PHASE"] = (double)e.columnIndex;
 				/* Junction node row and positive node column */
 				e.label = label;
 				e.columnIndex = index_of(columnNames, cNameP);
 				e.rowIndex = index_of(rowNames, rName);
 				e.value = (-tsim.maxtstep/2) * ((2 * M_PI)/PHI_ZERO);
 				mElements.push_back(e);
+				/* Add the column index of the positive node to the junction node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rName][label + "-VP"] = (double)e.columnIndex;
 			}
+			/* If negative node is not grounded */
 			if (!nGND) {
 				/* Negative node row and column */
 				e.label = label;
@@ -475,18 +630,27 @@ void create_A_matrix(InputFile& iFile) {
 				e.rowIndex = index_of(rowNames, rNameN);
 				e.value = ((2 * jj_cap) / tsim.maxtstep) + (1 / jj_rzero);
 				mElements.push_back(e);
+				/* Add the column index of the negative node to the negative node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 				/* Negative node row and phase node column */
 				e.label = label;
 				e.columnIndex = index_of(columnNames, cName);
 				e.rowIndex = index_of(rowNames, rNameN);
 				e.value = 0;
 				mElements.push_back(e);
+				/* Add the column index of the phase node to the negative node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rNameN][label + "-PHASE"] = (double)e.columnIndex;
 				/* Junction node row and negative node column*/
 				e.label = label;
 				e.columnIndex = index_of(columnNames, cNameN);
 				e.rowIndex = index_of(rowNames, rName);
 				e.value = (tsim.maxtstep / 2) * ((2 * M_PI) / PHI_ZERO);
 				mElements.push_back(e);
+				/* Add the column index of the negative node to the junction node row of the conductance map */
+				/* This will be used to identify the voltage later */
+				bMatrixConductanceMap[rName][label + "-VN"] = (double)e.columnIndex;
 			}
 			/* Junction node row and phase node column*/
 			e.label = label;
@@ -494,7 +658,11 @@ void create_A_matrix(InputFile& iFile) {
 			e.rowIndex = index_of(rowNames, rName);
 			e.value = 1;
 			mElements.push_back(e);
+			/* Add the column index of the phase node to the junction node row of the conductance map */
+			/* This will be used to identify the voltage later */
+			bMatrixConductanceMap[rName][label + "-PHASE"] = (double)e.columnIndex;
 		}
+		/* End of add elements to matrix section */
 	}
 	/* Now that conductance A matrix has been identified we can convert to CSR format */
 	/* Optionally display matrix contents in verbose mode */

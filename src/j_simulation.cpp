@@ -67,18 +67,28 @@ void transient_simulation() {
 	}
 	std::vector<double> RHS;
 	/* Where to store the calulated values */
-	std::map<std::string, double> LHSvalues;
-	std::vector<std::map<std::string, double>> LHS;
+	/* Mapped */
+	std::map<std::string, double> lhsMappedValues;
+	/* Standard vector */
+	std::vector<double> lhsValues;
+	/* All stored mapped values*/
+	std::vector<std::map<std::string, double>> lhs;
+	/* Initialize x matrix */
 	for (auto i : columnNames) {
-		/* Initial values of X (LHS) */
-		LHSvalues[i] = 0.0;
+		lhsMappedValues[i] = 0.0;
+		lhsValues.push_back(0.0);
 	}
+	/* Variables to be used by the RHS matrix construction routine */
 	double RHSvalue, inductance;
 	std::string currentLabel;
 	std::map<std::string, std::string> currentNode;
 	std::map<std::string, double> currentConductance;
 	std::vector<std::string> tokens;
+	/***************/
+	/** TIME LOOP **/
+	/***************/
 	for (int i = 0; i < tsim.simsize(); i++) {
+		/* Start of initialization of the B matrix */
 		/* Construct RHS matrix */
 		RHS.clear();
 		for (auto j : rowNames) {
@@ -103,17 +113,17 @@ void transient_simulation() {
 				currentLabel = substring_after(j, "R_");
 				inductance = currentConductance[currentLabel];
 				tokens = tokenize_delimeter(currentNode[currentLabel + "-V"], "-");
-				if (tokens[0] == "GND") RHSvalue = (2*inductance/tsim.maxtstep)*LHSvalues[currentNode[currentLabel + "-I"]] - ( -LHSvalues[tokens[1]]);
-				else if (tokens[1] == "GND") RHSvalue = (2 * inductance / tsim.maxtstep)*LHSvalues[currentNode[currentLabel + "-I"]] - (LHSvalues[tokens[0]]);
-				else RHSvalue = (2 * inductance / tsim.maxtstep)*LHSvalues[currentNode[currentLabel + "-I"]] - (LHSvalues[tokens[0]] - LHSvalues[tokens[1]]);
+				if (tokens[0] == "GND") RHSvalue = (2*inductance/tsim.maxtstep)*lhsMappedValues[currentNode[currentLabel + "-I"]] - ( -lhsMappedValues[tokens[1]]);
+				else if (tokens[1] == "GND") RHSvalue = (2 * inductance / tsim.maxtstep)*lhsMappedValues[currentNode[currentLabel + "-I"]] - (lhsMappedValues[tokens[0]]);
+				else RHSvalue = (2 * inductance / tsim.maxtstep)*lhsMappedValues[currentNode[currentLabel + "-I"]] - (lhsMappedValues[tokens[0]] - lhsMappedValues[tokens[1]]);
 				RHS.push_back(RHSvalue);
 			}
 			else if (j.find("_B") != std::string::npos) {
 				currentLabel = substring_after(j, "R_");
 				tokens = tokenize_delimeter(currentNode[currentLabel + "-V"], "-");
-				if (tokens[0] == "GND") RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(-LHSvalues[tokens[1]]));
-				else if (tokens[1] == "GND") RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(LHSvalues[tokens[0]]));
-				else RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(LHSvalues[tokens[0]] - LHSvalues[tokens[1]]));
+				if (tokens[0] == "GND") RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(-lhsMappedValues[tokens[1]]));
+				else if (tokens[1] == "GND") RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsMappedValues[tokens[0]]));
+				else RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsMappedValues[tokens[0]] - lhsMappedValues[tokens[1]]));
 				RHS.push_back(RHSvalue);
 			}
 			else if (j.find("_V") != std::string::npos) {
@@ -122,6 +132,7 @@ void transient_simulation() {
 				RHS.push_back(RHSvalue);
 			}
 		}
+		/* End of the B matrix initialization */
 		/* Solve Ax=b */
 		klu_symbolic * Symbolic;
 		klu_common Common;
@@ -133,12 +144,12 @@ void transient_simulation() {
 		ok = klu_solve(Symbolic, Numeric, Nsize, 1, &RHS.front(), &Common);
 
 		int counter = 0;
-		for (auto i : LHSvalues) {
+		for (auto i : lhsMappedValues) {
 			i.second = RHS[counter];
 			counter++;
 		}
 
-		LHS.push_back(LHSvalues);
+		lhs.push_back(lhsMappedValues);
 
 		/* Guess next junction voltage */
 		for (auto j : bMatrixNodeMap) {
@@ -146,10 +157,10 @@ void transient_simulation() {
 				currentLabel = substring_after(j.first, "R_");
 				tokens = tokenize_delimeter(bMatrixNodeMap[j.first][currentLabel + "-V"], "-");
 				double VB, Phase;
-				if (tokens[0] == "GND") VB = (-LHSvalues[tokens[1]]);
-				else if (tokens[1] == "GND") VB = (LHSvalues[tokens[0]]);
-				else VB = (LHSvalues[tokens[0]] - LHSvalues[tokens[1]]);
-				Phase = LHSvalues[j.second[currentLabel + "-PHASE"]];
+				if (tokens[0] == "GND") VB = (-lhsMappedValues[tokens[1]]);
+				else if (tokens[1] == "GND") VB = (lhsMappedValues[tokens[0]]);
+				else VB = (lhsMappedValues[tokens[0]] - lhsMappedValues[tokens[1]]);
+				Phase = lhsMappedValues[j.second[currentLabel + "-PHASE"]];
 				double VB_dt = (2 / tsim.maxtstep)*(VB - initialConditionsMap["R_" + currentLabel]["V_PREV"]) - initialConditionsMap["R_" + currentLabel]["V_dt_PREV"];
 				double VB_guess = VB + tsim.maxtstep*VB_dt;
 				double Phase_guess = Phase + ((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(VB + VB_guess);
