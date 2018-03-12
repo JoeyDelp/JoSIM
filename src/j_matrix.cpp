@@ -511,7 +511,7 @@ void create_A_matrix(InputFile& iFile) {
 				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
 				bMatrixNodeMap[rNameN][label] = label;
-				bMatrixConductanceMap[rNameP][label] = 1.0;
+				bMatrixConductanceMap[rNameN][label] = 1.0;
 				nGND = false;
 			}
 			else nGND = true;

@@ -84,6 +84,7 @@ void transient_simulation() {
 	std::map<std::string, std::string> currentNode;
 	std::map<std::string, double> currentConductance;
 	std::vector<std::string> tokens;
+	double VP, VN, CUR, PH;
 	/***************/
 	/** TIME LOOP **/
 	/***************/
@@ -98,32 +99,66 @@ void transient_simulation() {
 			try { currentConductance = bMatrixConductanceMap.at(j); }
 			catch (std::out_of_range) { }
 			if (j.find("_N") != std::string::npos) {
+				tokens.clear();
 				for (auto k : currentConductance) {
 					if (k.first[0] == 'B') {
-						currentLabel = substring_before(k.first, "_");
-						RHSvalue += initialConditionsMap["R_" + currentLabel]["Is"];
+						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
+						else currentLabel = k.first;
+						unique_push(tokens, currentLabel);
+						//RHSvalue += initialConditionsMap["R_" + currentLabel]["Is"];
 					}
-					if (k.first[0] == 'I') {
-						RHSvalue += k.second * sources[k.first][i];
+					else if (k.first[0] == 'I') {
+						currentLabel = k.first;
+						unique_push(tokens, currentLabel);
+						//RHSvalue += k.second * sources[k.first][i];
 					}
+					else if (k.first[0] == 'R') {
+						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
+						else currentLabel = k.first;
+						unique_push(tokens, currentLabel);
+					}
+					else if (k.first[0] == 'C') {
+						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
+						else currentLabel = k.first;
+						unique_push(tokens, currentLabel);
+					}
+					else if (k.first[0] == 'L') {
+						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
+						else currentLabel = k.first;
+						unique_push(tokens, currentLabel);
+					}
+				}
+				for (auto k : tokens) {
+					if (k[0] == 'B') RHSvalue += initialConditionsMap["R_" + k]["Is"];
+					else if (k[0] == 'I') RHSvalue += sources[k][i];
 				}
 				RHS.push_back(RHSvalue);
 			}
 			else if (j.find("_L") != std::string::npos) {
 				currentLabel = substring_after(j, "R_");
 				inductance = currentConductance[currentLabel];
+				try { VP = currentConductance.at(currentLabel + "-VP"); }
+				catch (std::out_of_range) { VP = -1.0; }
+				try { VN = currentConductance.at(currentLabel + "-VN"); }
+				catch (std::out_of_range) { VN = -1.0; }
+				try { CUR = currentConductance.at(currentLabel + "-I"); }
+				catch (std::out_of_range) { CUR = -1.0; }
 				tokens = tokenize_delimeter(currentNode[currentLabel + "-V"], "-");
-				if (tokens[0] == "GND") RHSvalue = (2*inductance/tsim.maxtstep)*lhsMappedValues[currentNode[currentLabel + "-I"]] - ( -lhsMappedValues[tokens[1]]);
-				else if (tokens[1] == "GND") RHSvalue = (2 * inductance / tsim.maxtstep)*lhsMappedValues[currentNode[currentLabel + "-I"]] - (lhsMappedValues[tokens[0]]);
-				else RHSvalue = (2 * inductance / tsim.maxtstep)*lhsMappedValues[currentNode[currentLabel + "-I"]] - (lhsMappedValues[tokens[0]] - lhsMappedValues[tokens[1]]);
+				if (VP == -1.0) RHSvalue = (2*inductance/tsim.maxtstep)*lhsValues[(int)CUR] - ( -lhsValues[(int)VN]);
+				else if (VN == -1.0) RHSvalue = (2 * inductance / tsim.maxtstep)*lhsValues[(int)CUR] - (lhsValues[(int)VP]);
+				else RHSvalue = (2 * inductance / tsim.maxtstep)*lhsValues[(int)CUR] - (lhsValues[(int)VP] - lhsValues[(int)VN]);
 				RHS.push_back(RHSvalue);
 			}
 			else if (j.find("_B") != std::string::npos) {
 				currentLabel = substring_after(j, "R_");
+				try { VP = currentConductance.at(currentLabel + "-VP"); }
+				catch (std::out_of_range) { VP = -1.0;  }
+				try { VN = currentConductance.at(currentLabel + "-VN"); }
+				catch (std::out_of_range) { VN = -1.0; }
 				tokens = tokenize_delimeter(currentNode[currentLabel + "-V"], "-");
-				if (tokens[0] == "GND") RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(-lhsMappedValues[tokens[1]]));
-				else if (tokens[1] == "GND") RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsMappedValues[tokens[0]]));
-				else RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsMappedValues[tokens[0]] - lhsMappedValues[tokens[1]]));
+				if (VP == -1.0) RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(-lhsValues[(int)VN]));
+				else if (VN == -1.0) RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsValues[(int)VP]));
+				else RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsValues[(int)VP] - lhsValues[(int)VN]));
 				RHS.push_back(RHSvalue);
 			}
 			else if (j.find("_V") != std::string::npos) {
