@@ -60,6 +60,11 @@
 #define INITIAL_VALUES 0
 #define TOO_FEW_TIMESTEPS 1
 #define TOO_FEW_VALUES 2
+/*
+	Simulation error codes
+*/
+#define JJCAP_NOT_FOUND 0
+#define JJICRIT_NOT_FOUND 1
 
 /*
 	Function that manages different error codes. This function will be huge.
@@ -89,3 +94,7 @@ void misc_errors(int errorCode, std::string whatPart);
 	Function parser error function
 */
 void function_errors(int errorCode, std::string whatPart);
+/*
+	Simulation error function
+*/
+void simulation_errors(int errorCode, std::string whatPart);

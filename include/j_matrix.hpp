@@ -20,7 +20,6 @@ public:
 };
 
 extern std::map<std::string, std::map<std::string, double>> bMatrixConductanceMap;
-extern std::map<std::string, std::map<std::string, std::string>> bMatrixNodeMap;
 extern std::vector<matrix_element> mElements;
 extern std::vector<std::string> rowNames, columnNames;
 extern std::vector<double> nzval;

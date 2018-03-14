@@ -56,13 +56,13 @@ Perform transient simulation
 void transient_simulation() {
 		/* Perform time loop */
 	/* Set up initial conditions for junctions */
-	std::map<std::string, std::map<std::string, double>> initialConditionsMap;
+	std::map<std::string, double> initialConditionsMap;
 	for (auto i : rowNames) {
 		if (i.find("_B") != std::string::npos) {
-			initialConditionsMap[i]["V_PREV"] = 0.0;
-			initialConditionsMap[i]["V_dt_PREV"] = 0.0;
-			initialConditionsMap[i]["P_PREV"] = 0.0;
-			initialConditionsMap[i]["Is"] = 0.0;
+			initialConditionsMap[i + "-V_PREV"] = 0.0;
+			initialConditionsMap[i + "-V_dt_PREV"] = 0.0;
+			initialConditionsMap[i + "-P_PREV"] = 0.0;
+			initialConditionsMap[i + "-Is"] = 0.0;
 		}
 	}
 	std::vector<double> RHS;
@@ -81,10 +81,11 @@ void transient_simulation() {
 	/* Variables to be used by the RHS matrix construction routine */
 	double RHSvalue, inductance;
 	std::string currentLabel;
-	std::map<std::string, std::string> currentNode;
 	std::map<std::string, double> currentConductance;
 	std::vector<std::string> tokens;
-	double VP, VN, CUR, PH;
+	double VP, VN, CUR, PH, VB, Phase, VB_dt, VB_guess, Phase_guess, Is, jjIcrit, jjCap;
+	double hn_2_2e_hbar = (tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO);
+	int counter;
 	/***************/
 	/** TIME LOOP **/
 	/***************/
@@ -94,8 +95,6 @@ void transient_simulation() {
 		RHS.clear();
 		for (auto j : rowNames) {
 			RHSvalue = 0.0;
-			try { currentNode = bMatrixNodeMap.at(j); }
-			catch (std::out_of_range) { }
 			try { currentConductance = bMatrixConductanceMap.at(j); }
 			catch (std::out_of_range) { }
 			if (j.find("_N") != std::string::npos) {
@@ -129,7 +128,7 @@ void transient_simulation() {
 					}
 				}
 				for (auto k : tokens) {
-					if (k[0] == 'B') RHSvalue += initialConditionsMap["R_" + k]["Is"];
+					if (k[0] == 'B') RHSvalue += initialConditionsMap["R_" + k + "-Is"];
 					else if (k[0] == 'I') RHSvalue += sources[k][i];
 				}
 				RHS.push_back(RHSvalue);
@@ -143,7 +142,6 @@ void transient_simulation() {
 				catch (std::out_of_range) { VN = -1.0; }
 				try { CUR = currentConductance.at(currentLabel + "-I"); }
 				catch (std::out_of_range) { CUR = -1.0; }
-				tokens = tokenize_delimeter(currentNode[currentLabel + "-V"], "-");
 				if (VP == -1.0) RHSvalue = (2*inductance/tsim.maxtstep)*lhsValues[(int)CUR] - ( -lhsValues[(int)VN]);
 				else if (VN == -1.0) RHSvalue = (2 * inductance / tsim.maxtstep)*lhsValues[(int)CUR] - (lhsValues[(int)VP]);
 				else RHSvalue = (2 * inductance / tsim.maxtstep)*lhsValues[(int)CUR] - (lhsValues[(int)VP] - lhsValues[(int)VN]);
@@ -155,10 +153,9 @@ void transient_simulation() {
 				catch (std::out_of_range) { VP = -1.0;  }
 				try { VN = currentConductance.at(currentLabel + "-VN"); }
 				catch (std::out_of_range) { VN = -1.0; }
-				tokens = tokenize_delimeter(currentNode[currentLabel + "-V"], "-");
-				if (VP == -1.0) RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(-lhsValues[(int)VN]));
-				else if (VN == -1.0) RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsValues[(int)VP]));
-				else RHSvalue = initialConditionsMap[currentNode[currentLabel + "-PHASE"]]["P_PREV"] + (((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(lhsValues[(int)VP] - lhsValues[(int)VN]));
+				if (VP == -1.0) RHSvalue = initialConditionsMap["R_" + currentLabel + "-P_PREV"] + ((hn_2_2e_hbar)*(-lhsValues[(int)VN]));
+				else if (VN == -1.0) RHSvalue = initialConditionsMap["R_" + currentLabel + "-P_PREV"] + ((hn_2_2e_hbar)*(lhsValues[(int)VP]));
+				else RHSvalue = initialConditionsMap["R_" + currentLabel + "-P_PREV"] + ((hn_2_2e_hbar)*(lhsValues[(int)VP] - lhsValues[(int)VN]));
 				RHS.push_back(RHSvalue);
 			}
 			else if (j.find("_V") != std::string::npos) {
@@ -178,33 +175,41 @@ void transient_simulation() {
 		Numeric = klu_factor(&rowptr.front(), &colind.front(), &nzval.front(), Symbolic, &Common);
 		ok = klu_solve(Symbolic, Numeric, Nsize, 1, &RHS.front(), &Common);
 
-		int counter = 0;
-		for (auto i : lhsMappedValues) {
-			i.second = RHS[counter];
+		/* Set the LHS values equal to the returning value provided by the KLU solution */
+		lhsValues = RHS;
+		counter = 0;
+		/* Mapped LHS values for reference when printing values requested by the user */
+		lhs.push_back(lhsMappedValues);
+		for (auto m : lhsMappedValues) {
+			lhs.at(i).at(m.first) = RHS[counter];
 			counter++;
 		}
-
-		lhs.push_back(lhsMappedValues);
-
 		/* Guess next junction voltage */
-		for (auto j : bMatrixNodeMap) {
-			if (j.first.find("_B") != std::string::npos) {
-				currentLabel = substring_after(j.first, "R_");
-				tokens = tokenize_delimeter(bMatrixNodeMap[j.first][currentLabel + "-V"], "-");
-				double VB, Phase;
-				if (tokens[0] == "GND") VB = (-lhsMappedValues[tokens[1]]);
-				else if (tokens[1] == "GND") VB = (lhsMappedValues[tokens[0]]);
-				else VB = (lhsMappedValues[tokens[0]] - lhsMappedValues[tokens[1]]);
-				Phase = lhsMappedValues[j.second[currentLabel + "-PHASE"]];
-				double VB_dt = (2 / tsim.maxtstep)*(VB - initialConditionsMap["R_" + currentLabel]["V_PREV"]) - initialConditionsMap["R_" + currentLabel]["V_dt_PREV"];
-				double VB_guess = VB + tsim.maxtstep*VB_dt;
-				double Phase_guess = Phase + ((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(VB + VB_guess);
-				double Is = -bMatrixConductanceMap[j.first][currentLabel + "-ICRIT"] * sin(Phase_guess) + (((2 * bMatrixConductanceMap[j.first][currentLabel + "-CAP"]) / tsim.maxtstep)*VB) + (bMatrixConductanceMap[j.first][currentLabel + "-CAP"] * VB_dt);
-
-				initialConditionsMap["R_" + currentLabel]["V_PREV"] = VB;
-				initialConditionsMap["R_" + currentLabel]["V_dt_PREV"] = VB_dt;
-				initialConditionsMap["R_" + currentLabel]["P_PREV"] = Phase;
-				initialConditionsMap["R_" + currentLabel]["Is"] = Is;
+		for (auto j : rowNames) {
+			if (j.find("_B") != std::string::npos) {
+				currentLabel = substring_after(j, "R_");
+				try { VP = bMatrixConductanceMap.at(j).at(currentLabel + "-VP"); }
+				catch (std::out_of_range) { VP = -1.0; }
+				try { VN = bMatrixConductanceMap.at(j).at(currentLabel + "-VN"); }
+				catch (std::out_of_range) { VN = -1.0; }
+				try { PH = bMatrixConductanceMap.at(j).at(currentLabel + "-PHASE"); }
+				catch (std::out_of_range) { PH = -1.0; }
+				if (VP == -1.0) VB = (-lhsValues[(int)VN]);
+				else if (VN == -1.0) VB = (lhsValues[(int)VP]);
+				else VB = (lhsValues[(int)VP] - lhsValues[(int)VN]);
+				Phase = lhsValues[(int)PH];
+				VB_dt = (2 / tsim.maxtstep)*(VB - initialConditionsMap["R_" + currentLabel + "-V_PREV"]) - initialConditionsMap["R_" + currentLabel + "-V_dt_PREV"];
+				VB_guess = VB + tsim.maxtstep*VB_dt;
+				Phase_guess = Phase + ((tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO))*(VB + VB_guess);
+				try { jjCap = bMatrixConductanceMap.at(j).at(currentLabel + "-CAP"); }
+				catch (std::out_of_range) { simulation_errors(JJCAP_NOT_FOUND, currentLabel); }
+				try { jjIcrit = bMatrixConductanceMap.at(j).at(currentLabel + "-ICRIT"); }
+				catch (std::out_of_range) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
+				Is = -jjIcrit * sin(Phase_guess) + (((2 * jjCap) / tsim.maxtstep)*VB) + (jjCap * VB_dt);
+				initialConditionsMap["R_" + currentLabel + "-V_PREV"] = VB;
+				initialConditionsMap["R_" + currentLabel + "-V_dt_PREV"] = VB_dt;
+				initialConditionsMap["R_" + currentLabel + "-P_PREV"] = Phase;
+				initialConditionsMap["R_" + currentLabel + "-Is"] = Is;
 			}
 		}
 	}

@@ -1,7 +1,6 @@
 #include "include/j_matrix.hpp"
 
 std::map<std::string, std::map<std::string, double>> bMatrixConductanceMap;
-std::map<std::string, std::map<std::string, std::string>> bMatrixNodeMap;
 std::vector<matrix_element> mElements;
 std::vector<std::string> rowNames, columnNames;
 std::vector<double> nzval;
@@ -197,12 +196,6 @@ void create_A_matrix(InputFile& iFile) {
 				nGND = false;
 			}
 			else nGND = true;
-			if (nGND) bMatrixNodeMap[rNameP][label + "-V"] = cNameP + "-GND";
-			else if (pGND) bMatrixNodeMap[rNameN][label + "-V"] = "GND-" + cNameN;
-			else {
-				bMatrixNodeMap[rNameP][label + "-V"] = cNameP + "-" + cNameN;
-				bMatrixNodeMap[rNameN][label + "-V"] = cNameP + "-" + cNameN;
-			}
 			/* Start of add elements to matrix section */
 			/* If positive node is not grounded */
 			if (!pGND) {
@@ -295,10 +288,6 @@ void create_A_matrix(InputFile& iFile) {
 				nGND = false;
 			}
 			else nGND = true;
-			if (nGND) bMatrixNodeMap[rName][label + "-V"] = cNameP + "-GND";
-			else if (pGND)	bMatrixNodeMap[rName][label + "-V"] = "GND-" + cNameN;
-			else bMatrixNodeMap[rName][label + "-V"] = cNameP + "-" + cNameN;
-			bMatrixNodeMap[rName][label + "-I"] = cName;
 			/* Start of add elements to matrix section */
 			/* If positive node is not grounded */
 			if (!pGND) {
@@ -398,7 +387,6 @@ void create_A_matrix(InputFile& iFile) {
 			unique_push(rowNames, rName);
 			/* Add the voltage source as a column to the columns */
 			unique_push(columnNames, cName);
-			bMatrixNodeMap[rName][label] = label;
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
@@ -500,7 +488,6 @@ void create_A_matrix(InputFile& iFile) {
 				rNameP = "R_N" + nodeP;
 				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
-				bMatrixNodeMap[rNameP][label] = label;
 				bMatrixConductanceMap[rNameP][label] = 1.0;
 				pGND = false;
 			}
@@ -510,7 +497,6 @@ void create_A_matrix(InputFile& iFile) {
 				rNameN = "R_N" + nodeN;
 				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
-				bMatrixNodeMap[rNameN][label] = label;
 				bMatrixConductanceMap[rNameN][label] = 1.0;
 				nGND = false;
 			}
@@ -531,7 +517,6 @@ void create_A_matrix(InputFile& iFile) {
 			unique_push(rowNames, rName);
 			/* Add the junction phase as a column to the columns */
 			unique_push(columnNames, cName);
-			bMatrixNodeMap[rName][label + "-PHASE"] = cName;
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
@@ -558,19 +543,6 @@ void create_A_matrix(InputFile& iFile) {
 				nGND = false;
 			}
 			else nGND = true;
-			if (nGND) {
-				bMatrixNodeMap[rName][label + "-V"] = cNameP + "-GND";
-				bMatrixNodeMap[rNameP][label + "-V"] = cNameP + "-GND";
-			}
-			else if (pGND) {
-				bMatrixNodeMap[rName][label + "-V"] = "GND-" + cNameN;
-				bMatrixNodeMap[rNameN][label + "-V"] = "GND-" + cNameN;
-			}
-			else {
-				bMatrixNodeMap[rName][label + "-V"] = cNameP + "-" + cNameN;
-				bMatrixNodeMap[rNameP][label + "-V"] = cNameP + "-" + cNameN;
-				bMatrixNodeMap[rNameN][label + "-V"] = cNameP + "-" + cNameN;
-			}
 			/* Start of add elements to matrix section */
 			/* If positive node is not grounded */
 			if (!pGND) {
@@ -661,6 +633,8 @@ void create_A_matrix(InputFile& iFile) {
 			/* Add the column index of the phase node to the junction node row of the conductance map */
 			/* This will be used to identify the voltage later */
 			bMatrixConductanceMap[rName][label + "-PHASE"] = (double)e.columnIndex;
+			bMatrixConductanceMap[rName][label + "-CAP"] = jj_cap;
+			bMatrixConductanceMap[rName][label + "-ICRIT"] = jj_icrit;
 		}
 		/* End of add elements to matrix section */
 	}

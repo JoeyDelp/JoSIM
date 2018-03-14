@@ -168,3 +168,18 @@ void function_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
+/*
+Simulation error function
+*/
+void simulation_errors(int errorCode, std::string whatPart) {
+	switch (errorCode) {
+	case JJCAP_NOT_FOUND:
+		std::cout << "E: Capacitor value for " << whatPart << " could not be found.\n";
+		std::cout << "E: This is a bug and the developer should be contacted. The program will abort.\n";
+		exit(0);
+	case JJICRIT_NOT_FOUND:
+		std::cout << "E: Critical current value for " << whatPart << " could not be found.\n";
+		std::cout << "E: This is a bug and the developer should be contacted. The program will abort.\n";
+		exit(0);
+	}
+}
