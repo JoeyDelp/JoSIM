@@ -261,7 +261,7 @@ void create_A_matrix(InputFile& iFile) {
 			/* Add the inductor current column to the columns */
 			unique_push(columnNames, cName);
 			/* Add the inductor value to the conductance map */
-			bMatrixConductanceMap[rName][label] = -value;
+			bMatrixConductanceMap[rName][label] = value;
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;

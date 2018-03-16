@@ -65,6 +65,7 @@
 */
 #define JJCAP_NOT_FOUND 0
 #define JJICRIT_NOT_FOUND 1
+#define INDUCTOR_CURRENT_NOT_FOUND 2
 
 /*
 	Function that manages different error codes. This function will be huge.
