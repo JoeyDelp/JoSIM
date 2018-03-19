@@ -7,6 +7,7 @@
 #define PHASE 3
 #define NONE 4
 
+/* Transient analysis simulation object*/
 class trans_sim {
 public:
   double prstep;
@@ -19,8 +20,24 @@ public:
   }
 	double simsize() { return (tstop - tstart) / maxtstep; }
 };
-
 extern trans_sim tsim;
+
+/* RCSJ simulation object*/
+class rcsj_sim_object {
+public:
+	int vPositive, vNegative, bPhase;
+	std::string label;
+	double jjIcrit, jjCap, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase, Phase_Guess, Phase_Prev, Is;
+	rcsj_sim_object() {
+		vPositive = -1;
+		vNegative = -1;
+		bPhase = -1;
+		VB_Prev = 0.0;
+		VB_dt_Prev = 0.0;
+		Phase_Prev = 0.0;
+		Is = 0.0;
+	}
+};
 
 /* 
   Identify simulation type. Be it transient, ac, dc or phase

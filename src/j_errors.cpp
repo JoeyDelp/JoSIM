@@ -181,6 +181,10 @@ void simulation_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Critical current value for " << whatPart << " could not be found.\n";
 		std::cout << "E: This is a bug and the developer should be contacted. The program will abort.\n";
 		exit(0);
+	case JJPHASE_NODE_NOT_FOUND:
+		std::cout << "E: Junction phase node not found for " << whatPart << " could not be found.\n";
+		std::cout << "E: This is a bug and the developer should be contacted. The program will abort.\n";
+		exit(0);
 	case INDUCTOR_CURRENT_NOT_FOUND:
 		std::cout << "E: Inductor current not defined for " << whatPart << ". Matrix will have no solution.\n";
 		std::cout << "E: This is a bug and the developer should be contacted. The program will abort.\n";
