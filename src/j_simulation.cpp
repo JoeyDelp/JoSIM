@@ -53,29 +53,25 @@ void identify_simulation(InputFile& iFile) {
 /*
 Perform transient simulation
 */
+/* Where to store the calulated values */
+std::vector<std::vector<double>> x;
+std::vector<double> timeAxis;
 void transient_simulation() {
-	/* Perform time loop */
-	std::vector<double> RHS;
-	/* Where to store the calulated values */
-	/* Mapped */
-	std::map<std::string, double> lhsMappedValues;
 	/* Standard vector */
-	std::vector<double> lhsValues;
-	/* All stored mapped values*/
-	std::vector<std::map<std::string, double>> lhs;
-	/* Initialize x matrix */
-	for (auto i : columnNames) {
-		lhsMappedValues[i] = 0.0;
-		lhsValues.push_back(0.0);
+	std::vector<double> lhsValues(Nsize, 0.0);
+	for (int m = 0; m < Nsize; m++) {
+		x.push_back(std::vector<double>(tsim.simsize(), 0.0));
 	}
+	/* Perform time loop */
+	std::vector<double> RHS, LHS_PRE;
 	/* Variables to be used by the RHS matrix construction routine */
 	std::string currentLabel;
 	std::map<std::string, double> currentConductance;
 	std::vector<std::string> tokens;
 	std::map<std::string, rcsj_sim_object> simJunctions;
-	double VP, VN, CUR, PH, LCUR, VB, Phase, VB_dt, VB_guess, Phase_guess, Is, jjIcrit, jjCap, RHSvalue, inductance;
+	double VP, VN, CUR, LCUR, VB, RHSvalue, inductance;
 	double hn_2_2e_hbar = (tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO);
-	int counter, ok, ldim, nrhs;
+	int counter, ok;
 	klu_symbolic * Symbolic;
 	klu_common Common;
 	klu_numeric * Numeric;
@@ -88,7 +84,7 @@ void transient_simulation() {
 	/***************/
 	/** TIME LOOP **/
 	/***************/
-	for (int i = 0; i < tsim.simsize(); i++) {
+	for (int i = 0; i < tsim.simsize() - 1; i++) {
 		/* Start of initialization of the B matrix */
 		/* Construct RHS matrix */
 		RHS.clear();
@@ -156,9 +152,9 @@ void transient_simulation() {
 				}
 				catch (std::out_of_range) { simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, currentLabel); }
 				/* If the inductor positive node is connected to ground */
-				if (VP == -1.0) VB = -lhsValues[(int)VN]; //RHSvalue = (-2*inductance/tsim.maxtstep)*lhsValues[(int)CUR] - ( -lhsValues[(int)VN]);
+				if (VP == -1.0) VB = -lhsValues[(int)VN];
 				/* If the inductor negative node is connected to ground */
-				else if (VN == -1.0) VB = lhsValues[(int)VP]; //RHSvalue = (-2 * inductance / tsim.maxtstep)*lhsValues[(int)CUR] - (lhsValues[(int)VP]);
+				else if (VN == -1.0) VB = lhsValues[(int)VP];
 				/* If both nodes are not connected to ground */
 				else VB = lhsValues[(int)VP] - lhsValues[(int)VN];
 				/* R_L = (-2L/hn)IL - VL*/
@@ -181,24 +177,24 @@ void transient_simulation() {
 					try { simJunctions[j].bPhase = (int)currentConductance.at(currentLabel + "-PHASE"); }
 					catch (std::out_of_range) { simulation_errors(JJPHASE_NODE_NOT_FOUND, currentLabel); }
 					/* Try to identify the junction capacitance, panick if not found */
-					try { jjCap = bMatrixConductanceMap.at(j).at(currentLabel + "-CAP"); }
+					try { simJunctions[j].jjCap = currentConductance.at(currentLabel + "-CAP"); }
 					catch (std::out_of_range) { simulation_errors(JJCAP_NOT_FOUND, currentLabel); }
 					/* Try to identify the junction critical current, panick if not found */
-					try { jjIcrit = bMatrixConductanceMap.at(j).at(currentLabel + "-ICRIT"); }
+					try { simJunctions[j].jjIcrit = currentConductance.at(currentLabel + "-ICRIT"); }
 					catch (std::out_of_range) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
 					/* If the junction positive node is connected to ground */
-					if (simJunctions[j].vPositive == -1.0) simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
+					if (simJunctions[j].vPositive == -1) simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
 					/* If the junction negativie node is connected to ground */
-					else if (simJunctions[j].vNegative == -1.0) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
+					else if (simJunctions[j].vNegative == -1) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
 					/* If both nodes are not connected to ground */
 					else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive - simJunctions[j].vNegative];
 				}
 				/* For every other iteration of the loop*/
 				else {
 					/* If the junction positive node is connected to ground */
-					if (simJunctions[j].vPositive == -1.0) simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
+					if (simJunctions[j].vPositive == -1) simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
 					/* If the junction negativie node is connected to ground */
-					else if (simJunctions[j].vNegative == -1.0) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
+					else if (simJunctions[j].vNegative == -1) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
 					/* If both nodes are not connected to ground */
 					else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive - simJunctions[j].vNegative];
 				}
@@ -218,22 +214,19 @@ void transient_simulation() {
 		/* End of the B matrix initialization */
 
 		/* Solve Ax=b */
-		ok = klu_solve(Symbolic, Numeric, Nsize, 1, &RHS.front(), &Common);
+		LHS_PRE = RHS;
+		ok = klu_tsolve(Symbolic, Numeric, Nsize, 1, &LHS_PRE.front(), &Common);
 
 		/* Set the LHS values equal to the returning value provided by the KLU solution */
-		lhsValues = RHS;
-		counter = 0;
-		/* Mapped LHS values for reference when printing values requested by the user */
-		lhs.push_back(lhsMappedValues);
-		for (auto m : lhsMappedValues) {
-			lhs.at(i).at(m.first) = RHS[counter];
-			counter++;
+		lhsValues = LHS_PRE;
+		for (int m = 0; m < lhsValues.size(); m++) {
+			x[m][i] = lhsValues[m];
 		}
 
 		/* Guess next junction voltage */
 		for (auto j : simJunctions) {
-			if (j.second.vPositive == -1.0) j.second.VB = (-lhsValues[j.second.vNegative]);
-			else if (j.second.vNegative == -1.0) j.second.VB = (lhsValues[j.second.vPositive]);
+			if (j.second.vPositive == -1) j.second.VB = (-lhsValues[j.second.vNegative]);
+			else if (j.second.vNegative == -1) j.second.VB = (lhsValues[j.second.vPositive]);
 			else j.second.VB = (lhsValues[j.second.vPositive] - lhsValues[j.second.vNegative]);
 			j.second.Phase = lhsValues[j.second.bPhase];
 			j.second.VB_dt = (2 / tsim.maxtstep)*(j.second.VB - j.second.VB_Prev) - j.second.VB_dt_Prev;
@@ -244,5 +237,7 @@ void transient_simulation() {
 			j.second.VB_dt_Prev = j.second.VB_dt;
 			j.second.Phase_Prev = j.second.Phase;
 		}
+		/* Add the current time value to the time axis for plotting purposes */
+		timeAxis.push_back(i*tsim.maxtstep);
 	}
 }

@@ -33,12 +33,18 @@ public:
 		vNegative = -1;
 		bPhase = -1;
 		VB_Prev = 0.0;
+		VB_dt = 0.0;
 		VB_dt_Prev = 0.0;
+		VB_Guess = 0.0;
+		Phase = 0.0;
+		Phase_Guess = 0.0;
 		Phase_Prev = 0.0;
 		Is = 0.0;
 	}
 };
 
+extern std::vector<std::vector<double>> x;
+extern std::vector<double> timeAxis;
 /* 
   Identify simulation type. Be it transient, ac, dc or phase
 */

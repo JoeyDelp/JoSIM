@@ -14,20 +14,21 @@ bool VERBOSE = false;
 bool LOGGING = false;
 bool OUTPUT = false;
 bool DEFINITIONS = false;
+bool PLOTTING = false;
 
 int main(int argc, char *argv[]) {
-    std::cout << "\n";
-    std::cout << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator\n";
-    std::cout << "Copyright (C) 2017 by Johannes Delport (jdelport@sun.ac.za)\n";
-    std::cout << "\n";
+    std::cout << std::endl;
+    std::cout << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator" << std::endl;
+    std::cout << "Copyright (C) 2017 by Johannes Delport (jdelport@sun.ac.za)" << std::endl;
+    std::cout << std::endl;
     /*
         Parse all the input arguments. All options are switch based, final argument is netlist.
     */
     if (argc <= 1) {
-        std::cout << "Missing input arguments.\n";
-        std::cout << "Usage: josim [options] input_netlist\n";
-        std::cout << "\n";
-        std::cout << "For further help use the -h or --help switch\n";
+        std::cout << "Missing input arguments" << std::endl;
+        std::cout << "Usage: josim [options] input_netlist" << std::endl;
+        std::cout << std::endl;
+        std::cout << "For further help use the -h or --help switch" << std::endl;
         exit(0);
     }
     for (size_t i = 1; i < argc; i++) {
@@ -41,14 +42,16 @@ int main(int argc, char *argv[]) {
           case 'h':
             std::cout << "Help menu for JoSIM\n";
             std::cout << "===================\n";
-            std::cout << "-d or --definition\t: Specifiy path to definitions file on the system\n";
-            std::cout << "-h or --help\t\t: Displays tSpecifies location to a defitions filehis help menu\n";
-            std::cout << "-l or --log\t\t: Specify path for the JoSIM log file (.txt)\n";
-            std::cout << "-o or --output\t\t: Specify output file for simulation results (.csv)\n";
-            std::cout << "-v or --verbose\t\t: Runs JoSIM in verbose mode\n";
-            std::cout << "\n";
-            std::cout << "Example command: josim -d=/path/to/defintions.txt --log=/path/to/log.txt -o=./output.csv test.cir\n";
-            std::cout << "\n";
+			std::cout << std::setw(25) << std::left << "-d or --definition:" << "Specifiy path to definitions file on the system" << std::endl;
+			std::cout << std::setw(25) << std::left << "-g or --graph:" << "Plot the requested results with FLTK plotting window" << std::endl;
+			std::cout << std::setw(25) << std::left << "" << "If this is enabled with VERBOSE mode then all traces are plotted" << std::endl;
+			std::cout << std::setw(25) << std::left << "-h or --help:" << "Displays tSpecifies location to a defitions filehis help menu" << std::endl;
+			std::cout << std::setw(25) << std::left << "-l or --log\t\t: Specify path for the JoSIM log file (.txt)" << std::endl;
+			std::cout << std::setw(25) << std::left << "-o or --output\t\t: Specify output file for simulation results (.csv)" << std::endl;
+			std::cout << std::setw(25) << std::left << "-v or --verbose\t\t: Runs JoSIM in verbose mode" << std::endl;
+            std::cout << std::endl;
+            std::cout << "Example command: josim -d=/path/to/defintions.txt --log=/path/to/log.txt -o=./output.csv test.cir" << std::endl;
+			std::cout << std::endl;
             exit(0);
             break;
           /* Specifies location to a defitions file. Cannot be the only argument. Will complain if it is.*/
@@ -67,11 +70,14 @@ int main(int argc, char *argv[]) {
               error_handling(DEF_FILE_ERROR);
               exit(0);
             }
-            std::cout << "Path specified for definitions file: " << DEFINITIONS_PATH << "\n";
-            std::cout << "Definitions file specified as: " << DEFINITIONS_FILE << "\n";
+            std::cout << "Path specified for definitions file: " << DEFINITIONS_PATH << std::endl;
+            std::cout << "Definitions file specified as: " << DEFINITIONS_FILE << std::endl;
             std::cout << "\n";
             DEFINITIONS = true;
             break;
+		  case 'g':
+			  PLOTTING = true;
+			  break;
           /* Specifies location for a log file. Cannot be the only argument. Will complain if it is.*/
           case 'l':
             if(i == (argc - 1)) {
@@ -88,9 +94,9 @@ int main(int argc, char *argv[]) {
               error_handling(LOG_FILE_ERROR);
               exit(0);
             }
-            std::cout << "Path specified for log file: " << LOG_PATH << "\n";
-            std::cout << "Log file specified as: " << LOG_FILE << "\n";
-            std::cout << "\n";
+            std::cout << "Path specified for log file: " << LOG_PATH << std::endl;
+            std::cout << "Log file specified as: " << LOG_FILE << std::endl;
+            std::cout << std::endl;
             LOGGING = true;
             break;
           /* Specifies location for a output file. Cannot be the only argument. Will complain if it is.*/
@@ -106,9 +112,9 @@ int main(int argc, char *argv[]) {
             if(!has_suffix(OUTPUT_FILE, ".csv")) {
               error_handling(OUTPUT_FILE_ERROR);
             }
-            std::cout << "Path specified for output file: " << OUTPUT_PATH << "\n";
-            std::cout << "Output file specified as: " << OUTPUT_FILE << "\n";
-            std::cout << "\n";
+            std::cout << "Path specified for output file: " << OUTPUT_PATH << std::endl;
+            std::cout << "Output file specified as: " << OUTPUT_FILE << std::endl;
+            std::cout << std::endl;
             if(i == (argc - 1)) {
               error_handling(INPUT_ERROR);
             }
@@ -119,8 +125,8 @@ int main(int argc, char *argv[]) {
             if(i == (argc - 1)) {
               error_handling(INPUT_ERROR);
             }
-            std::cout << "Verbose mode has been enabled\n";
-            std::cout << "\n";
+            std::cout << "Verbose mode has been enabled" << std::endl;
+            std::cout << std::endl;
             VERBOSE = true;
             break;
           /* Breaks if any other switch is found that is not an option.*/
@@ -138,9 +144,9 @@ int main(int argc, char *argv[]) {
 				  error_handling(INPUT_FILE_ERROR);
 			  }
           }
-          std::cout << "Path specified for input file: " << INPUT_PATH << "\n";
-          std::cout << "Input file specified as: " << INPUT_FILE << "\n";
-          std::cout << "\n";
+          std::cout << "Path specified for input file: " << INPUT_PATH << std::endl;
+          std::cout << "Input file specified as: " << INPUT_FILE << std::endl;
+          std::cout << std::endl;
         }
     }
     /*Finished handling input arguments. Now setup simulation based on arguments*/
@@ -152,4 +158,7 @@ int main(int argc, char *argv[]) {
 	identify_simulation(iFile);
 	matrix_A(iFile);
 	transient_simulation();
+	if (PLOTTING) {
+		if (VERBOSE) plot_all_traces();
+	}
 }
