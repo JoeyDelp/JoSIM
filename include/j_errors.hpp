@@ -67,6 +67,10 @@
 #define JJICRIT_NOT_FOUND 1
 #define JJPHASE_NODE_NOT_FOUND 2
 #define INDUCTOR_CURRENT_NOT_FOUND 3
+/*
+	Plotting error codes
+*/
+#define NO_SUCH_PLOT_TYPE 0
 
 /*
 	Function that manages different error codes. This function will be huge.
@@ -100,3 +104,7 @@ void function_errors(int errorCode, std::string whatPart);
 	Simulation error function
 */
 void simulation_errors(int errorCode, std::string whatPart);
+/*
+	Plotting error function
+*/
+void plotting_errors(int errorCode, std::string whatPart);

@@ -225,17 +225,19 @@ void transient_simulation() {
 
 		/* Guess next junction voltage */
 		for (auto j : simJunctions) {
-			if (j.second.vPositive == -1) j.second.VB = (-lhsValues[j.second.vNegative]);
-			else if (j.second.vNegative == -1) j.second.VB = (lhsValues[j.second.vPositive]);
-			else j.second.VB = (lhsValues[j.second.vPositive] - lhsValues[j.second.vNegative]);
-			j.second.Phase = lhsValues[j.second.bPhase];
-			j.second.VB_dt = (2 / tsim.maxtstep)*(j.second.VB - j.second.VB_Prev) - j.second.VB_dt_Prev;
-			j.second.VB_Guess = j.second.VB + tsim.maxtstep*j.second.VB_dt;
-			j.second.Phase_Guess = j.second.Phase + (hn_2_2e_hbar)*(j.second.VB + j.second.VB_Guess);
-			j.second.Is = -j.second.jjIcrit * sin(j.second.Phase_Guess) + (((2 * j.second.jjCap) / tsim.maxtstep)*j.second.VB) + (j.second.jjCap * j.second.VB_dt);
-			j.second.VB_Prev = j.second.VB;
-			j.second.VB_dt_Prev = j.second.VB_dt;
-			j.second.Phase_Prev = j.second.Phase;
+			rcsj_sim_object thisJunction = simJunctions[j.first];
+			if (j.second.vPositive == -1) thisJunction.VB = (-lhsValues[j.second.vNegative]);
+			else if (j.second.vNegative == -1) thisJunction.VB = (lhsValues[j.second.vPositive]);
+			else thisJunction.VB = (lhsValues[j.second.vPositive] - lhsValues[j.second.vNegative]);
+			thisJunction.Phase = lhsValues[j.second.bPhase];
+			thisJunction.VB_dt = (2 / tsim.maxtstep)*(thisJunction.VB - thisJunction.VB_Prev) - thisJunction.VB_dt_Prev;
+			thisJunction.VB_Guess = thisJunction.VB + tsim.maxtstep*thisJunction.VB_dt;
+			thisJunction.Phase_Guess = thisJunction.Phase + (hn_2_2e_hbar)*(thisJunction.VB + thisJunction.VB_Guess);
+			thisJunction.Is = -thisJunction.jjIcrit * sin(thisJunction.Phase_Guess) + (((2 * thisJunction.jjCap) / tsim.maxtstep)*thisJunction.VB) + (thisJunction.jjCap * thisJunction.VB_dt);
+			thisJunction.VB_Prev = thisJunction.VB;
+			thisJunction.VB_dt_Prev = thisJunction.VB_dt;
+			thisJunction.Phase_Prev = thisJunction.Phase;
+			simJunctions[j.first] = thisJunction;
 		}
 		/* Add the current time value to the time axis for plotting purposes */
 		timeAxis.push_back(i*tsim.maxtstep);

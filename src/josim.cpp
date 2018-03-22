@@ -160,5 +160,6 @@ int main(int argc, char *argv[]) {
 	transient_simulation();
 	if (PLOTTING) {
 		if (VERBOSE) plot_all_traces();
+		else plot_traces(iFile);
 	}
 }

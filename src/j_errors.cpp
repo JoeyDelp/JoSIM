@@ -191,3 +191,14 @@ void simulation_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
+/*
+Plotting error function
+*/
+void plotting_errors(int errorCode, std::string whatPart) {
+	switch (errorCode) {
+	case NO_SUCH_PLOT_TYPE:
+		std::cout << "W: Unknown plot type defined. " << whatPart << " is not a valid plot type." << std::endl;
+		std::cout << "W: This request to print will be ignored." << std::endl;
+		std::cout << std::endl;
+	}
+}
