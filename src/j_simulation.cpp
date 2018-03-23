@@ -56,6 +56,7 @@ Perform transient simulation
 /* Where to store the calulated values */
 std::vector<std::vector<double>> x;
 std::vector<double> timeAxis;
+std::map<std::string, std::vector<double>> junctionCurrents;
 void transient_simulation() {
 	/* Standard vector */
 	std::vector<double> lhsValues(Nsize, 0.0);
@@ -187,7 +188,7 @@ void transient_simulation() {
 					/* If the junction negativie node is connected to ground */
 					else if (simJunctions[j].vNegative == -1) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
 					/* If both nodes are not connected to ground */
-					else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive - simJunctions[j].vNegative];
+					else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive] - lhsValues[simJunctions[j].vNegative];
 				}
 				/* For every other iteration of the loop*/
 				else {
@@ -196,7 +197,7 @@ void transient_simulation() {
 					/* If the junction negativie node is connected to ground */
 					else if (simJunctions[j].vNegative == -1) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
 					/* If both nodes are not connected to ground */
-					else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive - simJunctions[j].vNegative];
+					else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive] - lhsValues[simJunctions[j].vNegative];
 				}
 				/* R_B = Phi(n-1) + (hn/2)(2e/hbar)VB */
 				RHSvalue = simJunctions[j].Phase_Prev + ((hn_2_2e_hbar)*simJunctions[j].VB);
@@ -238,6 +239,8 @@ void transient_simulation() {
 			thisJunction.VB_dt_Prev = thisJunction.VB_dt;
 			thisJunction.Phase_Prev = thisJunction.Phase;
 			simJunctions[j.first] = thisJunction;
+			/* Store the junction currents for printing */
+			junctionCurrents[j.first].push_back(thisJunction.Is);
 		}
 		/* Add the current time value to the time axis for plotting purposes */
 		timeAxis.push_back(i*tsim.maxtstep);

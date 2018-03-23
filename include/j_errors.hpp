@@ -71,6 +71,8 @@
 	Plotting error codes
 */
 #define NO_SUCH_PLOT_TYPE 0
+#define NO_SUCH_DEVICE_FOUND 1
+#define CURRENT_THROUGH_VOLTAGE_SOURCE 2
 
 /*
 	Function that manages different error codes. This function will be huge.

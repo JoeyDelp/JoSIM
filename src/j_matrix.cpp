@@ -2,6 +2,7 @@
 
 std::map<std::string, std::map<std::string, double>> bMatrixConductanceMap;
 std::vector<matrix_element> mElements;
+std::vector<element> elements;
 std::vector<std::string> rowNames, columnNames;
 std::vector<double> nzval;
 std::vector<int> colind;
@@ -25,6 +26,7 @@ void create_A_matrix(InputFile& iFile) {
 	std::vector<std::string> devicetokens;
 	std::string label, nodeP, nodeN;
 	bool pGND, nGND;
+	element cElement;
 	/* Subcircuit nodes yet to be implemented */
 	for (auto i : iFile.subcircuitSegments) {
 		for (auto j : i.second) {
@@ -136,8 +138,8 @@ void create_A_matrix(InputFile& iFile) {
 					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
-					e.columnIndex = index_of(columnNames, cNameN);
-					e.rowIndex = index_of(rowNames, rNameP);
+					e.columnIndex = index_of(columnNames, cNameP);
+					e.rowIndex = index_of(rowNames, rNameN);
 					e.value = -1 / value;
 					mElements.push_back(e);
 					/* Add the column index of the positive node to the negative node row of the conductance map */
@@ -158,6 +160,24 @@ void create_A_matrix(InputFile& iFile) {
 				bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 			}
 			/* End of add elements to matrix section */
+			/* Element identification for use later when plotting values*/
+			cElement.label = label;
+			cElement.value = value;
+			if (!pGND) {
+				if (!nGND) {
+					cElement.VPindex = index_of(columnNames, cNameP);
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+				else {
+					cElement.VPindex = index_of(columnNames, cNameP);
+				}
+			}
+			else {
+				if (!nGND) {
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+			}
+			elements.push_back(cElement);
 		}
 		/***************/
 		/** CAPACITOR **/
@@ -220,8 +240,8 @@ void create_A_matrix(InputFile& iFile) {
 					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
-					e.columnIndex = index_of(columnNames, cNameN);
-					e.rowIndex = index_of(rowNames, rNameP);
+					e.columnIndex = index_of(columnNames, cNameP);
+					e.rowIndex = index_of(rowNames, rNameN);
 					e.value = -value / tsim.maxtstep;
 					mElements.push_back(e);
 					/* Add the column index of the positive node to the negative node row in the conductance map */
@@ -242,6 +262,24 @@ void create_A_matrix(InputFile& iFile) {
 				bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 			}
 			/* End of add elements to matrix section */
+			/* Element identification for use later when plotting values*/
+			cElement.label = label;
+			cElement.value = value;
+			if (!pGND) {
+				if (!nGND) {
+					cElement.VPindex = index_of(columnNames, cNameP);
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+				else {
+					cElement.VPindex = index_of(columnNames, cNameP);
+				}
+			}
+			else {
+				if (!nGND) {
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+			}
+			elements.push_back(cElement);
 		}
 		/**************/
 		/** INDUCTOR **/
@@ -312,8 +350,8 @@ void create_A_matrix(InputFile& iFile) {
 					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
-					e.columnIndex = index_of(columnNames, cNameN);
-					e.rowIndex = index_of(rowNames, rNameP);
+					e.columnIndex = index_of(columnNames, cNameP);
+					e.rowIndex = index_of(rowNames, rNameN);
 					e.value = 0;
 					mElements.push_back(e);
 					/* Add the column index of the positive node to the negative node row of the conductance map */
@@ -372,6 +410,25 @@ void create_A_matrix(InputFile& iFile) {
 			/* This will be used to identify the voltage later */
 			bMatrixConductanceMap[rName][label + "-I"] = (double)e.columnIndex;
 			/* End of add elements to matrix section */
+			/* Element identification for use later when plotting values*/
+			cElement.label = label;
+			cElement.value = value;
+			cElement.CURindex = index_of(columnNames, cName);
+			if (!pGND) {
+				if (!nGND) {
+					cElement.VPindex = index_of(columnNames, cNameP);
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+				else {
+					cElement.VPindex = index_of(columnNames, cNameP);
+				}
+			}
+			else {
+				if (!nGND) {
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+			}
+			elements.push_back(cElement);
 		}
 		/********************/
 		/** VOLTAGE SOURCE **/
@@ -476,6 +533,24 @@ void create_A_matrix(InputFile& iFile) {
 			/* This will be used to identify the voltage later */
 			bMatrixConductanceMap[rName][label] = (double)e.columnIndex;
 			/* End of add elements to matrix section */
+			/* Element identification for use later when plotting values*/
+			cElement.label = label;
+			cElement.value = value;
+			if (!pGND) {
+				if (!nGND) {
+					cElement.VPindex = index_of(columnNames, cNameP);
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+				else {
+					cElement.VPindex = index_of(columnNames, cNameP);
+				}
+			}
+			else {
+				if (!nGND) {
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+			}
+			elements.push_back(cElement);
 		}
 		/********************/
 		/** CURRENT SOURCE **/
@@ -501,6 +576,24 @@ void create_A_matrix(InputFile& iFile) {
 				nGND = false;
 			}
 			else nGND = true;
+			/* Element identification for use later when plotting values*/
+			cElement.label = label;
+			cElement.value = value;
+			if (!pGND) {
+				if (!nGND) {
+					cElement.VPindex = index_of(columnNames, cNameP);
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+				else {
+					cElement.VPindex = index_of(columnNames, cNameP);
+				}
+			}
+			else {
+				if (!nGND) {
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+			}
+			elements.push_back(cElement);
 		}
 		/************************/
 		/** JOSEPHSON JUNCTION **/
@@ -567,8 +660,8 @@ void create_A_matrix(InputFile& iFile) {
 					bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
 					/* Negative node row and positive node column */
 					e.label = label;
-					e.columnIndex = index_of(columnNames, cNameN);
-					e.rowIndex = index_of(rowNames, rNameP);
+					e.columnIndex = index_of(columnNames, cNameP);
+					e.rowIndex = index_of(rowNames, rNameN);
 					e.value = ((-2 * jj_cap) / tsim.maxtstep) - (1 / jj_rzero);
 					mElements.push_back(e);
 					/* Add the column index of the positive node to the negative node row of the conductance map */
@@ -635,6 +728,24 @@ void create_A_matrix(InputFile& iFile) {
 			bMatrixConductanceMap[rName][label + "-PHASE"] = (double)e.columnIndex;
 			bMatrixConductanceMap[rName][label + "-CAP"] = jj_cap;
 			bMatrixConductanceMap[rName][label + "-ICRIT"] = jj_icrit;
+			/* Element identification for use later when plotting values*/
+			cElement.label = label;
+			cElement.value = value;
+			if (!pGND) {
+				if (!nGND) {
+					cElement.VPindex = index_of(columnNames, cNameP);
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+				else {
+					cElement.VPindex = index_of(columnNames, cNameP);
+				}
+			}
+			else {
+				if (!nGND) {
+					cElement.VNindex = index_of(columnNames, cNameN);
+				}
+			}
+			elements.push_back(cElement);
 		}
 		/* End of add elements to matrix section */
 	}

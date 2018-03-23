@@ -40,11 +40,72 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 			}
 			/* Print the identified device voltage */
 			else if (tokens[1] == "DEVV") {
-
+				label = "NOTHING";
+				for (auto i : elements) {
+					if (i.label == tokens[2]) {
+						std::vector<double> trace;
+						if (i.VPindex == -1) trace = x[i.VNindex];
+						else if (i.VNindex == -1) trace = x[i.VPindex];
+						else {
+							trace = x[i.VPindex];
+							std::transform(x[i.VPindex].begin(), x[i.VPindex].end(), x[i.VNindex].begin(), trace.begin(), std::minus<double>());
+						}
+						label = "DEVICE VOLTAGE " + i.label;
+						traceLabel.push_back(label);
+						traceData.push_back(trace);
+					}
+				}
+				if (label == "NOTHING") {
+					plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
+				}
 			}
 			/* Print the identified device current */
 			else if (tokens[1] == "DEVI") {
+				label = "NOTHING";
+				for (auto i : elements) {
+					if (i.label == tokens[2]) {
+						if (tokens[2][0] == 'R') {
+							std::vector<double> trace;
+							if (i.VPindex == -1) trace = x[i.VNindex];
+							else if (i.VNindex == -1) trace = x[i.VPindex];
+							else std::transform(x[i.VPindex].begin(), x[i.VPindex].end(), x[i.VNindex].begin(), trace.begin(), std::minus<double>());
+							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind1st(std::multiplies<double>(), (1/i.value)));
+							label = "DEVICE CURRENT " + i.label;
+							traceLabel.push_back(label);
+							traceData.push_back(trace);
+						}
+						else if (tokens[2][0] == 'C') {
 
+						}
+						else if (tokens[2][0] == 'L') {
+							std::vector<double> trace;
+							if (i.CURindex == -1) simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, i.label);
+							else trace = x[i.CURindex];
+							label = "DEVICE CURRENT " + i.label;
+							traceLabel.push_back(label);
+							traceData.push_back(trace);
+						}
+						else if (tokens[2][0] == 'I') {
+							label = "DEVICE CURRENT " + i.label;
+							traceLabel.push_back(label);
+							traceData.push_back(sources[i.label]);
+						}
+						else if (tokens[2][0] == 'V') {
+							simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
+						}
+						else if (tokens[2][0] == 'B') {
+							std::vector<double> trace;
+							trace = junctionCurrents[i.label];
+							label = "DEVICE CURRENT " + i.label;
+							traceLabel.push_back(label);
+							traceData.push_back(trace);
+						}
+						else plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
+					}
+				}
+				if (label == "NOTHING") {
+					plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
+				}
 			}
 			/* No such print command error thrown */
 			else {

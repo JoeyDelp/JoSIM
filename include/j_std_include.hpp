@@ -10,6 +10,7 @@
 #include <iterator>
 #include <tuple>
 #include <cmath>
+#include <functional>
 
 #include "j_globals.hpp"
 #include "j_misc.hpp"
