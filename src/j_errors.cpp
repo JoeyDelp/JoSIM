@@ -200,5 +200,13 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		std::cout << "W: Unknown plot type defined. " << whatPart << " is not a valid plot type." << std::endl;
 		std::cout << "W: This request to print will be ignored." << std::endl;
 		std::cout << std::endl;
+	case NO_SUCH_DEVICE_FOUND:
+		std::cout << "W: Device " << whatPart << " was not found in the device stack." << std::endl;
+		std::cout << "W: This request to print will be ignored." << std::endl;
+		std::cout << std::endl;
+	case CURRENT_THROUGH_VOLTAGE_SOURCE:
+		std::cout << "W: Attempting to find the current through " << whatPart << " which is a voltage source." << std::endl;
+		std::cout << "W: This request to print will be ignored." << std::endl;
+		std::cout << std::endl;
 	}
 }
