@@ -186,7 +186,9 @@ int index_of(std::vector<std::string> vector, std::string value) {
 	int counter = 0;
 	for (auto i : vector) {
 		/* Value found, return counter */
-		if (i.find(value) != std::string::npos) return counter;
+		if (i.find(value) != std::string::npos) {
+			if (value == vector[counter]) return counter;
+		}
 		counter++;
 	}
 	/* Value was not found, set counter equal to -1 and return */
@@ -224,6 +226,8 @@ std::vector<double> function_parse(std::string str) {
 	unsigned last = str.find(')');
 	std::string params = str.substr(first, last - first);
 	tokens = tokenize_delimeter(params, " ,");
+	/* Determing type of source and handle accordingly*/
+	/* PWL */
 	if (str.find("PWL") != std::string::npos) {
 		if (std::stod(tokens[0].c_str()) != 0.0 || std::stod(tokens[1].c_str()) != 0.0) function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
 		std::vector<double> timesteps, values;
@@ -237,6 +241,54 @@ std::vector<double> function_parse(std::string str) {
 		if (timesteps.size() > values.size()) function_errors(TOO_FEW_VALUES, std::to_string(timesteps.size()) + " timesteps & " + std::to_string(timesteps.size()) + " values");
 		if (values[values.size() - 1] != 0.0) {
 			std::fill(functionOfT.begin() + timesteps[timesteps.size() - 1] / tsim.maxtstep, functionOfT.end(), values[values.size() - 1]);
+		}
+		double startpoint, endpoint, value;
+		for (int i = 1; i < timesteps.size(); i++) {
+			startpoint = timesteps[i - 1] / tsim.maxtstep;
+			endpoint = timesteps[i] / tsim.maxtstep;
+			for (int j = startpoint; j < endpoint; j++) {
+				if (values[i - 1] < values[i]) value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
+				else if (values[i - 1] > values[i]) value = values[i - 1] - (values[i - 1] / (endpoint - startpoint) * (j - (int)startpoint));
+				else if (values[i - 1] == values[i]) value = values[i];
+				functionOfT[j] = value;
+			}
+		}
+	}
+	/* PULSE */
+	else if (str.find("PULSE") != std::string::npos) {
+		if (std::stod(tokens[0].c_str()) != 0.0) function_errors(INITIAL_PULSE_VALUE, tokens[0]);
+		if (tokens.size() < 7) function_errors(PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
+		double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
+		vPeak = modifier(tokens[1]);
+		if (vPeak == 0.0) function_errors(PULSE_VPEAK_ZERO, tokens[1]);
+		timeDelay = modifier(tokens[2]);
+		timeRise = modifier(tokens[3]);
+		timeFall = modifier(tokens[4]);
+		pulseWidth = modifier(tokens[5]);
+		if (pulseWidth == 0.0) function_errors(PULSE_WIDTH_ZERO, tokens[5]);
+		pulseRepeat = modifier(tokens[6]);
+		if (pulseRepeat == 0.0) function_errors(PULSE_REPEAT, tokens[6]);
+		int PR = pulseRepeat / tsim.maxtstep;
+		int TD = timeDelay / tsim.maxtstep;
+		std::vector<double> timesteps, values;
+		double timestep;
+		for (int i = 0; i < ((tsim.simsize() - TD) / PR); i++) {
+			timestep = timeDelay + (pulseRepeat * i);
+			if (timestep < tsim.tstop) timesteps.push_back(timestep);
+			else break;
+			values.push_back(0.0);
+			timestep = timeDelay + (pulseRepeat * i) + timeRise;
+			if (timestep < tsim.tstop) timesteps.push_back(timestep);
+			else break;
+			values.push_back(vPeak);
+			timestep = timeDelay + (pulseRepeat * i) + timeRise + pulseWidth;
+			if (timestep < tsim.tstop) timesteps.push_back(timestep);
+			else break;
+			values.push_back(vPeak);
+			timestep = timeDelay + (pulseRepeat * i) + timeRise + pulseWidth + timeFall;
+			if (timestep < tsim.tstop) timesteps.push_back(timestep);
+			else break;
+			values.push_back(0.0);
 		}
 		double startpoint, endpoint, value;
 		for (int i = 1; i < timesteps.size(); i++) {
