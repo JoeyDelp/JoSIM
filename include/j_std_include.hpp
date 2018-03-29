@@ -32,3 +32,4 @@
 #include "Fl_Scroll.H"
 #include "Fl_Scrollbar.H"
 #include "Fl_Button.H"
+#include "fl_draw.H"

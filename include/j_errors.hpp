@@ -60,6 +60,13 @@
 #define INITIAL_VALUES 0
 #define TOO_FEW_TIMESTEPS 1
 #define TOO_FEW_VALUES 2
+#define INITIAL_PULSE_VALUE 3
+#define PULSE_TOO_FEW_ARGUMENTS 4
+#define PULSE_VPEAK_ZERO 5
+#define PULSE_RISE_TIME_ZERO 6
+#define PULSE_FALL_TIME_ZERO 7
+#define PULSE_WIDTH_ZERO 8
+#define PULSE_REPEAT 9
 /*
 	Simulation error codes
 */

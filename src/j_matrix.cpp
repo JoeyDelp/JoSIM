@@ -26,7 +26,6 @@ void create_A_matrix(InputFile& iFile) {
 	std::vector<std::string> devicetokens;
 	std::string label, nodeP, nodeN;
 	bool pGND, nGND;
-	element cElement;
 	/* Subcircuit nodes yet to be implemented */
 	for (auto i : iFile.subcircuitSegments) {
 		for (auto j : i.second) {
@@ -59,6 +58,7 @@ void create_A_matrix(InputFile& iFile) {
 	}
 	/* Main circuit node identification*/
 	for (auto i : iFile.maincircuitSegment) {
+		element cElement;
 		devicetokens = tokenize_space(i);
 		double value = 0.0;
 		/* Check if label exists, if not there is a bug in the program */
@@ -560,18 +560,25 @@ void create_A_matrix(InputFile& iFile) {
 			sources[label] = function_parse(i);
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
+				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
 				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameP);
+				/* If column does not already exist, add to columns */
+				unique_push(columnNames, cNameP);
 				bMatrixConductanceMap[rNameP][label] = 1.0;
 				pGND = false;
 			}
 			else pGND = true;
 			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
+				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
 				/* If row does not already exist, add to rows */
 				unique_push(rowNames, rNameN);
+				/* If column does not already exist, add to columns */
+				unique_push(columnNames, cNameN);
+				/* Add the 0.0 to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = 1.0;
 				nGND = false;
 			}
@@ -653,7 +660,7 @@ void create_A_matrix(InputFile& iFile) {
 					e.label = label;
 					e.columnIndex = index_of(columnNames, cNameN);
 					e.rowIndex = index_of(rowNames, rNameP);
-					e.value = ((-2 * jj_cap) / tsim.maxtstep) - (1 / jj_rzero);
+					e.value = -(((2 * jj_cap) / tsim.maxtstep) + (1 / jj_rzero));
 					mElements.push_back(e);
 					/* Add the column index of the negative node to the positive node row of the conductance map */
 					/* This will be used to identify the voltage later */
@@ -662,7 +669,7 @@ void create_A_matrix(InputFile& iFile) {
 					e.label = label;
 					e.columnIndex = index_of(columnNames, cNameP);
 					e.rowIndex = index_of(rowNames, rNameN);
-					e.value = ((-2 * jj_cap) / tsim.maxtstep) - (1 / jj_rzero);
+					e.value = -(((2 * jj_cap) / tsim.maxtstep) + (1 / jj_rzero));
 					mElements.push_back(e);
 					/* Add the column index of the positive node to the negative node row of the conductance map */
 					/* This will be used to identify the voltage later */
@@ -746,6 +753,12 @@ void create_A_matrix(InputFile& iFile) {
 				}
 			}
 			elements.push_back(cElement);
+		}
+		/*****************/
+		/** SUB-CIRCUIT **/
+		/*****************/
+		else if (i[0] == 'X') {
+
 		}
 		/* End of add elements to matrix section */
 	}
