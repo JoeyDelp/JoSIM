@@ -46,7 +46,7 @@ void circuit_stats(int full, InputFile &iFile) {
     for (auto i : iFile.subcircuitSegments) {
       std::cout << "Subcircuit: " << i.first << '\n';
       std::cout << "*************************************************************" << '\n';
-      for (auto j : i.second) {
+      for (auto j : i.second.lines) {
         std::cout << j << '\n';
       }
       std::cout << "*************************************************************" << '\n';
@@ -186,9 +186,7 @@ int index_of(std::vector<std::string> vector, std::string value) {
 	int counter = 0;
 	for (auto i : vector) {
 		/* Value found, return counter */
-		if (i.find(value) != std::string::npos) {
-			if (value == vector[counter]) return counter;
-		}
+		if (value == vector[counter]) return counter;
 		counter++;
 	}
 	/* Value was not found, set counter equal to -1 and return */
@@ -211,9 +209,12 @@ Substring from before specified string
 std::string substring_before(std::string str, std::string whatpart) {
 	std::size_t pos = 0;
 	std::string substring;
-	if (str.find(whatpart) != std::string::npos) pos = str.find(whatpart);
-	substring = str.substr(0, pos);
-	return substring;
+	if (str.find(whatpart) != std::string::npos) {
+		pos = str.find(whatpart);
+		substring = str.substr(0, pos);
+		return substring;
+	}
+	else return str;
 }
 /*
   Function parser. Turns a string of pwl, pulse, sin, cos into a vector of values for the duration of the simulation.
@@ -232,7 +233,10 @@ std::vector<double> function_parse(std::string str) {
 		if (std::stod(tokens[0].c_str()) != 0.0 || std::stod(tokens[1].c_str()) != 0.0) function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
 		std::vector<double> timesteps, values;
 		for (int i = 0; i < tokens.size(); i = i + 2) {
-				timesteps.push_back(modifier(tokens[i]));
+			if (modifier(tokens[i]) >= tsim.tstop) {
+				timesteps.push_back(modifier(tokens[i-2]));
+			}
+			else timesteps.push_back(modifier(tokens[i]));
 		}
 		for (int i = 1; i < tokens.size(); i = i + 2) {
 			values.push_back(modifier(tokens[i]));
@@ -242,7 +246,7 @@ std::vector<double> function_parse(std::string str) {
 		if (values[values.size() - 1] != 0.0) {
 			std::fill(functionOfT.begin() + timesteps[timesteps.size() - 1] / tsim.maxtstep, functionOfT.end(), values[values.size() - 1]);
 		}
-		double startpoint, endpoint, value;
+		double startpoint, endpoint, value = 0.0;
 		for (int i = 1; i < timesteps.size(); i++) {
 			startpoint = timesteps[i - 1] / tsim.maxtstep;
 			endpoint = timesteps[i] / tsim.maxtstep;
@@ -303,4 +307,31 @@ std::vector<double> function_parse(std::string str) {
 		}
 	}
 	return functionOfT;
+}
+/*
+	Helper function for finding the depth of subcircuits in the design
+*/
+bool findX(std::vector<std::string> segment, std::string & theLine) {
+	for (auto i : segment) {
+		if (i[0] == 'X') {
+			theLine = i;
+			return true;
+		}
+	}
+	return false;
+}
+/*
+	Function that finds the depth of the subcircuits in the design
+*/
+int subCircuitDepth(std::vector<std::string> segment, InputFile &iFile, int &thisDepth, int &overallDepth) {
+	std::string subcktLine;
+	std::vector<std::string> tokens;
+	if (findX(segment, subcktLine)) {
+		tokens = tokenize_space(subcktLine);
+		thisDepth++;
+		if (thisDepth > overallDepth) overallDepth = thisDepth;
+		subCircuitDepth(iFile.subcircuitSegments[tokens[1]].lines, iFile, thisDepth, overallDepth);
+	}
+	else thisDepth = 1;
+	return overallDepth;
 }

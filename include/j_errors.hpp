@@ -31,6 +31,8 @@
 #define MISSING_JJMODEL 12
 #define MODEL_NOT_DEFINED 13
 #define MODEL_AREA_NOT_GIVEN 14
+#define DUPLICATE_LABEL 15
+#define INVALID_SUBCIRCUIT_NODES 16
 /*
   Control error codes
 */

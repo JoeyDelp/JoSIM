@@ -54,3 +54,11 @@ std::string substring_before(std::string str, std::string whatpart);
 Function parser. Turns a string of pwl, pulse, sin, cos into a vector of values for the duration of the simulation.
 */
 std::vector<double> function_parse(std::string str);
+/*
+Helper function for finding the depth of subcircuits in the design
+*/
+bool findX(std::vector<std::string> segment, std::string & theLine);
+/*
+Function that finds the depth of the subcircuits in the design
+*/
+int subCircuitDepth(std::vector<std::string> segment, InputFile &iFile, int &thisDepth, int &overallDepth);

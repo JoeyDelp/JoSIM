@@ -1,6 +1,8 @@
 #include "include/j_matrix.hpp"
 
 std::map<std::string, std::map<std::string, double>> bMatrixConductanceMap;
+std::map<std::string, double> inductanceMap;
+std::map<std::string, std::vector<std::string>> nodeConnections;
 std::vector<matrix_element> mElements;
 std::vector<element> elements;
 std::vector<std::string> rowNames, columnNames;
@@ -23,46 +25,22 @@ void matrix_A(InputFile & iFile) {
 */
 void create_A_matrix(InputFile& iFile) {
 	std::string cName, rName, cNameP, rNameP, cNameN, rNameN;
-	std::vector<std::string> devicetokens;
+	std::vector<std::string> devicetokens, componentLabels;
 	std::string label, nodeP, nodeN;
 	bool pGND, nGND;
-	/* Subcircuit nodes yet to be implemented */
-	for (auto i : iFile.subcircuitSegments) {
-		for (auto j : i.second) {
-			devicetokens = tokenize_space(j);
-			try { label = devicetokens.at(0); }
-			catch (const std::out_of_range) {
-				invalid_component_errors(MISSING_LABEL, j);
-			}
-			try { nodeP = devicetokens.at(1); }
-			catch (const std::out_of_range) {
-				invalid_component_errors(MISSING_PNODE, j);
-			}
-			try { nodeP = devicetokens.at(2); }
-			catch (const std::out_of_range) {
-				invalid_component_errors(MISSING_NNODE, j);
-			}
-			if (j[0] == 'R') {
-			}
-			else if (j[0] == 'C') {
-			}
-			else if (j[0] == 'L') {
-			}
-			else if (j[0] == 'V') {
-			}
-			else if (j[0] == 'I') {
-			}
-			else if (j[0] == 'B') {
-			}
-		}
-	}
 	/* Main circuit node identification*/
 	for (auto i : iFile.maincircuitSegment) {
 		element cElement;
 		devicetokens = tokenize_space(i);
 		double value = 0.0;
 		/* Check if label exists, if not there is a bug in the program */
-		try { label = devicetokens.at(0); }
+		try {
+			label = devicetokens.at(0); 
+			if (std::find(componentLabels.begin(), componentLabels.end(), label) == componentLabels.end()) componentLabels.push_back(label);
+			else {
+				invalid_component_errors(DUPLICATE_LABEL, label);
+			}
+		}
 		catch (const std::out_of_range) {
 			invalid_component_errors(MISSING_LABEL, i);
 		}
@@ -97,6 +75,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameP);
 				/* Add the resistance value to the conductance map */
 				bMatrixConductanceMap[rNameP][label] = 0.0;
+				nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else pGND = true;
@@ -110,6 +89,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameN);
 				/* Add the resistance value to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = 0.0;
+				nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else nGND = true;
@@ -200,6 +180,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameP);
 				/* Add the capacitance value to the conductance map */
 				bMatrixConductanceMap[rNameP][label] = value;
+				nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else pGND = true;
@@ -213,6 +194,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameN);
 				/* Add the capacitance value to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = -value;
+				nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else nGND = true;
@@ -299,6 +281,7 @@ void create_A_matrix(InputFile& iFile) {
 			/* Add the inductor current column to the columns */
 			unique_push(columnNames, cName);
 			/* Add the inductor value to the conductance map */
+			inductanceMap[rName] = value;
 			bMatrixConductanceMap[rName][label] = value;
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
@@ -310,6 +293,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameP);
 				/* Add the 0.0 to the conductance map */
 				bMatrixConductanceMap[rNameP][label] = 0.0;
+				nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else pGND = true;
@@ -323,10 +307,13 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameN);
 				/* Add the 0.0 to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = 0.0;
+				nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else nGND = true;
 			/* Start of add elements to matrix section */
+			bMatrixConductanceMap[rName][label + "-VP"] = -1.0;
+			bMatrixConductanceMap[rName][label + "-VN"] = -1.0;
 			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
@@ -452,6 +439,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(rowNames, rNameP);
 				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameP);
+				nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else pGND = true;
@@ -463,6 +451,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(rowNames, rNameN);
 				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameN);
+				nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else nGND = true;
@@ -567,6 +556,7 @@ void create_A_matrix(InputFile& iFile) {
 				/* If column does not already exist, add to columns */
 				unique_push(columnNames, cNameP);
 				bMatrixConductanceMap[rNameP][label] = 1.0;
+				nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else pGND = true;
@@ -580,6 +570,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(columnNames, cNameN);
 				/* Add the 0.0 to the conductance map */
 				bMatrixConductanceMap[rNameN][label] = 1.0;
+				nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else nGND = true;
@@ -610,7 +601,7 @@ void create_A_matrix(InputFile& iFile) {
 			matrix_element e;
 			/* Identify the JJ parameters based on the model*/
 			double jj_cap, jj_rn, jj_rzero, jj_icrit;
-			jj_comp(devicetokens, "MAIN", jj_cap, jj_rn, jj_rzero, jj_icrit);
+			jj_comp(devicetokens, jj_cap, jj_rn, jj_rzero, jj_icrit);
 			cName = "C_P" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
 			/* Add the junction as a row to the rows */
@@ -625,6 +616,7 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(rowNames, rNameP);
 				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameP);
+				nodeConnections[rNameP].push_back(label);
 				bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
 				bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
 				pGND = false;
@@ -638,12 +630,15 @@ void create_A_matrix(InputFile& iFile) {
 				unique_push(rowNames, rNameN);
 				/* If column does not already exist, add to column */
 				unique_push(columnNames, cNameN);
+				nodeConnections[rNameN].push_back(label);
 				bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
 				bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
 				nGND = false;
 			}
 			else nGND = true;
 			/* Start of add elements to matrix section */
+			bMatrixConductanceMap[rName][label + "-VP"] = -1.0;
+			bMatrixConductanceMap[rName][label + "-VN"] = -1.0;
 			/* If positive node is not grounded */
 			if (!pGND) {
 				/* Positive node row and column */
@@ -753,12 +748,6 @@ void create_A_matrix(InputFile& iFile) {
 				}
 			}
 			elements.push_back(cElement);
-		}
-		/*****************/
-		/** SUB-CIRCUIT **/
-		/*****************/
-		else if (i[0] == 'X') {
-
 		}
 		/* End of add elements to matrix section */
 	}

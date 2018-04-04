@@ -87,9 +87,19 @@ void invalid_component_errors(int errorCode, std::string whatPart) {
 	case MODEL_NOT_DEFINED:
 		std::cout << "W: The specified model " << whatPart << " is not defined" << std::endl;
 		std::cout << "W: Using default model as specified in the manual." << std::endl;
+		break;
 	case MODEL_AREA_NOT_GIVEN:
 		std::cout << "W: No area specified for junction " << whatPart << std::endl;
 		std::cout << "W: Using default: AREA=1.0" << std::endl;
+		break;
+	case DUPLICATE_LABEL:
+		std::cout << "E: Duplicate label " << whatPart << " detected." << std::endl;
+		std::cout << "E: The program will now terminate. Please recheck the netlist." << std::endl;
+		exit(0);
+	case INVALID_SUBCIRCUIT_NODES:
+		std::cout << "E: The nodes for label " << whatPart << " does not match the required nodes of the subcicuit." << std::endl;
+		std::cout << "E: Please recheck the nodes required by the subcircuit and try again." << std::endl;
+		exit(0);
 	}
 
 }
@@ -177,6 +187,7 @@ void function_errors(int errorCode, std::string whatPart) {
 	case PULSE_VPEAK_ZERO:
 		std::cout << "W: PULSE peak voltage is 0.0, this renders the function redundant." << std::endl;
 		std::cout << "W: Program will continue but PULSE command is reduntant." << std::endl;
+		break;
 	//case PULSE_RISE_TIME_ZERO:
 	//	std::cout << "E: PULSE rise time cannot be zero." << whatPart << std::endl;
 	//	std::cout << "E: " << std::endl;
@@ -188,9 +199,11 @@ void function_errors(int errorCode, std::string whatPart) {
 	case PULSE_WIDTH_ZERO:
 		std::cout << "W: PULSE width is 0.0, this renders the function reduntant." << std::endl;
 		std::cout << "W: Program will contunue but PULSE command is reduntant." << std::endl;
+		break;
 	case PULSE_REPEAT:
 		std::cout << "W: PULSE repeat rate is 0.0, this is effectively a DC source." << std::endl;
 		std::cout << "W: Program will continue, but this is most likely unwanted." << std::endl;
+		break;
 	}
 }
 /*
@@ -225,13 +238,16 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		std::cout << "W: Unknown plot type defined. " << whatPart << " is not a valid plot type." << std::endl;
 		std::cout << "W: This request to print will be ignored." << std::endl;
 		std::cout << std::endl;
+		break;
 	case NO_SUCH_DEVICE_FOUND:
 		std::cout << "W: Device " << whatPart << " was not found in the device stack." << std::endl;
 		std::cout << "W: This request to print will be ignored." << std::endl;
 		std::cout << std::endl;
+		break;
 	case CURRENT_THROUGH_VOLTAGE_SOURCE:
 		std::cout << "W: Attempting to find the current through " << whatPart << " which is a voltage source." << std::endl;
 		std::cout << "W: This request to print will be ignored." << std::endl;
 		std::cout << std::endl;
+		break;
 	}
 }

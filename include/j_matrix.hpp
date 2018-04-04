@@ -37,6 +37,8 @@ public:
 
 
 extern std::map<std::string, std::map<std::string, double>> bMatrixConductanceMap;
+extern std::map<std::string, double> inductanceMap;
+extern std::map<std::string, std::vector<std::string>> nodeConnections;
 extern std::vector<matrix_element> mElements;
 extern std::vector<element> elements;
 extern std::vector<std::string> rowNames, columnNames;

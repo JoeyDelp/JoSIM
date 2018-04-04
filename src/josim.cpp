@@ -15,6 +15,7 @@ bool LOGGING = false;
 bool OUTPUT = false;
 bool DEFINITIONS = false;
 bool PLOTTING = false;
+bool DEVELOPER = false;
 
 int main(int argc, char *argv[]) {
     std::cout << std::endl;
@@ -156,7 +157,27 @@ int main(int argc, char *argv[]) {
     else circuit_stats(0, iFile);
 	model_rcsj_functions::identify_models(iFile, models);
 	identify_simulation(iFile);
+	bool subcktFound = true;
+	int thisDepth, overallDepth;
+	thisDepth = 1;
+	overallDepth = 1;
+	int subcktDepth = subCircuitDepth(iFile.maincircuitSegment, iFile, thisDepth, overallDepth);
+	for (int i = 0; i < subcktDepth; i++) {
+		iFile.sub_in_subcircuits(iFile, iFile.maincircuitSegment);
+	}
+	/* Debugging tool that can only be activated in the code for checking final netlist after subcircuit substitution */
+	if (DEVELOPER) {
+		for (auto i : iFile.maincircuitSegment) {
+			std::vector<std::string> tokens = tokenize_space(i);
+			for (auto j : tokens) {
+				std::cout << std::setw(15) << std::left << j;
+			}
+			std::cout << std::endl;
+		}
+	}
+	/* Create A matrix from final netlist */
 	matrix_A(iFile);
+	/* Do transient simulation */
 	transient_simulation();
 	if (PLOTTING) {
 		if (VERBOSE) plot_all_traces();
