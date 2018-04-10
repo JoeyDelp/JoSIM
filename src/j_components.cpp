@@ -96,7 +96,7 @@ void count_subcircuit_component(std::vector<std::string> c, InputFile& iFile, st
 /*
   Return JJ parameters from tokens
 */
-void jj_comp(std::vector<std::string> tokens, std::string whatpart, double &jj_cap, double &jj_rn, double &jj_rzero, double &jj_icrit) {
+void jj_comp(std::vector<std::string> tokens, double &jj_cap, double &jj_rn, double &jj_rzero, double &jj_icrit) {
 	/* Assume tokens 0-2 are label, pnode, nnode so they can be ignored */
 	std::string label, modname;
 	double area;
@@ -111,12 +111,10 @@ void jj_comp(std::vector<std::string> tokens, std::string whatpart, double &jj_c
 		invalid_component_errors(MISSING_JJMODEL, label);
 	}
 	for (auto i : models) {
-		if (i.first.find(whatpart) != std::string::npos) {
-			if (i.second.modelname == modname) {
-				jj = i.second;
-				found = true;
-				break;
-			}
+		if (i.first.find(modname) != std::string::npos) {
+			jj = i.second;
+			found = true;
+			break;
 		}
 	}
 	if (!found) {
@@ -127,7 +125,9 @@ void jj_comp(std::vector<std::string> tokens, std::string whatpart, double &jj_c
 	}
 	catch (std::out_of_range) {
 		area = 1.0;
-		invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
+		if (VERBOSE) {
+			invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
+		}
 	}
 	jj_cap = jj.cap * area;
 	jj_rn = jj.rnormal / area;

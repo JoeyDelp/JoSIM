@@ -5,34 +5,137 @@
 Determine traces to plot from the control part of the main circuit
 */
 void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::string>& traceLabel, std::vector<std::vector<double>>& traceData) {
-	std::vector<std::string> tokens;
+	std::vector<std::string> tokens, labeltokens;
+	std::vector<double> trace;
 	std::map<std::string, std::vector<double>> traces;
-	std::string columnLabel, label;
-	int index = -1;
+	std::string columnLabel1, columnLabel2, label;
+	int index1 = -1;
+	int index2 = -1;
 	for (auto string : controlPart) {
 		if (string.find(".PRINT") != std::string::npos) {
 			tokens = tokenize_space(string);
 			/* Print the identified node voltage */
 			if (tokens[1] == "NODEV") {
-				label = "NODE VOLTAGE " + tokens[2];
-				columnLabel = "C_NV" + tokens[2];
-				if (std::find(columnNames.begin(), columnNames.end(), columnLabel) != columnNames.end()) {
-					index = index_of(columnNames, columnLabel);
-					traceLabel.push_back(label);
-					traceData.push_back(x[index]);
+				/* If more than one node is specified */
+				if (tokens.size() == 4) {
+					/* If second node is ground */
+					if(tokens[3] == "0" || tokens[3] == "GND") {
+						label = "NODE VOLTAGE " + tokens[2];
+						if (tokens[2][0] == 'X') { 
+							labeltokens = tokenize_delimeter(tokens[2], "_");
+							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+							tokens[2] = labeltokens[0];
+							for (int n = 1; n < labeltokens.size(); n++) {
+								tokens[2] = tokens[2] + "_" + labeltokens[n];
+							}
+						}
+						columnLabel1 = "C_NV" + tokens[2];
+						if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+							index1 = index_of(columnNames, columnLabel1);
+							traceLabel.push_back(label);
+							traceData.push_back(x[index1]);
+						}
+						else {
+							/* Error this node was not found and can therefore not be printed */
+						}
+					}
+					/* If first node is ground */
+					else if (tokens[2] == "0" || tokens[3] == "GND") {
+						label = "NODE VOLTAGE " + tokens[3];
+						if (tokens[3][0] == 'X') {
+							labeltokens = tokenize_delimeter(tokens[3], "_");
+							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+							tokens[3] = labeltokens[0];
+							for (int n = 1; n < labeltokens.size(); n++) {
+								tokens[3] = tokens[3] + "_" + labeltokens[n];
+							}
+						}
+						columnLabel1 = "C_NV" + tokens[3];
+						if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+							index1 = index_of(columnNames, columnLabel1);
+							trace.clear();
+							trace = x[index1];
+							for (int m = 0; m < trace.size(); m++) {
+								trace[m] = 0.0;
+							}
+							std::transform(trace.begin(), trace.end(), x[index1].begin(), trace.begin(), std::minus<double>());
+							traceLabel.push_back(label);
+							traceData.push_back(trace);
+						}
+						else {
+							/* Error this node was not found and can therefore not be printed */
+						}
+					}
+					/* If neither are ground*/
+					else {
+						label = "NODE VOLTAGE " + tokens[2] + " to " + tokens[3];
+						columnLabel1 = "C_NV" + tokens[2];
+						columnLabel2 = "C_NV" + tokens[3];
+						if (tokens[2][0] == 'X') {
+							labeltokens = tokenize_delimeter(tokens[2], "_");
+							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+							tokens[2] = labeltokens[0];
+							for (int n = 1; n < labeltokens.size(); n++) {
+								tokens[2] = tokens[2] + "_" + labeltokens[n];
+							}
+						}
+						if (tokens[3][0] == 'X') {
+							labeltokens = tokenize_delimeter(tokens[3], "_");
+							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+							tokens[3] = labeltokens[0];
+							for (int n = 1; n < labeltokens.size(); n++) {
+								tokens[3] = tokens[3] + "_" + labeltokens[n];
+							}
+						}
+						if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+							index1 = index_of(columnNames, columnLabel1);
+							trace.clear();
+							trace = x[index1];
+							if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+								index2 = index_of(columnNames, columnLabel2);
+								std::transform(x[index1].begin(), x[index1].end(), x[index2].begin(), trace.begin(), std::minus<double>());
+								traceLabel.push_back(label);
+								traceData.push_back(trace);
+							}
+							else {
+								/* Error this node was not found and can therefore not be printed */
+							}
+						}
+						else {
+							/* Error this node was not found and can therefore not be printed */
+						}
+					}
 				}
+				/* If only one node is specified */
 				else {
-					/* Error this node was not found and can therefore not be printed */
+					label = "NODE VOLTAGE " + tokens[2];
+					columnLabel1 = "C_NV" + tokens[2];
+					if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+						index1 = index_of(columnNames, columnLabel1);
+						traceLabel.push_back(label);
+						traceData.push_back(x[index1]);
+					}
+					else {
+						/* Error this node was not found and can therefore not be printed */
+					}
 				}
 			}
 			/* Print the identified junction phase */
 			else if (tokens[1] == "PHASE") {
 				label = "PHASE " + tokens[2];
-				columnLabel = "C_P" + tokens[2];
-				if (std::find(columnNames.begin(), columnNames.end(), columnLabel) != columnNames.end()) {
-					index = index_of(columnNames, columnLabel);
+				if (tokens[2][0] == 'X') {
+					labeltokens = tokenize_delimeter(tokens[2], "_");
+					std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+					tokens[2] = labeltokens[0];
+					for (int n = 1; n < labeltokens.size(); n++) {
+						tokens[2] = tokens[2] + "_" + labeltokens[n];
+					}
+				}
+				columnLabel1 = "C_P" + tokens[2];
+				if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+					index1 = index_of(columnNames, columnLabel1);
 					traceLabel.push_back(label);
-					traceData.push_back(x[index]);
+					traceData.push_back(x[index1]);
 				}
 				else {
 					/* Error this node was not found and can therefore not be printed */
@@ -41,9 +144,17 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 			/* Print the identified device voltage */
 			else if (tokens[1] == "DEVV") {
 				label = "NOTHING";
+				if (tokens[2][0] == 'X') {
+					labeltokens = tokenize_delimeter(tokens[2], "_");
+					std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+					tokens[2] = labeltokens[0];
+					for (int n = 1; n < labeltokens.size(); n++) {
+						tokens[2] = tokens[2] + "_" + labeltokens[n];
+					}
+				}
 				for (auto i : elements) {
 					if (i.label == tokens[2]) {
-						std::vector<double> trace;
+						trace.clear();
 						if (i.VPindex == -1) trace = x[i.VNindex];
 						else if (i.VNindex == -1) trace = x[i.VPindex];
 						else {
@@ -56,12 +167,20 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					}
 				}
 				if (label == "NOTHING") {
-					plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
+					if (VERBOSE) plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
 				}
 			}
 			/* Print the identified device current */
 			else if (tokens[1] == "DEVI") {
 				label = "NOTHING";
+				if (tokens[2][0] == 'X') {
+					labeltokens = tokenize_delimeter(tokens[2], "_");
+					std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+					tokens[2] = labeltokens[0];
+					for (int n = 1; n < labeltokens.size(); n++) {
+						tokens[2] = tokens[2] + "_" + labeltokens[n];
+					}
+				}
 				for (auto i : elements) {
 					if (i.label == tokens[2]) {
 						if (tokens[2][0] == 'R') {
@@ -91,7 +210,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							traceData.push_back(sources[i.label]);
 						}
 						else if (tokens[2][0] == 'V') {
-							simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
+							if (VERBOSE) simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
 						}
 						else if (tokens[2][0] == 'B') {
 							std::vector<double> trace;
@@ -109,7 +228,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 			}
 			/* No such print command error thrown */
 			else {
-				plotting_errors(NO_SUCH_PLOT_TYPE, tokens[1]);
+				if (VERBOSE) plotting_errors(NO_SUCH_PLOT_TYPE, tokens[1]);
 			}
 		}
 	}

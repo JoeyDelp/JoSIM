@@ -13,6 +13,8 @@
 #define INPUT_FILE_ERROR 7
 #define UNKNOWN_SWITCH 8
 #define CANNOT_OPEN_FILE 9
+#define OUTPUT_LEGACY_ERROR 10
+#define OUTPUT_LEGACY_FILE_ERROR 11
 /*
   Component error codes
 */
@@ -31,6 +33,8 @@
 #define MISSING_JJMODEL 12
 #define MODEL_NOT_DEFINED 13
 #define MODEL_AREA_NOT_GIVEN 14
+#define DUPLICATE_LABEL 15
+#define INVALID_SUBCIRCUIT_NODES 16
 /*
   Control error codes
 */

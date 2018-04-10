@@ -96,6 +96,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\debug\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libamdd.lib;libbtfd.lib;libcamdd.lib;libccolamdd.lib;libcholmodd.lib;libcolamdd.lib;libcxsparsed.lib;libklud.lib;libldld.lib;libspqrd.lib;libumfpackd.lib;metisd.lib;suitesparseconfigd.lib;fltkd_x86.lib;fltkformsd_x86.lib;fltkgld_x86.lib;fltkimagesd_x86.lib;fltkjpegd_x86.lib;fltkpngd_x86.lib;fltkzlibd_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -111,6 +112,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\debug\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libamdd.lib;libbtfd.lib;libcamdd.lib;libccolamdd.lib;libcholmodd.lib;libcolamdd.lib;libcxsparsed.lib;libklud.lib;libldld.lib;libspqrd.lib;libumfpackd.lib;metisd.lib;suitesparseconfigd.lib;fltkd_x64.lib;fltkformsd_x64.lib;fltkgld_x64.lib;fltkimagesd_x64.lib;fltkjpegd_x64.lib;fltkpngd_x64.lib;fltkzlibd_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -130,6 +132,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\release\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libamd.lib;libbtf.lib;libcamd.lib;libccolamd.lib;libcholmod.lib;libcolamd.lib;libcxsparse.lib;libklu.lib;libldl.lib;libspqr.lib;libumfpack.lib;metis.lib;suitesparseconfig.lib;fltkforms_x86.lib;fltkgl_x86.lib;fltkimages_x86.lib;fltkjpeg_x86.lib;fltk_x86.lib;fltkpng_x86.lib;fltkzlib_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,6 +152,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\lib\win\release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libamd.lib;libbtf.lib;libcamd.lib;libccolamd.lib;libcholmod.lib;libcolamd.lib;libcxsparse.lib;libklu.lib;libldl.lib;libspqr.lib;libumfpack.lib;metis.lib;suitesparseconfig.lib;fltkforms_x64.lib;fltkgl_x64.lib;fltkimages_x64.lib;fltkjpeg_x64.lib;fltk_x64.lib;fltkpng_x64.lib;fltkzlib_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -159,6 +163,7 @@
     <ClCompile Include="..\j_matrix.cpp" />
     <ClCompile Include="..\j_misc.cpp" />
     <ClCompile Include="..\j_models.cpp" />
+    <ClCompile Include="..\j_output.cpp" />
     <ClCompile Include="..\j_plot.cpp" />
     <ClCompile Include="..\j_simulation.cpp" />
   </ItemGroup>
@@ -173,6 +178,7 @@
     <ClInclude Include="..\..\include\j_plot.hpp" />
     <ClInclude Include="..\..\include\j_simulation.hpp" />
     <ClInclude Include="..\..\include\j_std_include.hpp" />
+    <ClInclude Include="..\..\include\j_output.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

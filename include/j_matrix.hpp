@@ -36,14 +36,16 @@ public:
 };
 
 
-extern std::map<std::string, std::map<std::string, double>> bMatrixConductanceMap;
+extern std::unordered_map<std::string, std::unordered_map<std::string, double>> bMatrixConductanceMap;
+extern std::unordered_map<std::string, double> inductanceMap;
+extern std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
 extern std::vector<matrix_element> mElements;
 extern std::vector<element> elements;
 extern std::vector<std::string> rowNames, columnNames;
 extern std::vector<double> nzval;
 extern std::vector<int> colind;
 extern std::vector<int> rowptr;
-extern std::map<std::string, std::vector<double>> sources;
+extern std::unordered_map<std::string, std::vector<double>> sources;
 extern int Nsize;
 extern int Msize;
 /*

@@ -12,4 +12,4 @@ void count_subcircuit_component(std::vector<std::string> c, InputFile& iFile, st
 /*
 Return JJ parameters from tokens
 */
-void jj_comp(std::vector<std::string> tokens, std::string whatpart, double &jj_cap, double &jj_rn, double &jj_rzero, double &jj_icrit);
+void jj_comp(std::vector<std::string> tokens, double &jj_cap, double &jj_rn, double &jj_rzero, double &jj_icrit);

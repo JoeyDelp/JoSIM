@@ -26,7 +26,7 @@ extern trans_sim tsim;
 class rcsj_sim_object {
 public:
 	int vPositive, vNegative, bPhase;
-	std::string label;
+	std::string label, positiveNodeRow, negativeNodeRow;
 	double jjIcrit, jjCap, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase, Phase_Guess, Phase_Prev, Is;
 	rcsj_sim_object() {
 		vPositive = -1;

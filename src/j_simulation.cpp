@@ -64,15 +64,16 @@ void transient_simulation() {
 		x.push_back(std::vector<double>(tsim.simsize(), 0.0));
 	}
 	/* Perform time loop */
-	std::vector<double> RHS(columnNames.size(), 0.0), LHS_PRE;
+	std::vector<double> RHS(columnNames.size(), 0.0), LHS_PRE, inductanceVector(rowNames.size()), iPNC(rowNames.size()), iNNC(rowNames.size()), iCNC(rowNames.size());
+	std::vector<std::vector<std::string>> nodeConnectionVector(rowNames.size());
 	/* Variables to be used by the RHS matrix construction routine */
 	std::string currentLabel, columnIndexLabel;
-	std::map<std::string, double> currentConductance;
+	//std::map<std::string, double>& currentConductance = NULL;
 	std::vector<std::string> tokens;
 	std::map<std::string, rcsj_sim_object> simJunctions;
 	double VP, VN, CUR, LCUR, VB, RHSvalue, inductance;
 	double hn_2_2e_hbar = (tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO);
-	int counter, ok, columnIndex;
+	int counter, ok, columnIndex, rowCounter;
 	klu_symbolic * Symbolic;
 	klu_common Common;
 	klu_numeric * Numeric;
@@ -83,19 +84,18 @@ void transient_simulation() {
 	/* Do numeric factorization of matrix */
 	Numeric = klu_factor(&rowptr.front(), &colind.front(), &nzval.front(), Symbolic, &Common);
 	/* Set up the junctions */
+	rowCounter = 0;
 	for (auto j : rowNames) {
-		if (j.find("_B") != std::string::npos) {
+		if (j[2] == 'B') {
 			/* Identify the junction label */
-			currentLabel = substring_after(j, "R_");
-			columnIndexLabel = "C_P" + substring_after(j, "R_");
-			columnIndex = index_of(columnNames, columnIndexLabel);
+			currentLabel = j.substr(2);
+			columnIndexLabel = "C_P" + currentLabel;
+			//columnIndex = index_of(columnNames, columnIndexLabel);
 			simJunctions[j].label = currentLabel;
 			/* Try to identify the column index of the positive node */
-			try { simJunctions[j].vPositive = (int)bMatrixConductanceMap[j].at(currentLabel + "-VP"); }
-			catch (std::out_of_range) {}
+			simJunctions[j].vPositive = (int)bMatrixConductanceMap[j].at(currentLabel + "-VP"); 
 			/* Try to identifiy the column index of the negative node */
-			try { simJunctions[j].vNegative = (int)bMatrixConductanceMap[j].at(currentLabel + "-VN"); }
-			catch (std::out_of_range) {}
+			simJunctions[j].vNegative = (int)bMatrixConductanceMap[j].at(currentLabel + "-VN"); 
 			/* Try to identify the column index of the phase node, panick if not found */
 			try { simJunctions[j].bPhase = (int)bMatrixConductanceMap[j].at(currentLabel + "-PHASE"); }
 			catch (std::out_of_range) { simulation_errors(JJPHASE_NODE_NOT_FOUND, currentLabel); }
@@ -106,64 +106,61 @@ void transient_simulation() {
 			try { simJunctions[j].jjIcrit = bMatrixConductanceMap[j].at(currentLabel + "-ICRIT"); }
 			catch (std::out_of_range) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
 			/* If the junction positive node is connected to ground */
-			if (simJunctions[j].vPositive == -1) simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
+			if (simJunctions[j].vPositive == -1) {
+				simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
+				simJunctions[j].negativeNodeRow = rowNames[simJunctions[j].vNegative];
+			}
 			/* If the junction negativie node is connected to ground */
-			else if (simJunctions[j].vNegative == -1) simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
+			else if (simJunctions[j].vNegative == -1) {
+				simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
+				simJunctions[j].positiveNodeRow = rowNames[simJunctions[j].vPositive];
+			}
 			/* If both nodes are not connected to ground */
-			else simJunctions[j].VB = lhsValues[simJunctions[j].vPositive] - lhsValues[simJunctions[j].vNegative];
+			else {
+				simJunctions[j].VB = lhsValues[simJunctions[j].vPositive] - lhsValues[simJunctions[j].vNegative];
+				simJunctions[j].positiveNodeRow = rowNames[simJunctions[j].vPositive];
+				simJunctions[j].negativeNodeRow = rowNames[simJunctions[j].vNegative];
+			}
 		}
+		else if (j[2] == 'L') {
+			currentLabel = j.substr(2);
+			inductanceVector[rowCounter] = inductanceMap[j];
+			iPNC[rowCounter] = bMatrixConductanceMap.at(j).at(currentLabel + "-VP");
+			iNNC[rowCounter] = bMatrixConductanceMap.at(j).at(currentLabel + "-VN");
+			iCNC[rowCounter] = bMatrixConductanceMap.at(j).at(currentLabel + "-I");
+		}
+		else if (j[2] == 'N') {
+			nodeConnectionVector[rowCounter] = nodeConnections[j];
+		}
+		rowCounter++;
 	}
 	/***************/
 	/** TIME LOOP **/
 	/***************/
+	/* Start a progress bar */
+	std::cout << "Simulating:" << std::endl;
+	double increments = 100 / tsim.simsize();
+	double progress_increments = 30 / tsim.simsize();
+	double incremental_progress = 0.0;
+	int progress = 0;
+	int old_progress = 0;
+	std::string pBar = "";
 	for (int i = 0; i < tsim.simsize() - 1; i++) {
+		std::cout << '\r';
 		/* Start of initialization of the B matrix */
+		RHS.clear();
+		rowCounter = 0;
 		/* Construct RHS matrix */
 		for (auto j : rowNames) {
 			RHSvalue = 0.0;
-			try { currentConductance = bMatrixConductanceMap.at(j); }
-			catch (std::out_of_range) { }
 			/* If this row item is identified as a node row then...*/
-			if (j.find("_N") != std::string::npos) {
+			if (j[2] == 'N') {
 				tokens.clear();
-				columnIndexLabel = "C_NV" + substring_after(j, "R_N");
-				columnIndex = index_of(columnNames, columnIndexLabel);
-				for (auto k : currentConductance) {
-					/* If this row item contains a junction add it to the list of row items */
-					if (k.first[0] == 'B') {
-						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
-						else currentLabel = k.first;
-						unique_push(tokens, currentLabel);
-					}
-					/* If this row item contains a current source add it to the list of row items */
-					else if (k.first[0] == 'I') {
-						currentLabel = k.first;
-						unique_push(tokens, currentLabel);
-					}
-					/* If this row item contains a resistor add it to the list of row items */
-					else if (k.first[0] == 'R') {
-						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
-						else currentLabel = k.first;
-						unique_push(tokens, currentLabel);
-					}
-					/* If this row item contains a capacitor add it to the list of row items */
-					else if (k.first[0] == 'C') {
-						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
-						else currentLabel = k.first;
-						unique_push(tokens, currentLabel);
-					}
-					/* If this row item contains a inductor add it to the list of row items */
-					else if (k.first[0] == 'L') {
-						if (k.first.find("-") != std::string::npos) currentLabel = substring_before(k.first, "-");
-						else currentLabel = k.first;
-						unique_push(tokens, currentLabel);
-					}
-				}
-				for (auto k : tokens) {
+				for (auto k : nodeConnectionVector[rowCounter]) {
 					/* Add junction as calculated at the end of the current loop to the RHS */
 					if (k[0] == 'B') {
-						if(index_of(rowNames, j) == simJunctions["R_" + k].vPositive) RHSvalue += simJunctions["R_" + k].Is;
-						else if (index_of(rowNames, j) == simJunctions["R_" + k].vNegative) RHSvalue -= simJunctions["R_" + k].Is;
+						if(j == simJunctions["R_" + k].positiveNodeRow) RHSvalue += simJunctions["R_" + k].Is;
+						else if (j == simJunctions["R_" + k].negativeNodeRow) RHSvalue -= simJunctions["R_" + k].Is;
 					}
 					/* Add the current value to the RHS in the correct row */
 					else if (k[0] == 'I') {
@@ -172,22 +169,18 @@ void transient_simulation() {
 				}
 			}
 			/* If this row item is identified as an inductor row */
-			else if (j.find("_L") != std::string::npos) {
+			else if (j[2] == 'L') {
 				/* Identify the inductor label */
-				currentLabel = substring_after(j, "R_");
-				columnIndexLabel = "C_I" + substring_after(j, "R_");
-				columnIndex = index_of(columnNames, columnIndexLabel);
+				currentLabel = j.substr(2);
 				/* Identify the relevant inductance of the inductor */
-				inductance = currentConductance[currentLabel];
-				/* Try to identify the column index of the positive node */
-				try { VP = currentConductance.at(currentLabel + "-VP"); }
-				catch (std::out_of_range) { VP = -1.0; }
-				/* Try to identifiy the column index of the negative node */
-				try { VN = currentConductance.at(currentLabel + "-VN"); }
-				catch (std::out_of_range) { VN = -1.0; }
+				inductance = inductanceVector[rowCounter];
+				/* Identify the column index of the positive node */
+				VP = iPNC[rowCounter];
+				/* Identifiy the column index of the negative node */
+				VN = iNNC[rowCounter];
 				/* Try to identifiy the column index of the inductor current node */
 				try { 
-					CUR = currentConductance.at(currentLabel + "-I");
+					CUR = iCNC[rowCounter];
 					LCUR = lhsValues[(int)CUR];
 				}
 				catch (std::out_of_range) { simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, currentLabel); }
@@ -201,26 +194,23 @@ void transient_simulation() {
 				RHSvalue = (-2 * inductance / tsim.maxtstep)*LCUR - VB;
 			}
 			/* If this row item is identified as a junction row */
-			else if (j.find("_B") != std::string::npos) {
+			else if (j[2] == 'B') {
 				/* Identify the junction label */
-				currentLabel = substring_after(j, "R_");
-				columnIndexLabel = "C_P" + substring_after(j, "R_");
-				columnIndex = index_of(columnNames, columnIndexLabel);
+				currentLabel = j.substr(2);
 				/* R_B = Phi(n-1) + (hn/2)(2e/hbar)VB */
 				RHSvalue = simJunctions[j].Phase_Prev + ((hn_2_2e_hbar)*simJunctions[j].VB);
 			}
 			/* If this row item is identified as a voltage source row */
-			else if (j.find("_V") != std::string::npos) {
+			else if (j[2] == 'V') {
 				/* Identify the voltage source label */
-				currentLabel = substring_after(j, "R_");
-				columnIndexLabel = "C_" + substring_after(j, "R_");
-				columnIndex = index_of(columnNames, columnIndexLabel);
+				currentLabel = j.substr(2);
 				/* Assign the voltage source value at the current point in the time loop to the RHS value */
 				RHSvalue = sources[currentLabel][i];
 			}
 			/* Add the RHS value as determined above to the correct spot in the RHS vector */
-			RHS[columnIndex] = RHSvalue;
-			//RHS.push_back(RHSvalue);
+			//RHS[columnIndex] = RHSvalue;
+			RHS.push_back(RHSvalue);
+			rowCounter++;
 		}
 		/* End of the B matrix initialization */
 
@@ -254,5 +244,17 @@ void transient_simulation() {
 		}
 		/* Add the current time value to the time axis for plotting purposes */
 		timeAxis.push_back(i*tsim.maxtstep);
+		old_progress = progress;
+		incremental_progress = incremental_progress + increments;
+		progress = (int)(incremental_progress);
+		if (progress > old_progress) {
+			std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
+			pBar = "[";
+			for (int p = 0; p <= (int)(progress_increments * i); p++) {
+				pBar = pBar + "=";
+			}
+			std::cout << std::setw(31) << std::left << pBar << "]";
+		}
 	}
+	std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
 }

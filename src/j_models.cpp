@@ -19,6 +19,12 @@ void model_rcsj_functions::identify_models(InputFile& iFile, std::map<std::strin
 			modeltokens.clear();
 			/* Tokenize the parameter part of the string into seperate parameters */
 			modeltokens = tokenize_delimeter(modelParams, " ,");
+			for (int k = 1; k < modeltokens.size(); k++) {
+				if (modeltokens[k - 1].at(modeltokens[k-1].size() - 1) == '=') {
+					modeltokens[k - 1] = modeltokens[k - 1] + modeltokens[k];
+					modeltokens[k] = modeltokens[k - 1] + modeltokens[k];
+				}
+			}
 			for (auto k : modeltokens) {
 				/* Isolate the identifier and value */
 				first = k.find('=') + 1;
@@ -43,7 +49,7 @@ void model_rcsj_functions::identify_models(InputFile& iFile, std::map<std::strin
 	/* Second the main design */
 	for (auto i : iFile.maincircuitModels) {
 		std::vector<std::string> modeltokens = tokenize_space(i);
-		modelname = "MAIN_" + modeltokens[1];
+		modelname = modeltokens[1];
 		models[modelname].modelname = modeltokens[1];
 		/* Identify string parrameter part of the string */
 		unsigned first = i.find('(') + 1;
