@@ -29,6 +29,14 @@ void error_handling(int errorCode) {
       std::cout << "E: Invalid output file specified." << std::endl;
       std::cout << "E: Specified file needs to be of extension .csv" << std::endl;
       exit(0);
+	case OUTPUT_LEGACY_ERROR:
+		std::cout << "E: Invalid output file specifier." << std::endl;
+		std::cout << "E: Specifier should be: -m=<path to file>" << std::endl;
+		exit(0);
+	case OUTPUT_LEGACY_FILE_ERROR:
+		std::cout << "E: Invalid output file specified." << std::endl;
+		std::cout << "E: Specified file needs to be of extension .dat" << std::endl;
+		exit(0);
     case INPUT_ERROR:
       std::cout << "E: Missing input file." << std::endl;
       std::cout << "E: Final argument should be: <path to input file>" << std::endl;

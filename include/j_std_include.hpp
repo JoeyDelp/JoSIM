@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <map>
+#include <unordered_map>
 #include <algorithm>
 #include <iterator>
 #include <tuple>
@@ -21,6 +22,7 @@
 #include "j_simulation.hpp"
 #include "j_matrix.hpp"
 #include "j_plot.hpp"
+#include "j_output.hpp"
 
 #include "klu.h"
 #include "Fl.H"

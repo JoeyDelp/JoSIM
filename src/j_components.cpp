@@ -125,7 +125,9 @@ void jj_comp(std::vector<std::string> tokens, double &jj_cap, double &jj_rn, dou
 	}
 	catch (std::out_of_range) {
 		area = 1.0;
-		invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
+		if (VERBOSE) {
+			invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
+		}
 	}
 	jj_cap = jj.cap * area;
 	jj_rn = jj.rnormal / area;

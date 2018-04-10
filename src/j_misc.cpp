@@ -264,14 +264,14 @@ std::vector<double> function_parse(std::string str) {
 		if (tokens.size() < 7) function_errors(PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
 		double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
 		vPeak = modifier(tokens[1]);
-		if (vPeak == 0.0) function_errors(PULSE_VPEAK_ZERO, tokens[1]);
+		if (vPeak == 0.0) if(VERBOSE) function_errors(PULSE_VPEAK_ZERO, tokens[1]);
 		timeDelay = modifier(tokens[2]);
 		timeRise = modifier(tokens[3]);
 		timeFall = modifier(tokens[4]);
 		pulseWidth = modifier(tokens[5]);
-		if (pulseWidth == 0.0) function_errors(PULSE_WIDTH_ZERO, tokens[5]);
+		if (pulseWidth == 0.0) if (VERBOSE) function_errors(PULSE_WIDTH_ZERO, tokens[5]);
 		pulseRepeat = modifier(tokens[6]);
-		if (pulseRepeat == 0.0) function_errors(PULSE_REPEAT, tokens[6]);
+		if (pulseRepeat == 0.0) if (VERBOSE) function_errors(PULSE_REPEAT, tokens[6]);
 		int PR = pulseRepeat / tsim.maxtstep;
 		int TD = timeDelay / tsim.maxtstep;
 		std::vector<double> timesteps, values;

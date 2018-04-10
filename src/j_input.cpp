@@ -159,6 +159,16 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 							tokens = tokenize_space(j);
 							tokens[0] = tokens[0] + "_" + label;
 							std::string line = tokens[0];
+							for (int k = 2; k < tokens.size(); k++) {
+								if (std::find(iFile.subcircuitSegments[subckt].io.begin(), iFile.subcircuitSegments[subckt].io.end(), tokens[k]) != iFile.subcircuitSegments[subckt].io.end()) {
+									for (auto l : iFile.subcircuitSegments[subckt].io) {
+										if (l == tokens[k]) tokens[k] = io[index_of(iFile.subcircuitSegments[subckt].io, l)];
+									}
+								}
+								else {
+									if (tokens[k] != "0" && tokens[k] != "GND") tokens[k] = tokens[k] + "_" + label;
+								}
+							}
 							for (int k = 1; k < tokens.size(); k++) {
 								line = line + " " + tokens[k];
 							}

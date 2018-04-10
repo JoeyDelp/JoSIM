@@ -9,10 +9,11 @@
     #define EXEC josim
 #endif
 
-std::string DEFINITIONS_PATH, DEFINITIONS_FILE, LOG_PATH, LOG_FILE, OUTPUT_PATH, OUTPUT_FILE, INPUT_PATH, INPUT_FILE;
+std::string DEFINITIONS_PATH, DEFINITIONS_FILE, LOG_PATH, LOG_FILE, OUTPUT_PATH, OUTPUT_FILE, OUTPUT_LEGACY_PATH, OUTPUT_LEGACY_FILE, INPUT_PATH, INPUT_FILE;
 bool VERBOSE = false;
 bool LOGGING = false;
 bool OUTPUT = false;
+bool OUTPUT_LEGACY = false;
 bool DEFINITIONS = false;
 bool PLOTTING = false;
 bool DEVELOPER = false;
@@ -47,9 +48,10 @@ int main(int argc, char *argv[]) {
 			std::cout << std::setw(25) << std::left << "-g or --graph:" << "Plot the requested results with FLTK plotting window" << std::endl;
 			std::cout << std::setw(25) << std::left << "" << "If this is enabled with VERBOSE mode then all traces are plotted" << std::endl;
 			std::cout << std::setw(25) << std::left << "-h or --help:" << "Displays tSpecifies location to a defitions filehis help menu" << std::endl;
-			std::cout << std::setw(25) << std::left << "-l or --log\t\t: Specify path for the JoSIM log file (.txt)" << std::endl;
-			std::cout << std::setw(25) << std::left << "-o or --output\t\t: Specify output file for simulation results (.csv)" << std::endl;
-			std::cout << std::setw(25) << std::left << "-v or --verbose\t\t: Runs JoSIM in verbose mode" << std::endl;
+			std::cout << std::setw(25) << std::left << "-l or --log:" << "Specify path for the JoSIM log file (.txt)" << std::endl;
+			std::cout << std::setw(25) << std::left << "-o or --output:"<< "Specify output file for simulation results (.csv)" << std::endl;
+			std::cout << std::setw(25) << std::left << "-m" << "[Legacy] JSIM_N output file format (.dat)" << std::endl;
+			std::cout << std::setw(25) << std::left << "-v or --verbose:" << "Runs JoSIM in verbose mode" << std::endl;
             std::cout << std::endl;
             std::cout << "Example command: josim -d=/path/to/defintions.txt --log=/path/to/log.txt -o=./output.csv test.cir" << std::endl;
 			std::cout << std::endl;
@@ -76,6 +78,7 @@ int main(int argc, char *argv[]) {
             std::cout << "\n";
             DEFINITIONS = true;
             break;
+		  /* Enables plotting using built in FLTK library. */
 		  case 'g':
 			  PLOTTING = true;
 			  break;
@@ -121,6 +124,27 @@ int main(int argc, char *argv[]) {
             }
             OUTPUT = true;
             break;
+			/* Specifies location for a output file. Cannot be the only argument. Will complain if it is.*/
+		  case 'm':
+			  if (i == (argc - 1)) {
+				  error_handling(INPUT_ERROR);
+			  }
+			  if (swString.find("=") == std::string::npos) {
+				  error_handling(OUTPUT_LEGACY_ERROR);
+			  }
+			  OUTPUT_LEGACY_PATH = swString.substr(swString.find("=") + 1);
+			  OUTPUT_LEGACY_FILE = file_from_path(OUTPUT_LEGACY_PATH);
+			  if (!has_suffix(OUTPUT_LEGACY_FILE, ".dat")) {
+				  error_handling(OUTPUT_LEGACY_FILE_ERROR);
+			  }
+			  std::cout << "Path specified for output file: " << OUTPUT_LEGACY_PATH << std::endl;
+			  std::cout << "Output file specified as: " << OUTPUT_LEGACY_FILE << std::endl;
+			  std::cout << std::endl;
+			  if (i == (argc - 1)) {
+				  error_handling(INPUT_ERROR);
+			  }
+			  OUTPUT_LEGACY = true;
+			  break;
           /* Enables verbose program mode. Cannot be the only argument. Will complain if it is.*/
           case 'v':
             if(i == (argc - 1)) {
@@ -182,5 +206,11 @@ int main(int argc, char *argv[]) {
 	if (PLOTTING) {
 		if (VERBOSE) plot_all_traces();
 		else plot_traces(iFile);
+	}
+	if (OUTPUT) {
+		write_data(iFile);
+	}
+	if (OUTPUT_LEGACY) {
+		write_legacy_data(iFile);
 	}
 }

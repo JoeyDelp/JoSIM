@@ -163,6 +163,7 @@
     <ClCompile Include="..\j_matrix.cpp" />
     <ClCompile Include="..\j_misc.cpp" />
     <ClCompile Include="..\j_models.cpp" />
+    <ClCompile Include="..\j_output.cpp" />
     <ClCompile Include="..\j_plot.cpp" />
     <ClCompile Include="..\j_simulation.cpp" />
   </ItemGroup>
@@ -177,6 +178,7 @@
     <ClInclude Include="..\..\include\j_plot.hpp" />
     <ClInclude Include="..\..\include\j_simulation.hpp" />
     <ClInclude Include="..\..\include\j_std_include.hpp" />
+    <ClInclude Include="..\..\include\j_output.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

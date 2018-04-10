@@ -167,7 +167,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					}
 				}
 				if (label == "NOTHING") {
-					plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
+					if (VERBOSE) plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
 				}
 			}
 			/* Print the identified device current */
@@ -210,7 +210,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							traceData.push_back(sources[i.label]);
 						}
 						else if (tokens[2][0] == 'V') {
-							simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
+							if (VERBOSE) simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
 						}
 						else if (tokens[2][0] == 'B') {
 							std::vector<double> trace;
@@ -228,7 +228,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 			}
 			/* No such print command error thrown */
 			else {
-				plotting_errors(NO_SUCH_PLOT_TYPE, tokens[1]);
+				if (VERBOSE) plotting_errors(NO_SUCH_PLOT_TYPE, tokens[1]);
 			}
 		}
 	}

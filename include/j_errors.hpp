@@ -13,6 +13,8 @@
 #define INPUT_FILE_ERROR 7
 #define UNKNOWN_SWITCH 8
 #define CANNOT_OPEN_FILE 9
+#define OUTPUT_LEGACY_ERROR 10
+#define OUTPUT_LEGACY_FILE_ERROR 11
 /*
   Component error codes
 */

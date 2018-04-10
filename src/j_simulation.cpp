@@ -90,7 +90,7 @@ void transient_simulation() {
 			/* Identify the junction label */
 			currentLabel = j.substr(2);
 			columnIndexLabel = "C_P" + currentLabel;
-			columnIndex = index_of(columnNames, columnIndexLabel);
+			//columnIndex = index_of(columnNames, columnIndexLabel);
 			simJunctions[j].label = currentLabel;
 			/* Try to identify the column index of the positive node */
 			simJunctions[j].vPositive = (int)bMatrixConductanceMap[j].at(currentLabel + "-VP"); 
@@ -137,7 +137,16 @@ void transient_simulation() {
 	/***************/
 	/** TIME LOOP **/
 	/***************/
+	/* Start a progress bar */
+	std::cout << "Simulating:" << std::endl;
+	double increments = 100 / tsim.simsize();
+	double progress_increments = 30 / tsim.simsize();
+	double incremental_progress = 0.0;
+	int progress = 0;
+	int old_progress = 0;
+	std::string pBar = "";
 	for (int i = 0; i < tsim.simsize() - 1; i++) {
+		std::cout << '\r';
 		/* Start of initialization of the B matrix */
 		RHS.clear();
 		rowCounter = 0;
@@ -235,5 +244,17 @@ void transient_simulation() {
 		}
 		/* Add the current time value to the time axis for plotting purposes */
 		timeAxis.push_back(i*tsim.maxtstep);
+		old_progress = progress;
+		incremental_progress = incremental_progress + increments;
+		progress = (int)(incremental_progress);
+		if (progress > old_progress) {
+			std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
+			pBar = "[";
+			for (int p = 0; p <= (int)(progress_increments * i); p++) {
+				pBar = pBar + "=";
+			}
+			std::cout << std::setw(31) << std::left << pBar << "]";
+		}
 	}
+	std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
 }
