@@ -1,4 +1,3 @@
-#pragma once
 #include "j_plot.hpp"
 
 /*
@@ -188,7 +187,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							if (i.VPindex == -1) trace = x[i.VNindex];
 							else if (i.VNindex == -1) trace = x[i.VPindex];
 							else std::transform(x[i.VPindex].begin(), x[i.VPindex].end(), x[i.VNindex].begin(), trace.begin(), std::minus<double>());
-							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind1st(std::multiplies<double>(), (1/i.value)));
+							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
 							label = "DEVICE CURRENT " + i.label;
 							traceLabel.push_back(label);
 							traceData.push_back(trace);

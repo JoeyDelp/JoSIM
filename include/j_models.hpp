@@ -35,7 +35,7 @@ public:
 	/*
 	  Identify the models in both the subcircuits as well as the main design
 	*/
-	static void identify_models(InputFile &iFile, std::map<std::string, model_rcsj> &models);
+	static void identify_models(InputFile &iFile, std::unordered_map<std::string, model_rcsj> &models);
 };
 
-extern std::map<std::string, model_rcsj> models;
+extern std::unordered_map<std::string, model_rcsj> models;

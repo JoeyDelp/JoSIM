@@ -1,5 +1,8 @@
-#pragma once
+#ifdef WIN32
 #include "include/j_components.hpp"
+#else
+#include "j_components.hpp"
+#endif
 
 /*
   Count the components

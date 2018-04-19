@@ -1,7 +1,12 @@
+#ifdef WIN32
 #include "include/j_matrix.hpp"
+#else
+#include "j_matrix.hpp"
+#endif
 
 std::unordered_map<std::string, std::unordered_map<std::string, double>> bMatrixConductanceMap;
 std::unordered_map<std::string, double> inductanceMap;
+std::unordered_map<std::string, model_xline> xlines;
 std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
 std::vector<matrix_element> mElements;
 std::vector<element> elements;
@@ -16,8 +21,8 @@ int Nsize, Msize;
 */
 void matrix_A(InputFile & iFile) {
 	create_A_matrix(iFile);
-	if (rowNames.size() != columnNames.size()) matrix_errors(NON_SQUARE, columnNames.size() + "x" + rowNames.size());
-	if (VERBOSE) std::cout << std::setw(35) << std::left << "A matrix dimentions: " << columnNames.size() << "\n\n";
+    if (rowNames.size() != columnNames.size()) matrix_errors(NON_SQUARE, columnNames.size() + "x" + rowNames.size());
+	if (VERBOSE) std::cout << std::setw(35) << std::left << "A matrix dimensions: " << columnNames.size() << "\n\n";
 
 }
 /*
@@ -40,7 +45,7 @@ void create_A_matrix(InputFile& iFile) {
 		double value = 0.0;
 		/* Check if label exists, if not there is a bug in the program */
 		try {
-			label = devicetokens.at(0); 
+			label = devicetokens.at(0);
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) == componentLabels.end()) componentLabels.push_back(label);
 			else {
 				invalid_component_errors(DUPLICATE_LABEL, label);
@@ -873,6 +878,339 @@ void create_A_matrix(InputFile& iFile) {
 				}
 			}
 			elements.push_back(cElement);
+		}
+		/***********************/
+		/** TRANSMISSION LINE **/
+		/***********************/
+		else if (i[0] == 'T') {
+			std::string nodeP2, nodeN2, TN1, TN2, TV1, TV2, cNameP2, rNameP2, cNameN2, rNameN2, cNameNI1, rNameNI1, cNameNI2, rNameNI2, cName1, rName1, cName2, rName2;
+			bool p2GND, n2GND;
+			double TimeDelay = 0.0;
+			/* Check if positive node 2 exists, if not it's a bad device line definition */
+			try { nodeP2 = devicetokens.at(3); }
+			catch (const std::out_of_range) {
+				invalid_component_errors(MISSING_PNODE, i);
+			}
+			/* Check if negative node 2 exists, if not it's a bad device line definition */
+			try { nodeN2 = devicetokens.at(4); }
+			catch (const std::out_of_range) {
+				invalid_component_errors(MISSING_NNODE, i);
+			}
+			TN1 = "1" + label;
+			TN2 = "2" + label;
+			TV1 = label + "-V1";
+			TV2 = label + "-V2";
+			/* Create a new matrix element for the first Z0 */
+			matrix_element e;
+			if (devicetokens.size() < 7) {
+				invalid_component_errors(TIME_ERROR, i);
+			}
+			/* Check if value exists, if not it's a bad Z0 definition */
+			for (int l = 6; l < devicetokens.size(); l++) {
+				if(devicetokens[l].find("TD") != std::string::npos) TimeDelay = modifier((devicetokens.at(l)).substr(3));
+				else if (devicetokens[l].find("Z0") != std::string::npos) value = modifier((devicetokens.at(l)).substr(3));
+			}
+            xlines[label].Z0 = value;
+            xlines[label].label = label;
+            xlines[label].TD = TimeDelay;
+            /* Check if positive node is connected to ground */
+			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
+				cNameP = "C_NV" + nodeP;
+				rNameP = "R_N" + nodeP;
+				/* If row does not already exist, add to rows */
+				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+					rowMap[rNameP] = rowCounter;
+					rowCounter++;
+				}
+				/* If column does not already exist, add to columns */
+				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+					columnMap[cNameP] = colCounter;
+					colCounter++;
+				}
+				/* Add the resistance value to the conductance map */
+				bMatrixConductanceMap[rNameP][label] = 0.0;
+				nodeConnections[rNameP].push_back(label);
+				pGND = false;
+			}
+			else pGND = true;
+			/* Check if negative node is connected to ground */
+			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
+				cNameN = "C_NV" + nodeN;
+				rNameN = "R_N" + nodeN;
+				/* If row does not already exist, add to rows */
+				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+					rowMap[rNameN] = rowCounter;
+					rowCounter++;
+				}
+				/* If column does not already exist, add to columns */
+				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+					columnMap[cNameN] = colCounter;
+					colCounter++;
+				}
+				/* Add the resistance value to the conductance map */
+				bMatrixConductanceMap[rNameN][label] = 0.0;
+				nodeConnections[rNameN].push_back(label);
+				nGND = false;
+			}
+			else nGND = true;
+            /* Check if second positive node is connected to ground */
+            if (nodeP2 != "0" && nodeP2.find("GND") == std::string::npos) {
+                cNameP2 = "C_NV" + nodeP2;
+                rNameP2 = "R_N" + nodeP2;
+                /* If row does not already exist, add to rows */
+                if ((got = rowMap.find(rNameP2)) == rowMap.end()) {
+                    rowMap[rNameP2] = rowCounter;
+                    rowCounter++;
+                }
+                /* If column does not already exist, add to columns */
+                if ((got = columnMap.find(cNameP2)) == columnMap.end()) {
+                    columnMap[cNameP2] = colCounter;
+                    colCounter++;
+                }
+                /* Add the resistance value to the conductance map */
+                bMatrixConductanceMap[rNameP2][label] = 0.0;
+                nodeConnections[rNameP2].push_back(label);
+                p2GND = false;
+            }
+            else p2GND = true;
+            /* Check if second negative node is connected to ground */
+            if (nodeN2 != "0" && nodeN2.find("GND") == std::string::npos) {
+                cNameN2 = "C_NV" + nodeN2;
+                rNameN2 = "R_N" + nodeN2;
+                /* If row does not already exist, add to rows */
+                if ((got = rowMap.find(rNameN2)) == rowMap.end()) {
+                    rowMap[rNameN2] = rowCounter;
+                    rowCounter++;
+                }
+                /* If column does not already exist, add to columns */
+                if ((got = columnMap.find(cNameN2)) == columnMap.end()) {
+                    columnMap[cNameN2] = colCounter;
+                    colCounter++;
+                }
+                /* Add the resistance value to the conductance map */
+                bMatrixConductanceMap[rNameN2][label] = 0.0;
+                nodeConnections[rNameN2].push_back(label);
+                n2GND = false;
+            }
+            else n2GND = true;
+            /* Add the intermediate node 1 */
+            cNameNI1 = "C_NV" + TN1;
+            rNameNI1 = "R_N" + TN1;
+            /* If row does not already exist, add to rows */
+            if ((got = rowMap.find(rNameNI1)) == rowMap.end()) {
+                rowMap[rNameNI1] = rowCounter;
+                rowCounter++;
+            }
+            /* If column does not already exist, add to columns */
+            if ((got = columnMap.find(cNameNI1)) == columnMap.end()) {
+                columnMap[cNameNI1] = colCounter;
+                colCounter++;
+            }
+            /* Add the resistance value to the conductance map */
+            bMatrixConductanceMap[rNameNI1][label] = 0.0;
+            nodeConnections[rNameNI1].push_back(label);
+            /* Add the intermediate node 2 */
+            cNameNI2 = "C_NV" + TN2;
+            rNameNI2 = "R_N" + TN2;
+            /* If row does not already exist, add to rows */
+            if ((got = rowMap.find(rNameNI2)) == rowMap.end()) {
+                rowMap[rNameNI2] = rowCounter;
+                rowCounter++;
+            }
+            /* If column does not already exist, add to columns */
+            if ((got = columnMap.find(cNameNI2)) == columnMap.end()) {
+                columnMap[cNameNI2] = colCounter;
+                colCounter++;
+            }
+            /* Add the resistance value to the conductance map */
+            bMatrixConductanceMap[rNameNI2][label] = 0.0;
+            nodeConnections[rNameNI2].push_back(label);
+            /* Start of add elements to matrix section */
+            /* If positive node is not grounded */
+            if (!pGND) {
+                /* Positive node row and column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameP];
+                xlines[label].pNode1 = columnMap[cNameP];
+                e.rowIndex = rowMap[rNameP];
+                e.value = 1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
+                /* If positive and intermediate node is not grounded */
+                /* Positive node row and intermediate node column */
+                e.columnIndex = columnMap[cNameNI1];
+                xlines[label].iNode1 = columnMap[cNameNI1];
+                e.rowIndex = rowMap[rNameP];
+                e.value = -1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the negative node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
+                /* Intermediate node row and positive node column */
+                e.columnIndex = columnMap[cNameP];
+                e.rowIndex = rowMap[rNameNI1];
+                e.value = -1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the negative node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameNI1][label + "-VP"] = (double)e.columnIndex;
+                /* Intermediate node row and column */
+                e.columnIndex = columnMap[cNameNI1];
+                e.rowIndex = rowMap[rNameNI1];
+                e.value = 1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameNI1][label + "-VP"] = (double)e.columnIndex;
+            }
+            else {
+                /* Intermediate node row and column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameNI1];
+                xlines[label].iNode1 = columnMap[cNameNI1];
+                e.rowIndex = rowMap[rNameNI1];
+                e.value = 1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameNI1][label + "-VP"] = (double)e.columnIndex;
+            }
+            /* If second positive node is not grounded */
+            if (!p2GND) {
+                /* Positive node row and column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameP2];
+                xlines[label].pNode2 = columnMap[cNameP2];
+                e.rowIndex = rowMap[rNameP2];
+                e.value = 1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameP2][label + "-VP"] = (double)e.columnIndex;
+                /* If positive and intermediate node is not grounded */
+                /* Positive node row and intermediate node column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameNI2];
+                xlines[label].iNode2 = columnMap[cNameNI2];
+                e.rowIndex = rowMap[rNameP2];
+                e.value = -1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the negative node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameP2][label + "-VN"] = (double)e.columnIndex;
+                /* Intermediate node row and positive node column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameP2];
+                e.rowIndex = rowMap[rNameNI2];
+                e.value = -1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the negative node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameNI2][label + "-VP"] = (double)e.columnIndex;
+                /* Intermediate node row and column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameNI2];
+                e.rowIndex = rowMap[rNameNI2];
+                e.value = 1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameNI2][label + "-VP"] = (double)e.columnIndex;
+            }
+            else {
+                /* Intermediate node row and column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameNI2];
+                xlines[label].iNode2 = columnMap[cNameNI2];
+                e.rowIndex = rowMap[rNameNI2];
+                e.value = 1 / value;
+                mElements.push_back(e);
+                /* Add the column index of the positive node to the positive node row of the conductance map */
+                /* This will be used to identify the voltage later */
+                bMatrixConductanceMap[rNameNI2][label + "-VP"] = (double)e.columnIndex;
+            }
+            cName1 = "C_" + TV1;
+            rName1 = "R_" + TV1;
+            if ((got = rowMap.find(rName1)) == rowMap.end()) {
+                rowMap[rName1] = rowCounter;
+                rowCounter++;
+            }
+            if ((got = columnMap.find(cName1)) == columnMap.end()) {
+                columnMap[cName1] = colCounter;
+                colCounter++;
+            }
+            cName2 = "C_" + TV2;
+            rName2 = "R_" + TV2;
+            if ((got = rowMap.find(rName2)) == rowMap.end()) {
+                rowMap[rName2] = rowCounter;
+                rowCounter++;
+            }
+            if ((got = columnMap.find(cName2)) == columnMap.end()) {
+                columnMap[cName2] = colCounter;
+                colCounter++;
+            }
+            /* Intermediate node 1 row and voltage node 1 column */
+            e.label = label;
+            e.columnIndex = columnMap[cName1];
+            e.rowIndex = rowMap[rNameNI1];
+            e.value = 1;
+            mElements.push_back(e);
+            /* Voltage node 1 row and intermediate node 1 column */
+            e.label = label;
+            e.columnIndex = columnMap[cNameNI1];
+            e.rowIndex = rowMap[rName1];
+            e.value = 1;
+            mElements.push_back(e);
+            /* Add the column index of the phase node to the voltage node row of the conductance map */
+            /* This will be used to identify the voltage later */
+            bMatrixConductanceMap[rName1][label] = (double)e.columnIndex;
+            /* Intermediate node 2 row and voltage node 2 column */
+            e.label = label;
+            e.columnIndex = columnMap[cName2];
+            e.rowIndex = rowMap[rNameNI2];
+            e.value = 1;
+            mElements.push_back(e);
+            /* Voltage node 2 row and intermediate node 2 column */
+            e.label = label;
+            e.columnIndex = columnMap[cNameNI2];
+            e.rowIndex = rowMap[rName2];
+            e.value = 1;
+            mElements.push_back(e);
+            /* Add the column index of the phase node to the voltage node row of the conductance map */
+            /* This will be used to identify the voltage later */
+            bMatrixConductanceMap[rName2][label] = (double)e.columnIndex;
+            if(!nGND) {
+                /* Negative node 1 row and voltage node 1 column */
+                e.label = label;
+                e.columnIndex = columnMap[cName1];
+                e.rowIndex = rowMap[rNameN];
+                e.value = -1;
+                mElements.push_back(e);
+                /* Voltage node 1 row and negative node 1 column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameN];
+                xlines[label].nNode1 = columnMap[cNameN];
+                e.rowIndex = rowMap[rName1];
+                e.value = 1;
+                mElements.push_back(e);
+            }
+            if(!n2GND) {
+                /* Negative node 2 row and voltage node 2 column */
+                e.label = label;
+                e.columnIndex = columnMap[cName2];
+                e.rowIndex = rowMap[rNameN2];
+                e.value = 1;
+                mElements.push_back(e);
+                /* Voltage node 2 row and intermediate node 2 column */
+                e.label = label;
+                e.columnIndex = columnMap[cNameN2];
+                xlines[label].iNode2 = columnMap[cNameN2];
+                e.rowIndex = rowMap[rName2];
+                e.value = 1;
+                mElements.push_back(e);
+            }
 		}
 		/* End of add elements to matrix section */
 	}

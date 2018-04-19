@@ -35,6 +35,7 @@
 #define MODEL_AREA_NOT_GIVEN 14
 #define DUPLICATE_LABEL 15
 #define INVALID_SUBCIRCUIT_NODES 16
+#define TIME_ERROR 17
 /*
   Control error codes
 */

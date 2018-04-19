@@ -1,10 +1,14 @@
+#ifdef WIN32
 #include "include/j_models.hpp"
+#else
+#include "j_models.hpp"
+#endif
 
-std::map<std::string, model_rcsj> models;
+std::unordered_map<std::string, model_rcsj> models;
 /* 
   Identify the models in both the subcircuits as well as the main design 
 */
-void model_rcsj_functions::identify_models(InputFile& iFile, std::map<std::string, model_rcsj> &models) {
+void model_rcsj_functions::identify_models(InputFile& iFile, std::unordered_map<std::string, model_rcsj> &models) {
 	std::string modelname, identifier, value;
 	/* First the subcircuit models */
 	for (auto i : iFile.subcircuitModels) {

@@ -1,5 +1,9 @@
 #pragma once
+#ifdef WIN32
 #include "include/j_std_include.hpp"
+#else
+#include "j_std_include.hpp"
+#endif
 
 /*
 	Determine traces to plot from the control part of the main circuit
