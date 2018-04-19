@@ -1,15 +1,17 @@
 # Makefile for JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator
 
 #Compiler, flags and things
-CXX = g++ -std=c++11
-CXX_FLAGS = -I.
+CXX = g++ -std=c++17
+CXX_FLAGS = -I. -I$(INCLUDE_DIR) -I$(INCLUDE_SUITESPARSE_DIR) -I$(INCLUDE_FL_DIR)
 DEBUG_CXX_FLAGS = -g $(CXX_FLAGS)
 PROGRAM_NAME = josim
 
 # Directory Macros
 CXX_SOURCE_DIR = src
 CXX_OBJ_DIR = objs
-INCLUDE_DIR = indclude
+INCLUDE_DIR = ./indclude
+INCLUDE_SUITESPARSE_DIR = ./indclude/suitesparse
+INCLUDE_FL_DIR = ./include/FL
 BIN_DIR = bin
 
 # Sources and Objects

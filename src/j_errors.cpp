@@ -1,4 +1,8 @@
+#ifdef WIN32
 #include "include/j_errors.hpp"
+#else
+#include "j_errors.hpp"
+#endif
 
 /*
   Function that manages different error codes. This function will be huge.
@@ -107,6 +111,10 @@ void invalid_component_errors(int errorCode, std::string whatPart) {
 	case INVALID_SUBCIRCUIT_NODES:
 		std::cout << "E: The nodes for label " << whatPart << " does not match the required nodes of the subcicuit." << std::endl;
 		std::cout << "E: Please recheck the nodes required by the subcircuit and try again." << std::endl;
+		exit(0);
+	case TIME_ERROR:
+		std::cout << "E: Time delay value error" << std::endl;
+		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		exit(0);
 	}
 

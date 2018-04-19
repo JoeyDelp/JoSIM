@@ -1,4 +1,8 @@
+#ifdef WIN32
 #include "include/j_misc.hpp"
+#else
+#include "j_misc.hpp"
+#endif
 
 /*
   Returns the file part of a path if a path is present else returns entire path (file)
@@ -32,6 +36,7 @@ bool starts_with(std::string input, char test) {
       else return false;
     }
   }
+  return false;
 }
 /*
   Displays the circuit statistics such as JJ count and component count.
@@ -131,15 +136,18 @@ int map_value_count(std::map<std::string, int> map, int value) {
 */
 double modifier(std::string value) {
 	std::string::size_type sz;
-	double number;
+	double number = 0.0;
 	try { number = std::stod(value, &sz); }
 	catch (const std::invalid_argument) {
 		misc_errors(STOD_ERROR, value);
 	}
 	switch(value.substr(sz)[0]) {
-		/* mili */
-	case 'M': 
-		return number *= 1E-3;
+		/* mega or mili */
+	case 'M':
+        /* mega */
+	    if (value.substr(sz)[1] == 'E' && value.substr(sz)[2] == 'G') return number *= 1E6;
+        /* mili */
+		else return number *= 1E-3;
 		/* micro */
 	case 'U':
 		return number *= 1E-6;
@@ -155,9 +163,6 @@ double modifier(std::string value) {
 		/* kilo */
 	case 'K': 
 		return number *= 1E3;
-		/* mega */
-	case 'MEG':
-		return number *= 1E6;
 		/* giga */
 	case 'G':
 		return number *= 1E9;

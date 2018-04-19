@@ -1,4 +1,8 @@
+#ifdef WIN32
 #include "include/j_simulation.hpp"
+#else
+#include "j_simulation.hpp"
+#endif
 
 trans_sim tsim;
 
@@ -56,7 +60,7 @@ Perform transient simulation
 /* Where to store the calulated values */
 std::vector<std::vector<double>> x;
 std::vector<double> timeAxis;
-std::map<std::string, std::vector<double>> junctionCurrents;
+std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 void transient_simulation() {
 	/* Standard vector */
 	std::vector<double> lhsValues(Nsize, 0.0);
@@ -70,10 +74,10 @@ void transient_simulation() {
 	std::string currentLabel, columnIndexLabel;
 	//std::map<std::string, double>& currentConductance = NULL;
 	std::vector<std::string> tokens;
-	std::map<std::string, rcsj_sim_object> simJunctions;
-	double VP, VN, CUR, LCUR, VB, RHSvalue, inductance;
+	std::unordered_map<std::string, rcsj_sim_object> simJunctions;
+	double VP, VN, CUR, LCUR, VB, RHSvalue, inductance, z0voltage;
 	double hn_2_2e_hbar = (tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO);
-	int counter, ok, columnIndex, rowCounter;
+	int ok, rowCounter;
 	klu_symbolic * Symbolic;
 	klu_common Common;
 	klu_numeric * Numeric;
@@ -144,6 +148,7 @@ void transient_simulation() {
 	double incremental_progress = 0.0;
 	int progress = 0;
 	int old_progress = 0;
+	int imintd = 0;
 	std::string pBar = "";
 	for (int i = 0; i < tsim.simsize() - 1; i++) {
 		std::cout << '\r';
@@ -206,6 +211,53 @@ void transient_simulation() {
 				currentLabel = j.substr(2);
 				/* Assign the voltage source value at the current point in the time loop to the RHS value */
 				RHSvalue = sources[currentLabel][i];
+			}
+			else if (j[2] == 'T') {
+                /* Identify the transmission line label */
+                currentLabel = j.substr(2);
+				char OneOrTwo = currentLabel[currentLabel.find("-") + 2];
+				currentLabel.erase(currentLabel.find("-"), 3);
+                imintd = i - (xlines[currentLabel].TD/tsim.maxtstep);
+				switch (OneOrTwo) {
+				case '1':
+					if ((imintd) > 0) {
+						/* Assign the voltage source value at the time - TD to the RHS value */
+						VP = xlines[currentLabel].pNode2;
+						VN = xlines[currentLabel].nNode2;
+						/* If the xline positive node is connected to ground */
+						if (VP == -1.0) VB = -x[(int)VN][imintd];
+						/* If the xline negative node is connected to ground */
+						else if (VN == -1.0) VB = x[(int)VP][imintd];
+						/* If both nodes are not connected to ground */
+						else VB = x[(int)VP][imintd] - x[(int)VN][imintd];
+						VN = xlines[currentLabel].iNode2;
+						z0voltage = (x[(int)VP][imintd] - x[(int)VN][imintd]); //xlines[currentLabel].Z0 * (x[(int)VP][imintd] - x[(int)VN][imintd]);
+						RHSvalue = VB + z0voltage;
+					}
+					else {
+						RHSvalue = 0;
+					}
+					break;
+				case '2':
+					if ((imintd) > 0) {
+						/* Assign the voltage source value at the time - TD to the RHS value */
+						VP = xlines[currentLabel].pNode1;
+						VN = xlines[currentLabel].nNode1;
+						/* If the xline positive node is connected to ground */
+						if (VP == -1.0) VB = -x[(int)VN][imintd];
+						/* If the xline negative node is connected to ground */
+						else if (VN == -1.0) VB = x[(int)VP][imintd];
+						/* If both nodes are not connected to ground */
+						else VB = x[(int)VP][imintd] - x[(int)VN][imintd];
+						VN = xlines[currentLabel].iNode1;
+						z0voltage = (x[(int)VP][imintd] - x[(int)VN][imintd]); //xlines[currentLabel].Z0 * (x[(int)VP][imintd] - x[(int)VN][imintd]);
+						RHSvalue = VB + z0voltage;
+					}
+					else {
+						RHSvalue = 0;
+					}
+					break;
+				}
 			}
 			/* Add the RHS value as determined above to the correct spot in the RHS vector */
 			//RHS[columnIndex] = RHSvalue;

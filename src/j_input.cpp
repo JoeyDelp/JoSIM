@@ -1,4 +1,8 @@
+#ifdef WIN32
 #include "include/j_input.hpp"
+#else
+#include "j_input.hpp"
+#endif
 
 /* Input File Constructor*/
 InputFile::InputFile(std::string iFileName) {

@@ -35,9 +35,29 @@ public:
 	}
 };
 
+class model_xline {
+public:
+    std::string label;
+    double TD;
+    double Z0;
+    int pNode1, pNode2, nNode1, nNode2, iNode1, iNode2;
+    /* Default xline constructor */
+    model_xline() {
+        pNode1 = -1;
+        pNode2 = -1;
+        nNode1 = -1;
+        nNode2 = -1;
+        iNode1 = -1;
+        iNode2 = -1;
+        TD = 0;
+        Z0 = 1;
+        label = "NOTHING";
+    }
+};
 
 extern std::unordered_map<std::string, std::unordered_map<std::string, double>> bMatrixConductanceMap;
 extern std::unordered_map<std::string, double> inductanceMap;
+extern std::unordered_map<std::string, model_xline> xlines;
 extern std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
 extern std::vector<matrix_element> mElements;
 extern std::vector<element> elements;

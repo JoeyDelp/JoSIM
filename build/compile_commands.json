@@ -1,0 +1,52 @@
+[
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/josim.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/josim.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/josim.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_simulation.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_simulation.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_simulation.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_plot.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_plot.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_plot.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_output.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_output.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_output.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_misc.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_misc.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_misc.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_matrix.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_matrix.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_matrix.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_input.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_input.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_input.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_errors.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_errors.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_errors.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_components.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_components.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_components.cpp"
+},
+{
+  "directory": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/build",
+  "command": "/usr/bin/clang++   -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/FL -I/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/include/suitesparse  -g   -std=gnu++1z -o CMakeFiles/JoSIM.dir/src/j_models.cpp.o -c /Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_models.cpp",
+  "file": "/Users/joeydelport/OneDrive/JD_no_Mirai/Projects/JoSIM/src/j_models.cpp"
+}
+]

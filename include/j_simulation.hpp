@@ -45,7 +45,7 @@ public:
 
 extern std::vector<std::vector<double>> x;
 extern std::vector<double> timeAxis;
-extern std::map<std::string, std::vector<double>> junctionCurrents;
+extern std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 /* 
   Identify simulation type. Be it transient, ac, dc or phase
 */
