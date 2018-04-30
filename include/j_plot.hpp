@@ -1,3 +1,5 @@
+// Copyright (c) 2018 Johannes Delport
+// This code is licensed under MIT license (see LICENSE for details)
 #pragma once
 #ifdef WIN32
 #include "include/j_std_include.hpp"
