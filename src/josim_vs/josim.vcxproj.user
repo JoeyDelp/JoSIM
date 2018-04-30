@@ -13,7 +13,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

@@ -8,6 +8,7 @@ set(JoSIM_VERSION_MINOR 0)
 # Ensure C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE release)
 
 message("Platform:  ${CMAKE_SYSTEM_NAME}")
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

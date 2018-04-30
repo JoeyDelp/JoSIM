@@ -1,3 +1,5 @@
+// Copyright (c) 2018 Johannes Delport
+// This code is licensed under MIT license (see LICENSE for details)
 #include "j_plot.hpp"
 
 /*
