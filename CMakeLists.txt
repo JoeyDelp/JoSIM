@@ -63,5 +63,3 @@ elseif(LINUX)
     target_link_libraries(JoSIM "/usr/lib64/libsuitesparseconfig.so")
     target_link_libraries(JoSIM "/usr/lib64/libumfpack.so")
 endif()
-
-endif()
