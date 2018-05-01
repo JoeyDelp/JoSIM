@@ -1,5 +1,5 @@
 # Specify the minimum version for CMake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.0)
 # Project name
 project(JoSIM)
 # The version number.
