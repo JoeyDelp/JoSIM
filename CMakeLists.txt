@@ -5,8 +5,8 @@ project(JoSIM)
 # The version number.
 set(JoSIM_VERSION_MAJOR 1)
 set(JoSIM_VERSION_MINOR 0)
-# Ensure C++17
-set(CMAKE_CXX_STANDARD 17)
+# Ensure C++11
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE release)
 
