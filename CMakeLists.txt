@@ -1,65 +1,1 @@
-# Specify the minimum version for CMake
-cmake_minimum_required(VERSION 3.10)
-# Project name
-project(JoSIM)
-# The version number.
-set(JoSIM_VERSION_MAJOR 1)
-set(JoSIM_VERSION_MINOR 0)
-# Ensure C++17
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE release)
-
-message("Platform:  ${CMAKE_SYSTEM_NAME}")
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(WINDOWS TRUE)
-    set(PLATFORM "win")
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(LINUX TRUE)
-    set(PLATFORM "linux")
-	find_package(FLTK REQUIRED)
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(MACOSX TRUE)
-    set(PLATFORM "mac")
-	find_package(FLTK REQUIRED)
-endif()
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/FL)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/suitesparse)
-
-add_subdirectory(src)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${PLATFORM}/${CMAKE_BUILD_TYPE})
-
-add_executable(JoSIM ${JOSIM_SRC})
-
-if(MACOSX)
-    target_link_libraries(JoSIM ${FLTK_LIBRARIES})
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libamd.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libbtf.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcamd.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libccolamd.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcholmod.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcolamd.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcxsparse.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libklu.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libldl.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libspqr.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libsuitesparseconfig.a)
-    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libumfpack.a)
-elseif(LINUX)
-	target_link_libraries(JoSIM ${FLTK_LIBRARIES})
-    target_link_libraries(JoSIM "/usr/lib64/libamd.so")
-    target_link_libraries(JoSIM "/usr/lib64/libbtf.so")
-    target_link_libraries(JoSIM "/usr/lib64/libcamd.so")
-    target_link_libraries(JoSIM "/usr/lib64/libccolamd.so")
-    target_link_libraries(JoSIM "/usr/lib64/libcholmod.so")
-    target_link_libraries(JoSIM "/usr/lib64/libcolamd.so")
-    target_link_libraries(JoSIM "/usr/lib64/libcxsparse.so")
-    target_link_libraries(JoSIM "/usr/lib64/libklu.so")
-    target_link_libraries(JoSIM "/usr/lib64/libldl.so")
-    target_link_libraries(JoSIM "/usr/lib64/libspqr.so")
-    target_link_libraries(JoSIM "/usr/lib64/libsuitesparseconfig.so")
-    target_link_libraries(JoSIM "/usr/lib64/libumfpack.so")
-endif()
+# Specify the minimum version for CMakecmake_minimum_required(VERSION 3.10)# Project nameproject(JoSIM)# The version number.set(JoSIM_VERSION_MAJOR 1)set(JoSIM_VERSION_MINOR 0)# Ensure C++17set(CMAKE_CXX_STANDARD 17)set(CMAKE_CXX_STANDARD_REQUIRED ON)set(CMAKE_BUILD_TYPE debug)include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)message("Platform:  ${CMAKE_SYSTEM_NAME}")if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")    set(WINDOWS TRUE)    set(PLATFORM "win")	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/FL)	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/suitesparse)elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")    set(LINUX TRUE)    set(PLATFORM "linux")	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/${PLATFORM}/")    find_package(FLTK REQUIRED)    find_package(SuiteSparse REQUIRED)	include_directories(${FLTK_INCLUDE_DIR})	include_directories(${SUITESPARSE_INCLUDE_DIRS})elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")    set(MACOSX TRUE)    set(PLATFORM "mac")    find_package(FLTK REQUIRED)	include_directories(${SUITESPARSE_INCLUDE_DIRS})	include_directories(${FLTK_INCLUDE_DIR})endif()add_subdirectory(src)add_executable(JoSIM ${JOSIM_SRC})if(MACOSX)    target_link_libraries(JoSIM ${FLTK_LIBRARIES})    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libamd.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libbtf.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcamd.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libccolamd.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcholmod.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcolamd.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libcxsparse.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libklu.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libldl.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libspqr.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libsuitesparseconfig.a)    target_link_libraries(JoSIM ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PLATFORM}/libumfpack.a)elseif(LINUX)	target_link_libraries(JoSIM ${FLTK_LIBRARIES})	target_link_libraries(JoSIM ${SUITESPARSE_LIBRARIES})endif()

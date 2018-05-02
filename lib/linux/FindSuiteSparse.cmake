@@ -18,7 +18,7 @@
 # ``SUITESPARSE_FOUND``
 #   True if all components were found
 #
-# ``SUITESPARSE_INCLUDE_DIR``
+# ``SUITESPARSE_INCLUDE_DIRS``
 #   Path to the include directory for SuiteSparse header files
 #
 # ``SUITESPARSE_LIBRARIES``
@@ -41,15 +41,15 @@
 #   AMD_INCLUDE_DIR
 #   AMD_LIBRARY
 #
+# == Block Triangulation Form (BTF)
+#   BTF_FOUND
+#   BTF_INCLUDE_DIR
+#   BTF_LIBRARY
+#
 # == Constrained Approximate Minimum Degree (CAMD)
 #   CAMD_FOUND
 #   CAMD_INCLUDE_DIR
 #   CAMD_LIBRARY
-#
-# == Column Approximate Minimum Degree (COLAMD)
-#   COLAMD_FOUND
-#   COLAMD_INCLUDE_DIR
-#   COLAMD_LIBRARY
 #
 # Constrained Column Approximate Minimum Degree (CCOLAMD)
 # CCOLAMD_FOUND
@@ -61,6 +61,26 @@
 #   CHOLMOD_INCLUDE_DIR
 #   CHOLMOD_LIBRARY
 #
+# == Column Approximate Minimum Degree (COLAMD)
+#   COLAMD_FOUND
+#   COLAMD_INCLUDE_DIR
+#   COLAMD_LIBRARY
+#
+# == Concise Complex Sparse Matrix Package (CXPARSE)
+#   CXPARSE_FOUND
+#   CXPARSE_INCLUDE_DIR
+#   CXPARSE_LIBRARY
+#
+# == Sparse LU Factorization (KLU)
+#   KLU_FOUND
+#   KLU_INCLUDE_DIR
+#   KLU_LIBRARY
+#
+# == Very Concise LDL' Factorization (LDL)
+#   LDL_FOUND
+#   LDL_INCLUDE_DIR
+#   LDL_LIBRARY
+#
 # == Multifrontal Sparse QR (SuiteSparseQR)
 #   SUITESPARSEQR_FOUND
 #   SUITESPARSEQR_INCLUDE_DIR
@@ -70,6 +90,11 @@
 #   SUITESPARSE_CONFIG_FOUND
 #   SUITESPARSE_CONFIG_INCLUDE_DIR
 #   SUITESPARSE_CONFIG_LIBRARY
+#
+# == Sparse LU Factorization (UMFPACK)
+#   UMFPACK_FOUND
+#   UMFPACK_INCLUDE_DIR
+#   UMFPACK_LIBRARY
 #
 # Optional SuiteSparse Dependencies:
 #
@@ -179,10 +204,14 @@ endmacro()
 unset(SUITESPARSE_FOUND_REQUIRED_VARS)
 
 suitesparse_find_component(AMD REQUIRED FILES amd.h LIBRARIES amd)
+suitesparse_find_component(BTF REQUIRED FILES btf.h LIBRARIES btf)
 suitesparse_find_component(CAMD REQUIRED FILES camd.h LIBRARIES camd)
-suitesparse_find_component(COLAMD REQUIRED FILES colamd.h LIBRARIES colamd)
 suitesparse_find_component(CCOLAMD REQUIRED FILES ccolamd.h LIBRARIES ccolamd)
 suitesparse_find_component(CHOLMOD REQUIRED FILES cholmod.h LIBRARIES cholmod)
+suitesparse_find_component(COLAMD REQUIRED FILES colamd.h LIBRARIES colamd)
+suitesparse_find_component(CXPARSE REQUIRED FILES cs.h LIBRARIES cxsparse)
+suitesparse_find_component(KLU REQUIRED FILES klu.h LIBRARIES klu)
+suitesparse_find_component(LDL REQUIRED FILES ldl.h LIBRARIES ldl)
 suitesparse_find_component(SUITESPARSEQR REQUIRED FILES SuiteSparseQR.hpp LIBRARIES spqr)
 if (SUITESPARSEQR_FOUND)
   # SuiteSparseQR may be compiled with Intel Threading Building Blocks,
@@ -258,6 +287,7 @@ if (SUITESPARSE_CONFIG_FOUND)
   endif (NOT EXISTS ${SUITESPARSE_VERSION_FILE})
 endif (SUITESPARSE_CONFIG_FOUND)
 
+suitesparse_find_component(UMFPACK REQUIRED FILES umfpack.h LIBRARIES umfpack)
 suitesparse_find_component(METIS LIBRARIES metis)
 
 set(SUITESPARSE_FOUND TRUE)
@@ -270,11 +300,16 @@ endforeach(REQUIRED_VAR ${SUITESPARSE_FOUND_REQUIRED_VARS})
 if (SUITESPARSE_FOUND)
   list(APPEND SUITESPARSE_INCLUDE_DIRS
     ${AMD_INCLUDE_DIR}
+    ${BTF_INCLUDE_DIR}
     ${CAMD_INCLUDE_DIR}
     ${COLAMD_INCLUDE_DIR}
     ${CCOLAMD_INCLUDE_DIR}
     ${CHOLMOD_INCLUDE_DIR}
-    ${SUITESPARSEQR_INCLUDE_DIR})
+    ${CXPARSE_INCLUDE_DIR}
+    ${KLU_INCLUDE_DIR}
+    ${LDL_INCLUDE_DIR}
+    ${SUITESPARSEQR_INCLUDE_DIR}
+    ${UMFPACK_INCLUDE_DIR})
   # Handle config separately, as otherwise at least one of them will be set
   # to NOTFOUND which would cause any check on SUITESPARSE_INCLUDE_DIRS to fail.
   if (SUITESPARSE_CONFIG_FOUND)
@@ -289,8 +324,11 @@ if (SUITESPARSE_FOUND)
     ${CAMD_LIBRARY}
     ${COLAMD_LIBRARY}
     ${AMD_LIBRARY}
-    ${LAPACK_LIBRARIES}
-    ${BLAS_LIBRARIES})
+    ${CXPARSE_LIBRARY}
+    ${KLU_LIBRARY}
+    ${LDL_LIBRARY}
+    ${UMFPACK_LIBRARY}
+    ${BTF_LIBRARY})
   if (SUITESPARSE_CONFIG_FOUND)
     list(APPEND SUITESPARSE_LIBRARIES
       ${SUITESPARSE_CONFIG_LIBRARY})
