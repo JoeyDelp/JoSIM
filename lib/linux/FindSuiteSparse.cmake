@@ -327,8 +327,6 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
 endif (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
   SUITESPARSE_VERSION VERSION_EQUAL 3.4.0)
 
-suitesparse_reset_find_library_prefix()
-
 # Handle REQUIRED and QUIET arguments to FIND_PACKAGE
 include(FindPackageHandleStandardArgs)
 if (SUITESPARSE_FOUND)
