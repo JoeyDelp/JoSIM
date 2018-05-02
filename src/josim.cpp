@@ -26,7 +26,7 @@ bool DEVELOPER = false;
 int main(int argc, char *argv[]) {
     std::cout << std::endl;
     std::cout << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator" << std::endl;
-    std::cout << "Copyright (C) 2017 by Johannes Delport (jdelport@sun.ac.za)" << std::endl;
+    std::cout << "Copyright (C) 2018 by Johannes Delport (jdelport@sun.ac.za)" << std::endl;
     std::cout << std::endl;
     /*
         Parse all the input arguments. All options are switch based, final argument is netlist.

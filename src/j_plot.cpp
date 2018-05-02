@@ -92,7 +92,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							index1 = index_of(columnNames, columnLabel1);
 							trace.clear();
 							trace = x[index1];
-							if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+							if (std::find(columnNames.begin(), columnNames.end(), columnLabel2) != columnNames.end()) {
 								index2 = index_of(columnNames, columnLabel2);
 								std::transform(x[index1].begin(), x[index1].end(), x[index2].begin(), trace.begin(), std::minus<double>());
 								traceLabel.push_back(label);
@@ -100,10 +100,12 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							}
 							else {
 								/* Error this node was not found and can therefore not be printed */
+								plotting_errors(NO_SUCH_NODE_FOUND, tokens[3]);
 							}
 						}
 						else {
 							/* Error this node was not found and can therefore not be printed */
+							plotting_errors(NO_SUCH_NODE_FOUND, tokens[2]);
 						}
 					}
 				}

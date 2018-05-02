@@ -5,7 +5,7 @@ MESSAGE("=====================================================")
 # IdentIFy the platform type
 MESSAGE("Platform:  ${CMAKE_SYSTEM_NAME}")
 # IdentIFy the build type
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+IF(CMAKE_BUILD_TYPE MATCHES DEBUB)
     MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
 ELSE()
     # Default build type is release. Change to debug for debugging
@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     SET(WINDOWS TRUE)
     SET(PLATFORM "win")
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/FL)
+	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/Fl)
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/suitesparse)
 ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     SET(LINUX TRUE)

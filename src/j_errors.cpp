@@ -267,5 +267,10 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		std::cout << "W: This request to print will be ignored." << std::endl;
 		std::cout << std::endl;
 		break;
+	case NO_SUCH_NODE_FOUND:
+		std::cout << "W: Node " << whatPart << " was not found within this circuit." << std::endl;
+		std::cout << "W: Please check that the node exists. This request will be ignored." << std::endl;
+		std::cout << std::endl;
+		break; 
 	}
 }
