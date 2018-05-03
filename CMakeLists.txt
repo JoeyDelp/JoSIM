@@ -5,7 +5,7 @@ MESSAGE("=====================================================")
 # IdentIFy the platform type
 MESSAGE("Platform:  ${CMAKE_SYSTEM_NAME}")
 # IdentIFy the build type
-IF(CMAKE_BUILD_TYPE MATCHES DEBUB)
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
 ELSE()
     # Default build type is release. Change to debug for debugging
@@ -73,6 +73,8 @@ ELSEIF(LINUX)
 	TARGET_LINK_LIBRARIES(JoSIM ${FLTK_LIBRARIES})
 	TARGET_LINK_LIBRARIES(JoSIM ${SUITESPARSE_LIBRARIES})
 ENDIF()
+
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE})
 
 MESSAGE("=========================================================")
 MESSAGE("Configuration done.")
