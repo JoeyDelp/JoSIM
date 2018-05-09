@@ -144,6 +144,9 @@ double modifier(std::string value) {
 		misc_errors(STOD_ERROR, value);
 	}
 	switch(value.substr(sz)[0]) {
+		/* mega */
+	case 'X':
+		return number *= 1E6;
 		/* mega or mili */
 	case 'M':
         /* mega */

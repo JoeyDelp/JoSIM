@@ -28,13 +28,26 @@
 
 #include "klu.h"
 
-#include "Fl/Fl.H"
-#include "Fl/Fl_Box.H"
-#include "Fl/Fl_Window.H"
-#include "Fl/Fl_Chart.H"
-#include "Fl/Fl_Double_Window.H"
-#include "Fl/Fl_Group.H"
-#include "Fl/Fl_Scroll.H"
-#include "Fl/Fl_Scrollbar.H"
-#include "Fl/Fl_Button.H"
-#include "Fl/fl_draw.H"
+#ifdef WIN32
+#include "../Fl/Fl.H"
+#include "../Fl/Fl_Box.H"
+#include "../Fl/Fl_Window.H"
+#include "../Fl/Fl_Chart.H"
+#include "../Fl/Fl_Double_Window.H"
+#include "../Fl/Fl_Group.H"
+#include "../Fl/Fl_Scroll.H"
+#include "../Fl/Fl_Scrollbar.H"
+#include "../Fl/Fl_Button.H"
+#include "../Fl/fl_draw.H"
+#else
+#include <Fl/Fl.H>
+#include <Fl/Fl_Box.H>
+#include <Fl/Fl_Window.H>
+#include <Fl/Fl_Chart.H>
+#include <Fl/Fl_Double_Window.H>
+#include <Fl/Fl_Group.H>
+#include <Fl/Fl_Scroll.H>
+#include <Fl/Fl_Scrollbar.H>
+#include <Fl/Fl_Button.H>
+#include <Fl/fl_draw.H>
+#endif

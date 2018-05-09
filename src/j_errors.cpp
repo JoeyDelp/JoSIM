@@ -55,7 +55,7 @@ void error_handling(int errorCode) {
       std::cout << "E: Unknown option specified. Please refer to the help menu." << std::endl;
       exit(0);
     case CANNOT_OPEN_FILE:
-      std::cout << "E: Input file " << INPUT_PATH << " cannout be found or opened." << std::endl;
+      std::cout << "E: Input file " << INPUT_PATH << " cannot be found or opened." << std::endl;
       std::cout << "E: Please ensure that the file exists and can be opened." << std::endl;
       exit(0);
   }
@@ -272,5 +272,15 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		std::cout << "W: Please check that the node exists. This request will be ignored." << std::endl;
 		std::cout << std::endl;
 		break; 
+	case TOO_MANY_NODES:
+		std::cout << "W: Too many nodes specified to plot in line " << whatPart << "." << std::endl;
+		std::cout << "W: Please only specify 2 nodes. Anything more will be ignored." << std::endl;
+		std::cout << std::endl;
+		break;
+	case BOTH_ZERO:
+		std::cout << "W: Both nodes cannot be grounded. This command " << whatPart << " not plot anything." << std::endl;
+		std::cout << "W: Please specify atleast one non grounded node. This command will be ignored." << std::endl;
+		std::cout << std::endl;
+		break;
 	}
 }

@@ -127,6 +127,7 @@ void transient_simulation() {
 				simJunctions[j].positiveNodeRow = rowNames[simJunctions[j].vPositive];
 				simJunctions[j].negativeNodeRow = rowNames[simJunctions[j].vNegative];
 			}
+			junctionCurrents[j].push_back(0);
 		}
 		else if (j[2] == 'L') {
 			currentLabel = j.substr(2);

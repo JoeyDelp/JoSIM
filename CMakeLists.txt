@@ -1,11 +1,16 @@
+# Project name
+PROJECT(JoSIM)
+MESSAGE("Current CMAKE Source dir: ${CMAKE_CURRENT_BINARY_DIR}")
 # Welcoming MESSAGE
 MESSAGE("Welcome to the JoSIM CMake file.")
 MESSAGE("Please wait while we SET a few configuration options.")
 MESSAGE("=====================================================")
-# IdentIFy the platform type
-MESSAGE("Platform:  ${CMAKE_SYSTEM_NAME}")
+# Identify the platform type
+MESSAGE("Platform: ${CMAKE_SYSTEM_NAME}")
 # IdentIFy the build type
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG 
+    OR CMAKE_BUILD_TYPE MATCHES Debug
+    OR CMAKE_BUILD_TYPE MATCHES debug)
     MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
 ELSE()
     # Default build type is release. Change to debug for debugging
@@ -14,25 +19,24 @@ ELSE()
 ENDIF()
 # SpecIFy the minimum version for CMake
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
-# Project name
-PROJECT(JoSIM)
 # The version number.
 SET(JoSIM_VERSION_MAJOR 1)
 SET(JoSIM_VERSION_MINOR 0)
 # Ensure C++17
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
-# Include directory for JoSIM header files
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     SET(WINDOWS TRUE)
     SET(PLATFORM "win")
+    MESSAGE("Platform: ${PLATFORM}")
+    MESSAGE("=====================================================")
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/Fl)
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/suitesparse)
 ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     SET(LINUX TRUE)
     SET(PLATFORM "linux")
+    MESSAGE("Platform: ${PLATFORM}")
+    MESSAGE("=====================================================")
     # SpecIFy path to custom FindSuiteSparse.cmake file
     SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/${PLATFORM}/")
     FIND_PACKAGE(FLTK REQUIRED)
@@ -42,17 +46,19 @@ ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     SET(MACOSX TRUE)
     SET(PLATFORM "mac")
+    MESSAGE("Platform: ${PLATFORM}")
+    MESSAGE("=====================================================")
     FIND_PACKAGE(FLTK REQUIRED)
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/suitesparse)
 	INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
 ENDIF()
-
+# Include directory for JoSIM header files
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/JoSIM)
 # Add the source files for JoSIM
 ADD_SUBDIRECTORY(src)
 
 # Add the source to the executable for compilation
 ADD_EXECUTABLE(JoSIM ${JOSIM_SRC})
-
 # IF Darwin system FLTK can be installed from source and found but SuiteSparse is harder.
 # We therefore provide SuiteSparse libraries as Darwin is not as fragmented and libraries can be precompiled
 IF(MACOSX)
@@ -73,9 +79,9 @@ ELSEIF(LINUX)
 	TARGET_LINK_LIBRARIES(JoSIM ${FLTK_LIBRARIES})
 	TARGET_LINK_LIBRARIES(JoSIM ${SUITESPARSE_LIBRARIES})
 ENDIF()
-
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE})
-
-MESSAGE("=========================================================")
+SET(EXECUTABLE_NAME ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE})
+MESSAGE("Setting executable name to: ${EXECUTABLE_NAME}")
+MESSAGE("=====================================================")
 MESSAGE("Configuration done.")
 MESSAGE("Now run make")
