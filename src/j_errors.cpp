@@ -1,10 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_errors.hpp"
-#else
 #include "j_errors.hpp"
-#endif
+
 
 /*
   Function that manages different error codes. This function will be huge.

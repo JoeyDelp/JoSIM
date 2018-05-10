@@ -104,7 +104,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;$(SolutionDir)..\..\include\suitesparse;$(SolutionDir)..\..\include\FL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;$(SolutionDir)..\..\include\JoSIM;$(SolutionDir)..\..\include\suitesparse;$(SolutionDir)..\..\include\FL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;USE_VENDOR_BLAS;WIN32</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -142,7 +142,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;$(SolutionDir)..\..\include\suitesparse;$(SolutionDir)..\..\include\FL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..;$(SolutionDir)..\..\include\;$(SolutionDir)..\..\include\JoSIM;$(SolutionDir)..\..\include\suitesparse;$(SolutionDir)..\..\include\FL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;USE_VENDOR_BLAS;WIN32</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -168,17 +168,17 @@
     <ClCompile Include="..\j_simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\j_components.hpp" />
-    <ClInclude Include="..\..\include\j_errors.hpp" />
-    <ClInclude Include="..\..\include\j_globals.hpp" />
-    <ClInclude Include="..\..\include\j_input.hpp" />
-    <ClInclude Include="..\..\include\j_matrix.hpp" />
-    <ClInclude Include="..\..\include\j_misc.hpp" />
-    <ClInclude Include="..\..\include\j_models.hpp" />
-    <ClInclude Include="..\..\include\j_plot.hpp" />
-    <ClInclude Include="..\..\include\j_simulation.hpp" />
-    <ClInclude Include="..\..\include\j_std_include.hpp" />
-    <ClInclude Include="..\..\include\j_output.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_components.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_errors.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_globals.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_input.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_matrix.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_misc.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_models.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_output.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_plot.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_simulation.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_std_include.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -47,37 +47,37 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\j_components.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_components.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_errors.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_errors.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_globals.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_globals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_input.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_matrix.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_matrix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_misc.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_misc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_models.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_models.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_simulation.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_output.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_std_include.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_plot.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_plot.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_simulation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\j_output.hpp">
+    <ClInclude Include="..\..\include\JoSIM\j_std_include.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

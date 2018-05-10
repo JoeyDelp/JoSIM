@@ -1,10 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_components.hpp"
-#else
 #include "j_components.hpp"
-#endif
+
 
 /*
   Count the components

@@ -1,10 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_misc.hpp"
-#else
 #include "j_misc.hpp"
-#endif
+
 
 /*
   Returns the file part of a path if a path is present else returns entire path (file)

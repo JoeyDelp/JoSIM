@@ -2,7 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #pragma once
 #ifdef WIN32
-#include "include/j_std_include.hpp"
+#include "j_std_include.hpp"
 #else
 #include "j_std_include.hpp"
 #endif

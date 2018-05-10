@@ -1,10 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_matrix.hpp"
-#else
 #include "j_matrix.hpp"
-#endif
+
 
 std::unordered_map<std::string, std::unordered_map<std::string, double>> bMatrixConductanceMap;
 std::unordered_map<std::string, double> inductanceMap;

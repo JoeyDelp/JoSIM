@@ -1,10 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_input.hpp"
-#else
 #include "j_input.hpp"
-#endif
+
 
 /* Input File Constructor*/
 InputFile::InputFile(std::string iFileName) {

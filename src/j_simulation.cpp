@@ -1,10 +1,6 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_simulation.hpp"
-#else
 #include "j_simulation.hpp"
-#endif
 
 trans_sim tsim;
 
