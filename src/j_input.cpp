@@ -135,7 +135,10 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 							tokens[0] = tokens[0] + "_" + label;
 							if (std::find(iFile.subcircuitSegments[subckt].io.begin(), iFile.subcircuitSegments[subckt].io.end(), tokens[1]) != iFile.subcircuitSegments[subckt].io.end()) {
 								for (auto k : iFile.subcircuitSegments[subckt].io) {
-									if (k == tokens[1]) tokens[1] = io[index_of(iFile.subcircuitSegments[subckt].io, k)];
+									if (k == tokens[1]) {
+										 tokens[1] = io[index_of(iFile.subcircuitSegments[subckt].io, k)];
+										 break;
+									}
 								}
 								if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "_" + label;
 							}

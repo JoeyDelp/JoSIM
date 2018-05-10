@@ -9,11 +9,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JoSIM_mac_Debug",
-            "args": ["-g", "test/simdeck.js"],
+            "args": ["-g", "-v", "test/simdeck.js"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": false,
+            "externalConsole": true,
             "MIMode": "lldb",
             "miDebuggerPath": "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-mi"
         }
