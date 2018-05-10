@@ -18,7 +18,7 @@ bool OUTPUT_SPECIFIED = false;
 bool OUTPUT_LEGACY = false;
 bool OUTPUT_LEGACY_SPECIFIED = false;
 bool PLOTTING = false;
-bool DEVELOPER = true;
+bool DEVELOPER = false;
 
 int main(int argc, char *argv[]) {
     std::cout << std::endl;
