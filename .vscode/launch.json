@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JoSIM_mac_Debug",
-            "args": ["-g", "-v", "test/simdeck.js"],
+            "args": ["-g", "-m", "output.dat", "test/simdeck.js"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

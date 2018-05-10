@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 					if ((i + 1) != (argc - 1)) {
 						OUTPUT_LEGACY_PATH = argv[i + 1];
 						OUTPUT_LEGACY_FILE = file_from_path(OUTPUT_LEGACY_PATH);
-						if (!has_suffix(OUTPUT_LEGACY_FILE, ".csv")) {
+						if (!has_suffix(OUTPUT_LEGACY_FILE, ".dat")) {
 							error_handling(OUTPUT_LEGACY_FILE_ERROR);
 						}
 						std::cout << "Path specified for output file: " << OUTPUT_LEGACY_PATH << std::endl;
