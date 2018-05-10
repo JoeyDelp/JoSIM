@@ -13,7 +13,6 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 	int index1 = -1;
 	int index2 = -1;
 	for (auto string : controlPart) {
-		#pragma region PRINT
 		if (string.find("PRINT") != std::string::npos) {
 			tokens = tokenize_space(string);
 			/* Print the identified node voltage */
@@ -239,8 +238,6 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 				if (VERBOSE) plotting_errors(NO_SUCH_PLOT_TYPE, tokens[1]);
 			}
 		}
-		#pragma endregion PRINT
-		#pragma region PLOT
 		/****************************************************/
 		/*						PLOT						*/
 		/****************************************************/
@@ -258,7 +255,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						if(tokens.size() > 2) {
 							plotting_errors(TOO_MANY_NODES, string);
 						}
-						/* Ensure node is not ground */
+						/* Ensure node 1 is not ground */
 						if(tokens[0] == "0" || tokens[0] == "GND") {
 							if(tokens[1] == "0" || tokens[1] == "GND") {
 								plotting_errors(BOTH_ZERO, string);
@@ -275,34 +272,79 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 								columnLabel1 = "C_NV" + tokens[1];
 								/* If this is a node voltage */
 								if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-									index1 = index_of(columnNames, label);
-									label = "NODE VOLTAGE " + nodesToPlot;
+									index1 = index_of(columnNames, columnLabel1);
+									trace.clear();
+									trace = x[index1];
+									for (int m = 0; m < trace.size(); m++) {
+										trace[m] = 0.0;
+									}
+									std::transform(trace.begin(), trace.end(), x[index1].begin(), trace.begin(), std::minus<double>());
+									traceLabel.push_back(label);
+									traceData.push_back(trace);
+								}
+								/* Else node not found */
+								else {
+									plotting_errors(NO_SUCH_NODE_FOUND, string);
+								}
+							}
+						}
+						/* Check if node 2 is ground */
+						else {
+							if(tokens[1] == "0" || tokens[1] == "GND") {
+								if (tokens[0][0] == 'X') { 
+									labeltokens = tokenize_delimeter(tokens[0], "_");
+									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+									tokens[0] = labeltokens[0];
+									for (int n = 1; n < labeltokens.size(); n++) {
+										tokens[0] = tokens[0] + "_" + labeltokens[n];
+									}
+								}
+								columnLabel1 = "C_NV" + tokens[0];
+								if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+									index1 = index_of(columnNames, columnLabel1);
 									traceLabel.push_back(label);
 									traceData.push_back(x[index1]);
 								}
-								/* Else it might be device voltage */
 								else {
-									columnLabel1 = "C_N" + tokens[1];
-									if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-										index1 = index_of(columnNames, label);
-										label = "NODE VOLTAGE " + nodesToPlot;
-										traceLabel.push_back(label);
-										traceData.push_back(x[index1]);
+									plotting_errors(NO_SUCH_NODE_FOUND, string);
+								}
+							}
+							/* Neither nodes are ground */
+							else {
+								label = "NODE VOLTAGE " + tokens[0] + " to " + tokens[1];
+								columnLabel1 = "C_NV" + tokens[0];
+								columnLabel2 = "C_NV" + tokens[1];
+								if (tokens[0][0] == 'X') {
+									labeltokens = tokenize_delimeter(tokens[0], "_");
+									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+									tokens[0] = labeltokens[0];
+									for (int n = 1; n < labeltokens.size(); n++) {
+										tokens[0] = tokens[0] + "_" + labeltokens[n];
 									}
-									/* It's neither of the two */
+								}
+								if (tokens[1][0] == 'X') {
+									labeltokens = tokenize_delimeter(tokens[1], "_");
+									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+									tokens[1] = labeltokens[0];
+									for (int n = 1; n < labeltokens.size(); n++) {
+										tokens[1] = tokens[1] + "_" + labeltokens[n];
+									}
+								}
+								if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+									index1 = index_of(columnNames, columnLabel1);
+									trace.clear();
+									trace = x[index1];
+									if (std::find(columnNames.begin(), columnNames.end(), columnLabel2) != columnNames.end()) {
+										index2 = index_of(columnNames, columnLabel2);
+										std::transform(x[index1].begin(), x[index1].end(), x[index2].begin(), trace.begin(), std::minus<double>());
+										traceLabel.push_back(label);
+										traceData.push_back(trace);
+									}
 									else {
 										/* Error this node was not found and can therefore not be printed */
 										plotting_errors(NO_SUCH_NODE_FOUND, string);
 									}
-								}
-							}
 						}
-						else {
-							if(tokens[1] == "0" || tokens[1] == "GND") {
-
-							}
-							else {
-
 							}
 						}
 					}
@@ -362,7 +404,6 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 				}
 			}
 		}
-		#pragma endregion PLOT 
 	}
 }
 /*

@@ -292,6 +292,7 @@ __pycache__/
 
 # Visual Studio Code
 test/simdeck.js
+test/command_test.js
 build
 .vscode/
 .vscode/launch.json

@@ -63,7 +63,7 @@ void transient_simulation() {
 	/* Standard vector */
 	std::vector<double> lhsValues(Nsize, 0.0);
 	for (int m = 0; m < Nsize; m++) {
-		x.push_back(std::vector<double>(tsim.simsize(), 0.0));
+		x.push_back(std::vector<double>(tsim.simsize()-1, 0.0));
 	}
 	/* Perform time loop */
 	std::vector<double> RHS(columnNames.size(), 0.0), LHS_PRE, inductanceVector(rowNames.size()), iPNC(rowNames.size()), iNNC(rowNames.size()), iCNC(rowNames.size());
