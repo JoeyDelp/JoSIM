@@ -296,3 +296,6 @@ test/command_test.js
 build
 .vscode/
 .vscode/launch.json
+
+*.csv
+*.dat
