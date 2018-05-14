@@ -25,6 +25,7 @@ InputFile::InputFile(std::string iFileName) {
 */
 void InputFile::circuit_to_segments(InputFile& iFile) {
   bool startCkt = false;
+	bool controlSection = false;
   std::string subcktName;
   int posLastSubCkt = -1;
   int counter = 0;
@@ -67,11 +68,22 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
     if (counter == (posLastSubCkt + 1)) startCkt = true;
     if(startCkt) {
       if (!starts_with(i, '*')) {
-        if(!i.empty()) if(!starts_with(i, '.')) maincircuitSegment.push_back(i);
-		/* Identify the controls in the main part of the circuit */
-        if(starts_with(i, '.')) if(i.find("END") == std::string::npos) if(i.find("MODEL") == std::string::npos) controlPart.push_back(i);
-		/* Identify the models in the main part of the circuit */
-		if (starts_with(i, '.')) if (i.find("END") == std::string::npos) if (i.find("MODEL") != std::string::npos) maincircuitModels.push_back(i);
+				if(starts_with(i, '.')) if(i.find("END") == std::string::npos) if(i.find("CONTROL") != std::string::npos) controlSection = true;
+				if(!controlSection) {	
+					if(!i.empty()) if(!starts_with(i, '.')) maincircuitSegment.push_back(i);
+					/* Identify the controls in the main part of the circuit */
+        	if(starts_with(i, '.')) if(i.find("END") == std::string::npos) if(i.find("MODEL") == std::string::npos) controlPart.push_back(i);
+					/* Identify the models in the main part of the circuit */
+					if (starts_with(i, '.')) if (i.find("END") == std::string::npos) if (i.find("MODEL") != std::string::npos) maincircuitModels.push_back(i);
+					if (starts_with(i, '.')) if (i.find("ENDC") != std::string::npos) controlSection = false;
+				}
+				else {
+					if(i.find("CONTROL") == std::string::npos) {
+						if(i.find("END") == std::string::npos) if(i.find("MODEL") == std::string::npos) controlPart.push_back(i);
+						if (i.find("END") == std::string::npos) if (i.find("MODEL") != std::string::npos) maincircuitModels.push_back(i);
+						if (starts_with(i, '.')) if (i.find("ENDC") != std::string::npos) controlSection = false;
+					}
+				}
       }
     }
     counter++;

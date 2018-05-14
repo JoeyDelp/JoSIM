@@ -146,6 +146,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 				}
 				else {
 					/* Error this node was not found and can therefore not be printed */
+					plotting_errors(NO_SUCH_DEVICE_FOUND, tokens[2]);
 				}
 			}
 			/* Print the identified device voltage */
@@ -393,14 +394,84 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					}
 				}
 				else if (tokens[k][0] == 'I') {
+					/* Identify part between brackets */
+					nodesToPlot = tokens[k].substr(2);
+					nodesToPlot = nodesToPlot.substr(0, nodesToPlot.size() - 1);
+					label = "NOTHING";
+					if (nodesToPlot[0] == 'X') {
+						labeltokens = tokenize_delimeter(nodesToPlot, "_");
+						std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+						nodesToPlot = labeltokens[0];
+						for (int n = 1; n < labeltokens.size(); n++) {
+							nodesToPlot = nodesToPlot + "_" + labeltokens[n];
+						}
+					}
+					std::vector<double> trace;
+					for (auto i : elements) {
+						if (i.label == nodesToPlot) {
+							if (nodesToPlot[0] == 'R') {
+								if (i.VPindex == -1) trace = x[i.VNindex];
+								else if (i.VNindex == -1) trace = x[i.VPindex];
+								else std::transform(x[i.VPindex].begin(), x[i.VPindex].end(), x[i.VNindex].begin(), trace.begin(), std::minus<double>());
+								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
+								label = "DEVICE CURRENT " + i.label;
+								traceLabel.push_back(label);
+								traceData.push_back(trace);
+							}
+							else if (nodesToPlot[0] == 'C') {
 
+							}
+							else if (nodesToPlot[0] == 'L') {
+								if (i.CURindex == -1) simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, i.label);
+								else trace = x[i.CURindex];
+								label = "DEVICE CURRENT " + i.label;
+								traceLabel.push_back(label);
+								traceData.push_back(trace);
+							}
+							else if (nodesToPlot[0] == 'I') {
+								label = "DEVICE CURRENT " + i.label;
+								traceLabel.push_back(label);
+								traceData.push_back(sources[i.label]);
+							}
+							else if (nodesToPlot[0] == 'V') {
+								if (VERBOSE) simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
+							}
+							else if (nodesToPlot[0] == 'B') {
+								trace = junctionCurrents["R_" + i.label];
+								label = "DEVICE CURRENT " + i.label;
+								traceLabel.push_back(label);
+								traceData.push_back(trace);
+							}
+							else plotting_errors(NO_SUCH_DEVICE_FOUND, string);
+						}
+					}
+					if (label == "NOTHING") {
+						plotting_errors(NO_SUCH_DEVICE_FOUND, string);
+					}
 				}
 				else if (tokens[k][0] == 'P') {
-
-				}
-				else {
-					/* Invalid plot type identified */
-					plotting_errors(NO_SUCH_PLOT_TYPE, tokens[k]);
+					/* Identify part between brackets */
+					nodesToPlot = tokens[k].substr(2);
+					nodesToPlot = nodesToPlot.substr(0, nodesToPlot.size() - 1);
+					label = "PHASE " + nodesToPlot;
+					if (nodesToPlot[0] == 'X') {
+						labeltokens = tokenize_delimeter(nodesToPlot, "_");
+						std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+						nodesToPlot = labeltokens[0];
+						for (int n = 1; n < labeltokens.size(); n++) {
+							nodesToPlot = nodesToPlot + "_" + labeltokens[n];
+						}
+					}
+					columnLabel1 = "C_P" + nodesToPlot;
+					if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
+						index1 = index_of(columnNames, columnLabel1);
+						traceLabel.push_back(label);
+						traceData.push_back(x[index1]);
+					}
+					else {
+						/* Error this node was not found and can therefore not be printed */
+						plotting_errors(NO_SUCH_DEVICE_FOUND, nodesToPlot);
+					}
 				}
 			}
 		}

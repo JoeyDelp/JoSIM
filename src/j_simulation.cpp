@@ -7,21 +7,21 @@ trans_sim tsim;
 void identify_simulation(InputFile& iFile) {
 	std::string simline;
 	for (auto i : iFile.controlPart) {
-		if (i.find(".TRAN") != std::string::npos) {
+		if (i.find("TRAN") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = TRANSIENT;
 			break;
 		}
-		if (i.find(".DC") != std::string::npos) {
+		if (i.find("DC") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = DC;
 			break;
 		}
-		if (i.find(".AC") != std::string::npos) {
+		if (i.find("AC") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = AC;
 		}
-		if (i.find(".PHASE") != std::string::npos) {
+		if (i.find("PHASE") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = PHASE;
 		}

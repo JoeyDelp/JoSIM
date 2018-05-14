@@ -5,17 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb) Launch",
-            "type": "cppdbg",
+            "name": "(lldb) JoSIM Debug",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/JoSIM_mac_Debug",
-            "args": ["-g", "-o", "-m", "test/dcsfq_jtl_sink.js"],
-            "stopAtEntry": false,
+            "args": ["-g", "test/command_test.js"],
+            //"stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb",
-            "miDebuggerPath": "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-mi"
+            //"environment": [],
+            //"externalConsole": false,
+            //"MIMode": "lldb",
+            //"miDebuggerPath": "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-mi"
+            "MIMode" : "lldb",
+            "miDebuggerPath" : "/usr/local/Cellar/llvm/6.0.0/bin/lldb"
         }
     ]
 }
