@@ -1,12 +1,8 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_std_include.hpp"
-#else
 #include "j_std_include.hpp"
-#endif
 
-#define VERSION 0.5
+#define VERSION 1.0.1
 
 #ifndef WIN32
     #define EXEC josim.exe
@@ -26,7 +22,7 @@ bool DEVELOPER = false;
 int main(int argc, char *argv[]) {
     std::cout << std::endl;
     std::cout << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator" << std::endl;
-    std::cout << "Copyright (C) 2017 by Johannes Delport (jdelport@sun.ac.za)" << std::endl;
+    std::cout << "Copyright (C) 2018 by Johannes Delport (jdelport@sun.ac.za)" << std::endl;
     std::cout << std::endl;
     /*
         Parse all the input arguments. All options are switch based, final argument is netlist.
@@ -112,7 +108,7 @@ int main(int argc, char *argv[]) {
 					if ((i + 1) != (argc - 1)) {
 						OUTPUT_LEGACY_PATH = argv[i + 1];
 						OUTPUT_LEGACY_FILE = file_from_path(OUTPUT_LEGACY_PATH);
-						if (!has_suffix(OUTPUT_LEGACY_FILE, ".csv")) {
+						if (!has_suffix(OUTPUT_LEGACY_FILE, ".dat")) {
 							error_handling(OUTPUT_LEGACY_FILE_ERROR);
 						}
 						std::cout << "Path specified for output file: " << OUTPUT_LEGACY_PATH << std::endl;

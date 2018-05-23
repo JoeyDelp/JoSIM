@@ -1,10 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_errors.hpp"
-#else
 #include "j_errors.hpp"
-#endif
+
 
 /*
   Function that manages different error codes. This function will be huge.
@@ -55,7 +52,7 @@ void error_handling(int errorCode) {
       std::cout << "E: Unknown option specified. Please refer to the help menu." << std::endl;
       exit(0);
     case CANNOT_OPEN_FILE:
-      std::cout << "E: Input file " << INPUT_PATH << " cannout be found or opened." << std::endl;
+      std::cout << "E: Input file " << INPUT_PATH << " cannot be found or opened." << std::endl;
       std::cout << "E: Please ensure that the file exists and can be opened." << std::endl;
       exit(0);
   }
@@ -267,5 +264,45 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		std::cout << "W: This request to print will be ignored." << std::endl;
 		std::cout << std::endl;
 		break;
+	case NO_SUCH_NODE_FOUND:
+		std::cout << "W: Node " << whatPart << " was not found within this circuit." << std::endl;
+		std::cout << "W: Please check that the node exists. This request will be ignored." << std::endl;
+		std::cout << std::endl;
+		break; 
+	case TOO_MANY_NODES:
+		std::cout << "W: Too many nodes specified to plot in line " << whatPart << "." << std::endl;
+		std::cout << "W: Please only specify 2 nodes. Anything more will be ignored." << std::endl;
+		std::cout << std::endl;
+		break;
+	case BOTH_ZERO:
+		std::cout << "W: Both nodes cannot be grounded. This command " << whatPart << " not plot anything." << std::endl;
+		std::cout << "W: Please specify atleast one non grounded node. This command will be ignored." << std::endl;
+		std::cout << std::endl;
+		break;
+	}
+}
+/* Parsing errors */
+void parsing_errors(int errorCode, std::string whatPart) {
+	switch(errorCode) {
+		case EXPRESSION_ARLEADY_DEFINED:
+			std::cout << "W: Expression for " << whatPart << " has already been defined. Overwriting previous expression." << std::endl;
+			std::cout << "W: If this was unintentional, please revise netlist." << std::endl;
+			std::cout << std::endl;
+			break;
+		case UNIDENTIFIED_PART:
+			std::cout << "W: Unknown function/variable defined. What is " << whatPart << "?" << std::endl;
+			std::cout << "W: Please ensure variables are declared before being used." << std::endl;
+			std::cout << std::endl;
+			break;
+		case MISMATCHED_PARENTHESIS:
+			std::cout << "E: Mismatched parenthesis in expression: " << whatPart << std::endl;
+			std::cout << "E: Please correct the expression before trying again." << std::endl;
+			std::cout << std::endl;
+			exit(0);
+		case INVALID_RPN:
+			std::cout << "E: Invalid RPN detected. This might be an algorithm fault or an incorrect expression parse." << std::endl;
+			std::cout << "E: The expression in question: " << whatPart << std::endl;
+			std::cout << std::endl;
+			exit(0);
 	}
 }
