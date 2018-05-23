@@ -1,31 +1,27 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifdef WIN32
-#include "include/j_simulation.hpp"
-#else
 #include "j_simulation.hpp"
-#endif
 
 trans_sim tsim;
 
 void identify_simulation(InputFile& iFile) {
 	std::string simline;
 	for (auto i : iFile.controlPart) {
-		if (i.find(".TRAN") != std::string::npos) {
+		if (i.find("TRAN") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = TRANSIENT;
 			break;
 		}
-		if (i.find(".DC") != std::string::npos) {
+		if (i.find("DC") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = DC;
 			break;
 		}
-		if (i.find(".AC") != std::string::npos) {
+		if (i.find("AC") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = AC;
 		}
-		if (i.find(".PHASE") != std::string::npos) {
+		if (i.find("PHASE") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = PHASE;
 		}
@@ -52,7 +48,7 @@ void identify_simulation(InputFile& iFile) {
 	case DC:
 	case AC:
 	case PHASE:
-	case NONE:
+	case NONE_SPECIFIED:
 		control_errors(NO_SIM, "");
 	}
 }
@@ -67,7 +63,7 @@ void transient_simulation() {
 	/* Standard vector */
 	std::vector<double> lhsValues(Nsize, 0.0);
 	for (int m = 0; m < Nsize; m++) {
-		x.push_back(std::vector<double>(tsim.simsize(), 0.0));
+		x.push_back(std::vector<double>(tsim.simsize()-1, 0.0));
 	}
 	/* Perform time loop */
 	std::vector<double> RHS(columnNames.size(), 0.0), LHS_PRE, inductanceVector(rowNames.size()), iPNC(rowNames.size()), iNNC(rowNames.size()), iCNC(rowNames.size());
@@ -127,6 +123,7 @@ void transient_simulation() {
 				simJunctions[j].positiveNodeRow = rowNames[simJunctions[j].vPositive];
 				simJunctions[j].negativeNodeRow = rowNames[simJunctions[j].vNegative];
 			}
+			junctionCurrents[j].push_back(0);
 		}
 		else if (j[2] == 'L') {
 			currentLabel = j.substr(2);

@@ -31,7 +31,7 @@ std::vector<std::string> tokenize_delimeter(std::string c, std::string d);
 /*
   Returns the number of occurences of a value within a map (not the key)
 */
-int map_value_count(std::map<std::string, int> map, int value);
+int map_value_count(std::unordered_map<std::string, int> map, int value);
 /*
   Returns the double value of a given string with the correct modifier
 */
@@ -79,4 +79,14 @@ std::map<B, A> flip_map(const std::unordered_map<A, B> &src)
 	std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()),
 		flip_pair<A, B>);
 	return dst;
+}
+/*
+Template function that does to_string but with precision
+*/
+template <typename T>
+std::string precise_to_string(const T a_value, const int n = 30)
+{
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(n) << a_value;
+    return out.str();
 }

@@ -7,7 +7,7 @@
 #define DC 1
 #define AC 2
 #define PHASE 3
-#define NONE 4
+#define NONE_SPECIFIED 4
 
 /* Transient analysis simulation object*/
 class trans_sim {
