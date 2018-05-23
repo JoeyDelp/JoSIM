@@ -10,14 +10,16 @@ public:
 	std::vector<std::string> lines;
 };
 
+extern std::unordered_map<std::string, double> parVal;
+
 /* Input File Object Class */
 class InputFile {
   std::vector<std::string> lines;
   public:
 	std::vector<std::string> maincircuitSegment, controlPart, maincircuitModels;
-	std::map<std::string, std::vector<std::string>> subcircuitModels;
-	std::map<std::string, Subcircuit> subcircuitSegments;
-	std::map<std::string, int> subCircuitComponentCount, subCircuitJJCount, subCircuitContainsSubCicuit;
+	std::unordered_map<std::string, std::vector<std::string>> subcircuitModels;
+	std::unordered_map<std::string, Subcircuit> subcircuitSegments;
+	std::unordered_map<std::string, int> subCircuitComponentCount, subCircuitJJCount, subCircuitContainsSubCicuit;
 	int subCircuitCount, jjCount, componentCount, allCounted, circuitComponentCount, circuitJJCount;
 	int simulationType = 4;
   /*

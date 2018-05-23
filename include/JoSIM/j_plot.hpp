@@ -6,7 +6,6 @@
 #else
 #include "j_std_include.hpp"
 #endif
-
 /*
 	Determine traces to plot from the control part of the main circuit
 */

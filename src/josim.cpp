@@ -2,8 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_std_include.hpp"
 
-
-#define VERSION 0.5
+#define VERSION 1.0.1
 
 #ifndef WIN32
     #define EXEC josim.exe

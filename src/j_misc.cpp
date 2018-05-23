@@ -122,7 +122,7 @@ std::vector<std::string> tokenize_delimeter(std::string c, std::string d) {
 /*
   Count values equal to specified value in given map
 */
-int map_value_count(std::map<std::string, int> map, int value) {
+int map_value_count(std::unordered_map<std::string, int> map, int value) {
   int counter = 0;
   for (auto i : map) {
     if(i.second == value) counter++;
@@ -246,7 +246,8 @@ std::vector<double> function_parse(std::string str) {
 			else timesteps.push_back(modifier(tokens[i]));
 		}
 		for (int i = 1; i < tokens.size(); i = i + 2) {
-			values.push_back(modifier(tokens[i]));
+			if(parVal.find(tokens[i]) != parVal.end()) values.push_back(parVal[tokens[i]]);
+			else values.push_back(modifier(tokens[i]));
 		}
 		if (timesteps.size() < values.size()) function_errors(TOO_FEW_TIMESTEPS, std::to_string(timesteps.size()) + " timesteps & " + std::to_string(timesteps.size()) + " values");
 		if (timesteps.size() > values.size()) function_errors(TOO_FEW_VALUES, std::to_string(timesteps.size()) + " timesteps & " + std::to_string(timesteps.size()) + " values");

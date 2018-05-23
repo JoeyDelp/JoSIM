@@ -90,7 +90,13 @@
 #define NO_SUCH_NODE_FOUND 3
 #define TOO_MANY_NODES 4
 #define BOTH_ZERO 5
-
+/*
+	Parsing error codes
+*/
+#define EXPRESSION_ARLEADY_DEFINED 0
+#define UNIDENTIFIED_PART 1
+#define MISMATCHED_PARENTHESIS 2
+#define INVALID_RPN 3
 /*
 	Function that manages different error codes. This function will be huge.
 */
@@ -127,3 +133,7 @@ void simulation_errors(int errorCode, std::string whatPart);
 	Plotting error function
 */
 void plotting_errors(int errorCode, std::string whatPart);
+/*
+	Parsing error function
+*/
+void parsing_errors(int errorCode, std::string whatPart);

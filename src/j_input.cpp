@@ -2,7 +2,6 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_input.hpp"
 
-
 /* Input File Constructor*/
 InputFile::InputFile(std::string iFileName) {
   std::string line;
@@ -11,7 +10,8 @@ InputFile::InputFile(std::string iFileName) {
     while(!ifile.eof()) {
       getline(ifile, line);
       std::transform(line.begin(), line.end(), line.begin(), toupper);
-      lines.push_back(line);
+			if (!line.empty() && line.back() == '\r') line.pop_back();
+      if (!line.empty()) lines.push_back(line);
     }
   }
   else {
@@ -19,6 +19,8 @@ InputFile::InputFile(std::string iFileName) {
     exit(0);
   }
 }
+
+std::unordered_map<std::string, double> parVal;
 
 /*
   Split the circuit into subcircuits, main circuit and identify circuit stats
@@ -32,21 +34,26 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
   /* Identify the subcircuits in the circuit and push them to a map of subcircuits*/
   counter = 0;
   subCircuitCount = 0;
+	std::vector<std::string> parameterTokens;
   for(auto i : lines) {
     if (!starts_with(i, '*')) {
 		std::vector<std::string> tokens;
       if(i.find(".SUBCKT") != std::string::npos) {
-		  tokens = tokenize_space(i);
-		  subcktName = tokens[1];
-		  for (int j = 2; j < tokens.size(); j++) {
-			  subcircuitSegments[subcktName].io.push_back(tokens[j]);
-		  }
-		  startCkt = true;
-        subCircuitCount++;
+				tokens = tokenize_space(i);
+				subcktName = tokens[1];
+				for (int j = 2; j < tokens.size(); j++) {
+					subcircuitSegments[subcktName].io.push_back(tokens[j]);
+				}
+				startCkt = true;
+				subCircuitCount++;
       }
-      if(startCkt) if(!i.empty()) subcircuitSegments[subcktName].lines.push_back(i);
+      if(startCkt) if(!i.empty()) if(i != "\r") subcircuitSegments[subcktName].lines.push_back(i);
 	  if (startCkt) {
 		  if (starts_with(i, '.')) {
+				if(i.find("PARAM") != std::string::npos) {
+					parameterTokens = tokenize_delimeter(i, " =");
+					parse_expression(subcktName + "_" + parameterTokens[1], parameterTokens[2]);
+				}
 			  if (i.find("END") == std::string::npos) {
 				  if (i.find("MODEL") != std::string::npos) {
 					  subcircuitModels[subcktName].push_back(i);
@@ -70,17 +77,25 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
       if (!starts_with(i, '*')) {
 				if(starts_with(i, '.')) if(i.find("END") == std::string::npos) if(i.find("CONTROL") != std::string::npos) controlSection = true;
 				if(!controlSection) {	
-					if(!i.empty()) if(!starts_with(i, '.')) maincircuitSegment.push_back(i);
+					if(!i.empty()) if(i != "\r") if(!starts_with(i, '.')) maincircuitSegment.push_back(i);
 					/* Identify the controls in the main part of the circuit */
         	if(starts_with(i, '.')) if(i.find("END") == std::string::npos) if(i.find("MODEL") == std::string::npos) controlPart.push_back(i);
 					/* Identify the models in the main part of the circuit */
 					if (starts_with(i, '.')) if (i.find("END") == std::string::npos) if (i.find("MODEL") != std::string::npos) maincircuitModels.push_back(i);
+					if(starts_with(i, '.')) if (i.find("END") == std::string::npos) if(i.find("PARAM") != std::string::npos) {
+						parameterTokens = tokenize_delimeter(i, " =");
+						parse_expression(parameterTokens[1], parameterTokens[2]);
+					}
 					if (starts_with(i, '.')) if (i.find("ENDC") != std::string::npos) controlSection = false;
 				}
 				else {
 					if(i.find("CONTROL") == std::string::npos) {
 						if(i.find("END") == std::string::npos) if(i.find("MODEL") == std::string::npos) controlPart.push_back(i);
 						if (i.find("END") == std::string::npos) if (i.find("MODEL") != std::string::npos) maincircuitModels.push_back(i);
+						if (i.find("END") == std::string::npos) if(i.find("PARAM") != std::string::npos) {
+							parameterTokens = tokenize_delimeter(i, " =");
+							parse_expression(parameterTokens[1], parameterTokens[2]);
+						}
 						if (starts_with(i, '.')) if (i.find("ENDC") != std::string::npos) controlSection = false;
 					}
 				}

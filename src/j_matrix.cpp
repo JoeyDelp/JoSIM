@@ -70,7 +70,10 @@ void create_A_matrix(InputFile& iFile) {
 			/* Create a new matrix element for the resistor */
 			matrix_element e;
 			/* Check if value exists, if not it's a bad resistor definition */
-			try { value = modifier(devicetokens.at(3)); }
+			try {
+				if(parVal.find(devicetokens.at(3)) != parVal.end()) value = parVal[devicetokens.at(3)];
+				else value = modifier(devicetokens.at(3));
+			}
 			catch (const std::out_of_range) {
 				invalid_component_errors(RES_ERROR, i);
 			}
@@ -191,7 +194,10 @@ void create_A_matrix(InputFile& iFile) {
 			/* Create a new matrix element for the resistor */
 			matrix_element e;
 			/* Check if value exists, if not it's a bad capactitor definition */
-			try { value = modifier(devicetokens.at(3)); }
+			try {
+				if(parVal.find(devicetokens.at(3)) != parVal.end()) value = parVal[devicetokens.at(3)];
+				else value = modifier(devicetokens.at(3));
+			}
 			catch (const std::out_of_range) {
 				invalid_component_errors(CAP_ERROR, i);
 			}
@@ -311,7 +317,10 @@ void create_A_matrix(InputFile& iFile) {
 			/* Create a new matrix element for the resistor */
 			matrix_element e;
 			/* Check if value exists, if not it's a bad inductor definition */
-			try { value = modifier(devicetokens.at(3)); }
+			try {
+				if(parVal.find(devicetokens.at(3)) != parVal.end()) value = parVal[devicetokens.at(3)];
+				else value = modifier(devicetokens.at(3));
+			}
 			catch (const std::out_of_range) {
 				invalid_component_errors(IND_ERROR, i);
 			}

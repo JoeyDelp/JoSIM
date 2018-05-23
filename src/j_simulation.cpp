@@ -48,7 +48,7 @@ void identify_simulation(InputFile& iFile) {
 	case DC:
 	case AC:
 	case PHASE:
-	case NONE:
+	case NONE_SPECIFIED:
 		control_errors(NO_SIM, "");
 	}
 }

@@ -123,7 +123,8 @@ void jj_comp(std::vector<std::string> tokens, double &jj_cap, double &jj_rn, dou
 		invalid_component_errors(MODEL_NOT_DEFINED, modname);
 	}
 	try { 
-		area = modifier(substring_after(tokens.at(4), "AREA=")); 
+    if(parVal.find(substring_after(tokens.at(4), "AREA=")) != parVal.end()) area = parVal[substring_after(tokens.at(4), "AREA=")];
+    else area = modifier(substring_after(tokens.at(4), "AREA="));
 	}
 	catch (std::out_of_range) {
 		area = 1.0;

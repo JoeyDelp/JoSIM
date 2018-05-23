@@ -1,7 +1,6 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_plot.hpp"
-
 /*
 Determine traces to plot from the control part of the main circuit
 */

@@ -281,3 +281,28 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		break;
 	}
 }
+/* Parsing errors */
+void parsing_errors(int errorCode, std::string whatPart) {
+	switch(errorCode) {
+		case EXPRESSION_ARLEADY_DEFINED:
+			std::cout << "W: Expression for " << whatPart << " has already been defined. Overwriting previous expression." << std::endl;
+			std::cout << "W: If this was unintentional, please revise netlist." << std::endl;
+			std::cout << std::endl;
+			break;
+		case UNIDENTIFIED_PART:
+			std::cout << "W: Unknown function/variable defined. What is " << whatPart << "?" << std::endl;
+			std::cout << "W: Please ensure variables are declared before being used." << std::endl;
+			std::cout << std::endl;
+			break;
+		case MISMATCHED_PARENTHESIS:
+			std::cout << "E: Mismatched parenthesis in expression: " << whatPart << std::endl;
+			std::cout << "E: Please correct the expression before trying again." << std::endl;
+			std::cout << std::endl;
+			exit(0);
+		case INVALID_RPN:
+			std::cout << "E: Invalid RPN detected. This might be an algorithm fault or an incorrect expression parse." << std::endl;
+			std::cout << "E: The expression in question: " << whatPart << std::endl;
+			std::cout << std::endl;
+			exit(0);
+	}
+}

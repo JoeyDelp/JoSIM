@@ -9,7 +9,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/JoSIM_mac_Debug",
-            "args": ["-g", "test/command_test.js"],
+            "args": ["-g", "-v", "test/MITLL_DFFT.cir"],
             //"stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             //"environment": [],
