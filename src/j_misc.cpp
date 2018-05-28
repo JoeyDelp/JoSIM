@@ -7,8 +7,7 @@
   Returns the file part of a path if a path is present else returns entire path (file)
 */
 std::string file_from_path(std::string path) {
-  int posLastSlash = 0;
-  posLastSlash = path.find_last_of("/\\");
+  auto posLastSlash = path.find_last_of("/\\");
   if (posLastSlash == std::string::npos) {
     posLastSlash = 0;
     return path.substr(posLastSlash);
@@ -31,8 +30,7 @@ bool has_suffix(const std::string &str, const std::string &suffix)
 bool starts_with(std::string input, char test) {
   for (auto i : input) {
     if(i != ' ') {
-      if(i == test) return true;
-      else return false;
+      return i == test;
     }
   }
   return false;
@@ -50,7 +48,7 @@ void circuit_stats(int full, InputFile &iFile) {
     for (auto i : iFile.subcircuitSegments) {
       std::cout << "Subcircuit: " << i.first << '\n';
       std::cout << "*************************************************************" << '\n';
-      for (auto j : i.second.lines) {
+      for (const auto &j : i.second.lines) {
         std::cout << j << '\n';
       }
       std::cout << "*************************************************************" << '\n';
@@ -60,16 +58,16 @@ void circuit_stats(int full, InputFile &iFile) {
     }
     std::cout << "Main circuit: " << '\n';
     std::cout << "*************************************************************" << '\n';
-    for (auto i : iFile.maincircuitSegment) {
+    for (const auto &i : iFile.maincircuitSegment) {
       std::cout << i << '\n';
     }
     std::cout << "*************************************************************" << '\n';
-    std::cout << "Main cicuit component count: " << iFile.circuitComponentCount << '\n';
-    std::cout << "Main cicuit JJ count: " << iFile.circuitJJCount << '\n';
+    std::cout << "Main circuit component count: " << iFile.circuitComponentCount << '\n';
+    std::cout << "Main circuit JJ count: " << iFile.circuitJJCount << '\n';
     std::cout << '\n';
     std::cout << "Simulation control: " << '\n';
     std::cout << "*************************************************************" << '\n';
-    for (auto i : iFile.controlPart) {
+    for (const auto &i : iFile.controlPart) {
       std::cout << i << '\n';
     }
     std::cout << "*************************************************************" << '\n';
@@ -82,8 +80,8 @@ void circuit_stats(int full, InputFile &iFile) {
       std::cout << std::setw(35) << std::left << ss.str() << iFile.subCircuitJJCount[i.first] << '\n';
     }
     std::cout << '\n';
-    std::cout << std::setw(35) << std::left << "Main cicuit component count:" << iFile.circuitComponentCount << '\n';
-    std::cout << std::setw(35) << std::left << "Main cicuit JJ count:" << iFile.circuitJJCount << '\n';
+    std::cout << std::setw(35) << std::left << "Main circuit component count:" << iFile.circuitComponentCount << '\n';
+    std::cout << std::setw(35) << std::left << "Main circuit JJ count:" << iFile.circuitJJCount << '\n';
     std::cout << '\n';
   }
 }
@@ -99,7 +97,7 @@ std::vector<std::string> tokenize_space(std::string c) {
   return tokens;
 }
 /*
-  Turn string into tokens using any delimeter (slower)
+  Turn string into tokens using any delimiter (slower)
 */
 std::vector<std::string> tokenize_delimeter(std::string c, std::string d) {
 	std::vector<std::string> tokens;
@@ -135,42 +133,42 @@ int map_value_count(std::unordered_map<std::string, int> map, int value) {
 */
 double modifier(std::string value) {
 	std::string::size_type sz;
-	double number = 0.0;
+	double number;
 	try { number = std::stod(value, &sz); }
-	catch (const std::invalid_argument) {
+	catch (const std::invalid_argument&) {
 		misc_errors(STOD_ERROR, value);
 	}
 	switch(value.substr(sz)[0]) {
 		/* mega */
 	case 'X':
-		return number *= 1E6;
-		/* mega or mili */
+		return number * 1E6;
+		/* mega or milli */
 	case 'M':
-        /* mega */
-	    if (value.substr(sz)[1] == 'E' && value.substr(sz)[2] == 'G') return number *= 1E6;
-        /* mili */
-		else return number *= 1E-3;
-		/* micro */
+		  /* mega */
+	    if (value.substr(sz)[1] == 'E' && value.substr(sz)[2] == 'G') return number * 1E6;
+	    /* milli */
+		  else return number * 1E-3;
+		  /* micro */
 	case 'U':
-		return number *= 1E-6;
+		return number * 1E-6;
 		/* nano */
 	case 'N':
-		return number *= 1E-9;
+		return number * 1E-9;
 		/* pico */
 	case 'P':
-		return number *= 1E-12;
+		return number * 1E-12;
 		/* femto */
 	case 'F':
-		return number *= 1E-15;
+		return number * 1E-15;
 		/* kilo */
 	case 'K': 
-		return number *= 1E3;
+		return number * 1E3;
 		/* giga */
 	case 'G':
-		return number *= 1E9;
+		return number * 1E9;
 		/* tera */
 	case 'T':
-		return number *= 1E12;
+		return number * 1E12;
 		/* auto modifier */
 	case 'E':
 		return std::stod(value);
@@ -191,7 +189,7 @@ void unique_push(std::vector<std::string>& vector, std::string string) {
 */
 int index_of(std::vector<std::string> vector, std::string value) {
 	int counter = 0;
-	for (auto i : vector) {
+	for (const auto &i : vector) {
 		/* Value found, return counter */
 		if (value == vector[counter]) return counter;
 		counter++;
@@ -230,14 +228,14 @@ std::vector<double> function_parse(std::string str) {
 	std::vector<double> functionOfT(tsim.simsize(), 0.0);
 	std::vector<std::string> tokens;
 	/* Identify string parrameter part of the string */
-	unsigned first = str.find('(') + 1;
-	unsigned last = str.find(')');
+	auto first = str.find('(') + 1;
+	auto last = str.find(')');
 	std::string params = str.substr(first, last - first);
 	tokens = tokenize_delimeter(params, " ,");
-	/* Determing type of source and handle accordingly*/
+	/* Determine type of source and handle accordingly*/
 	/* PWL */
 	if (str.find("PWL") != std::string::npos) {
-		if (std::stod(tokens[0].c_str()) != 0.0 || std::stod(tokens[1].c_str()) != 0.0) function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
+		if (std::stod(tokens[0]) != 0.0 || std::stod(tokens[1]) != 0.0) function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
 		std::vector<double> timesteps, values;
 		for (int i = 0; i < tokens.size(); i = i + 2) {
 			if (modifier(tokens[i]) >= tsim.tstop) {
@@ -268,7 +266,7 @@ std::vector<double> function_parse(std::string str) {
 	}
 	/* PULSE */
 	else if (str.find("PULSE") != std::string::npos) {
-		if (std::stod(tokens[0].c_str()) != 0.0) function_errors(INITIAL_PULSE_VALUE, tokens[0]);
+		if (std::stod(tokens[0]) != 0.0) function_errors(INITIAL_PULSE_VALUE, tokens[0]);
 		if (tokens.size() < 7) function_errors(PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
 		double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
 		vPeak = modifier(tokens[1]);
@@ -309,7 +307,7 @@ std::vector<double> function_parse(std::string str) {
 			for (int j = startpoint; j < endpoint; j++) {
 				if (values[i - 1] < values[i]) value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
 				else if (values[i - 1] > values[i]) value = values[i - 1] - (values[i - 1] / (endpoint - startpoint) * (j - (int)startpoint));
-				else if (values[i - 1] == values[i]) value = values[i];
+				else value = values[i];
 				functionOfT[j] = value;
 			}
 		}
@@ -319,7 +317,7 @@ std::vector<double> function_parse(std::string str) {
 /*
 	Helper function for finding the depth of subcircuits in the design
 */
-bool findX(std::vector<std::string> segment, std::string & theLine) {
+bool findX(std::vector<std::string>& segment, std::string & theLine) {
 	for (auto i : segment) {
 		if (i[0] == 'X') {
 			theLine = i;

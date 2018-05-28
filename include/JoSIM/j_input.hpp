@@ -19,7 +19,7 @@ class InputFile {
 	std::vector<std::string> maincircuitSegment, controlPart, maincircuitModels;
 	std::unordered_map<std::string, std::vector<std::string>> subcircuitModels;
 	std::unordered_map<std::string, Subcircuit> subcircuitSegments;
-	std::unordered_map<std::string, int> subCircuitComponentCount, subCircuitJJCount, subCircuitContainsSubCicuit;
+	std::unordered_map<std::string, int> subCircuitComponentCount, subCircuitJJCount, subCircuitContainsSubCircuit;
 	int subCircuitCount, jjCount, componentCount, allCounted, circuitComponentCount, circuitJJCount;
 	int simulationType = 4;
   /*

@@ -59,7 +59,6 @@ int main(int argc, char *argv[]) {
 				std::cout << "Example command: josim -g -o ./output.csv test.cir" << std::endl;
 				std::cout << std::endl;
 				exit(0);
-				break;
 			/* Enables plotting using built in FLTK library. */
 			case 'g':
 				if (i == (argc - 1)) {
@@ -156,13 +155,13 @@ int main(int argc, char *argv[]) {
 			  OUTPUT_PATH = INPUT_PATH;
 			  std::string::size_type i = INPUT_PATH.find(INPUT_FILE);
 			  if (i != std::string::npos) OUTPUT_PATH.erase(i, INPUT_FILE.length());
-			  OUTPUT_PATH = OUTPUT_PATH + "output.csv";
+			  OUTPUT_PATH.append("output.csv");
 		  }
 		  if (OUTPUT_LEGACY && !OUTPUT_LEGACY_SPECIFIED) {
 			  OUTPUT_LEGACY_PATH = INPUT_PATH;
 			  std::string::size_type i = INPUT_PATH.find(INPUT_FILE);
 			  if (i != std::string::npos) OUTPUT_LEGACY_PATH.erase(i, INPUT_FILE.length());
-			  OUTPUT_LEGACY_PATH = OUTPUT_LEGACY_PATH + "output.dat";
+			  OUTPUT_LEGACY_PATH.append("output.dat");
 		  }
         }
     }
@@ -183,9 +182,9 @@ int main(int argc, char *argv[]) {
 	}
 	/* Debugging tool that can only be activated in the code for checking final netlist after subcircuit substitution */
 	if (DEVELOPER) {
-		for (auto i : iFile.maincircuitSegment) {
+		for (const auto &i : iFile.maincircuitSegment) {
 			std::vector<std::string> tokens = tokenize_space(i);
-			for (auto j : tokens) {
+			for (const auto &j : tokens) {
 				std::cout << std::setw(15) << std::left << j;
 			}
 			std::cout << std::endl;
