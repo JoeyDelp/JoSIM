@@ -196,8 +196,14 @@ int main(int argc, char *argv[]) {
 	/* Do transient simulation */
 	transient_simulation();
 	if (PLOTTING) {
-		if (VERBOSE) plot_all_traces();
-		else plot_traces(iFile);
+		#ifdef USING_NONE
+			std::cout << "W: No plotting interface defined upon compilation time." << std::endl;
+			std::cout << "W: The \"-g\" switch will be ignored. Please recompile with" << std::endl;
+			std::cout << "   either \"-DUSING_FLTK\" or \"-DUSING_MATPLOTLIB\" options." << std::endl;
+		#else
+			if (VERBOSE) plot_all_traces();
+			else plot_traces(iFile);
+		#endif
 	}
 	if (OUTPUT) {
 		write_data(iFile);

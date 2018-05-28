@@ -56,14 +56,15 @@ void identify_simulation(InputFile& iFile) {
 Perform transient simulation
 */
 /* Where to store the calulated values */
-std::vector<std::vector<double>> x;
+std::vector<std::vector<double>> xVect;
 std::vector<double> timeAxis;
 std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 void transient_simulation() {
 	/* Standard vector */
 	std::vector<double> lhsValues(Nsize, 0.0);
+	int simSize = tsim.simsize();
 	for (int m = 0; m < Nsize; m++) {
-		x.push_back(std::vector<double>(tsim.simsize()-1, 0.0));
+		xVect.push_back(std::vector<double>(simSize, 0.0));
 	}
 	/* Perform time loop */
 	std::vector<double> RHS(columnNames.size(), 0.0), LHS_PRE, inductanceVector(rowNames.size()), iPNC(rowNames.size()), iNNC(rowNames.size()), iCNC(rowNames.size());
@@ -142,14 +143,14 @@ void transient_simulation() {
 	/***************/
 	/* Start a progress bar */
 	std::cout << "Simulating:" << std::endl;
-	double increments = 100 / tsim.simsize();
-	double progress_increments = 30 / tsim.simsize();
+	double increments = 100 / simSize;
+	double progress_increments = 30 / simSize;
 	double incremental_progress = 0.0;
 	int progress = 0;
 	int old_progress = 0;
 	int imintd = 0;
 	std::string pBar = "";
-	for (int i = 0; i < tsim.simsize() - 1; i++) {
+	for (int i = 0; i < simSize; i++) {
 		std::cout << '\r';
 		/* Start of initialization of the B matrix */
 		RHS.clear();
@@ -224,13 +225,13 @@ void transient_simulation() {
 						VP = xlines[currentLabel].pNode2;
 						VN = xlines[currentLabel].nNode2;
 						/* If the xline positive node is connected to ground */
-						if (VP == -1.0) VB = -x[(int)VN][imintd];
+						if (VP == -1.0) VB = -xVect[(int)VN][imintd];
 						/* If the xline negative node is connected to ground */
-						else if (VN == -1.0) VB = x[(int)VP][imintd];
+						else if (VN == -1.0) VB = xVect[(int)VP][imintd];
 						/* If both nodes are not connected to ground */
-						else VB = x[(int)VP][imintd] - x[(int)VN][imintd];
+						else VB = xVect[(int)VP][imintd] - xVect[(int)VN][imintd];
 						VN = xlines[currentLabel].iNode2;
-						z0voltage = (x[(int)VP][imintd] - x[(int)VN][imintd]); //xlines[currentLabel].Z0 * (x[(int)VP][imintd] - x[(int)VN][imintd]);
+						z0voltage = (xVect[(int)VP][imintd] - xVect[(int)VN][imintd]); //xlines[currentLabel].Z0 * (x[(int)VP][imintd] - x[(int)VN][imintd]);
 						RHSvalue = VB + z0voltage;
 					}
 					else {
@@ -243,13 +244,13 @@ void transient_simulation() {
 						VP = xlines[currentLabel].pNode1;
 						VN = xlines[currentLabel].nNode1;
 						/* If the xline positive node is connected to ground */
-						if (VP == -1.0) VB = -x[(int)VN][imintd];
+						if (VP == -1.0) VB = -xVect[(int)VN][imintd];
 						/* If the xline negative node is connected to ground */
-						else if (VN == -1.0) VB = x[(int)VP][imintd];
+						else if (VN == -1.0) VB = xVect[(int)VP][imintd];
 						/* If both nodes are not connected to ground */
-						else VB = x[(int)VP][imintd] - x[(int)VN][imintd];
+						else VB = xVect[(int)VP][imintd] - xVect[(int)VN][imintd];
 						VN = xlines[currentLabel].iNode1;
-						z0voltage = (x[(int)VP][imintd] - x[(int)VN][imintd]); //xlines[currentLabel].Z0 * (x[(int)VP][imintd] - x[(int)VN][imintd]);
+						z0voltage = (xVect[(int)VP][imintd] - xVect[(int)VN][imintd]); //xlines[currentLabel].Z0 * (x[(int)VP][imintd] - x[(int)VN][imintd]);
 						RHSvalue = VB + z0voltage;
 					}
 					else {
@@ -272,7 +273,7 @@ void transient_simulation() {
 		/* Set the LHS values equal to the returning value provided by the KLU solution */
 		lhsValues = LHS_PRE;
 		for (int m = 0; m < lhsValues.size(); m++) {
-			x[m][i] = lhsValues[m];
+			xVect[m][i] = lhsValues[m];
 		}
 
 		/* Guess next junction voltage */

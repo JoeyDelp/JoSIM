@@ -20,7 +20,7 @@ int Nsize, Msize;
 */
 void matrix_A(InputFile & iFile) {
 	create_A_matrix(iFile);
-    if (rowNames.size() != columnNames.size()) matrix_errors(NON_SQUARE, columnNames.size() + "x" + rowNames.size());
+    if (rowNames.size() != columnNames.size()) matrix_errors(NON_SQUARE,std::to_string(columnNames.size()) + "x" + std::to_string(rowNames.size()));
 	if (VERBOSE) std::cout << std::setw(35) << std::left << "A matrix dimensions: " << columnNames.size() << "\n\n";
 
 }

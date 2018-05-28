@@ -45,7 +45,7 @@ public:
 	}
 };
 
-extern std::vector<std::vector<double>> x;
+extern std::vector<std::vector<double>> xVect;
 extern std::vector<double> timeAxis;
 extern std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 /* 

@@ -20,27 +20,31 @@
 #include <locale>
 #include <codecvt>
 
-#ifdef WIN32
-#include "../Fl/Fl.H"
-#include "../Fl/Fl_Box.H"
-#include "../Fl/Fl_Window.H"
-#include "../Fl/Fl_Chart.H"
-#include "../Fl/Fl_Double_Window.H"
-#include "../Fl/Fl_Group.H"
-#include "../Fl/Fl_Scroll.H"
-#include "../Fl/Fl_Scrollbar.H"
-#include "../Fl/Fl_Button.H"
-#include "../Fl/fl_draw.H"
-#else
-#include <Fl/Fl.H>
-#include <Fl/Fl_Box.H>
-#include <Fl/Fl_Window.H>
-#include <Fl/Fl_Chart.H>
-#include <Fl/Fl_Double_Window.H>
-#include <Fl/Fl_Group.H>
-#include <Fl/Fl_Scroll.H>
-#include <Fl/Fl_Scrollbar.H>
-#include <Fl/Fl_Button.H>
+#ifdef USING_FLTK
+    #ifdef WIN32
+        #include "../Fl/Fl.H"
+        #include "../Fl/Fl_Box.H"
+        #include "../Fl/Fl_Window.H"
+        #include "../Fl/Fl_Chart.H"
+        #include "../Fl/Fl_Double_Window.H"
+        #include "../Fl/Fl_Group.H"
+        #include "../Fl/Fl_Scroll.H"
+        #include "../Fl/Fl_Scrollbar.H"
+        #include "../Fl/Fl_Button.H"
+        #include "../Fl/fl_draw.H"
+    #else
+        #include <Fl/Fl.H>
+        #include <Fl/Fl_Box.H>
+        #include <Fl/Fl_Window.H>
+        #include <Fl/Fl_Chart.H>
+        #include <Fl/Fl_Double_Window.H>
+        #include <Fl/Fl_Group.H>
+        #include <Fl/Fl_Scroll.H>
+        #include <Fl/Fl_Scrollbar.H>
+        #include <Fl/Fl_Button.H>
+    #endif
+#elif USING_MATPLOTLIB
+    #include "matplotlibcpp.h"
 #endif
 
 #include "klu.h"

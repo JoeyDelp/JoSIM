@@ -3,7 +3,7 @@
 #pragma once
 #include "j_std_include.hpp"
 
-void parse_expression(std::string expName, std::string expr);
+void parse_expression(std::string expName, std::string expr, std::string subckt = "NONE");
 
 int prec_lvl(std::string op);
 

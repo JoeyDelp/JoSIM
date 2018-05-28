@@ -7,7 +7,7 @@ std::string funcsArray[] = {"COS", "SIN", "TAN", "ACOS", "ASIN", "ATAN", "COSH",
                             "LOG", "LOG10", "SQRT", "CBRT"};
 std::vector<std::string> funcs(funcsArray, funcsArray + sizeof(funcsArray) / sizeof(std::string));
 
-void parse_expression(std::string expName, std::string expr) {
+void parse_expression(std::string expName, std::string expr, std::string subckt) {
     if(parVal.find("expName") != parVal.end()) parsing_errors(EXPRESSION_ARLEADY_DEFINED, expName);
     std::string expToEval = expr;
     std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
@@ -34,10 +34,19 @@ void parse_expression(std::string expName, std::string expr) {
             qType.push_back('V');
         }
         // Else if token is a variable with a value
-        else if(parVal.find(partToEval) != parVal.end()) {
-            // Push variable to RPN Queue
-            rpnQueue.push_back(precise_to_string(parVal[partToEval]));
-            qType.push_back('V');
+        else if((parVal.find(partToEval) != parVal.end()) 
+                || (parVal.find(subckt + "_" + partToEval) != parVal.end())) {
+            // Check if subckt variable or not
+            if (subckt != "NONE") {
+                // Push variable to RPN Queue
+                rpnQueue.push_back(precise_to_string(parVal[subckt + "_" + partToEval]));
+                qType.push_back('V');
+            }
+            else {
+                // Push variable to RPN Queue
+                rpnQueue.push_back(precise_to_string(parVal[partToEval]));
+                qType.push_back('V');
+            }
         }
         // Else if token is a function
         else if(std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
