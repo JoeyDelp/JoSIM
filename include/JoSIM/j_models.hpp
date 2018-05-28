@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_MODELS_H
+#define J_MODELS_H
 #include "j_std_include.hpp"
 
 class model_rcsj {
@@ -41,3 +42,4 @@ public:
 };
 
 extern std::unordered_map<std::string, model_rcsj> models;
+#endif

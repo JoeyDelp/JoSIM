@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_MATRIX_H
+#define J_MATRIX_H
 #include "j_std_include.hpp"
 
 /*
@@ -82,3 +83,4 @@ void create_A_matrix(InputFile& iFile);
 Print A matrix
 */
 void print_A_matrix();
+#endif

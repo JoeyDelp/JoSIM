@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_MISC_H
+#define J_MISC_H
 #include "j_std_include.hpp"
 class InputFile;
 
@@ -90,3 +91,4 @@ std::string precise_to_string(const T a_value, const int n = 30)
     out << std::fixed << std::setprecision(n) << a_value;
     return out.str();
 }
+#endif

@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_STD_INCLUDE
+#define J_STD_INCLUDE
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -61,3 +62,4 @@
 #include "j_output.hpp"
 #include "j_parser.hpp"
 
+#endif
