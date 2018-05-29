@@ -113,6 +113,8 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
 			}
 			// Identify the end of the control section
 			else if (tokens[0] == ".ENDC") controlSection = false;
+			// Identified the end of the circuit file
+			else if (tokens[0] == ".END") break;
 			// Identify the controls in the main part of the circuit
 			else controlPart.push_back(i);
 		}
@@ -132,8 +134,6 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
 			// Identify the controls in the main part of the circuit
 			else controlPart.push_back(i);
 		}
-		// Identified the end of the circuit file
-		else if (tokens[0] == ".END") break;
   }
   /* Attempt to count the components in the circuit*/
   /* First the subcircuits */
@@ -173,10 +173,11 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
 */
 void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& segment, std::string label) {
 	std::vector<std::string> tokens;
-	std::string subckt;
+	std::string subckt, parString;
 	std::vector<std::string> duplicateSegment;
 	std::string modelLabel;
 	std::string origLabel = label;
+	std::vector<std::string> io;
 	// Loop through the specified segment
 	for (auto i : segment) {
 		// If the line in the segment is identified as a subcircuit
@@ -188,10 +189,26 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 				// Check to see if it is a subcircuit within a subcircuit so that labeling can be done right
 				if (label.empty()) label = tokens[0];
 				else label.append("_" + tokens[0]);
-				// Identify the type of subcircuit
-				subckt = tokens[1];
-				// The rest of the tokens should only be the IO nodes which will be matched to the corresponding subcircuit IO
-				std::vector<std::string> io(tokens.begin() + 2, tokens.end());
+				// This section is tricky. We need to check if the subcircuit name is at the end or the begining of the line
+				// Check if the second token can be identified as a subcircuit name. If yes then
+				if(iFile.subcircuitSegments.find(tokens[1]) != iFile.subcircuitSegments.end()) {
+					// Identify the type of subcircuit
+					subckt = tokens[1];
+					// The rest of the tokens should only be the IO nodes which will be matched to the corresponding subcircuit IO
+					io.clear();
+					io.insert(io.begin(), tokens.begin() + 2, tokens.end());
+				}
+				else if (iFile.subcircuitSegments.find(tokens.back()) != iFile.subcircuitSegments.end()) {
+					// Identify the type of subcircuit
+					subckt = tokens.back();
+					// The rest of the tokens should only be the IO nodes which will be matched to the corresponding subcircuit IO
+					io.clear();
+					io.insert(io.begin(), tokens.begin() + 1, tokens.end() - 1);
+				}
+				else {
+					// The subcircuit name was not found therefore error out
+					invalid_component_errors(MISSING_SUBCIRCUIT_NAME, i);
+				}
 				// Check whether the correct amount of nodes was specified for the subcircuit
 				if (io.size() != iFile.subcircuitSegments[subckt].io.size()) invalid_component_errors(INVALID_SUBCIRCUIT_NODES, label);
 				// Loop through the lines of the identified subcircuit segment
@@ -230,9 +247,15 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 							else {
 								if (tokens[1] != "0" && tokens[1] != "GND") tokens[1] = tokens[1] + "_" + label;
 								if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "_" + label;
-								// If the device is a junction then the 4th token will be the model therefore append label so it can later be identified.
+								// If the device is a junction then the 4th or 5th (WRSpice) token will be the model therefore append label so it can later be identified.
 								if (j[0] == 'B') {
-									tokens[3] = subckt + "_" + tokens[3];
+									if(tokens.size() > 5) {
+										if(tokens[5].find("AREA=") != std::string::npos) {
+											if (tokens[3] != "0" && tokens[3] != "GND") tokens[3] = tokens[3] + "_" + label;
+											tokens[4] = subckt + "_" + tokens[4];
+										}
+									}
+									else tokens[3] = subckt + "_" + tokens[3];
 								}
 							}
 							// Now for the tricky part:
@@ -246,8 +269,30 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 								}
 								// Else loop through all the remaining tokens subbing in parameter values if they exist
 								else {
-									if(parVal.find(subckt + "_" + tokens[k]) != parVal.end())
-											tokens[k] = precise_to_string(parVal[subckt + "_" + tokens[k]]);
+									if(tokens[k][0] == '(') {
+										parString = tokens[k].substr(1);
+										if(parVal.find(subckt + "_" + parString) != parVal.end())
+												tokens[k] = "(" + precise_to_string(parVal[subckt + "_" + parString]);
+									}
+									else if (tokens[k].back() == ')') {
+										parString = tokens[k].substr(0, tokens[k].size()-1);
+										if(parVal.find(subckt + "_" + parString) != parVal.end())
+												tokens[k] = precise_to_string(parVal[subckt + "_" + parString]) + ")";
+									}
+									else if(tokens[k].find("PWL(") != std::string::npos) {
+										parString = substring_after(tokens[k], "PWL(");
+										if(parVal.find(subckt + "_" + parString) != parVal.end())
+												tokens[k] = "PWL(" + precise_to_string(parVal[subckt + "_" + parString]);
+									}
+									else if(tokens[k].find("PULSE(") != std::string::npos) {
+										parString = substring_after(tokens[k], "PULSE(");
+										if(parVal.find(subckt + "_" + parString) != parVal.end())
+												tokens[k] = "PULSE(" + precise_to_string(parVal[subckt + "_" + parString]);
+									}
+									else {
+										if(parVal.find(subckt + "_" + tokens[k]) != parVal.end())
+												tokens[k] = precise_to_string(parVal[subckt + "_" + tokens[k]]);
+									}
 								}
 							}
 							std::string line = tokens[0];
