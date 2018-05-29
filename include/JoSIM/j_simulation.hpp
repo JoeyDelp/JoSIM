@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_SIMULATION_H
+#define J_SIMULATION_H
 #include "j_std_include.hpp"
 
 #define TRANSIENT 0
@@ -56,3 +57,4 @@ void identify_simulation(InputFile& iFile);
 	Perform transient simulation
 */
 void transient_simulation();
+#endif

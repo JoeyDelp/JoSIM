@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_INPUT_H
+#define J_INPUT_H
 #include "j_std_include.hpp"
 
 /* Subcircuit object */
@@ -35,3 +36,4 @@ class InputFile {
   */
   void sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& segment, std::string label = "");
 };
+#endif

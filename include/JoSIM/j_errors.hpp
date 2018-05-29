@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_ERRORS_H
+#define J_ERRORS_H
 #include "j_std_include.hpp"
 /*
   General error codes
@@ -137,3 +138,4 @@ void plotting_errors(int errorCode, std::string whatPart);
 	Parsing error function
 */
 void parsing_errors(int errorCode, std::string whatPart);
+#endif

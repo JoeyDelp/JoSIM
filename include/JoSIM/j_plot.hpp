@@ -1,11 +1,8 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
-#ifdef WIN32
+#ifndef J_PLOT_H
+#define J_PLOT_H
 #include "j_std_include.hpp"
-#else
-#include "j_std_include.hpp"
-#endif
 /*
 	Determine traces to plot from the control part of the main circuit
 */
@@ -18,3 +15,4 @@ int plot_all_traces();
 	Function that creates a plotting window only for the specified plots in the simulation
 */
 int plot_traces(InputFile& iFile);
+#endif
