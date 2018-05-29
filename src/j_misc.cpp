@@ -229,6 +229,7 @@ std::string substring_before(std::string str, std::string whatpart) {
 std::vector<double> function_parse(std::string str) {
 	std::vector<double> functionOfT(tsim.simsize(), 0.0);
 	std::vector<std::string> tokens;
+	std::string posVarName;
 	/* Identify string parrameter part of the string */
 	unsigned first = str.find('(') + 1;
 	unsigned last = str.find(')');
@@ -332,13 +333,26 @@ bool findX(std::vector<std::string> segment, std::string & theLine) {
 	Function that finds the depth of the subcircuits in the design
 */
 int subCircuitDepth(std::vector<std::string> segment, InputFile &iFile, int &thisDepth, int &overallDepth) {
-	std::string subcktLine;
+	std::string subcktLine, subcktName;
 	std::vector<std::string> tokens;
 	if (findX(segment, subcktLine)) {
 		tokens = tokenize_space(subcktLine);
 		thisDepth++;
 		if (thisDepth > overallDepth) overallDepth = thisDepth;
-		subCircuitDepth(iFile.subcircuitSegments[tokens[1]].lines, iFile, thisDepth, overallDepth);
+		// Check if the second token can be identified as a subcircuit name. If yes then
+			if(iFile.subcircuitSegments.find(tokens[1]) != iFile.subcircuitSegments.end()) {
+				// Identify the type of subcircuit
+				subcktName = tokens[1];
+			}
+			else if (iFile.subcircuitSegments.find(tokens.back()) != iFile.subcircuitSegments.end()) {
+				// Identify the type of subcircuit
+				subcktName = tokens.back();
+			}
+			else {
+				// The subcircuit name was not found therefore error out
+				invalid_component_errors(MISSING_SUBCIRCUIT_NAME, subcktLine);
+			}
+		subCircuitDepth(iFile.subcircuitSegments[subcktName].lines, iFile, thisDepth, overallDepth);
 	}
 	else thisDepth = 1;
 	return overallDepth;

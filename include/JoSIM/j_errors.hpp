@@ -39,6 +39,7 @@
 #define DUPLICATE_LABEL 15
 #define INVALID_SUBCIRCUIT_NODES 16
 #define TIME_ERROR 17
+#define MISSING_SUBCIRCUIT_NAME 18
 /*
   Control error codes
 */

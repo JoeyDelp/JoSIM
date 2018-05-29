@@ -15,6 +15,9 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 	int index1 = -1;
 	int index2 = -1;
 	for (auto string : controlPart) {
+		/****************************************************/
+		/*						PRINT						*/
+		/****************************************************/
 		if (string.find("PRINT") != std::string::npos) {
 			tokens = tokenize_space(string);
 			/* Print the identified node voltage */
@@ -474,6 +477,28 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						/* Error this node was not found and can therefore not be printed */
 						plotting_errors(NO_SUCH_DEVICE_FOUND, nodesToPlot);
 					}
+				}
+			}
+		}
+		/****************************************************/
+		/*						SAVE						*/
+		/****************************************************/
+		else if (string.find("SAVE") != std::string::npos) {
+			tokens = tokenize_space(string);
+			for (int k = 1; k < tokens.size(); k++) {
+				index1 = tokens[k].find("@");
+				if(index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1) + tokens[k].substr(index1+1);
+				index1 = tokens[k].find("[");
+				if(index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
+				index1 = tokens[k].find(".");
+				if(index1 != std::string::npos) {
+					tokens[k] = tokens[k].substr(0, index1) + "_" + tokens[k].substr(index1+1);
+				}
+				/* If this is a current source */
+				if (sources.find(tokens[k]) != sources.end()) {
+					label = "CURRENT " + tokens[k];
+					traceLabel.push_back(label);
+					traceData.push_back(sources[tokens[k]]);
 				}
 			}
 		}

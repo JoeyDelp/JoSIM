@@ -169,8 +169,6 @@ int main(int argc, char *argv[]) {
     /*Finished handling input arguments. Now setup simulation based on arguments*/
     InputFile iFile(INPUT_PATH);
     iFile.circuit_to_segments(iFile);
-    if(VERBOSE) circuit_stats(1, iFile);
-    else circuit_stats(0, iFile);
 	model_rcsj_functions::identify_models(iFile, models);
 	identify_simulation(iFile);
 	//bool subcktFound = true;
@@ -181,6 +179,8 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < subcktDepth; i++) {
 		iFile.sub_in_subcircuits(iFile, iFile.maincircuitSegment);
 	}
+	if(VERBOSE) circuit_stats(1, iFile);
+    else   circuit_stats(0, iFile);
 	/* Debugging tool that can only be activated in the code for checking final netlist after subcircuit substitution */
 	if (DEVELOPER) {
 		for (auto i : iFile.maincircuitSegment) {

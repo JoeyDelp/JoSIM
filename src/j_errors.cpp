@@ -115,6 +115,10 @@ void invalid_component_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Time delay value error" << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		exit(0);
+	case MISSING_SUBCIRCUIT_NAME:
+		std::cout << "E: The subcircuit for " << whatPart << " does not match any of the subcircuits found in the file." << std::endl;
+		std::cout << "E: Please recheck the subcircuit name and try again." << std::endl;
+		exit(0);
 	}
 
 }
