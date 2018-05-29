@@ -11,7 +11,7 @@ void write_data(InputFile& iFile) {
 	traces_to_plot(iFile.controlPart, traceLabel, traceData);
 	std::ofstream outfile(OUTPUT_PATH);
 	if (outfile.is_open()) {
-		if(traceLabel.size() > 0) {
+		if(!traceLabel.empty()) {
 			outfile << "time" << ",";
 			for (int i = 0; i < traceLabel.size() - 1; i++) {
 				outfile << traceLabel[i] << ",";
@@ -26,7 +26,7 @@ void write_data(InputFile& iFile) {
 			}
 			outfile.close();
 		}
-		else if(traceLabel.size() == 0) {
+		else if(traceLabel.empty()) {
 			std::cout << "W: Nothing specified to save. Saving all traces." << std::endl;
 			outfile << "time" << ",";
 			for (int i = 0; i < columnNames.size() - 1; i++) {

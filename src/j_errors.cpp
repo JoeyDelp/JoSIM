@@ -6,7 +6,7 @@
 /*
   Function that manages different error codes. This function will be huge.
 */
-void error_handling(int errorCode) {
+[[noreturn]] void error_handling(int errorCode) {
   switch(errorCode) {
     case DEF_ERROR:
       std::cout << "E: Invalid definitions file specifier." << std::endl;
@@ -55,10 +55,13 @@ void error_handling(int errorCode) {
       std::cout << "E: Input file " << INPUT_PATH << " cannot be found or opened." << std::endl;
       std::cout << "E: Please ensure that the file exists and can be opened." << std::endl;
       exit(0);
+    default:
+    	std::cout << "E: Unknown handling error." << std::endl;
+    	exit(0);
   }
 }
 /*
-  Invalid component decleration error function
+  Invalid component declaration error function
 */
 void invalid_component_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -83,12 +86,12 @@ void invalid_component_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please contact the developer as this is possibly a bug." << std::endl;
 		exit(0);
 	case MISSING_PNODE:
-		std::cout << "E: No positive node. This should not hapen." << std::endl;
+		std::cout << "E: No positive node. This should not happen." << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer as this is possibly a bug." << std::endl;
 		exit(0);
 	case MISSING_NNODE:
-		std::cout << "E: No negative node. This should not hapen." << std::endl;
+		std::cout << "E: No negative node. This should not happen." << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer as this is possibly a bug." << std::endl;
 		exit(0);
@@ -118,6 +121,9 @@ void invalid_component_errors(int errorCode, std::string whatPart) {
 	case MISSING_SUBCIRCUIT_NAME:
 		std::cout << "E: The subcircuit for " << whatPart << " does not match any of the subcircuits found in the file." << std::endl;
 		std::cout << "E: Please recheck the subcircuit name and try again." << std::endl;
+    exit(0);
+  default:
+		std::cout << "E: Unknown invalid component error." << std::endl;
 		exit(0);
 	}
 
@@ -125,7 +131,7 @@ void invalid_component_errors(int errorCode, std::string whatPart) {
 /*
   Missing simulation and incorrect control parameters specified
 */
-void control_errors(int errorCode, std::string whatPart) {
+[[noreturn]] void control_errors(int errorCode, std::string whatPart) {
   switch (errorCode) {
     case TRANS_ERROR:
 		std::cout << "E: Invalid transient analysis specified. " << whatPart << std::endl;
@@ -145,15 +151,21 @@ void control_errors(int errorCode, std::string whatPart) {
 	case NO_SIM:
 		std::cout << "E: No simulation type specified. Nothing will be simulated." << std::endl;
 		exit(0);
+	default:
+		std::cout << "E: Unknown control error: " << whatPart << std::endl;
+		exit(0);
   }
 }
 /*
   Model declaration error function
 */
-void model_errors(int errorCode, std::string whatPart) {
+[[noreturn]] void model_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case PARAM_TYPE_ERROR:
 		std::cout << "E: Unknown model parameter " << whatPart << " specified." << std::endl;
+		exit(0);
+	default:
+		std::cout << "E: Unknown model error: " << whatPart << std::endl;
 		exit(0);
 	}
 }
@@ -166,15 +178,20 @@ void matrix_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Matrix is not square. Dimensions are " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer as this is potentially a bug." << std::endl;
 		exit(0);
+	default:
+		std::cout << "E: Unknown matrix error: " << whatPart << std::endl;
 	}
 }
 /*
   Misc error function
 */
-void misc_errors(int errorCode, std::string whatPart) {
+[[noreturn]] void misc_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case STOD_ERROR:
 		std::cout << "E: Cannot convert string to double: " << whatPart << std::endl;
+		exit(0);
+	default:
+		std::cout << "E: Unknown misc error: " << whatPart << std::endl;
 		exit(0);
 	}
 }
@@ -205,7 +222,7 @@ void function_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	case PULSE_VPEAK_ZERO:
 		std::cout << "W: PULSE peak voltage is 0.0, this renders the function redundant." << std::endl;
-		std::cout << "W: Program will continue but PULSE command is reduntant." << std::endl;
+		std::cout << "W: Program will continue but PULSE command is redundant." << std::endl;
 		break;
 	//case PULSE_RISE_TIME_ZERO:
 	//	std::cout << "E: PULSE rise time cannot be zero." << whatPart << std::endl;
@@ -216,19 +233,22 @@ void function_errors(int errorCode, std::string whatPart) {
 	//	std::cout << "E: " << std::endl;
 	//	std::cout << std::endl;
 	case PULSE_WIDTH_ZERO:
-		std::cout << "W: PULSE width is 0.0, this renders the function reduntant." << std::endl;
-		std::cout << "W: Program will contunue but PULSE command is reduntant." << std::endl;
+		std::cout << "W: PULSE width is 0.0, this renders the function redundant." << std::endl;
+		std::cout << "W: Program will continue but PULSE command is redundant." << std::endl;
 		break;
 	case PULSE_REPEAT:
 		std::cout << "W: PULSE repeat rate is 0.0, this is effectively a DC source." << std::endl;
 		std::cout << "W: Program will continue, but this is most likely unwanted." << std::endl;
 		break;
+	default:
+		std::cout << "E: Unknown function error: " << whatPart << std::endl;
+		exit(0);
 	}
 }
 /*
 Simulation error function
 */
-void simulation_errors(int errorCode, std::string whatPart) {
+[[noreturn]] void simulation_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case JJCAP_NOT_FOUND:
 		std::cout << "E: Capacitor value for " << whatPart << " could not be found." << std::endl;
@@ -245,6 +265,9 @@ void simulation_errors(int errorCode, std::string whatPart) {
 	case INDUCTOR_CURRENT_NOT_FOUND:
 		std::cout << "E: Inductor current not defined for " << whatPart << ". Matrix will have no solution." << std::endl;
 		std::cout << "E: This is a bug and the developer should be contacted. The program will abort." << std::endl;
+		exit(0);
+	default:
+		std::cout << "E: Unknown simulation error: " << whatPart << std::endl;
 		exit(0);
 	}
 }
@@ -280,9 +303,12 @@ void plotting_errors(int errorCode, std::string whatPart) {
 		break;
 	case BOTH_ZERO:
 		std::cout << "W: Both nodes cannot be grounded. This command " << whatPart << " not plot anything." << std::endl;
-		std::cout << "W: Please specify atleast one non grounded node. This command will be ignored." << std::endl;
+		std::cout << "W: Please specify at least one non grounded node. This command will be ignored." << std::endl;
 		std::cout << std::endl;
 		break;
+	default:
+		std::cout << "E: Unknown plotting error: " << whatPart << std::endl;
+		exit(0);
 	}
 }
 /* Parsing errors */
@@ -308,5 +334,8 @@ void parsing_errors(int errorCode, std::string whatPart) {
 			std::cout << "E: The expression in question: " << whatPart << std::endl;
 			std::cout << std::endl;
 			exit(0);
+	  default:
+		  std::cout << "E: Unknown parsing error: " << whatPart << std::endl;
+		  exit(0);
 	}
 }

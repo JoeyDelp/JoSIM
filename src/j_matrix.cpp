@@ -33,7 +33,6 @@ void create_A_matrix(InputFile& iFile) {
 	std::string label, nodeP, nodeN;
 	std::unordered_map<std::string, int> rowMap, columnMap;
 	int rowCounter, colCounter;
-	std::unordered_map<std::string, int>::const_iterator got;
 	bool pGND, nGND;
 	rowCounter = 0;
 	colCounter = 0;
@@ -50,17 +49,17 @@ void create_A_matrix(InputFile& iFile) {
 				invalid_component_errors(DUPLICATE_LABEL, label);
 			}
 		}
-		catch (const std::out_of_range) {
+		catch (const std::out_of_range&) {
 			invalid_component_errors(MISSING_LABEL, i);
 		}
 		/* Check if positive node exists, if not it's a bad device line definition */
 		try { nodeP = devicetokens.at(1); }
-		catch (const std::out_of_range) {
+		catch (const std::out_of_range&) {
 			invalid_component_errors(MISSING_PNODE, i);
 		}
 		/* Check if negative node exists, if not it's a bad device line definition */
 		try { nodeN = devicetokens.at(2); }
-		catch (const std::out_of_range) {
+		catch (const std::out_of_range&) {
 			invalid_component_errors(MISSING_NNODE, i);
 		}
 		/**************/
@@ -74,18 +73,18 @@ void create_A_matrix(InputFile& iFile) {
 				if(parVal.find(devicetokens.at(3)) != parVal.end()) value = parVal[devicetokens.at(3)];
 				else value = modifier(devicetokens.at(3));
 			}
-			catch (const std::out_of_range) {
+			catch (const std::out_of_range&) {
 				invalid_component_errors(RES_ERROR, i);
 			}
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if(rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -103,11 +102,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -193,23 +192,23 @@ void create_A_matrix(InputFile& iFile) {
 		else if (i[0] == 'C') {
 			/* Create a new matrix element for the resistor */
 			matrix_element e;
-			/* Check if value exists, if not it's a bad capactitor definition */
+			/* Check if value exists, if not it's a bad capacitor definition */
 			try {
 				if(parVal.find(devicetokens.at(3)) != parVal.end()) value = parVal[devicetokens.at(3)];
 				else value = modifier(devicetokens.at(3));
 			}
-			catch (const std::out_of_range) {
+			catch (const std::out_of_range&) {
 				invalid_component_errors(CAP_ERROR, i);
 			}
 			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -227,11 +226,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -321,16 +320,16 @@ void create_A_matrix(InputFile& iFile) {
 				if(parVal.find(devicetokens.at(3)) != parVal.end()) value = parVal[devicetokens.at(3)];
 				else value = modifier(devicetokens.at(3));
 			}
-			catch (const std::out_of_range) {
+			catch (const std::out_of_range&) {
 				invalid_component_errors(IND_ERROR, i);
 			}
 			cName = "C_I" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
-			if ((got = rowMap.find(rName)) == rowMap.end()) {
+			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
 			}
-			if ((got = columnMap.find(cName)) == columnMap.end()) {
+			if (columnMap.count(cName) == 0) {
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
@@ -345,11 +344,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -367,11 +366,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -501,11 +500,11 @@ void create_A_matrix(InputFile& iFile) {
 			sources[label] = function_parse(i);
 			cName = "C_" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
-			if ((got = rowMap.find(rName)) == rowMap.end()) {
+			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
 			}
-			if ((got = columnMap.find(cName)) == columnMap.end()) {
+			if (columnMap.count(cName) == 0) {
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
@@ -517,11 +516,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -537,11 +536,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -649,11 +648,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -670,11 +669,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -718,11 +717,11 @@ void create_A_matrix(InputFile& iFile) {
 			jj_comp(devicetokens, jj_cap, jj_rn, jj_rzero, jj_icrit);
 			cName = "C_P" + devicetokens.at(0);
 			rName = "R_" + devicetokens.at(0);
-			if ((got = rowMap.find(rName)) == rowMap.end()) {
+			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
 			}
-			if ((got = columnMap.find(cName)) == columnMap.end()) {
+			if (columnMap.count(cName) == 0) {
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
@@ -734,11 +733,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -756,11 +755,11 @@ void create_A_matrix(InputFile& iFile) {
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -896,12 +895,12 @@ void create_A_matrix(InputFile& iFile) {
 			double TimeDelay = 0.0;
 			/* Check if positive node 2 exists, if not it's a bad device line definition */
 			try { nodeP2 = devicetokens.at(3); }
-			catch (const std::out_of_range) {
+			catch (const std::out_of_range&) {
 				invalid_component_errors(MISSING_PNODE, i);
 			}
 			/* Check if negative node 2 exists, if not it's a bad device line definition */
 			try { nodeN2 = devicetokens.at(4); }
-			catch (const std::out_of_range) {
+			catch (const std::out_of_range&) {
 				invalid_component_errors(MISSING_NNODE, i);
 			}
 			TN1 = "1" + label;
@@ -914,7 +913,7 @@ void create_A_matrix(InputFile& iFile) {
 				invalid_component_errors(TIME_ERROR, i);
 			}
 			/* Check if value exists, if not it's a bad Z0 definition */
-			for (int l = 6; l < devicetokens.size(); l++) {
+			for (size_t l = 6; l < devicetokens.size(); l++) {
 				if(devicetokens[l].find("TD") != std::string::npos) TimeDelay = modifier((devicetokens.at(l)).substr(3));
 				else if (devicetokens[l].find("Z0") != std::string::npos) value = modifier((devicetokens.at(l)).substr(3));
 			}
@@ -926,12 +925,12 @@ void create_A_matrix(InputFile& iFile) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
 				/* If row does not already exist, add to rows */
-				if ((got = rowMap.find(rNameP)) == rowMap.end()) {
+				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
 				/* If column does not already exist, add to columns */
-				if ((got = columnMap.find(cNameP)) == columnMap.end()) {
+				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
@@ -946,12 +945,12 @@ void create_A_matrix(InputFile& iFile) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
 				/* If row does not already exist, add to rows */
-				if ((got = rowMap.find(rNameN)) == rowMap.end()) {
+				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
 				/* If column does not already exist, add to columns */
-				if ((got = columnMap.find(cNameN)) == columnMap.end()) {
+				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
@@ -966,12 +965,12 @@ void create_A_matrix(InputFile& iFile) {
                 cNameP2 = "C_NV" + nodeP2;
                 rNameP2 = "R_N" + nodeP2;
                 /* If row does not already exist, add to rows */
-                if ((got = rowMap.find(rNameP2)) == rowMap.end()) {
+                if (rowMap.count(rNameP2) == 0) {
                     rowMap[rNameP2] = rowCounter;
                     rowCounter++;
                 }
                 /* If column does not already exist, add to columns */
-                if ((got = columnMap.find(cNameP2)) == columnMap.end()) {
+                if (columnMap.count(cNameP2) == 0) {
                     columnMap[cNameP2] = colCounter;
                     colCounter++;
                 }
@@ -986,12 +985,12 @@ void create_A_matrix(InputFile& iFile) {
                 cNameN2 = "C_NV" + nodeN2;
                 rNameN2 = "R_N" + nodeN2;
                 /* If row does not already exist, add to rows */
-                if ((got = rowMap.find(rNameN2)) == rowMap.end()) {
+                if (rowMap.count(rNameN2) == 0) {
                     rowMap[rNameN2] = rowCounter;
                     rowCounter++;
                 }
                 /* If column does not already exist, add to columns */
-                if ((got = columnMap.find(cNameN2)) == columnMap.end()) {
+                if (columnMap.count(cNameN2) == 0) {
                     columnMap[cNameN2] = colCounter;
                     colCounter++;
                 }
@@ -1005,12 +1004,12 @@ void create_A_matrix(InputFile& iFile) {
             cNameNI1 = "C_NV" + TN1;
             rNameNI1 = "R_N" + TN1;
             /* If row does not already exist, add to rows */
-            if ((got = rowMap.find(rNameNI1)) == rowMap.end()) {
+            if (rowMap.count(rNameNI1) == 0) {
                 rowMap[rNameNI1] = rowCounter;
                 rowCounter++;
             }
             /* If column does not already exist, add to columns */
-            if ((got = columnMap.find(cNameNI1)) == columnMap.end()) {
+            if (columnMap.count(cNameNI1) == 0) {
                 columnMap[cNameNI1] = colCounter;
                 colCounter++;
             }
@@ -1021,12 +1020,12 @@ void create_A_matrix(InputFile& iFile) {
             cNameNI2 = "C_NV" + TN2;
             rNameNI2 = "R_N" + TN2;
             /* If row does not already exist, add to rows */
-            if ((got = rowMap.find(rNameNI2)) == rowMap.end()) {
+            if (rowMap.count(rNameNI2) == 0) {
                 rowMap[rNameNI2] = rowCounter;
                 rowCounter++;
             }
             /* If column does not already exist, add to columns */
-            if ((got = columnMap.find(cNameNI2)) == columnMap.end()) {
+            if (columnMap.count(cNameNI2) == 0) {
                 columnMap[cNameNI2] = colCounter;
                 colCounter++;
             }
@@ -1141,21 +1140,21 @@ void create_A_matrix(InputFile& iFile) {
             }
             cName1 = "C_" + TV1;
             rName1 = "R_" + TV1;
-            if ((got = rowMap.find(rName1)) == rowMap.end()) {
+            if (rowMap.count(rName1) == 0) {
                 rowMap[rName1] = rowCounter;
                 rowCounter++;
             }
-            if ((got = columnMap.find(cName1)) == columnMap.end()) {
+            if (columnMap.count(cName1) == 0) {
                 columnMap[cName1] = colCounter;
                 colCounter++;
             }
             cName2 = "C_" + TV2;
             rName2 = "R_" + TV2;
-            if ((got = rowMap.find(rName2)) == rowMap.end()) {
+            if (rowMap.count(rName2) == 0) {
                 rowMap[rName2] = rowCounter;
                 rowCounter++;
             }
-            if ((got = columnMap.find(cName2)) == columnMap.end()) {
+            if (columnMap.count(cName2) == 0) {
                 columnMap[cName2] = colCounter;
                 colCounter++;
             }
@@ -1272,9 +1271,9 @@ void print_A_matrix() {
 	}
 	std::cout << "A matrix: \n";
 	std::cout << std::setw(10) << std::left << "";
-	for (auto i : columnNames) std::cout << std::setw(10) << std::left << i;
+	for (const auto &i : columnNames) std::cout << std::setw(10) << std::left << i;
 	std::cout << "\n";
-	int counter = 0;
+	size_t counter = 0;
 	for (auto i : A_matrix) {
 		std::cout << std::setw(10) << std::left << rowNames.at(counter) + ":";
 		for (auto j : i) {

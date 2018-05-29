@@ -6,7 +6,7 @@ trans_sim tsim;
 
 void identify_simulation(InputFile& iFile) {
 	std::string simline;
-	for (auto i : iFile.controlPart) {
+	for (const auto &i : iFile.controlPart) {
 		if (i.find("TRAN") != std::string::npos) {
 			simline = i;
 			iFile.simulationType = TRANSIENT;
@@ -55,7 +55,7 @@ void identify_simulation(InputFile& iFile) {
 /*
 Perform transient simulation
 */
-/* Where to store the calulated values */
+/* Where to store the calculated values */
 std::vector<std::vector<double>> xVect;
 std::vector<double> timeAxis;
 std::unordered_map<std::string, std::vector<double>> junctionCurrents;
@@ -64,7 +64,7 @@ void transient_simulation() {
 	std::vector<double> lhsValues(Nsize, 0.0);
 	int simSize = tsim.simsize();
 	for (int m = 0; m < Nsize; m++) {
-		xVect.push_back(std::vector<double>(simSize, 0.0));
+		xVect.emplace_back(std::vector<double>(simSize, 0.0));
 	}
 	/* Perform time loop */
 	std::vector<double> RHS(columnNames.size(), 0.0), LHS_PRE, inductanceVector(rowNames.size()), iPNC(rowNames.size()), iNNC(rowNames.size()), iCNC(rowNames.size());
@@ -97,23 +97,23 @@ void transient_simulation() {
 			simJunctions[j].label = currentLabel;
 			/* Try to identify the column index of the positive node */
 			simJunctions[j].vPositive = (int)bMatrixConductanceMap[j].at(currentLabel + "-VP"); 
-			/* Try to identifiy the column index of the negative node */
+			/* Try to identify the column index of the negative node */
 			simJunctions[j].vNegative = (int)bMatrixConductanceMap[j].at(currentLabel + "-VN"); 
-			/* Try to identify the column index of the phase node, panick if not found */
+			/* Try to identify the column index of the phase node, panic if not found */
 			try { simJunctions[j].bPhase = (int)bMatrixConductanceMap[j].at(currentLabel + "-PHASE"); }
-			catch (std::out_of_range) { simulation_errors(JJPHASE_NODE_NOT_FOUND, currentLabel); }
-			/* Try to identify the junction capacitance, panick if not found */
+			catch (const std::out_of_range&) { simulation_errors(JJPHASE_NODE_NOT_FOUND, currentLabel); }
+			/* Try to identify the junction capacitance, panic if not found */
 			try { simJunctions[j].jjCap = bMatrixConductanceMap[j].at(currentLabel + "-CAP"); }
-			catch (std::out_of_range) { simulation_errors(JJCAP_NOT_FOUND, currentLabel); }
-			/* Try to identify the junction critical current, panick if not found */
+			catch (const std::out_of_range&) { simulation_errors(JJCAP_NOT_FOUND, currentLabel); }
+			/* Try to identify the junction critical current, panic if not found */
 			try { simJunctions[j].jjIcrit = bMatrixConductanceMap[j].at(currentLabel + "-ICRIT"); }
-			catch (std::out_of_range) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
+			catch (const std::out_of_range&) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
 			/* If the junction positive node is connected to ground */
 			if (simJunctions[j].vPositive == -1) {
 				simJunctions[j].VB = -lhsValues[simJunctions[j].vNegative];
 				simJunctions[j].negativeNodeRow = rowNames[simJunctions[j].vNegative];
 			}
-			/* If the junction negativie node is connected to ground */
+			/* If the junction negative node is connected to ground */
 			else if (simJunctions[j].vNegative == -1) {
 				simJunctions[j].VB = lhsValues[simJunctions[j].vPositive];
 				simJunctions[j].positiveNodeRow = rowNames[simJunctions[j].vPositive];
@@ -149,7 +149,7 @@ void transient_simulation() {
 	int progress = 0;
 	int old_progress = 0;
 	int imintd = 0;
-	std::string pBar = "";
+	std::string pBar;
 	for (int i = 0; i < simSize; i++) {
 		std::cout << '\r';
 		/* Start of initialization of the B matrix */
@@ -181,14 +181,14 @@ void transient_simulation() {
 				inductance = inductanceVector[rowCounter];
 				/* Identify the column index of the positive node */
 				VP = iPNC[rowCounter];
-				/* Identifiy the column index of the negative node */
+				/* Identify the column index of the negative node */
 				VN = iNNC[rowCounter];
-				/* Try to identifiy the column index of the inductor current node */
+				/* Try to identify the column index of the inductor current node */
 				try { 
 					CUR = iCNC[rowCounter];
 					LCUR = lhsValues[(int)CUR];
 				}
-				catch (std::out_of_range) { simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, currentLabel); }
+				catch (const std::out_of_range&) { simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, currentLabel); }
 				/* If the inductor positive node is connected to ground */
 				if (VP == -1.0) VB = -lhsValues[(int)VN];
 				/* If the inductor negative node is connected to ground */
@@ -215,8 +215,8 @@ void transient_simulation() {
 			else if (j[2] == 'T') {
                 /* Identify the transmission line label */
                 currentLabel = j.substr(2);
-				char OneOrTwo = currentLabel[currentLabel.find("-") + 2];
-				currentLabel.erase(currentLabel.find("-"), 3);
+				char OneOrTwo = currentLabel[currentLabel.find('-') + 2];
+				currentLabel.erase(currentLabel.find('-'), 3);
                 imintd = i - (xlines[currentLabel].TD/tsim.maxtstep);
 				switch (OneOrTwo) {
 				case '1':
@@ -303,7 +303,7 @@ void transient_simulation() {
 			std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
 			pBar = "[";
 			for (int p = 0; p <= (int)(progress_increments * i); p++) {
-				pBar = pBar + "=";
+			  pBar.append("=");
 			}
 			std::cout << std::setw(31) << std::left << pBar << "]";
 		}

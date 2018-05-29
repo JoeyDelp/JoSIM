@@ -44,7 +44,7 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
   subCircuitCount = 0;
 	std::vector<std::string> parameterTokens, tokens;
 	// Identify the segments of the circuit
-  for(auto i : lines) {
+  for(const auto &i : lines) {
 		// Clear the tokens to remove any garbage
 		tokens.clear();
 		// Split the line into tokens
@@ -139,21 +139,21 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
   /* First the subcircuits */
   for (auto i : subcircuitSegments) {
     subCircuitComponentCount[i.first] = 0;
-    subCircuitContainsSubCicuit[i.first] = 0;
-    for (auto j : i.second.lines) {
+    subCircuitContainsSubCircuit[i.first] = 0;
+    for (const auto &j : i.second.lines) {
       count_component(j, iFile, i.first);
     }
   }
-  int mapValueCount = map_value_count(subCircuitContainsSubCicuit, 1);
+  int mapValueCount = map_value_count(subCircuitContainsSubCircuit, 1);
   while (mapValueCount != 0) {
     for (auto i : subcircuitSegments) {
       allCounted = 1;
       count_subcircuit_component(i.second.lines, iFile, i.first);
-      if (allCounted == 1) subCircuitContainsSubCicuit[i.first] = 0;
+      if (allCounted == 1) subCircuitContainsSubCircuit[i.first] = 0;
     }
-    mapValueCount = map_value_count(subCircuitContainsSubCicuit, 1);
+    mapValueCount = map_value_count(subCircuitContainsSubCircuit, 1);
     if(VERBOSE) {
-		for (auto i : subCircuitContainsSubCicuit) {
+		for (auto i : subCircuitContainsSubCircuit) {
 			std::cout << i.first << ": " << i.second << '\n';
 		}
       std::cout << "Subcircuits to be counted: " << mapValueCount << '\n';
@@ -162,7 +162,7 @@ void InputFile::circuit_to_segments(InputFile& iFile) {
   }
   /* Now the main circuit */
   circuitComponentCount = 0;
-  for (auto i : maincircuitSegment) {
+  for (const auto &i : maincircuitSegment) {
     count_component(i, iFile);
   }
 
@@ -187,8 +187,8 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 				// Identify the subcircuit label
 				modelLabel = tokens[0];
 				// Check to see if it is a subcircuit within a subcircuit so that labeling can be done right
-				if (label == "") label = tokens[0];
-				else label = label + "_" + tokens[0];
+				if (label.empty()) label = tokens[0];
+				else label.append("_" + tokens[0]);
 				// This section is tricky. We need to check if the subcircuit name is at the end or the begining of the line
 				// Check if the second token can be identified as a subcircuit name. If yes then
 				if(iFile.subcircuitSegments.find(tokens[1]) != iFile.subcircuitSegments.end()) {
@@ -224,7 +224,7 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 							tokens[0] = tokens[0] + "_" + label;
 							// Check if the second token (positive node) is identified as IO node
 							if (std::find(iFile.subcircuitSegments[subckt].io.begin(), iFile.subcircuitSegments[subckt].io.end(), tokens[1]) != iFile.subcircuitSegments[subckt].io.end()) {
-								for (auto k : iFile.subcircuitSegments[subckt].io) {
+								for (const auto &k : iFile.subcircuitSegments[subckt].io) {
 									if (k == tokens[1]) {
 										// Sub the token for corresponding overarching subcircuit IO node
 										tokens[1] = io[index_of(iFile.subcircuitSegments[subckt].io, k)];
@@ -236,7 +236,7 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 							}
 							// If the third token (negative node) is identified as IO node
 							else if (std::find(iFile.subcircuitSegments[subckt].io.begin(), iFile.subcircuitSegments[subckt].io.end(), tokens[2]) != iFile.subcircuitSegments[subckt].io.end()) {
-								for (auto k : iFile.subcircuitSegments[subckt].io) {
+								for (const auto &k : iFile.subcircuitSegments[subckt].io) {
 									// Sub the token for corresponding overarching subcircuit IO node
 									if (k == tokens[2]) tokens[2] = io[index_of(iFile.subcircuitSegments[subckt].io, k)];
 								}
@@ -324,7 +324,7 @@ void InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& s
 					}
 				}
 			}
-			catch (std::out_of_range) {}
+			catch (const std::out_of_range&) {}
 		}
 		else duplicateSegment.push_back(i);
 		label = origLabel;

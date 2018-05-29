@@ -102,19 +102,19 @@
 /*
 	Function that manages different error codes. This function will be huge.
 */
-void error_handling(int errorCode);
+[[noreturn]] void error_handling(int errorCode);
 /*
-	Invalid component decleration error function
+	Invalid component declaration error function
 */
 void invalid_component_errors(int errorCode, std::string componentLabel);
 /*
 	Missing simulation and incorrect control parameters specified
 */
-void control_errors(int errorCode, std::string whatPart);
+[[noreturn]] void control_errors(int errorCode, std::string whatPart);
 /*
 	Model declaration error function
 */
-void model_errors(int errorCode, std::string whatPart);
+[[noreturn]] void model_errors(int errorCode, std::string whatPart);
 /*
 	Matrix creation error function
 */
@@ -122,7 +122,7 @@ void matrix_errors(int errorCode, std::string whatPart);
 /*
 	Misc error function
 */
-void misc_errors(int errorCode, std::string whatPart);
+[[noreturn]] void misc_errors(int errorCode, std::string whatPart);
 /*
 	Function parser error function
 */
@@ -130,7 +130,7 @@ void function_errors(int errorCode, std::string whatPart);
 /*
 	Simulation error function
 */
-void simulation_errors(int errorCode, std::string whatPart);
+[[noreturn]] void simulation_errors(int errorCode, std::string whatPart);
 /*
 	Plotting error function
 */

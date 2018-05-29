@@ -14,7 +14,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 	std::string columnLabel1, columnLabel2, label, nodesToPlot;
 	int index1 = -1;
 	int index2 = -1;
-	for (auto string : controlPart) {
+	for (const auto &string : controlPart) {
 		/****************************************************/
 		/*						PRINT						*/
 		/****************************************************/
@@ -63,10 +63,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							index1 = index_of(columnNames, columnLabel1);
 							trace.clear();
 							trace = xVect[index1];
-							for (int m = 0; m < trace.size(); m++) {
-								trace[m] = 0.0;
-							}
-							std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<double>());
+							std::fill(trace.begin(), trace.end(), 0.0);
+							std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<>());
 							traceLabel.push_back(label);
 							traceData.push_back(trace);
 						}
@@ -102,7 +100,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							trace = xVect[index1];
 							if (std::find(columnNames.begin(), columnNames.end(), columnLabel2) != columnNames.end()) {
 								index2 = index_of(columnNames, columnLabel2);
-								std::transform(xVect[index1].begin(), xVect[index1].end(), xVect[index2].begin(), trace.begin(), std::minus<double>());
+								std::transform(xVect[index1].begin(), xVect[index1].end(), xVect[index2].begin(), trace.begin(), std::minus<>());
 								traceLabel.push_back(label);
 								traceData.push_back(trace);
 							}
@@ -173,7 +171,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						else if (i.VNindex == -1) trace = xVect[i.VPindex];
 						else {
 							trace = xVect[i.VPindex];
-							std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
+							std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
 						}
 						label = "DEVICE VOLTAGE " + i.label;
 						traceLabel.push_back(label);
@@ -202,8 +200,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						if (tokens[2][0] == 'R') {
 							if (i.VPindex == -1) trace = xVect[i.VNindex];
 							else if (i.VNindex == -1) trace = xVect[i.VPindex];
-							else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
-							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
+							else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
+							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<>(), std::placeholders::_1, (1/i.value)));
 							label = "DEVICE CURRENT " + i.label;
 							traceLabel.push_back(label);
 							traceData.push_back(trace);
@@ -256,7 +254,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					nodesToPlot = tokens[k].substr(2);
 					nodesToPlot = nodesToPlot.substr(0, nodesToPlot.size() - 1);
 					/* If multiple arguments are specified for V */
-					if (nodesToPlot.find(",") != std::string::npos) {
+					if (nodesToPlot.find(',') != std::string::npos) {
 						nodesTokens = tokenize_delimeter(nodesToPlot, ",");
 						if(nodesTokens.size() > 2) {
 							plotting_errors(TOO_MANY_NODES, string);
@@ -281,10 +279,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 									index1 = index_of(columnNames, columnLabel1);
 									trace.clear();
 									trace = xVect[index1];
-									for (int m = 0; m < trace.size(); m++) {
-										trace[m] = 0.0;
-									}
-									std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<double>());
+									std::fill(trace.begin(), trace.end(), 0.0);
+									std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<>());
 									traceLabel.push_back(label);
 									traceData.push_back(trace);
 								}
@@ -384,7 +380,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 										else if (i.VNindex == -1) trace = xVect[i.VPindex];
 										else {
 											trace = xVect[i.VPindex];
-											std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
+											std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
 										}
 										label = "DEVICE VOLTAGE " + i.label;
 										traceLabel.push_back(label);
@@ -417,8 +413,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							if (nodesToPlot[0] == 'R') {
 								if (i.VPindex == -1) trace = xVect[i.VNindex];
 								else if (i.VNindex == -1) trace = xVect[i.VPindex];
-								else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
-								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
+								else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
+								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<>(), std::placeholders::_1, (1/i.value)));
 								label = "DEVICE CURRENT " + i.label;
 								traceLabel.push_back(label);
 								traceData.push_back(trace);
@@ -571,7 +567,7 @@ int plot_all_traces() {
 		}
 		return 0;
 	#endif
-	// return 0;
+	return 0;
 }
 
 /*
@@ -686,5 +682,6 @@ int plot_traces(InputFile& iFile) {
 				plt::show();
 		}
 		return 0;
-	#endif
+  #endif
+	return 0;
 }

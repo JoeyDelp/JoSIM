@@ -60,7 +60,7 @@ std::vector<double> function_parse(std::string str);
 /*
 Helper function for finding the depth of subcircuits in the design
 */
-bool findX(std::vector<std::string> segment, std::string & theLine);
+bool findX(std::vector<std::string>& segment, std::string & theLine);
 /*
 Function that finds the depth of the subcircuits in the design
 */

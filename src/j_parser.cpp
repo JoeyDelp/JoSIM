@@ -16,7 +16,7 @@ void parse_expression(std::string expName, std::string expr, std::string subckt)
     int opLoc, popCount = 0;
     double result = 0.0;
     // While there are tokens to read
-    while(expToEval != "") {
+    while(!expToEval.empty()) {
         // Read a token
         opLoc = expToEval.find_first_of("/*-+(){}[]^");
         // Check to make sure it's not scientific notation
@@ -58,7 +58,7 @@ void parse_expression(std::string expName, std::string expr, std::string subckt)
                       OR (Operator at top of operator stack with equal precedence and left associative))
                       AND (Operator at top of operator stack is not a left bracket))
            */
-           while((opStack.size() >= 1) && (((prec_lvl(opStack.back()) == 4) || (prec_lvl(opStack.back()) >= prec_lvl(partToEval))) 
+           while((!opStack.empty()) && (((prec_lvl(opStack.back()) == 4) || (prec_lvl(opStack.back()) >= prec_lvl(partToEval)))
                     && (opStack.back().find_first_of("([{") == std::string::npos) && (partToEval != "^"))) {
                 // Pop operators from the operator stack onto RPN Queue
                 rpnQueue.push_back(opStack.back());
@@ -75,14 +75,14 @@ void parse_expression(std::string expName, std::string expr, std::string subckt)
         // Else if token is right bracket
         else if(partToEval.find_first_of(")]}") != std::string::npos) {
             // While operator at top of operator stack is not left bracket
-            while ((opStack.size() >= 1) && (opStack.back().find_first_of("([{") == std::string::npos)) {
+            while ((!opStack.empty()) && (opStack.back().find_first_of("([{") == std::string::npos)) {
                 // Pop operator from operator stack to RPN Queue
                 rpnQueue.push_back(opStack.back());
                 qType.push_back('O');
                 opStack.pop_back();
             }
             // Pop the left bracket from the operator stack
-            if((opStack.size() >= 1) && (opStack.back().find_first_of("([{") != std::string::npos))
+            if((!opStack.empty()) && (opStack.back().find_first_of("([{") != std::string::npos))
                 opStack.pop_back();
             else parsing_errors(MISMATCHED_PARENTHESIS, expr);
         }
@@ -94,9 +94,9 @@ void parse_expression(std::string expName, std::string expr, std::string subckt)
         else expToEval = expToEval.substr(opLoc);
     }
     // If there are no more tokens to read
-    if(expToEval == "")
+    if(expToEval.empty())
         // While there are still operators on the operator stack
-        while(opStack.size() > 0) {
+        while(!opStack.empty()) {
 
             if(opStack.back().find_first_of("([{") != std::string::npos) parsing_errors(MISMATCHED_PARENTHESIS, expr);
             else {
@@ -171,7 +171,6 @@ int prec_lvl(std::string op) {
 }
 
 double parse_operator(std::string op, double val1, double val2, int& popCount) {
-    double result;
     if(std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
         popCount = 1;
         if (op == "SIN") return sin(val2);
