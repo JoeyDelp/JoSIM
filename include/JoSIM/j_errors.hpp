@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#pragma once
+#ifndef J_ERRORS_H
+#define J_ERRORS_H
 #include "j_std_include.hpp"
 /*
   General error codes
@@ -17,6 +18,8 @@
 #define CANNOT_OPEN_FILE 9
 #define OUTPUT_LEGACY_ERROR 10
 #define OUTPUT_LEGACY_FILE_ERROR 11
+#define TOO_FEW_ARGUMENTS 12
+#define NO_PLOT_COMPILE 13
 /*
   Component error codes
 */
@@ -38,6 +41,7 @@
 #define DUPLICATE_LABEL 15
 #define INVALID_SUBCIRCUIT_NODES 16
 #define TIME_ERROR 17
+#define MISSING_SUBCIRCUIT_NAME 18
 /*
   Control error codes
 */
@@ -102,7 +106,7 @@
 */
 void error_handling(int errorCode);
 /*
-	Invalid component decleration error function
+	Invalid component declaration error function
 */
 void invalid_component_errors(int errorCode, std::string componentLabel);
 /*
@@ -112,7 +116,7 @@ void control_errors(int errorCode, std::string whatPart);
 /*
 	Model declaration error function
 */
-void model_errors(int errorCode, std::string whatPart);
+[[noreturn]] void model_errors(int errorCode, std::string whatPart);
 /*
 	Matrix creation error function
 */
@@ -120,7 +124,7 @@ void matrix_errors(int errorCode, std::string whatPart);
 /*
 	Misc error function
 */
-void misc_errors(int errorCode, std::string whatPart);
+[[noreturn]] void misc_errors(int errorCode, std::string whatPart);
 /*
 	Function parser error function
 */
@@ -128,7 +132,7 @@ void function_errors(int errorCode, std::string whatPart);
 /*
 	Simulation error function
 */
-void simulation_errors(int errorCode, std::string whatPart);
+[[noreturn]] void simulation_errors(int errorCode, std::string whatPart);
 /*
 	Plotting error function
 */
@@ -137,3 +141,4 @@ void plotting_errors(int errorCode, std::string whatPart);
 	Parsing error function
 */
 void parsing_errors(int errorCode, std::string whatPart);
+#endif

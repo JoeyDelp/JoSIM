@@ -35,6 +35,12 @@
         "exception": "cpp",
         "new": "cpp",
         "stdexcept": "cpp",
-        "typeinfo": "cpp"
-    }
+        "typeinfo": "cpp",
+        "__string": "cpp",
+        "set": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "utility": "cpp"
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
