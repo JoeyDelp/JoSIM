@@ -3,18 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "josim", "josim.vcxproj", "{4281744E-7082-4653-ACCD-D7A6463DEE83}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JoSIM", "josim.vcxproj", "{4281744E-7082-4653-ACCD-D7A6463DEE83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Release|x64 = Release|x64
+		DEBUG_FLTK|x64 = DEBUG_FLTK|x64
+		DEBUG_Matplotlib|x64 = DEBUG_Matplotlib|x64
+		DEBUG_None|x64 = DEBUG_None|x64
+		RELEASE_FLTK|x64 = RELEASE_FLTK|x64
+		RELEASE_Matplotlib|x64 = RELEASE_Matplotlib|x64
+		RELEASE_None|x64 = RELEASE_None|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4281744E-7082-4653-ACCD-D7A6463DEE83}.Debug|x64.ActiveCfg = Debug|x64
-		{4281744E-7082-4653-ACCD-D7A6463DEE83}.Debug|x64.Build.0 = Debug|x64
-		{4281744E-7082-4653-ACCD-D7A6463DEE83}.Release|x64.ActiveCfg = Release|x64
-		{4281744E-7082-4653-ACCD-D7A6463DEE83}.Release|x64.Build.0 = Release|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.DEBUG_FLTK|x64.ActiveCfg = DEBUG_FLTK|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.DEBUG_FLTK|x64.Build.0 = DEBUG_FLTK|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.DEBUG_Matplotlib|x64.ActiveCfg = DEBUG_Matplotlib|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.DEBUG_Matplotlib|x64.Build.0 = DEBUG_Matplotlib|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.DEBUG_None|x64.ActiveCfg = DEBUG_None|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.DEBUG_None|x64.Build.0 = DEBUG_None|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.RELEASE_FLTK|x64.ActiveCfg = RELEASE_FLTK|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.RELEASE_FLTK|x64.Build.0 = RELEASE_FLTK|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.RELEASE_Matplotlib|x64.ActiveCfg = RELEASE_Matplotlib|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.RELEASE_Matplotlib|x64.Build.0 = RELEASE_Matplotlib|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.RELEASE_None|x64.ActiveCfg = RELEASE_None|x64
+		{4281744E-7082-4653-ACCD-D7A6463DEE83}.RELEASE_None|x64.Build.0 = RELEASE_None|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
