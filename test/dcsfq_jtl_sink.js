@@ -70,5 +70,7 @@ X04        JTL        4         5
 X05 	   SINK       5
 .tran 0.25p 1000p 0 0.25p
 .print nodev 1 0
+*.print nodev 2 0
 .print nodev 3 0
+*.print nodev 4 0
 .print nodev 5 0
