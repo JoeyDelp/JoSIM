@@ -10,7 +10,7 @@ bool VERBOSE = false,
       OUTPUT_LEGACY = false,
       OUTPUT_LEGACY_SPECIFIED = false,
       PLOTTING = false,
-      DEVELOPER = true;
+      DEVELOPER = false;
 int subcktDepth,
     thisDepth = 1,
     overallDepth = 1;
