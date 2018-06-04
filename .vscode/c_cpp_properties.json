@@ -10,7 +10,8 @@
                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include",
                 "${workspaceFolder}/include/suitesparse",
                 "${workspaceFolder}/include/FL",
-                "${workspaceFolder}/include"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/JoSIM"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",

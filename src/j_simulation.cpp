@@ -5,50 +5,63 @@
 trans_sim tsim;
 
 void identify_simulation(InputFile& iFile) {
-	std::string simline;
+	std::vector<std::string> simtokens;
+	// Identify a line if it is a simulation control
 	for (const auto &i : iFile.controlPart) {
+		// If transient analysis...
 		if (i.find("TRAN") != std::string::npos) {
-			simline = i;
+			// Set simulation type to transient
 			iFile.simulationType = TRANSIENT;
+			// Tokenize the string
+			simtokens = tokenize_delimeter(i, " ,");
+			if (simtokens.size() < 2) {
+				control_errors(TRANS_ERROR, "Too few parameters: " + i);
+				tsim.prstep = 1E-12;
+				tsim.tstop = 1E-9;
+				tsim.tstart = 0;
+				tsim.maxtstep = 1E-12;
+			}
+			else {
+				tsim.prstep = modifier(simtokens[1]);
+				if (simtokens.size() > 2) {
+					tsim.tstop = modifier(simtokens[2]);
+					if (simtokens.size() > 3) {
+						tsim.tstart = modifier(simtokens[3]);
+						if (simtokens.size() > 4) {
+							tsim.maxtstep = modifier(simtokens[4]);
+						}
+						else tsim.maxtstep = 1E-12;
+					}
+					else {
+						tsim.tstart = 0;
+						tsim.maxtstep = 1E-12;
+					}
+				}
+				else {
+					tsim.tstop = 1E-9;
+					tsim.tstart = 0;
+					tsim.maxtstep = 1E-12;
+				}
+			}
 			break;
 		}
+		// If dc analysis...
 		if (i.find("DC") != std::string::npos) {
-			simline = i;
 			iFile.simulationType = DC;
 			break;
 		}
+		// If ac analysis...
 		if (i.find("AC") != std::string::npos) {
-			simline = i;
 			iFile.simulationType = AC;
 		}
+		// If phase analysis...
 		if (i.find("PHASE") != std::string::npos) {
-			simline = i;
 			iFile.simulationType = PHASE;
 		}
 	}
-
-	std::vector<std::string> simtokens;
-	switch (iFile.simulationType) {
-	case TRANSIENT:
-		simtokens = tokenize_delimeter(simline, " ,");
-		if (simtokens.size() < 3) {
-			control_errors(TRANS_ERROR, "Too few parameters");
-		}
-		else if (simtokens.size() >= 3) {
-			tsim.prstep = modifier(simtokens[1]);
-			tsim.tstop = modifier(simtokens[2]);
-			if (simtokens.size() == 4) {
-				tsim.tstart = modifier(simtokens[3]);
-			}
-			if (simtokens.size() == 5) {
-				tsim.maxtstep = modifier(simtokens[4]);
-			}
-		}
-		break;
-	case DC:
-	case AC:
-	case PHASE:
-	case NONE_SPECIFIED:
+	// No simulation type was specified in all the controls
+	if (iFile.simulationType == 4) {
+		// Error and inform user
 		control_errors(NO_SIM, "");
 	}
 }
@@ -143,8 +156,8 @@ void transient_simulation() {
 	/***************/
 	/* Start a progress bar */
 	std::cout << "Simulating:" << std::endl;
-	double increments = 100 / simSize;
-	double progress_increments = 30 / simSize;
+	double increments = 100 / (double)simSize;
+	double progress_increments = 30 / (double)simSize;
 	double incremental_progress = 0.0;
 	int progress = 0;
 	int old_progress = 0;

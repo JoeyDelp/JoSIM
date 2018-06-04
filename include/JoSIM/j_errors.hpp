@@ -18,6 +18,8 @@
 #define CANNOT_OPEN_FILE 9
 #define OUTPUT_LEGACY_ERROR 10
 #define OUTPUT_LEGACY_FILE_ERROR 11
+#define TOO_FEW_ARGUMENTS 12
+#define NO_PLOT_COMPILE 13
 /*
   Component error codes
 */
@@ -102,7 +104,7 @@
 /*
 	Function that manages different error codes. This function will be huge.
 */
-[[noreturn]] void error_handling(int errorCode);
+void error_handling(int errorCode);
 /*
 	Invalid component declaration error function
 */
@@ -110,7 +112,7 @@ void invalid_component_errors(int errorCode, std::string componentLabel);
 /*
 	Missing simulation and incorrect control parameters specified
 */
-[[noreturn]] void control_errors(int errorCode, std::string whatPart);
+void control_errors(int errorCode, std::string whatPart);
 /*
 	Model declaration error function
 */

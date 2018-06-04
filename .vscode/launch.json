@@ -9,15 +9,12 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/JoSIM_mac_Debug",
-            "args": ["-g", "-v", "test/MITLL_DFFT.cir"],
+            "args": ["-g", "test/TEST_MITLL_DFFT.cir"],
+            //"args": ["-g", "test/4bitksa_hand_ptl.js"],
+            //"args": ["-g", "test/dcsfq_jtl_sink.js"],
+            //"args": ["-g", "../../C3_Workspace/js/mitll_dcsfq.js"],
             //"stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            //"environment": [],
-            //"externalConsole": false,
-            //"MIMode": "lldb",
-            //"miDebuggerPath": "/Applications/Xcode.app/Contents/Developer/usr/bin/lldb-mi"
-            "MIMode" : "lldb",
-            "miDebuggerPath" : "/usr/local/Cellar/llvm/6.0.0/bin/lldb"
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

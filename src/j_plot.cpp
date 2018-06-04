@@ -530,7 +530,8 @@ int plot_all_traces() {
 	#elif USING_MATPLOTLIB
 		int counter = 0;
 		if (columnNames.size() <= 3) {
-			plt::figure_size(800, 600);
+			plt::figure();
+			//plt::figure_size(800, 600);
 			for (auto i : columnNames) {
 				plt::subplot(columnNames.size(), 1, counter + 1);
 				plt::grid(true);
@@ -548,7 +549,8 @@ int plot_all_traces() {
 		else {
 			for (int j = 0; j < columnNames.size(); j = j + 3) {
 				counter = j;
-				plt::figure_size(800, 600);
+				//plt::figure_size(800, 600);
+				plt::figure();
 				while((counter < columnNames.size()) && (counter < j + 3)) {
 					plt::subplot(3, 1, (counter - j) + 1);
 					plt::grid(true);
@@ -623,7 +625,8 @@ int plot_traces(InputFile& iFile) {
 		traces_to_plot(iFile.controlPart, traceLabel, traceData);
 		if(traceLabel.size() > 0) {
 			if (traceLabel.size() <= 3) {
-				plt::figure_size(800, 600);
+				//plt::figure_size(800, 600);
+				plt::figure();
 				for (int i = 0; i < traceLabel.size(); i++) {
 					plt::subplot(traceLabel.size(), 1, i + 1);
 					plt::grid(true);
@@ -640,7 +643,8 @@ int plot_traces(InputFile& iFile) {
 			else {
 				for (int j = 0; j < traceLabel.size(); j = j + 3) {
 					int  i = j;
-					plt::figure_size(800, 600);
+					//plt::figure_size(800, 600);
+					plt::figure();
 					while((i < traceLabel.size()) && (i < j + 3)) {
 						plt::subplot(3, 1, (i - j) + 1);
 						plt::grid(true);

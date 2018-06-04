@@ -4,9 +4,14 @@
 #define J_PARSER_H
 #include "j_std_include.hpp"
 
-void parse_expression(std::string expName, std::string expr, std::string subckt = "NONE");
+void
+parse_expression(std::string expName,
+                 std::string expr,
+                 std::string subckt = "NONE");
 
-int prec_lvl(std::string op);
+int
+prec_lvl(std::string op);
 
-double parse_operator(std::string op, double val1, double val2, int& popCount);
+double
+parse_operator(std::string op, double val1, double val2, int& popCount);
 #endif
