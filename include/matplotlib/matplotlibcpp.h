@@ -12,11 +12,24 @@
 #  include <functional>
 #endif
 
-#include <Python.h>
+#ifdef WIN32
+#	ifdef _DEBUG 
+#		undef _DEBUG
+#		include <Python.h> 
+#		define _DEBUG 
+#	else #include <Python.h> 
+#	endif
+#else
+#	include <Python.h>
+#endif
 
 #ifndef WITHOUT_NUMPY
-#  define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#  include <numpy/arrayobject.h>
+#	define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#	ifdef WIN32
+#		include "numpy\arrayobject.h"
+#	else
+#		include <numpy/arrayobject.h>
+#	endif
 #endif // WITHOUT_NUMPY
 
 #if PY_MAJOR_VERSION >= 3
