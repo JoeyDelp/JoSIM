@@ -57,6 +57,7 @@
   Model error codes
 */
 #define PARAM_TYPE_ERROR 0
+#define UNKNOWN_MODEL_TYPE 1
 /*
   Matrix error codes
 */

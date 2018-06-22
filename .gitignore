@@ -293,3 +293,6 @@ test/command_test.js
 test/MITLL_DFFT.cir
 .vscode/c_cpp_properties.json
 .vscode/c_cpp_properties.json
+
+# CMake build directories
+build

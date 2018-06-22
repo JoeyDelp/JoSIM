@@ -38,7 +38,7 @@ create_A_matrix(InputFile& iFile)
 {
   std::string cName, rName, cNameP, rNameP, cNameN, rNameN;
   std::vector<std::string> devicetokens, componentLabels;
-  std::string label, nodeP, nodeN;
+  std::string label, nodeP, nodeN, subckt;
   std::unordered_map<std::string, int> rowMap, columnMap;
   int rowCounter, colCounter;
   bool pGND, nGND;
@@ -60,6 +60,9 @@ create_A_matrix(InputFile& iFile)
       }
     } catch (const std::out_of_range&) {
       invalid_component_errors(MISSING_LABEL, i);
+    }
+    if(label.find_first_of("|") != std::string::npos) {
+      subckt = iFile.subcircuitNameMap[label.substr(label.find_first_of("|") + 1)];
     }
     /* Check if positive node exists, if not it's a bad device line definition
      */
@@ -83,8 +86,10 @@ create_A_matrix(InputFile& iFile)
       matrix_element e;
       /* Check if value exists, if not it's a bad resistor definition */
       try {
-        if (parVal.find(devicetokens.at(3)) != parVal.end())
-          value = parVal[devicetokens.at(3)];
+        if (iFile.parVal.find(devicetokens.at(3)) != iFile.parVal.end())
+          value = iFile.parVal[devicetokens.at(3)];
+        else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens.at(3)) != iFile.subcircuitSegments[subckt].parVal.end())
+          value = iFile.subcircuitSegments[subckt].parVal[devicetokens.at(3)];
         else
           value = modifier(devicetokens.at(3));
       } catch (const std::out_of_range&) {
@@ -210,8 +215,10 @@ create_A_matrix(InputFile& iFile)
       matrix_element e;
       /* Check if value exists, if not it's a bad capacitor definition */
       try {
-        if (parVal.find(devicetokens.at(3)) != parVal.end())
-          value = parVal[devicetokens.at(3)];
+        if (iFile.parVal.find(devicetokens.at(3)) != iFile.parVal.end())
+          value = iFile.parVal[devicetokens.at(3)];
+        else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens.at(3)) != iFile.subcircuitSegments[subckt].parVal.end())
+          value = iFile.subcircuitSegments[subckt].parVal[devicetokens.at(3)];
         else
           value = modifier(devicetokens.at(3));
       } catch (const std::out_of_range&) {
@@ -336,8 +343,10 @@ create_A_matrix(InputFile& iFile)
       matrix_element e;
       /* Check if value exists, if not it's a bad inductor definition */
       try {
-        if (parVal.find(devicetokens.at(3)) != parVal.end())
-          value = parVal[devicetokens.at(3)];
+        if (iFile.parVal.find(devicetokens.at(3)) != iFile.parVal.end())
+          value = iFile.parVal[devicetokens.at(3)];
+        else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens.at(3)) != iFile.subcircuitSegments[subckt].parVal.end())
+          value = iFile.subcircuitSegments[subckt].parVal[devicetokens.at(3)];
         else
           value = modifier(devicetokens.at(3));
       } catch (const std::out_of_range&) {
@@ -522,7 +531,7 @@ create_A_matrix(InputFile& iFile)
       /* Create a new matrix element for the resistor */
       matrix_element e;
       /* Parse the function identified (if any)*/
-      sources[label] = function_parse(i);
+      sources[label] = function_parse(i, iFile);
       cName = "C_" + devicetokens.at(0);
       rName = "R_" + devicetokens.at(0);
       if (rowMap.count(rName) == 0) {
@@ -667,7 +676,7 @@ create_A_matrix(InputFile& iFile)
     /********************/
     else if (i[0] == 'I') {
       /* Parse the function identified (if any)*/
-      sources[label] = function_parse(i);
+      sources[label] = function_parse(i, iFile);
       /* Check if positive node is connected to ground */
       if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
         cNameP = "C_NV" + nodeP;
@@ -736,7 +745,7 @@ create_A_matrix(InputFile& iFile)
       matrix_element e;
       /* Identify the JJ parameters based on the model*/
       double jj_cap, jj_rn, jj_rzero, jj_icrit;
-      jj_comp(devicetokens, jj_cap, jj_rn, jj_rzero, jj_icrit);
+      jj_comp(devicetokens, iFile, jj_cap, jj_rn, jj_rzero, jj_icrit);
       cName = "C_P" + devicetokens.at(0);
       rName = "R_" + devicetokens.at(0);
       if (rowMap.count(rName) == 0) {

@@ -11,7 +11,7 @@ std::vector<std::string> funcs(funcsArray,
                                  sizeof(funcsArray) / sizeof(std::string));
 
 void
-parse_expression(std::string expName, std::string expr, std::string subckt)
+parse_expression(std::string expName, std::string expr, std::unordered_map<std::string, double>& parVal, std::unordered_map<std::string, double>& globalParVal, std::string subckt)
 {
   if (parVal.find("expName") != parVal.end())
     parsing_errors(EXPRESSION_ARLEADY_DEFINED, expName);
@@ -43,12 +43,12 @@ parse_expression(std::string expName, std::string expr, std::string subckt)
     }
     // Else if token is a variable with a value
     else if ((parVal.find(partToEval) != parVal.end()) ||
-             (parVal.find(subckt + "_" + partToEval) != parVal.end())) {
+             (globalParVal.find(partToEval) != globalParVal.end())) {
       // Check if subckt variable or not
       if (subckt != "NONE") {
         // Push variable to RPN Queue
         rpnQueue.push_back(
-          precise_to_string(parVal[subckt + "_" + partToEval]));
+          precise_to_string(parVal[partToEval]));
         qType.push_back('V');
       } else {
         // Push variable to RPN Queue

@@ -224,6 +224,9 @@ model_errors(int errorCode, std::string whatPart)
       std::cout << "E: Unknown model parameter " << whatPart << " specified."
                 << std::endl;
       exit(0);
+    case UNKNOWN_MODEL_TYPE:
+      std::cout << "E: Unknown model type " << whatPart << " specified." << std::endl;
+      exit(0);
     default:
       std::cout << "E: Unknown model error: " << whatPart << std::endl;
       exit(0);

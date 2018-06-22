@@ -49,78 +49,95 @@ void
 circuit_stats(int full, InputFile& iFile)
 {
   std::stringstream ss;
-  std::cout << "Circuit characteristics:" << '\n';
+  std::cout << "Circuit characteristics:" << std::endl;
   std::cout << std::setw(35) << std::left
-            << "Subcircuits:" << iFile.subCircuitCount << '\n';
-  std::cout << '\n';
+            << "Subcircuits:" << iFile.subCircuitCount << std::endl;
+  std::cout << std::endl;
   if (full == 1) {
     for (auto i : iFile.subcircuitSegments) {
-      std::cout << "Subcircuit: " << i.first << '\n';
+      std::cout << "Subcircuit: " << i.first << std::endl;
       std::cout
         << "*************************************************************"
-        << '\n';
+        << std::endl;
       for (const auto& j : i.second.lines) {
-        std::cout << j << '\n';
+        std::cout << j << std::endl;
       }
       std::cout
         << "*************************************************************"
-        << '\n';
+        << std::endl;
       std::cout << i.first << " component count: "
-                << iFile.subCircuitComponentCount[i.first] << '\n';
-      std::cout << i.first << " JJ count: " << iFile.subCircuitJJCount[i.first]
-                << '\n';
-      std::cout << '\n';
+                << i.second.componentCount << std::endl;
+      std::cout << i.first << " JJ count: " << i.second.jjCount
+                << std::endl;
+      std::cout << std::endl;
     }
-    std::cout << "Main circuit: " << '\n';
+    std::cout << "Main circuit: " << std::endl;
     std::cout << "*************************************************************"
-              << '\n';
+              << std::endl;
     for (const auto& i : iFile.maincircuitSegment) {
-      std::cout << i << '\n';
+      std::cout << i << std::endl;
     }
     std::cout << "*************************************************************"
-              << '\n';
-    std::cout << "Main circuit component count: " << iFile.circuitComponentCount
-              << '\n';
-    std::cout << "Main circuit JJ count: " << iFile.circuitJJCount << '\n';
-    std::cout << '\n';
-    std::cout << "Simulation control: " << '\n';
+              << std::endl;
+    std::cout << "Main circuit component count: " << iFile.componentCount
+              << std::endl;
+    std::cout << "Main circuit JJ count: " << iFile.jjCount << std::endl;
+    std::cout << std::endl;
+    std::cout << "Simulation control: " << std::endl;
     std::cout << "*************************************************************"
-              << '\n';
+              << std::endl;
     for (const auto& i : iFile.controlPart) {
-      std::cout << i << '\n';
+      std::cout << i << std::endl;
     }
     std::cout << "*************************************************************"
-              << '\n';
+              << std::endl;
   } else {
     for (auto i : iFile.subcircuitSegments) {
       ss.str(i.first + " component count:");
       std::cout << std::setw(35) << std::left << ss.str()
-                << iFile.subCircuitComponentCount[i.first] << '\n';
+                << i.second.componentCount << std::endl;
       ss.str(i.first + " JJ count:");
       std::cout << std::setw(35) << std::left << ss.str()
-                << iFile.subCircuitJJCount[i.first] << '\n';
+                << i.second.jjCount << std::endl;
     }
-    std::cout << '\n';
+    std::cout << std::endl;
     std::cout << std::setw(35) << std::left
               << "Main circuit component count:" << iFile.circuitComponentCount
-              << '\n';
+              << std::endl;
     std::cout << std::setw(35) << std::left
-              << "Main circuit JJ count:" << iFile.circuitJJCount << '\n';
-    std::cout << '\n';
+              << "Main circuit JJ count:" << iFile.circuitJJCount << std::endl;
+    std::cout << std::endl;
   }
 }
 /*
-  Turn string into tokens using only spaces (fast)
+  Turn string into tokens using only spaces
 */
 std::vector<std::string>
 tokenize_space(std::string c)
 {
-  std::istringstream iss(c);
+  std::string::size_type pos, lastPos = 0, length = c.length();
+  std::string delimiters = " \t";
   std::vector<std::string> tokens;
-  std::copy(std::istream_iterator<std::string>(iss),
-            std::istream_iterator<std::string>(),
-            std::back_inserter(tokens));
-  return tokens;
+  bool trimEmpty = true;
+
+   using value_type = typename std::vector<std::string>::value_type;
+   using size_type  = typename std::vector<std::string>::size_type;
+
+   while(lastPos < length + 1)
+   {
+      pos = c.find_first_of(delimiters, lastPos);
+      if(pos == std::string::npos)
+      {
+         pos = length;
+      }
+
+      if(pos != lastPos || !trimEmpty)
+         tokens.push_back(value_type(c.data()+lastPos,
+               (size_type)pos-lastPos ));
+
+      lastPos = pos + 1;
+   }
+   return tokens;
 }
 /*
   Turn string into tokens using any delimiter (slower)
@@ -270,11 +287,15 @@ substring_before(std::string str, std::string whatpart)
   values for the duration of the simulation.
 */
 std::vector<double>
-function_parse(std::string str)
+function_parse(std::string str, InputFile& iFile)
 {
   std::vector<double> functionOfT(tsim.simsize(), 0.0);
   std::vector<std::string> tokens;
-  std::string posVarName;
+  std::string posVarName, subckt = "";
+  tokens = tokenize_space(str);
+  if(tokens[0].find_first_of("|") != std::string::npos) {
+    subckt = iFile.subcircuitNameMap[tokens[0].substr(tokens[0].find_first_of("|") + 1)];
+  }
   /* Identify string parrameter part of the string */
   auto first = str.find('(') + 1;
   auto last = str.find(')');
@@ -293,8 +314,10 @@ function_parse(std::string str)
         timesteps.push_back(modifier(tokens[i]));
     }
     for (int i = 1; i < tokens.size(); i = i + 2) {
-      if (parVal.find(tokens[i]) != parVal.end())
-        values.push_back(parVal[tokens[i]]);
+      if (iFile.parVal.find(tokens[i]) != iFile.parVal.end())
+        values.push_back(iFile.parVal[tokens[i]]);
+      else if (iFile.subcircuitSegments[subckt].parVal.find(tokens[i]) != iFile.subcircuitSegments[subckt].parVal.end())
+        values.push_back(iFile.subcircuitSegments[subckt].parVal[tokens[i]]);
       else
         values.push_back(modifier(tokens[i]));
     }
@@ -450,4 +473,13 @@ subCircuitDepth(std::vector<std::string> segment,
   } else
     thisDepth = 1;
   return overallDepth;
+}
+/*
+  Compare two strings. Return difference
+*/
+std::string stringSubtract(std::string src, std::string comp)
+{
+  int srcIt = src.size() - 1, compIt = comp.size() - 1;
+  std::string rslt = src;
+  return rslt;
 }
