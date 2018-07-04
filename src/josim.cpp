@@ -13,7 +13,8 @@ bool VERBOSE = false,
       DEVELOPER = false;
 int subcktDepth,
     thisDepth = 1,
-    overallDepth = 1;
+    overallDepth = 1,
+    subcktConv = LEFT;
 
 /*
   JoSIM entry point
@@ -30,6 +31,20 @@ main(int argc, char* argv[])
             << std::endl;
   std::cout << "v" << VERSION << " compiled on " << __DATE__ << " at " << __TIME__
             << std::endl;
+  std::cout << "Plotting engine: " <<
+  #ifdef USING_FLTK
+               "FTLK"
+  #elif USING_MATPLOTLIB
+               "MATPLOTLIB"
+  #else
+               "NONE"
+  #endif
+            << std::endl;
+  #ifdef USING_OPENMP
+    std::cout << "Parallelization is ENABLED" << std::endl;
+  #else 
+    std::cout << "Parallelization is DISABLED" << std::endl;
+  #endif
   std::cout << std::endl;
   /* End title and versioning info */
 
@@ -44,6 +59,18 @@ main(int argc, char* argv[])
         case 'h' :
           std::cout << "JoSIM help interface\n";
           std::cout << "====================\n";
+          std::cout << std::setw(5) << std::left << "-c" << std::setw(5)
+                    << std::left << "|"
+                    << "Sets the subcircuit convention to left(0) or right(1)."
+                    << std::endl;
+          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+                    << std::left << "|"
+                    << "Default is left. WRSpice (normal SPICE uses right)"
+                    << std::endl;
+          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+                    << std::left << "|"
+                    << "Eg. X01 SUBCKT 1 2 3     vs.     X01 1 2 3 SUBCKT"
+                    << std::endl;
           std::cout << std::setw(5) << std::left << "-g" << std::setw(5)
                     << std::left << "|"
                     << "Plot the requested results using a plotting library"
@@ -79,6 +106,25 @@ main(int argc, char* argv[])
                     << std::endl;
           std::cout << std::endl;
           exit(0);
+        // Sets subcircuit convention
+        case 'c' :
+          // Complains if missing an input file
+          if (i == (argc - 1)) error_handling(INPUT_ERROR);
+          // Convention not specified, use default
+          if (argv[i + 1][0] == '-') {
+            subcktConv = LEFT;
+          } else {
+            // If the next argument is not the final argument
+            if ((i + 1) != (argc - 1)) {
+              // Set the convention
+              if(argv[i + 1][0] == '1') subcktConv = RIGHT;
+              else subcktConv = LEFT;
+            } else {
+              // Convention not specified, use default
+              subcktConv = LEFT;
+            }
+          }
+          break;
         // Enables plotting
         case 'g' :
           // Complains if missing an input file
@@ -154,6 +200,11 @@ main(int argc, char* argv[])
           std::cout << std::endl;
           VERBOSE = true;
           break;
+        case '-' :
+          if(argv[i][2] == 'v') {
+            exit(0);
+          }
+          break;
         default:
           // Complain if this is the only argument
           if (i == (argc - 1)) error_handling(INPUT_ERROR);
@@ -197,20 +248,26 @@ main(int argc, char* argv[])
   /* Start JoSIM */
   // Parse the input file into a variable
   InputFile iFile(INPUT_PATH);
+
   // Split up the parsed file into segments
   iFile.circuit_to_segments(iFile);
+
   // Find all the models in the parsed segments
-  identify_models(iFile, models);
+  //identify_models(iFile, models);
   // Identify the type of simulation
   identify_simulation(iFile);
+
   // Determine the maximum depth of subcircuits
   subcktDepth =
     subCircuitDepth(iFile.maincircuitSegment, iFile, thisDepth, overallDepth);
+
   // Substiture the subcircuits into their relevant positions
   for (int i = 0; i < subcktDepth; i++) iFile.sub_in_subcircuits(iFile, iFile.maincircuitSegment);
+
   // Print full circuit statistics if verbose, else simple statistics
   if (VERBOSE) circuit_stats(1, iFile);
   else circuit_stats(0, iFile);
+
   // Developer mode debugging the entire substituted main circuit
   if (DEVELOPER) {
     for (const auto& i : iFile.maincircuitSegment) {
@@ -227,7 +284,7 @@ main(int argc, char* argv[])
   // Decide which simulation to do based on commands specified
   if (iFile.simulationType == TRANSIENT)
     // Do a transient simulation
-    transient_simulation();
+    transient_simulation(iFile);
   // If plotting is specified
   if (PLOTTING) {
     // No plotting engine compiled
@@ -235,7 +292,7 @@ main(int argc, char* argv[])
     error_handling(NO_PLOT_COMPILE);
 #else
     // Plot all possible traces in verbose
-    if (VERBOSE) plot_all_traces();
+    if (VERBOSE) plot_all_traces(iFile);
     // Plot only specified traces
     else plot_traces(iFile);
 #endif

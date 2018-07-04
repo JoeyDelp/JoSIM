@@ -23,8 +23,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 SET(JoSIM_VERSION_MAJOR 1)
 SET(JoSIM_VERSION_MINOR 0)
 # Ensure C++17
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+# See if OpenMP was specified
+OPTION(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
+IF(USING_OPENMP)
+    SET(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+    SET(OpenMP_CXX_LIB_NAMES "omp")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    SET(OpenMP_omp_LIBRARY "/usr/local/lib/libomp.a")
+    ADD_DEFINITIONS(-DUSING_OPENMP)
+ENDIF()
 # Set which graphical interface to use (USING_FLTK, USING_MATPLOTLIB, USING_NONE)
 OPTION(USING_FLTK "Using FLTK basic graphical interface" OFF)
 OPTION(USING_MATPLOTLIB "Using Python based matplotlib graphical interface" ON)
@@ -113,6 +122,12 @@ ADD_SUBDIRECTORY(src)
 
 # Add the source to the executable for compilation
 ADD_EXECUTABLE(JoSIM ${JOSIM_SRC})
+IF(USING_OPENMP)
+    TARGET_LINK_LIBRARIES(JoSIM ${OpenMP_omp_LIBRARY})
+    MESSAGE("Parellization is ENABLED")
+ELSE()
+    MESSAGE("Parellization is DISABLED")
+ENDIF()
 # IF Darwin system FLTK can be installed from source and found but SuiteSparse is harder.
 # We therefore provide SuiteSparse libraries as Darwin is not as fragmented and libraries can be precompiled
 IF(MACOSX)

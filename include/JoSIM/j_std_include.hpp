@@ -32,7 +32,9 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
-
+#ifdef USING_OPENMP
+#include <omp.h>
+#endif
 
 // Graph plotting includes
 #ifdef USING_FLTK
@@ -74,7 +76,6 @@
 #include "j_parser.hpp"
 #include "j_input.hpp"
 #include "j_components.hpp"
-#include "j_models.hpp"
 #include "j_matrix.hpp"
 #include "j_simulation.hpp"
 #include "j_plot.hpp"

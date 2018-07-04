@@ -7,7 +7,7 @@ namespace plt = matplotlibcpp;
 /*
 Determine traces to plot from the control part of the main circuit
 */
-void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::string>& traceLabel, std::vector<std::vector<double>>& traceData) {
+void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std::vector<std::string>& traceLabel, std::vector<std::vector<double>>& traceData) {
 	std::vector<std::string> tokens, labeltokens, nodesTokens;
 	std::vector<double> trace;
 	std::map<std::string, std::vector<double>> traces;
@@ -37,8 +37,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							}
 						}
 						columnLabel1 = "C_NV" + tokens[2];
-						if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-							index1 = index_of(columnNames, columnLabel1);
+						if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+							index1 = index_of(iFile.matA.columnNames, columnLabel1);
 							traceLabel.push_back(label);
 							traceData.push_back(xVect[index1]);
 						}
@@ -59,8 +59,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							}
 						}
 						columnLabel1 = "C_NV" + tokens[3];
-						if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-							index1 = index_of(columnNames, columnLabel1);
+						if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+							index1 = index_of(iFile.matA.columnNames, columnLabel1);
 							trace.clear();
 							trace = xVect[index1];
 							std::fill(trace.begin(), trace.end(), 0.0);
@@ -94,12 +94,12 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 								tokens[3] = tokens[3] + "_" + labeltokens[n];
 							}
 						}
-						if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-							index1 = index_of(columnNames, columnLabel1);
+						if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+							index1 = index_of(iFile.matA.columnNames, columnLabel1);
 							trace.clear();
 							trace = xVect[index1];
-							if (std::find(columnNames.begin(), columnNames.end(), columnLabel2) != columnNames.end()) {
-								index2 = index_of(columnNames, columnLabel2);
+							if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel2) != iFile.matA.columnNames.end()) {
+								index2 = index_of(iFile.matA.columnNames, columnLabel2);
 								std::transform(xVect[index1].begin(), xVect[index1].end(), xVect[index2].begin(), trace.begin(), std::minus<>());
 								traceLabel.push_back(label);
 								traceData.push_back(trace);
@@ -119,8 +119,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 				else {
 					label = "NODE VOLTAGE " + tokens[2];
 					columnLabel1 = "C_NV" + tokens[2];
-					if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-						index1 = index_of(columnNames, columnLabel1);
+					if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+						index1 = index_of(iFile.matA.columnNames, columnLabel1);
 						traceLabel.push_back(label);
 						traceData.push_back(xVect[index1]);
 					}
@@ -142,8 +142,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					}
 				}
 				columnLabel1 = "C_P" + tokens[2];
-				if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-					index1 = index_of(columnNames, columnLabel1);
+				if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+					index1 = index_of(iFile.matA.columnNames, columnLabel1);
 					traceLabel.push_back(label);
 					traceData.push_back(xVect[index1]);
 				}
@@ -164,7 +164,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						tokens[2] = tokens[2] + "_" + labeltokens[n];
 					}
 				}
-				for (auto i : elements) {
+				for (auto i : iFile.matA.elements) {
 					if (i.label == tokens[2]) {
 						trace.clear();
 						if (i.VPindex == -1) trace = xVect[i.VNindex];
@@ -195,7 +195,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					}
 				}
 				std::vector<double> trace;
-				for (auto i : elements) {
+				for (auto i : iFile.matA.elements) {
 					if (i.label == tokens[2]) {
 						if (tokens[2][0] == 'R') {
 							if (i.VPindex == -1) trace = xVect[i.VNindex];
@@ -219,7 +219,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						else if (tokens[2][0] == 'I') {
 							label = "DEVICE CURRENT " + i.label;
 							traceLabel.push_back(label);
-							traceData.push_back(sources[i.label]);
+							traceData.push_back(iFile.matA.sources[i.label]);
 						}
 						else if (tokens[2][0] == 'V') {
 							if (VERBOSE) simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
@@ -275,8 +275,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 								}
 								columnLabel1 = "C_NV" + nodesTokens[1];
 								/* If this is a node voltage */
-								if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-									index1 = index_of(columnNames, columnLabel1);
+								if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+									index1 = index_of(iFile.matA.columnNames, columnLabel1);
 									trace.clear();
 									trace = xVect[index1];
 									std::fill(trace.begin(), trace.end(), 0.0);
@@ -302,8 +302,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 									}
 								}
 								columnLabel1 = "C_NV" + tokens[0];
-								if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-									index1 = index_of(columnNames, columnLabel1);
+								if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+									index1 = index_of(iFile.matA.columnNames, columnLabel1);
 									traceLabel.push_back(label);
 									traceData.push_back(xVect[index1]);
 								}
@@ -332,12 +332,12 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 										nodesTokens[1] = nodesTokens[1] + "_" + labeltokens[n];
 									}
 								}
-								if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-									index1 = index_of(columnNames, columnLabel1);
+								if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+									index1 = index_of(iFile.matA.columnNames, columnLabel1);
 									trace.clear();
 									trace = xVect[index1];
-									if (std::find(columnNames.begin(), columnNames.end(), columnLabel2) != columnNames.end()) {
-										index2 = index_of(columnNames, columnLabel2);
+									if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel2) != iFile.matA.columnNames.end()) {
+										index2 = index_of(iFile.matA.columnNames, columnLabel2);
 										std::transform(xVect[index1].begin(), xVect[index1].end(), xVect[index2].begin(), trace.begin(), std::minus<double>());
 										traceLabel.push_back(label);
 										traceData.push_back(trace);
@@ -364,8 +364,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 								}
 							label = "C_NV" + nodesToPlot;
 							/* If this is a node voltage */
-							if (std::find(columnNames.begin(), columnNames.end(), label) != columnNames.end()) {
-								index1 = index_of(columnNames, label);
+							if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), label) != iFile.matA.columnNames.end()) {
+								index1 = index_of(iFile.matA.columnNames, label);
 								label = "NODE VOLTAGE " + nodesToPlot;
 								traceLabel.push_back(label);
 								traceData.push_back(xVect[index1]);
@@ -373,7 +373,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							/* Else it might be device voltage */
 							else {
 								label = "NOTHING";
-								for (auto i : elements) {
+								for (auto i : iFile.matA.elements) {
 									if (i.label == nodesToPlot) {
 										trace.clear();
 										if (i.VPindex == -1) trace = xVect[i.VNindex];
@@ -408,7 +408,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						}
 					}
 					std::vector<double> trace;
-					for (auto i : elements) {
+					for (auto i : iFile.matA.elements) {
 						if (i.label == nodesToPlot) {
 							if (nodesToPlot[0] == 'R') {
 								if (i.VPindex == -1) trace = xVect[i.VNindex];
@@ -432,7 +432,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 							else if (nodesToPlot[0] == 'I') {
 								label = "DEVICE CURRENT " + i.label;
 								traceLabel.push_back(label);
-								traceData.push_back(sources[i.label]);
+								traceData.push_back(iFile.matA.sources[i.label]);
 							}
 							else if (nodesToPlot[0] == 'V') {
 								if (VERBOSE) simulation_errors(CURRENT_THROUGH_VOLTAGE_SOURCE, i.label);
@@ -464,8 +464,8 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 						}
 					}
 					columnLabel1 = "C_P" + nodesToPlot;
-					if (std::find(columnNames.begin(), columnNames.end(), columnLabel1) != columnNames.end()) {
-						index1 = index_of(columnNames, columnLabel1);
+					if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
+						index1 = index_of(iFile.matA.columnNames, columnLabel1);
 						traceLabel.push_back(label);
 						traceData.push_back(xVect[index1]);
 					}
@@ -491,10 +491,10 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 					tokens[k] = tokens[k].substr(0, index1) + "_" + tokens[k].substr(index1+1);
 				}
 				/* If this is a current source */
-				if (sources.find(tokens[k]) != sources.end()) {
+				if (iFile.matA.sources.find(tokens[k]) != iFile.matA.sources.end()) {
 					label = "CURRENT " + tokens[k];
 					traceLabel.push_back(label);
-					traceData.push_back(sources[tokens[k]]);
+					traceData.push_back(iFile.matA.sources[tokens[k]]);
 				}
 			}
 		}
@@ -503,7 +503,7 @@ void traces_to_plot(std::vector<std::string> controlPart, std::vector<std::strin
 /*
 	Function that creates a plotting window with all available traces to plot
 */
-int plot_all_traces() {
+int plot_all_traces(InputFile& iFile) {
 	#ifdef USING_FLTK
 		Fl_Window * win = new Fl_Window(1240, 768);
 		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
@@ -529,11 +529,11 @@ int plot_all_traces() {
 		return(Fl::run());
 	#elif USING_MATPLOTLIB
 		int counter = 0;
-		if (columnNames.size() <= 3) {
+		if (iFile.matA.columnNames.size() <= 3) {
 			plt::figure();
 			//plt::figure_size(800, 600);
-			for (auto i : columnNames) {
-				plt::subplot(columnNames.size(), 1, counter + 1);
+			for (auto i : iFile.matA.columnNames) {
+				plt::subplot(iFile.matA.columnNames.size(), 1, counter + 1);
 				plt::grid(true);
 				plt::plot(timeAxis, xVect[counter]);
 				plt::title(substring_after(i, "C_"));
@@ -547,18 +547,18 @@ int plot_all_traces() {
 			plt::show();
 		}
 		else {
-			for (int j = 0; j < columnNames.size(); j = j + 3) {
+			for (int j = 0; j < iFile.matA.columnNames.size(); j = j + 3) {
 				counter = j;
 				//plt::figure_size(800, 600);
 				plt::figure();
-				while((counter < columnNames.size()) && (counter < j + 3)) {
+				while((counter < iFile.matA.columnNames.size()) && (counter < j + 3)) {
 					plt::subplot(3, 1, (counter - j) + 1);
 					plt::grid(true);
 					plt::plot(timeAxis, xVect[counter]);
-					plt::title(substring_after(columnNames[counter], "C_"));
-					if(substring_after(columnNames[counter], "C_")[0] == 'N') plt::ylabel("Voltage (V)");
-					else if (substring_after(columnNames[counter], "C_")[0] == 'I') plt::ylabel("Current (A)");
-					else if (substring_after(columnNames[counter], "C_")[0] == 'P') plt::ylabel("Phase (rads)");
+					plt::title(substring_after(iFile.matA.columnNames[counter], "C_"));
+					if(substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'N') plt::ylabel("Voltage (V)");
+					else if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'I') plt::ylabel("Current (A)");
+					else if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'P') plt::ylabel("Phase (rads)");
 					counter++;
 				}
 				plt::xlabel("Time (s)");
@@ -622,7 +622,7 @@ int plot_traces(InputFile& iFile) {
 	#elif USING_MATPLOTLIB
 		std::vector<std::string> traceLabel;
 		std::vector<std::vector<double>> traceData;
-		traces_to_plot(iFile.controlPart, traceLabel, traceData);
+		traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 		if(traceLabel.size() > 0) {
 			if (traceLabel.size() <= 3) {
 				//plt::figure_size(800, 600);
@@ -667,7 +667,7 @@ int plot_traces(InputFile& iFile) {
 			std::cout << "W: Plotting all the node voltages by default." << std::endl;
 			// Find all the NV column indices
 			std::vector<int> nvIndices;
-			for(int i = 0; i < columnNames.size(); i++) if(columnNames[i][2] == 'N') nvIndices.push_back(i);
+			for(int i = 0; i < iFile.matA.columnNames.size(); i++) if(iFile.matA.columnNames[i][2] == 'N') nvIndices.push_back(i);
 			for (int j = 0; j < nvIndices.size(); j = j + 3) {
 					int  i = j;
 					plt::figure_size(800, 600);
@@ -675,7 +675,7 @@ int plot_traces(InputFile& iFile) {
 						plt::subplot(3, 1, (i - j) + 1);
 						plt::grid(true);
 						plt::plot(timeAxis, xVect[nvIndices[i]]);
-						plt::title(substring_after(columnNames[nvIndices[i]], "C_").c_str());
+						plt::title(substring_after(iFile.matA.columnNames[nvIndices[i]], "C_").c_str());
 						plt::ylabel("Voltage (V)");
 						i++;
 					}

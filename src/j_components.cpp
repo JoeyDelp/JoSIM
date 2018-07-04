@@ -3,233 +3,138 @@
 #include "j_components.hpp"
 
 /*
-  Count the components
-*/
-void
-count_component(std::string c, InputFile& iFile, std::string isSubCkt)
-{
-  std::vector<std::string> tokens;
-  switch (c[0]) {
-    case 'R':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'L':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'C':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'B':
-      if (!isSubCkt.empty()) {
-        iFile.subCircuitJJCount[isSubCkt]++;
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      } else {
-        iFile.circuitJJCount++;
-        iFile.circuitComponentCount++;
-      }
-      break;
-    case 'K':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'V':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'I':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'T':
-      if (!isSubCkt.empty())
-        iFile.subCircuitComponentCount[isSubCkt]++;
-      else
-        iFile.circuitComponentCount++;
-      break;
-    case 'X':
-      if (!isSubCkt.empty())
-        iFile.subCircuitContainsSubCircuit[isSubCkt] = 1;
-      else {
-        tokens = tokenize_space(c);
-        // This assumes jsim syntax and needs to be adjusted for wrspice syntax
-        // support
-        if (iFile.subCircuitComponentCount.find(tokens[1]) !=
-            iFile.subCircuitComponentCount.end()) {
-          iFile.circuitComponentCount +=
-            iFile.subCircuitComponentCount[tokens[1]];
-          iFile.circuitJJCount += iFile.subCircuitJJCount[tokens[1]];
-        } else if (iFile.subCircuitComponentCount.find(tokens.back()) !=
-                   iFile.subCircuitComponentCount.end()) {
-          iFile.circuitComponentCount +=
-            iFile.subCircuitComponentCount[tokens.back()];
-          iFile.circuitJJCount += iFile.subCircuitJJCount[tokens.back()];
-        } else {
-          invalid_component_errors(MISSING_SUBCIRCUIT_NAME, c);
-        }
-      }
-      break;
-    default:
-      break;
-  }
-}
-/*
-  Count the components in each subcircuit and add them to the respective
-  subcircuit component counts
-*/
-void
-count_subcircuit_component(std::vector<std::string> c,
-                           InputFile& iFile,
-                           std::string isSubCkt)
-{
-  std::vector<std::string> tokens;
-  int totalSubComponents = 0;
-  int totalSubJJ = 0;
-  bool triggered = false;
-  for (auto i : c) {
-    switch (i[0]) {
-      case 'X':
-        tokens = tokenize_space(i);
-        if (!isSubCkt.empty()) {
-          if (iFile.subCircuitContainsSubCircuit[isSubCkt] != 0) {
-            if (iFile.subCircuitContainsSubCircuit[tokens[1]] == 0) {
-              totalSubComponents += iFile.subCircuitComponentCount[tokens[1]];
-              totalSubJJ += iFile.subCircuitJJCount[tokens[1]];
-            } else {
-              iFile.allCounted = 0;
-              totalSubComponents = 0;
-              totalSubJJ = 0;
-              triggered = true;
-              break;
-            }
-          }
-        }
-        break;
-      default:
-        break;
-    }
-    if (triggered)
-      break;
-  }
-  iFile.subCircuitComponentCount[isSubCkt] += totalSubComponents;
-  iFile.subCircuitJJCount[isSubCkt] += totalSubJJ;
-}
-/*
   Return JJ parameters from tokens
 */
-void
+std::unordered_map<std::string, double>
 jj_comp(std::vector<std::string> tokens,
-        double& jj_cap,
-        double& jj_rn,
-        double& jj_rzero,
-        double& jj_icrit)
+        InputFile& iFile,
+        int& jj_type)
 {
   /* Assume tokens 0-2 are label, pnode, nnode so they can be ignored */
   // However not the case when Junction is a 3 terminal device
-  std::string label, modname, maybemodname;
-  double area;
-  model_rcsj jj;
-  bool found = false;
-  try {
-    label = tokens.at(0);
-  } catch (const std::out_of_range&) {
-    invalid_component_errors(MISSING_LABEL, "unknown");
-  }
-  // Now we need to be careful as the model could be at either 3 or 4
-  try {
-    // If tokens are greater than 5 then it is most likely a 3 terminal junction
-    if (tokens.size() > 5) {
-      // Try the model name at 5th token
-      if (models.find(tokens[4]) != models.end()) {
-        jj = models[tokens[4]];
-        modname = tokens.at(4);
-        found = true;
-      } else {
-        // Else there might be junk at the end of the device line
-        // Therefore try the 4th token
-        if (models.find(tokens[3]) != models.end()) {
-          jj = models[tokens[3]];
-          modname = tokens.at(3);
-          found = true;
-        }
-        // Else the model name might be prepended if using global modals
-        else {
-          maybemodname = tokens[3].substr(tokens[3].find_last_of("_") + 1);
-          if (models.find(maybemodname) != models.end()) {
-            jj = models[maybemodname];
-            modname = maybemodname;
-            found = true;
-          } else {
-            maybemodname = tokens[4].substr(tokens[4].find_last_of("_") + 1);
-            if (models.find(maybemodname) != models.end()) {
-              jj = models[maybemodname];
-              modname = maybemodname;
-              found = true;
-            }
-          }
-        }
-      }
+  std::unordered_map<std::string, double> jj_tokens;
+  std::string label, modname, maybemodname, subcktName = "";
+  double area, jj_cap, jj_rn, jj_rzero, jj_icrit, jj_rtype, jj_vgap;
+  // Identify the subcircuit name (if any) and the model name to identify the model better
+  // This gets the model name regardless if it is the 3rd or the 4th token
+  if(tokens[3].find_first_of("|") != std::string::npos) {
+    if(iFile.subcircuitSegments.count(tokens[3].substr(0, tokens[3].find_first_of("|"))) != 0) {
+      subcktName = tokens[3].substr(0, tokens[3].find_first_of("|"));
+      modname = tokens[3].substr(tokens[3].find_first_of("|") + 1);
+      if(iFile.subcircuitSegments[subcktName].parVal.count(substring_after(tokens[4], "AREA=")) != 0)
+        area = iFile.subcircuitSegments[subcktName].parVal[substring_after(tokens[4], "AREA=")];
+      else area = modifier(substring_after(tokens[4], "AREA="));
     }
-    // Else it is most likely a 2 terminal device and the model is in the
-    // correct place
+    else if(iFile.subcircuitSegments.count(tokens[4].substr(0, tokens[4].find_first_of("|"))) != 0) {
+      subcktName = tokens[4].substr(0, tokens[4].find_first_of("|"));
+      modname = tokens[4].substr(tokens[4].find_first_of("|") + 1);
+      if(iFile.subcircuitSegments[subcktName].parVal.count(substring_after(tokens[5], "AREA=")) != 0)
+        area = iFile.subcircuitSegments[subcktName].parVal[substring_after(tokens[5], "AREA=")];
+      else area = modifier(substring_after(tokens[5], "AREA="));
+    }
+    else invalid_component_errors(MISSING_JJMODEL, label);
+  }
+  else {
+    if(iFile.mainModels.count(tokens[3]) != 0) {
+      modname = tokens[3];
+      if(iFile.parVal.count(substring_after(tokens[4], "AREA=")) != 0)
+        area = iFile.parVal[substring_after(tokens[4], "AREA=")];
+      else area = modifier(substring_after(tokens[4], "AREA="));
+    }
+    else if(iFile.mainModels.count(tokens[4]) != 0) {
+      modname = tokens[4];
+      if(iFile.parVal.count(substring_after(tokens[5], "AREA=")) != 0)
+        area = iFile.parVal[substring_after(tokens[5], "AREA=")];
+      else area = modifier(substring_after(tokens[5], "AREA="));
+    }
+    else invalid_component_errors(MISSING_JJMODEL, label);
+  }
+  if(!subcktName.empty()) { 
+    if(iFile.subcircuitSegments[subcktName].subcktModels.count(modname) != 0) jj_rtype = iFile.subcircuitSegments[subcktName].subcktModels[modname].modelType;
+    else if(iFile.mainModels.count(modname) != 0) jj_rtype = iFile.mainModels[modname].modelType;
+  }
+  else {
+    if(iFile.mainModels.count(modname) != 0) jj_rtype = iFile.mainModels[modname].modelType;
+    else invalid_component_errors(MODEL_NOT_DEFINED, modname);
+  }
+  switch(jj_type) {
+  case RCSJ:
+    if(!subcktName.empty()) { 
+      if(iFile.subcircuitSegments[subcktName].subcktModels.count(modname) != 0) {
+        if(iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.vg) != 0)
+          jj_vgap = iFile.subcircuitSegments[subcktName].parVal[iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.vg];
+        else jj_vgap = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.vg);
+        if(iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rtype) != 0)
+          jj_rtype = iFile.subcircuitSegments[subcktName].parVal[iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rtype];
+        else jj_rtype = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rtype);
+        if(iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.cap) != 0)
+          jj_cap = iFile.subcircuitSegments[subcktName].parVal[iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.cap];
+        else jj_cap = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.cap);
+        if(iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rnormal) != 0)
+          jj_rn = iFile.subcircuitSegments[subcktName].parVal[iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rnormal];
+        else jj_rn = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rnormal);
+        if(iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rzero) != 0)
+          jj_rzero = iFile.subcircuitSegments[subcktName].parVal[iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rzero];
+        else jj_rzero = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.rzero);
+        if(iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icrit) != 0)
+          jj_icrit = iFile.subcircuitSegments[subcktName].parVal[iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icrit];
+        else jj_icrit = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icrit);
+      }
+      else if(iFile.mainModels.count(modname) != 0) {
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.vg) != 0)
+          jj_vgap = iFile.parVal[iFile.mainModels[modname].jj.vg];
+        else jj_vgap = modifier(iFile.mainModels[modname].jj.vg);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.rtype) != 0)
+          jj_rtype = iFile.parVal[iFile.mainModels[modname].jj.rtype];
+        else jj_rtype = modifier(iFile.mainModels[modname].jj.rtype);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.cap) != 0)
+          jj_cap = iFile.parVal[iFile.mainModels[modname].jj.cap];
+        else jj_cap = modifier(iFile.mainModels[modname].jj.cap);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.rnormal) != 0)
+          jj_rn = iFile.parVal[iFile.mainModels[modname].jj.rnormal];
+        else jj_rn = modifier(iFile.mainModels[modname].jj.rnormal);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.rzero) != 0)
+          jj_rzero = iFile.parVal[iFile.mainModels[modname].jj.rzero];
+        else jj_rzero = modifier(iFile.mainModels[modname].jj.rzero);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.icrit) != 0)
+          jj_icrit = iFile.parVal[iFile.mainModels[modname].jj.icrit];
+        else jj_icrit = modifier(iFile.mainModels[modname].jj.icrit);
+      } 
+      else invalid_component_errors(MODEL_NOT_DEFINED, modname);
+    }
     else {
-      // Try the 4th token
-      if (models.find(tokens[3]) != models.end()) {
-        jj = models[tokens[3]];
-        modname = tokens.at(3);
-        found = true;
+      if(iFile.mainModels.count(modname) != 0) {
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.vg) != 0)
+          jj_vgap = iFile.parVal[iFile.mainModels[modname].jj.vg];
+        else jj_vgap = modifier(iFile.mainModels[modname].jj.vg);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.rtype) != 0)
+          jj_rtype = iFile.parVal[iFile.mainModels[modname].jj.rtype];
+        else jj_rtype = modifier(iFile.mainModels[modname].jj.rtype);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.cap) != 0)
+          jj_cap = iFile.parVal[iFile.mainModels[modname].jj.cap];
+        else jj_cap = modifier(iFile.mainModels[modname].jj.cap);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.rnormal) != 0)
+          jj_rn = iFile.parVal[iFile.mainModels[modname].jj.rnormal];
+        else jj_rn = modifier(iFile.mainModels[modname].jj.rnormal);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.rzero) != 0)
+          jj_rzero = iFile.parVal[iFile.mainModels[modname].jj.rzero];
+        else jj_rzero = modifier(iFile.mainModels[modname].jj.rzero);
+        if(iFile.parVal.count(iFile.mainModels[modname].jj.icrit) != 0)
+          jj_icrit = iFile.parVal[iFile.mainModels[modname].jj.icrit];
+        else jj_icrit = modifier(iFile.mainModels[modname].jj.icrit);
       }
-      // Else the model name might be prepended if using global modals
-      else {
-        maybemodname = tokens[3].substr(tokens[3].find_last_of("_") + 1);
-        if (models.find(maybemodname) != models.end()) {
-          jj = models[maybemodname];
-          modname = maybemodname;
-          found = true;
-        }
-      }
+      else invalid_component_errors(MODEL_NOT_DEFINED, modname);
     }
-  } catch (const std::out_of_range) {
-    invalid_component_errors(MISSING_JJMODEL, label);
+    jj_tokens["RTYPE"] = jj_rtype;
+    jj_tokens["VGAP"] = jj_vgap;
+    jj_tokens["CAP"] = jj_cap * area;
+    jj_tokens["RN"] = jj_rn / area;
+    jj_tokens["R0"] = jj_rzero / area;
+    jj_tokens["ICRIT"] = jj_icrit * area;
+    /* Awaiting implementation: CONDEV & IC*/
+    break;
+  case MTJ:
+    break;
   }
-  if (!found) {
-    invalid_component_errors(MODEL_NOT_DEFINED, modname);
-  }
-  try {
-    if (tokens.size() > 5) {
-      if (parVal.find(substring_after(tokens.at(5), "AREA=")) != parVal.end())
-        area = parVal[substring_after(tokens.at(5), "AREA=")];
-      else
-        area = modifier(substring_after(tokens.at(5), "AREA="));
-    } else {
-      if (parVal.find(substring_after(tokens.at(4), "AREA=")) != parVal.end())
-        area = parVal[substring_after(tokens.at(4), "AREA=")];
-      else
-        area = modifier(substring_after(tokens.at(4), "AREA="));
-    }
-  } catch (const std::out_of_range&) {
-    area = 1.0;
-    if (VERBOSE) {
-      invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
-    }
-  }
-  jj_cap = jj.cap * area;
-  jj_rn = jj.rnormal / area;
-  jj_rzero = jj.rzero / area;
-  jj_icrit = jj.icrit * area;
-  /* Awaiting implementation: CONDEV & IC*/
+  return jj_tokens;
 }

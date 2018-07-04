@@ -7,7 +7,8 @@
         Determine traces to plot from the control part of the main circuit
 */
 void
-traces_to_plot(std::vector<std::string> controlPart,
+traces_to_plot(InputFile& iFile,
+               std::vector<std::string> controlPart,
                std::vector<std::string>& trace_label,
                std::vector<std::vector<double>>& trace_data);
 /*
@@ -15,7 +16,7 @@ traces_to_plot(std::vector<std::string> controlPart,
    plot, enabled through command-line
 */
 int
-plot_all_traces();
+plot_all_traces(InputFile& iFile);
 /*
         Function that creates a plotting window only for the specified plots in
    the simulation

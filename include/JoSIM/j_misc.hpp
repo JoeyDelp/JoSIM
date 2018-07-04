@@ -71,7 +71,7 @@ Function parser. Turns a string of pwl, pulse, sin, cos into a vector of values
 for the duration of the simulation.
 */
 std::vector<double>
-function_parse(std::string str);
+function_parse(std::string str, InputFile& iFile);
 /*
 Helper function for finding the depth of subcircuits in the design
 */
@@ -114,4 +114,8 @@ precise_to_string(const T a_value, const int n = 30)
   out << std::fixed << std::setprecision(n) << a_value;
   return out.str();
 }
+/*
+  Compare two strings. Return difference
+*/
+std::string stringSubtract(std::string src, std::string comp);
 #endif
