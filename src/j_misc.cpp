@@ -308,7 +308,7 @@ function_parse(std::string str, InputFile& iFile)
       function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
     std::vector<double> timesteps, values;
     for (int i = 0; i < tokens.size(); i = i + 2) {
-      if (modifier(tokens[i]) >= tsim.tstop) {
+      if (modifier(tokens[i]) > tsim.tstop) {
         timesteps.push_back(modifier(tokens[i - 2]));
       } else
         timesteps.push_back(modifier(tokens[i]));

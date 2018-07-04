@@ -74,7 +74,6 @@
 #include "j_errors.hpp"
 #include "j_misc.hpp"
 #include "j_parser.hpp"
-#include "j_models.hpp"
 #include "j_input.hpp"
 #include "j_components.hpp"
 #include "j_matrix.hpp"

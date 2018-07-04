@@ -175,9 +175,6 @@ InputFile::circuit_to_segments(InputFile& iFile)
     else if (!controlSection) {
       // Identify the models in the main part of the circuit
       if (tokens[0] == ".MODEL") {
-        ////////// REMOVE THIS //////////////
-        maincircuitModels.push_back(i);
-        ////////////////////////////////////
         parse_model(i, mainModels);
       }
       // Identify the parametes in the main part of the circuit
@@ -197,9 +194,6 @@ InputFile::circuit_to_segments(InputFile& iFile)
     } else if (controlSection) {
       // Identify the models in the main part of the circuit
       if (tokens[0] == "MODEL") {
-        ////////// REMOVE THIS //////////////
-        maincircuitModels.push_back(i);
-        ////////////////////////////////////
         parse_model(i, mainModels);
       }
       // Identify the parametes in the main part of the circuit

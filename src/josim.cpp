@@ -200,6 +200,11 @@ main(int argc, char* argv[])
           std::cout << std::endl;
           VERBOSE = true;
           break;
+        case '-' :
+          if(argv[i][2] == 'v') {
+            exit(0);
+          }
+          break;
         default:
           // Complain if this is the only argument
           if (i == (argc - 1)) error_handling(INPUT_ERROR);
@@ -243,20 +248,26 @@ main(int argc, char* argv[])
   /* Start JoSIM */
   // Parse the input file into a variable
   InputFile iFile(INPUT_PATH);
+
   // Split up the parsed file into segments
   iFile.circuit_to_segments(iFile);
+
   // Find all the models in the parsed segments
   //identify_models(iFile, models);
   // Identify the type of simulation
   identify_simulation(iFile);
+
   // Determine the maximum depth of subcircuits
   subcktDepth =
     subCircuitDepth(iFile.maincircuitSegment, iFile, thisDepth, overallDepth);
+
   // Substiture the subcircuits into their relevant positions
   for (int i = 0; i < subcktDepth; i++) iFile.sub_in_subcircuits(iFile, iFile.maincircuitSegment);
+
   // Print full circuit statistics if verbose, else simple statistics
   if (VERBOSE) circuit_stats(1, iFile);
   else circuit_stats(0, iFile);
+
   // Developer mode debugging the entire substituted main circuit
   if (DEVELOPER) {
     for (const auto& i : iFile.maincircuitSegment) {
@@ -273,7 +284,7 @@ main(int argc, char* argv[])
   // Decide which simulation to do based on commands specified
   if (iFile.simulationType == TRANSIENT)
     // Do a transient simulation
-    transient_simulation();
+    transient_simulation(iFile);
   // If plotting is specified
   if (PLOTTING) {
     // No plotting engine compiled
@@ -281,7 +292,7 @@ main(int argc, char* argv[])
     error_handling(NO_PLOT_COMPILE);
 #else
     // Plot all possible traces in verbose
-    if (VERBOSE) plot_all_traces();
+    if (VERBOSE) plot_all_traces(iFile);
     // Plot only specified traces
     else plot_traces(iFile);
 #endif

@@ -7,11 +7,8 @@
 /*
 Return JJ parameters from tokens
 */
-void
+std::unordered_map<std::string, double>
 jj_comp(std::vector<std::string> tokens,
         InputFile& iFile,
-        double& jj_cap,
-        double& jj_rn,
-        double& jj_rzero,
-        double& jj_icrit);
+        int& jj_type);
 #endif

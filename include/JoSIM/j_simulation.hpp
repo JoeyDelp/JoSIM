@@ -33,10 +33,13 @@ class rcsj_sim_object
 public:
   int vPositive, vNegative, bPhase;
   std::string label, positiveNodeRow, negativeNodeRow;
-  double jjIcrit, jjCap, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
+  int jjRtype;
+  bool superconducting;
+  double jjIcrit, jjCap, jjVg, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
     Phase_Guess, Phase_Prev, Is;
   rcsj_sim_object()
   {
+    superconducting = true;
     vPositive = -1;
     vNegative = -1;
     bPhase = -1;
@@ -63,5 +66,5 @@ identify_simulation(InputFile& iFile);
         Perform transient simulation
 */
 void
-transient_simulation();
+transient_simulation(InputFile& iFile);
 #endif
