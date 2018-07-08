@@ -510,7 +510,7 @@ int plot_all_traces(InputFile& iFile) {
 		std::vector<Fl_Chart *> Charts;
 		std::string label;
 		int counter = 0;
-		for (auto i : columnNames) {
+		for (auto i : iFile.matA.columnNames) {
 			label = substring_after(i, "C_");
 			Charts.push_back(new Fl_Chart(20, 20 + (counter * (scroll->h() / 3)), scroll->w() - 40, (scroll->h()/3 - 20)));
 			Charts[counter]->type(FL_LINE_CHART);
@@ -600,8 +600,8 @@ int plot_traces(InputFile& iFile) {
 			std::cout << "W: Plotting all the node voltages by default." << std::endl;
 			int j = 0;
 			std::string label;
-			for (int i = 0; i < columnNames.size(); i++) {
-				label = substring_after(columnNames[i], "C_");
+			for (int i = 0; i < iFile.matA.columnNames.size(); i++) {
+				label = substring_after(iFile.matA.columnNames[i], "C_");
 				if(label[0] == 'N') {
 					Charts.push_back(new Fl_Chart(20, 20 + (j * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
 					Charts[j]->type(FL_LINE_CHART);
