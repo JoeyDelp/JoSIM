@@ -64,7 +64,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							trace.clear();
 							trace = xVect[index1];
 							std::fill(trace.begin(), trace.end(), 0.0);
-							std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<>());
+							std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<double>());
 							traceLabel.push_back(label);
 							traceData.push_back(trace);
 						}
@@ -100,7 +100,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							trace = xVect[index1];
 							if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel2) != iFile.matA.columnNames.end()) {
 								index2 = index_of(iFile.matA.columnNames, columnLabel2);
-								std::transform(xVect[index1].begin(), xVect[index1].end(), xVect[index2].begin(), trace.begin(), std::minus<>());
+								std::transform(xVect[index1].begin(), xVect[index1].end(), xVect[index2].begin(), trace.begin(), std::minus<double>());
 								traceLabel.push_back(label);
 								traceData.push_back(trace);
 							}
@@ -171,7 +171,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 						else if (i.VNindex == -1) trace = xVect[i.VPindex];
 						else {
 							trace = xVect[i.VPindex];
-							std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
+							std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
 						}
 						label = "DEVICE VOLTAGE " + i.label;
 						traceLabel.push_back(label);
@@ -200,8 +200,8 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 						if (tokens[2][0] == 'R') {
 							if (i.VPindex == -1) trace = xVect[i.VNindex];
 							else if (i.VNindex == -1) trace = xVect[i.VPindex];
-							else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
-							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<>(), std::placeholders::_1, (1/i.value)));
+							else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
+							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
 							label = "DEVICE CURRENT " + i.label;
 							traceLabel.push_back(label);
 							traceData.push_back(trace);
@@ -280,7 +280,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 									trace.clear();
 									trace = xVect[index1];
 									std::fill(trace.begin(), trace.end(), 0.0);
-									std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<>());
+									std::transform(trace.begin(), trace.end(), xVect[index1].begin(), trace.begin(), std::minus<double>());
 									traceLabel.push_back(label);
 									traceData.push_back(trace);
 								}
@@ -380,7 +380,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 										else if (i.VNindex == -1) trace = xVect[i.VPindex];
 										else {
 											trace = xVect[i.VPindex];
-											std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
+											std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
 										}
 										label = "DEVICE VOLTAGE " + i.label;
 										traceLabel.push_back(label);
@@ -413,8 +413,8 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							if (nodesToPlot[0] == 'R') {
 								if (i.VPindex == -1) trace = xVect[i.VNindex];
 								else if (i.VNindex == -1) trace = xVect[i.VPindex];
-								else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<>());
-								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<>(), std::placeholders::_1, (1/i.value)));
+								else std::transform(xVect[i.VPindex].begin(), xVect[i.VPindex].end(), xVect[i.VNindex].begin(), trace.begin(), std::minus<double>());
+								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
 								label = "DEVICE CURRENT " + i.label;
 								traceLabel.push_back(label);
 								traceData.push_back(trace);

@@ -296,3 +296,5 @@ test/MITLL_DFFT.cir
 
 # CMake build directories
 build
+
+doc/src

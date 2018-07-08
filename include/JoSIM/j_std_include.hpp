@@ -4,7 +4,7 @@
 #define J_STD_INCLUDE
 
 // Version info
-#define VERSION 1.1
+#define VERSION 1.2
 
 // Executable info
 #ifndef WIN32
@@ -16,7 +16,6 @@
 // Standard library includes
 #include <algorithm>
 #include <cmath>
-#include <codecvt>
 #include <float.h>
 #include <fstream>
 #include <functional>
