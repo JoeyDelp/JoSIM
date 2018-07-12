@@ -271,7 +271,7 @@ InputFile::sub_in_subcircuits(InputFile& iFile, std::vector<std::string>& segmen
           // The rest of the tokens should only be the IO nodes which will be
           // matched to the corresponding subcircuit IO
           io.clear();
-          io.insert(io.begin(), tokens.begin() + 2, tokens.end());
+          io.insert(io.begin(), tokens.begin() + 1, tokens.end() - 1);
         }
         // Create the subcircuit name map to identify subcircuits by their labels
         if(iFile.subcircuitNameMap.count(label) == 0) {

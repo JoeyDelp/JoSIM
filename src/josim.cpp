@@ -59,48 +59,51 @@ main(int argc, char* argv[])
         case 'h' :
           std::cout << "JoSIM help interface\n";
           std::cout << "====================\n";
-          std::cout << std::setw(5) << std::left << "-c" << std::setw(5)
+          std::cout << std::setw(13) << std::left << "-c(onvention)" << std::setw(3)
                     << std::left << "|"
                     << "Sets the subcircuit convention to left(0) or right(1)."
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+          std::cout << std::setw(13) << std::left << "  " << std::setw(3)
                     << std::left << "|"
                     << "Default is left. WRSpice (normal SPICE uses right)"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+          std::cout << std::setw(13) << std::left << "  " << std::setw(3)
                     << std::left << "|"
                     << "Eg. X01 SUBCKT 1 2 3     vs.     X01 1 2 3 SUBCKT"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "-g" << std::setw(5)
+          std::cout << std::setw(13) << std::left << "-g(raph)" << std::setw(3)
                     << std::left << "|"
                     << "Plot the requested results using a plotting library"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+          std::cout << std::setw(13) << std::left << "  " << std::setw(3)
                     << std::left << "|"
                     << "If this is enabled with verbose mode then all traces "
                        "are plotted"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "-h" << std::setw(5)
+          std::cout << std::setw(13) << std::left << "-h(elp)" << std::setw(3)
                     << std::left << "|"
                     << "Displays this help menu" << std::endl;
-          std::cout << std::setw(5) << std::left << "-o" << std::setw(5)
+          std::cout << std::setw(13) << std::left << "-o(utput)" << std::setw(3)
                     << std::left << "|"
                     << "Specify output file for simulation results (.csv)"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+          std::cout << std::setw(13) << std::left << "  " << std::setw(3)
                     << std::left << "|"
                     << "Default will be output.csv if no file is specified"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "-m" << std::setw(5)
+          std::cout << std::setw(13) << std::left << "-m(atlab)" << std::setw(3)
                     << std::left << "|"
                     << "[Legacy] JSIM_N output file format (.dat)" << std::endl;
-          std::cout << std::setw(5) << std::left << "  " << std::setw(5)
+          std::cout << std::setw(13) << std::left << "  " << std::setw(3)
                     << std::left << "|"
                     << "Default will be output.dat if no file is specified"
                     << std::endl;
-          std::cout << std::setw(5) << std::left << "-v" << std::setw(5)
+          std::cout << std::setw(13) << std::left << "-v(erbose)" << std::setw(3)
                     << std::left << "|"
                     << "Runs JoSIM in verbose mode" << std::endl;
+          std::cout << std::setw(13) << std::left << "--v(ersion)" << std::setw(3)
+                    << std::left << "|"
+                    << "Displays the JoSIM version info only" << std::endl;
           std::cout << std::endl;
           std::cout << "Example command: josim -g -o ./output.csv test.cir"
                     << std::endl;

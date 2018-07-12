@@ -40,7 +40,8 @@
         "set": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "__locale": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false
 }

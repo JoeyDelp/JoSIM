@@ -307,7 +307,6 @@ void transient_simulation(InputFile& iFile) {
 								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens["CAP"]) / tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens["RN"]);
 						}
 					}
-					std::cout << thisJunction.label << " has exited superconducting state at " << (double)i * tsim.maxtstep << "s" << std::endl;
 					thisJunction.superconducting = false;
 					csr_A_matrix(iFile);
 					/* Do numeric factorization of matrix */
@@ -322,7 +321,6 @@ void transient_simulation(InputFile& iFile) {
 								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens["CAP"]) / tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens["R0"]);
 						}
 					}
-					std::cout << thisJunction.label << " has entered superconducting state at " << (double)i * tsim.maxtstep << "s" << std::endl;
 					thisJunction.superconducting = true;
 					csr_A_matrix(iFile);
 					/* Do numeric factorization of matrix */
