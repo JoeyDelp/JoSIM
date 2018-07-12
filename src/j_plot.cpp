@@ -33,7 +33,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 							tokens[2] = labeltokens[0];
 							for (int n = 1; n < labeltokens.size(); n++) {
-								tokens[2] = tokens[2] + "_" + labeltokens[n];
+								tokens[2] = tokens[2] + "|" + labeltokens[n];
 							}
 						}
 						columnLabel1 = "C_NV" + tokens[2];
@@ -55,7 +55,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 							tokens[3] = labeltokens[0];
 							for (int n = 1; n < labeltokens.size(); n++) {
-								tokens[3] = tokens[3] + "_" + labeltokens[n];
+								tokens[3] = tokens[3] + "|" + labeltokens[n];
 							}
 						}
 						columnLabel1 = "C_NV" + tokens[3];
@@ -83,7 +83,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 							tokens[2] = labeltokens[0];
 							for (int n = 1; n < labeltokens.size(); n++) {
-								tokens[2] = tokens[2] + "_" + labeltokens[n];
+								tokens[2] = tokens[2] + "|" + labeltokens[n];
 							}
 						}
 						if (tokens[3][0] == 'X') {
@@ -91,7 +91,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 							tokens[3] = labeltokens[0];
 							for (int n = 1; n < labeltokens.size(); n++) {
-								tokens[3] = tokens[3] + "_" + labeltokens[n];
+								tokens[3] = tokens[3] + "|" + labeltokens[n];
 							}
 						}
 						if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
@@ -138,7 +138,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 					std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 					tokens[2] = labeltokens[0];
 					for (int n = 1; n < labeltokens.size(); n++) {
-						tokens[2] = tokens[2] + "_" + labeltokens[n];
+						tokens[2] = tokens[2] + "|" + labeltokens[n];
 					}
 				}
 				columnLabel1 = "C_P" + tokens[2];
@@ -161,7 +161,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 					std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 					tokens[2] = labeltokens[0];
 					for (int n = 1; n < labeltokens.size(); n++) {
-						tokens[2] = tokens[2] + "_" + labeltokens[n];
+						tokens[2] = tokens[2] + "|" + labeltokens[n];
 					}
 				}
 				for (auto i : iFile.matA.elements) {
@@ -191,7 +191,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 					std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 					tokens[2] = labeltokens[0];
 					for (int n = 1; n < labeltokens.size(); n++) {
-						tokens[2] = tokens[2] + "_" + labeltokens[n];
+						tokens[2] = tokens[2] + "|" + labeltokens[n];
 					}
 				}
 				std::vector<double> trace;
@@ -270,7 +270,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									nodesTokens[1] = labeltokens[0];
 									for (int n = 1; n < labeltokens.size(); n++) {
-										nodesTokens[1] = nodesTokens[1] + "_" + labeltokens[n];
+										nodesTokens[1] = nodesTokens[1] + "|" + labeltokens[n];
 									}
 								}
 								columnLabel1 = "C_NV" + nodesTokens[1];
@@ -298,7 +298,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									tokens[0] = labeltokens[0];
 									for (int n = 1; n < labeltokens.size(); n++) {
-										tokens[0] = tokens[0] + "_" + labeltokens[n];
+										tokens[0] = tokens[0] + "|" + labeltokens[n];
 									}
 								}
 								columnLabel1 = "C_NV" + tokens[0];
@@ -321,7 +321,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									nodesTokens[0] = labeltokens[0];
 									for (int n = 1; n < labeltokens.size(); n++) {
-										nodesTokens[0] = nodesTokens[0] + "_" + labeltokens[n];
+										nodesTokens[0] = nodesTokens[0] + "|" + labeltokens[n];
 									}
 								}
 								if (nodesTokens[1][0] == 'X') {
@@ -329,7 +329,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									nodesTokens[1] = labeltokens[0];
 									for (int n = 1; n < labeltokens.size(); n++) {
-										nodesTokens[1] = nodesTokens[1] + "_" + labeltokens[n];
+										nodesTokens[1] = nodesTokens[1] + "|" + labeltokens[n];
 									}
 								}
 								if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), columnLabel1) != iFile.matA.columnNames.end()) {
@@ -359,7 +359,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									nodesToPlot = labeltokens[0];
 									for (int n = 1; n < labeltokens.size(); n++) {
-										nodesToPlot = nodesToPlot + "_" + labeltokens[n];
+										nodesToPlot = nodesToPlot + "|" + labeltokens[n];
 									}
 								}
 							label = "C_NV" + nodesToPlot;
@@ -460,7 +460,7 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 						std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 						nodesToPlot = labeltokens[0];
 						for (int n = 1; n < labeltokens.size(); n++) {
-							nodesToPlot = nodesToPlot + "_" + labeltokens[n];
+							nodesToPlot = nodesToPlot + "|" + labeltokens[n];
 						}
 					}
 					columnLabel1 = "C_P" + nodesToPlot;
@@ -579,7 +579,7 @@ int plot_traces(InputFile& iFile) {
 	#ifdef USING_FLTK
 		std::vector<std::string> traceLabel;
 		std::vector<std::vector<double>> traceData;
-		traces_to_plot(iFile.controlPart, traceLabel, traceData);
+		traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 		Fl_Window * win = new Fl_Window(1240, 768);
 		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
 		std::vector<Fl_Chart *> Charts;
