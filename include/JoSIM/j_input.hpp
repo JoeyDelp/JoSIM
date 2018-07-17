@@ -92,6 +92,20 @@ public:
   std::unordered_map<std::string, std::vector<double>> sources;
   std::unordered_map<std::string, model_xline> xlines;
   int Nsize, Msize;
+  A_matrix() {
+    bMatrixConductanceMap.clear();
+    inductanceMap.clear();
+    nodeConnections.clear();
+    mElements.clear();
+    elements.clear();
+    rowNames.clear();
+    columnNames.clear();
+    nzval.clear();
+    colind.clear();
+    rowptr.clear();
+    sources.clear();
+    xlines.clear();
+  };
 };
 
 /* RCSJ Model */
@@ -162,6 +176,22 @@ public:
   bool containsSubckt = false;
 };
 
+/* Transient analysis simulation object*/
+class trans_sim
+{
+public:
+  double prstep;
+  double tstop;
+  double tstart;
+  double maxtstep;
+  trans_sim()
+  {
+    tstart = 0.0;
+    maxtstep = 1E-12;
+  }
+  double simsize() { return (tstop - tstart) / maxtstep; }
+};
+
 /*
   Model parsing. Split a model line into parameters
 */
@@ -177,6 +207,7 @@ class InputFile
   std::vector<std::string> lines;
 
 public:
+  trans_sim tsim;
   std::vector<std::string> maincircuitSegment, controlPart, subckts;
   std::unordered_map<std::string, std::vector<std::string>> subcircuitModels;
   std::unordered_map<std::string, Subcircuit> subcircuitSegments;
@@ -186,6 +217,9 @@ public:
   std::unordered_map<std::string, double> parVal;
   std::unordered_map<std::string, std::string> subcircuitNameMap;
   A_matrix matA;
+  std::vector<std::vector<double>> xVect;
+  std::vector<double> timeAxis;
+  std::unordered_map<std::string, std::vector<double>> junctionCurrents;
   int subCircuitCount = 0,
     jjCount = 0,
     componentCount = 0,

@@ -10,23 +10,6 @@
 #define PHASE 3
 #define NONE_SPECIFIED 4
 
-/* Transient analysis simulation object*/
-class trans_sim
-{
-public:
-  double prstep;
-  double tstop;
-  double tstart;
-  double maxtstep;
-  trans_sim()
-  {
-    tstart = 0.0;
-    maxtstep = 1E-12;
-  }
-  double simsize() { return (tstop - tstart) / maxtstep; }
-};
-extern trans_sim tsim;
-
 /* RCSJ simulation object*/
 class rcsj_sim_object
 {
@@ -54,9 +37,6 @@ public:
   }
 };
 
-extern std::vector<std::vector<double>> xVect;
-extern std::vector<double> timeAxis;
-extern std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 /*
   Identify simulation type. Be it transient, ac, dc or phase
 */

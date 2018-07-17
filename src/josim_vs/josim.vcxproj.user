@@ -29,7 +29,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_Matplotlib|x64'">
-    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\test\dcsfq_jtl_sink.js</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_FLTK|x64'">

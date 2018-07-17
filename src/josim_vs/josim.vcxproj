@@ -443,7 +443,6 @@
     <ClCompile Include="..\josim.cpp" />
     <ClCompile Include="..\j_matrix.cpp" />
     <ClCompile Include="..\j_misc.cpp" />
-    <ClCompile Include="..\j_models.cpp" />
     <ClCompile Include="..\j_output.cpp" />
     <ClCompile Include="..\j_parser.cpp" />
     <ClCompile Include="..\j_plot.cpp" />
@@ -456,7 +455,6 @@
     <ClInclude Include="..\..\include\JoSIM\j_input.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_matrix.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_misc.hpp" />
-    <ClInclude Include="..\..\include\JoSIM\j_models.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_output.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_parser.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_plot.hpp" />

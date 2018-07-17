@@ -33,9 +33,6 @@
     <ClCompile Include="..\j_misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\j_models.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\j_simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,9 +63,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\JoSIM\j_misc.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\JoSIM\j_models.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\JoSIM\j_output.hpp">

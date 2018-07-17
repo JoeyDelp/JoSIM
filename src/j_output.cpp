@@ -17,18 +17,18 @@ write_data(InputFile& iFile)
       outfile << "time"
               << ",";
       for (int i = 0; i < traceLabel.size() - 1; i++) {
-        outfile << traceLabel[i] << ",";
+        outfile << traceLabel.at(i) << ",";
       }
-      outfile << traceLabel[traceLabel.size() - 1] << "\n";
-      for (int i = 0; i < traceData[0].size(); i++) {
+      outfile << traceLabel.at(traceLabel.size() - 1) << "\n";
+      for (int i = 0; i < traceData.at(0).size(); i++) {
         outfile << std::fixed << std::scientific << std::setprecision(16)
-                << timeAxis[i] << ",";
+                << iFile.timeAxis.at(i) << ",";
         for (int j = 0; j < traceData.size() - 1; j++) {
           outfile << std::fixed << std::scientific << std::setprecision(16)
-                  << traceData[j][i] << ",";
+                  << traceData.at(j).at(i) << ",";
         }
         outfile << std::fixed << std::scientific << std::setprecision(16)
-                << traceData[traceData.size() - 1][i] << "\n";
+                << traceData.at(traceData.size() - 1).at(i) << "\n";
       }
       outfile.close();
     } else if (traceLabel.empty()) {
@@ -37,18 +37,18 @@ write_data(InputFile& iFile)
       outfile << "time"
               << ",";
       for (int i = 0; i < iFile.matA.columnNames.size() - 1; i++) {
-        outfile << iFile.matA.columnNames[i] << ",";
+        outfile << iFile.matA.columnNames.at(i) << ",";
       }
-      outfile << iFile.matA.columnNames[iFile.matA.columnNames.size() - 1] << "\n";
-      for (int i = 0; i < xVect[0].size(); i++) {
+      outfile << iFile.matA.columnNames.at(iFile.matA.columnNames.size() - 1) << "\n";
+      for (int i = 0; i < iFile.xVect.at(0).size(); i++) {
         outfile << std::fixed << std::scientific << std::setprecision(16)
-                << timeAxis[i] << ",";
-        for (int j = 0; j < xVect.size() - 1; j++) {
+                << iFile.timeAxis.at(i) << ",";
+        for (int j = 0; j < iFile.xVect.size() - 1; j++) {
           outfile << std::fixed << std::scientific << std::setprecision(16)
-                  << xVect[j][i] << ",";
+                  << iFile.xVect.at(j).at(i) << ",";
         }
         outfile << std::fixed << std::scientific << std::setprecision(16)
-                << xVect[xVect.size() - 1][i] << "\n";
+                << iFile.xVect.at(iFile.xVect.size() - 1).at(i) << "\n";
       }
       outfile.close();
     }
@@ -69,24 +69,24 @@ write_legacy_data(InputFile& iFile)
     outfile << "time"
             << " ";
     for (int i = 0; i < traceLabel.size() - 1; i++) {
-      tokens = tokenize_space(traceLabel[i]);
-      label = tokens[0];
-      for (int j = 1; j < tokens.size(); j++) label = label + "_" + tokens[j];
+      tokens = tokenize_space(traceLabel.at(i));
+      label = tokens.at(0);
+      for (int j = 1; j < tokens.size(); j++) label = label + "_" + tokens.at(j);
       outfile << label << " ";
     }
-    tokens = tokenize_space(traceLabel[traceLabel.size() - 1]);
-    label = tokens[0];
-    for (int j = 1; j < tokens.size(); j++) label = label + "_" + tokens[j];
+    tokens = tokenize_space(traceLabel.at(traceLabel.size() - 1));
+    label = tokens.at(0);
+    for (int j = 1; j < tokens.size(); j++) label = label + "_" + tokens.at(j);
     outfile << label  << "\n";
-    for (int i = 0; i < traceData[0].size(); i++) {
+    for (int i = 0; i < traceData.at(0).size(); i++) {
       outfile << std::fixed << std::scientific << std::setprecision(16)
-              << timeAxis[i] << " ";
+              << iFile.timeAxis.at(i) << " ";
       for (int j = 0; j < traceData.size() - 1; j++) {
         outfile << std::fixed << std::scientific << std::setprecision(16)
-                << traceData[j][i] << " ";
+                << traceData.at(j).at(i) << " ";
       }
       outfile << std::fixed << std::scientific << std::setprecision(16)
-              << traceData[traceData.size() - 1][i] << "\n";
+              << traceData.at(traceData.size() - 1).at(i) << "\n";
     }
     outfile.close();
   }
