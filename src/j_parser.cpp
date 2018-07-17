@@ -26,9 +26,9 @@ parse_expression(std::string expName, std::string expr, std::unordered_map<std::
     // Read a token
     opLoc = expToEval.find_first_of("/*-+(){}[]^");
     // Check to make sure it's not scientific notation
-    if (expToEval.at(opLoc) == '-')
+    if (expToEval[opLoc] == '-')
       if (opLoc != 0)
-        if (expToEval.at(opLoc - 1) == 'E')
+        if (expToEval[opLoc - 1] == 'E')
           opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
     // If operator location is zero substring after the operator
     if (opLoc == 0)
@@ -36,7 +36,7 @@ parse_expression(std::string expName, std::string expr, std::unordered_map<std::
     else
       partToEval = expToEval.substr(0, opLoc);
     // If token is a number
-    if (isdigit(partToEval.at(0))) {
+    if (isdigit(partToEval[0])) {
       // Push number to RPN Queue
       rpnQueue.push_back(precise_to_string(modifier(partToEval)));
       qType.push_back('V');
@@ -48,11 +48,11 @@ parse_expression(std::string expName, std::string expr, std::unordered_map<std::
       if (subckt != "NONE") {
         // Push variable to RPN Queue
         rpnQueue.push_back(
-          precise_to_string(parVal.at(partToEval)));
+          precise_to_string(parVal[partToEval]));
         qType.push_back('V');
       } else {
         // Push variable to RPN Queue
-        rpnQueue.push_back(precise_to_string(parVal.at(partToEval)));
+        rpnQueue.push_back(precise_to_string(parVal[partToEval]));
         qType.push_back('V');
       }
     }
@@ -135,14 +135,14 @@ parse_expression(std::string expName, std::string expr, std::unordered_map<std::
     // Loop through the type queue looking for operators
     for (int i = 0; i < qType.size(); i++) {
       // If a value is identified
-      if (qType.at(i) == 'V') {
+      if (qType[i] == 'V') {
         // Push the value to the RPN Queue Copy
-        rpnQueueCopy.push_back(rpnQueue.at(i));
+        rpnQueueCopy.push_back(rpnQueue[i]);
         // Push the value type to the type queue copy
         qTypeCopy.push_back('V');
       }
       // Else if an operator is identified
-      else if (qType.at(i) == 'O') {
+      else if (qType[i] == 'O') {
         // If i is 0 then no values only operator meaning invalid RPN
         if (i == 0)
           parsing_errors(INVALID_RPN, expr);
@@ -150,13 +150,13 @@ parse_expression(std::string expName, std::string expr, std::unordered_map<std::
         else if (i < 2) {
           rpnQueueCopy.pop_back();
           rpnQueueCopy.push_back(precise_to_string(parse_operator(
-            rpnQueue.at(i), 0, modifier(rpnQueue.at(i - 1)), popCount)));
+            rpnQueue[i], 0, modifier(rpnQueue[i - 1]), popCount)));
         }
         // Else 2 or more values identified
         else {
-          result = parse_operator(rpnQueue.at(i),
-                                  modifier(rpnQueue.at(i - 2)),
-                                  modifier(rpnQueue.at(i - 1)),
+          result = parse_operator(rpnQueue[i],
+                                  modifier(rpnQueue[i - 2]),
+                                  modifier(rpnQueue[i - 1]),
                                   popCount);
           for (int k = 0; k < popCount; k++)
             rpnQueueCopy.pop_back();
@@ -176,7 +176,7 @@ parse_expression(std::string expName, std::string expr, std::unordered_map<std::
     rpnQueue = rpnQueueCopy;
     qType = qTypeCopy;
   }
-  parVal.at(expName) = modifier(rpnQueue.back());
+  parVal[expName] = modifier(rpnQueue.back());
 }
 
 int
