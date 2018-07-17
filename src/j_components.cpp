@@ -26,37 +26,45 @@ jj_comp(std::vector<std::string> tokens,
     if(iFile.subcircuitSegments.count(tokens[3].substr(0, tokens[3].find_first_of("|"))) != 0) {
       subcktName = tokens[3].substr(0, tokens[3].find_first_of("|"));
       modname = tokens[3].substr(tokens[3].find_first_of("|") + 1);
-      if(!subcktName.empty() &&
-        iFile.subcircuitSegments[subcktName].parVal.count(substring_after(tokens[4], "AREA=")) != 0)
-        area = iFile.subcircuitSegments[subcktName].parVal.at(substring_after(tokens[4], "AREA="));
-      else if (tokens.size() == 4) area = 1.0;
-      else area = modifier(substring_after(tokens[4], "AREA="));
+     if (tokens.size() == 4) area = 1.0;
+     else {
+        if(!subcktName.empty() &&
+          iFile.subcircuitSegments[subcktName].parVal.count(substring_after(tokens[4], "AREA=")) != 0)
+          area = iFile.subcircuitSegments[subcktName].parVal.at(substring_after(tokens[4], "AREA="));
+        else area = modifier(substring_after(tokens[4], "AREA="));
+      }
     }
     else if(iFile.subcircuitSegments.count(tokens[4].substr(0, tokens[4].find_first_of("|"))) != 0) {
       subcktName = tokens[4].substr(0, tokens[4].find_first_of("|"));
       modname = tokens[4].substr(tokens[4].find_first_of("|") + 1);
-      if(!subcktName.empty() &&
-        iFile.subcircuitSegments[subcktName].parVal.count(substring_after(tokens[5], "AREA=")) != 0)
-        area = iFile.subcircuitSegments[subcktName].parVal.at(substring_after(tokens[5], "AREA="));
-      else if (tokens.size() == 5) area = 1.0;
-      else area = modifier(substring_after(tokens[5], "AREA="));
+      if (tokens.size() == 5) area = 1.0;
+      else {
+        if(!subcktName.empty() &&
+          iFile.subcircuitSegments[subcktName].parVal.count(substring_after(tokens[5], "AREA=")) != 0)
+          area = iFile.subcircuitSegments[subcktName].parVal.at(substring_after(tokens[5], "AREA="));
+        else area = modifier(substring_after(tokens[5], "AREA="));
+      }
     }
     else invalid_component_errors(MISSING_JJMODEL, label);
   }
   else {
     if(iFile.mainModels.count(tokens[3]) != 0) {
       modname = tokens[3];
-      if(iFile.parVal.count(substring_after(tokens[4], "AREA=")) != 0)
-        area = iFile.parVal.at(substring_after(tokens[4], "AREA="));
-      else if (tokens.size() == 4) area = 1.0;
-      else area = modifier(substring_after(tokens[4], "AREA="));
+      if (tokens.size() == 4) area = 1.0;
+      else {
+        if(iFile.parVal.count(substring_after(tokens[4], "AREA=")) != 0)
+          area = iFile.parVal.at(substring_after(tokens[4], "AREA="));
+        else area = modifier(substring_after(tokens[4], "AREA="));
+      }
     }
     else if(iFile.mainModels.count(tokens[4]) != 0) {
       modname = tokens[4];
-      if(iFile.parVal.count(substring_after(tokens[5], "AREA=")) != 0)
-        area = iFile.parVal.at(substring_after(tokens[5], "AREA="));
-      else if (tokens.size() == 5) area = 1.0;
-      else area = modifier(substring_after(tokens[5], "AREA="));
+      if (tokens.size() == 5) area = 1.0;
+      else {
+        if(iFile.parVal.count(substring_after(tokens[5], "AREA=")) != 0)
+          area = iFile.parVal.at(substring_after(tokens[5], "AREA=")); 
+        else area = modifier(substring_after(tokens[5], "AREA="));
+      }
     }
     else invalid_component_errors(MISSING_JJMODEL, label);
   }
