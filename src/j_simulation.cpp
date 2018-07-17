@@ -20,13 +20,13 @@ void identify_simulation(InputFile& iFile) {
 				iFile.tsim.maxtstep = 1E-12;
 			}
 			else {
-				iFile.tsim.prstep = modifier(simtokens.at(1));
+				iFile.tsim.prstep = modifier(simtokens[1]);
 				if (simtokens.size() > 2) {
-					iFile.tsim.tstop = modifier(simtokens.at(2));
+					iFile.tsim.tstop = modifier(simtokens[2]);
 					if (simtokens.size() > 3) {
-						iFile.tsim.tstart = modifier(simtokens.at(3));
+						iFile.tsim.tstart = modifier(simtokens[3]);
 						if (simtokens.size() > 4) {
-							iFile.tsim.maxtstep = modifier(simtokens.at(4));
+							iFile.tsim.maxtstep = modifier(simtokens[4]);
 						}
 						else iFile.tsim.maxtstep = 1E-12;
 					}
@@ -100,54 +100,54 @@ void transient_simulation(InputFile& iFile) {
 	/* Set up the junctions */
 	rowCounter = 0;
 	for (auto j : iFile.matA.rowNames) {
-		if (j.at(2) == 'B') {
+		if (j[2] == 'B') {
 			/* Identify the junction label */
 			currentLabel = j.substr(2);
 			columnIndexLabel = "C_P" + currentLabel;
 			//columnIndex = index_of(columnNames, columnIndexLabel);
 			simJunctions[j].label = currentLabel;
 			/* Try to identify the column index of the positive node */
-			simJunctions.at(j).vPositive = (int)iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-VP"); 
+			simJunctions[j].vPositive = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VP"); 
 			/* Try to identify the column index of the negative node */
-			simJunctions.at(j).vNegative = (int)iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-VN"); 
+			simJunctions[j].vNegative = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VN"); 
 			/* Try to identify the column index of the phase node, panic if not found */
-			try { simJunctions.at(j).bPhase = (int)iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-PHASE"); }
+			try { simJunctions[j].bPhase = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-PHASE"); }
 			catch (const std::out_of_range&) { simulation_errors(JJPHASE_NODE_NOT_FOUND, currentLabel); }
 			/* Try to identify the junction capacitance, panic if not found */
-			try { simJunctions.at(j).jjCap = iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-CAP"); }
+			try { simJunctions[j].jjCap = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-CAP"); }
 			catch (const std::out_of_range&) { simulation_errors(JJCAP_NOT_FOUND, currentLabel); }
 			/* Try to identify the junction critical current, panic if not found */
-			try { simJunctions.at(j).jjIcrit = iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-ICRIT"); }
+			try { simJunctions[j].jjIcrit = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-ICRIT"); }
 			catch (const std::out_of_range&) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
-			simJunctions.at(j).jjVg = iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-VGAP");
-			simJunctions.at(j).jjRtype = (int)iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-RTYPE");
+			simJunctions[j].jjVg = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VGAP");
+			simJunctions[j].jjRtype = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-RTYPE");
 			/* If the junction positive node is connected to ground */
-			if (simJunctions.at(j).vPositive == -1) {
-				simJunctions.at(j).VB = -lhsValues.at(simJunctions.at(j).vNegative);
-				simJunctions.at(j).negativeNodeRow = iFile.matA.rowNames.at(simJunctions.at(j).vNegative);
+			if (simJunctions[j].vPositive == -1) {
+				simJunctions[j].VB = -lhsValues.at(simJunctions[j].vNegative);
+				simJunctions[j].negativeNodeRow = iFile.matA.rowNames.at(simJunctions[j].vNegative);
 			}
 			/* If the junction negative node is connected to ground */
-			else if (simJunctions.at(j).vNegative == -1) {
-				simJunctions.at(j).VB = lhsValues.at(simJunctions.at(j).vPositive);
-				simJunctions.at(j).positiveNodeRow = iFile.matA.rowNames.at(simJunctions.at(j).vPositive);
+			else if (simJunctions[j].vNegative == -1) {
+				simJunctions[j].VB = lhsValues.at(simJunctions[j].vPositive);
+				simJunctions[j].positiveNodeRow = iFile.matA.rowNames.at(simJunctions[j].vPositive);
 			}
 			/* If both nodes are not connected to ground */
 			else {
-				simJunctions.at(j).VB = lhsValues.at(simJunctions.at(j).vPositive) - lhsValues.at(simJunctions.at(j).vNegative);
-				simJunctions.at(j).positiveNodeRow = iFile.matA.rowNames.at(simJunctions.at(j).vPositive);
-				simJunctions.at(j).negativeNodeRow = iFile.matA.rowNames.at(simJunctions.at(j).vNegative);
+				simJunctions[j].VB = lhsValues.at(simJunctions[j].vPositive) - lhsValues.at(simJunctions[j].vNegative);
+				simJunctions[j].positiveNodeRow = iFile.matA.rowNames.at(simJunctions[j].vPositive);
+				simJunctions[j].negativeNodeRow = iFile.matA.rowNames.at(simJunctions[j].vNegative);
 			}
 			iFile.junctionCurrents[j].push_back(0);
 		}
-		else if (j.at(2) == 'L') {
+		else if (j[2] == 'L') {
 			currentLabel = j.substr(2);
-			inductanceVector[rowCounter] = iFile.matA.inductanceMap.at(j);
-			iPNC[rowCounter] = iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-VP");
-			iNNC[rowCounter] = iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-VN");
-			iCNC[rowCounter] = iFile.matA.bMatrixConductanceMap.at(j).at(currentLabel + "-I");
+			inductanceVector[rowCounter] = iFile.matA.inductanceMap[j];
+			iPNC[rowCounter] = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VP");
+			iNNC[rowCounter] = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VN");
+			iCNC[rowCounter] = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-I");
 		}
-		else if (j.at(2) == 'N') {
-			nodeConnectionVector[rowCounter] = iFile.matA.nodeConnections.at(j);
+		else if (j[2] == 'N') {
+			nodeConnectionVector[rowCounter] = iFile.matA.nodeConnections[j];
 		}
 		rowCounter++;
 	}
@@ -172,33 +172,33 @@ void transient_simulation(InputFile& iFile) {
 		for (auto j : iFile.matA.rowNames) {
 			RHSvalue = 0.0;
 			/* If this row item is identified as a node row then...*/
-			if (j.at(2) == 'N') {
+			if (j[2] == 'N') {
 				tokens.clear();
-				for (auto k : nodeConnectionVector.at(rowCounter)) {
+				for (auto k : nodeConnectionVector[rowCounter]) {
 					/* Add junction as calculated at the end of the current loop to the RHS */
-					if (k.at(0) == 'B') {
+					if (k[0] == 'B') {
 						if(j == simJunctions.at("R_" + k).positiveNodeRow) RHSvalue += simJunctions.at("R_" + k).Is;
 						else if (j == simJunctions.at("R_" + k).negativeNodeRow) RHSvalue -= simJunctions.at("R_" + k).Is;
 					}
 					/* Add the current value to the RHS in the correct row */
-					else if (k.at(0) == 'I') {
-						RHSvalue += iFile.matA.sources.at(k).at(i);
+					else if (k[0] == 'I') {
+						RHSvalue += iFile.matA.sources[k][i];
 					}
 				}
 			}
 			/* If this row item is identified as an inductor row */
-			else if (j.at(2) == 'L') {
+			else if (j[2] == 'L') {
 				/* Identify the inductor label */
 				currentLabel = j.substr(2);
 				/* Identify the relevant inductance of the inductor */
-				inductance = inductanceVector.at(rowCounter);
+				inductance = inductanceVector[rowCounter];
 				/* Identify the column index of the positive node */
-				VP = iPNC.at(rowCounter);
+				VP = iPNC[rowCounter];
 				/* Identify the column index of the negative node */
-				VN = iNNC.at(rowCounter);
+				VN = iNNC[rowCounter];
 				/* Try to identify the column index of the inductor current node */
 				try { 
-					CUR = iCNC.at(rowCounter);
+					CUR = iCNC[rowCounter];
 					LCUR = lhsValues.at((int)CUR);
 				}
 				catch (const std::out_of_range&) { simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, currentLabel); }
@@ -212,39 +212,39 @@ void transient_simulation(InputFile& iFile) {
 				RHSvalue = (-2 * inductance / iFile.tsim.maxtstep)*LCUR - VB;
 			}
 			/* If this row item is identified as a junction row */
-			else if (j.at(2) == 'B') {
+			else if (j[2] == 'B') {
 				/* Identify the junction label */
 				currentLabel = j.substr(2);
 				/* R_B = Phi(n-1) + (hn/2)(2e/hbar)VB */
-				RHSvalue = simJunctions.at(j).Phase_Prev + ((hn_2_2e_hbar)*simJunctions.at(j).VB);
+				RHSvalue = simJunctions[j].Phase_Prev + ((hn_2_2e_hbar)*simJunctions[j].VB);
 			}
 			/* If this row item is identified as a voltage source row */
-			else if (j.at(2) == 'V') {
+			else if (j[2] == 'V') {
 				/* Identify the voltage source label */
 				currentLabel = j.substr(2);
 				/* Assign the voltage source value at the current point in the time loop to the RHS value */
-				RHSvalue = iFile.matA.sources.at(currentLabel).at(i);
+				RHSvalue = iFile.matA.sources[currentLabel][i];
 			}
-			else if (j.at(2) == 'T') {
+			else if (j[2] == 'T') {
                 /* Identify the transmission line label */
                 currentLabel = j.substr(2);
 				char OneOrTwo = currentLabel.at(currentLabel.find('-') + 2);
 				currentLabel.erase(currentLabel.find('-'), 3);
-                imintd = i - (iFile.matA.xlines.at(currentLabel).TD/iFile.tsim.maxtstep);
+                imintd = i - (iFile.matA.xlines[currentLabel].TD/iFile.tsim.maxtstep);
 				switch (OneOrTwo) {
 				case '1':
 					if ((imintd) > 0) {
 						/* Assign the voltage source value at the time - TD to the RHS value */
-						VP = iFile.matA.xlines.at(currentLabel).pNode2;
-						VN = iFile.matA.xlines.at(currentLabel).nNode2;
+						VP = iFile.matA.xlines[currentLabel].pNode2;
+						VN = iFile.matA.xlines[currentLabel].nNode2;
 						/* If the xline positive node is connected to ground */
-						if (VP == -1.0) VB = -iFile.xVect.at((int)VN).at(imintd);
+						if (VP == -1.0) VB = -iFile.xVect.at((int)VN)[imintd];
 						/* If the xline negative node is connected to ground */
-						else if (VN == -1.0) VB = iFile.xVect.at((int)VP).at(imintd);
+						else if (VN == -1.0) VB = iFile.xVect.at((int)VP)[imintd];
 						/* If both nodes are not connected to ground */
-						else VB = iFile.xVect.at((int)VP).at(imintd) - iFile.xVect.at((int)VN).at(imintd);
-						VN = iFile.matA.xlines.at(currentLabel).iNode2;
-						z0voltage = (iFile.xVect.at((int)VP).at(imintd) - iFile.xVect.at((int)VN).at(imintd)); //xlines.at(currentLabel).Z0 * (x.at((int)VP).at(imintd) - x.at((int)VN).at(imintd));
+						else VB = iFile.xVect.at((int)VP)[imintd] - iFile.xVect.at((int)VN)[imintd];
+						VN = iFile.matA.xlines[currentLabel].iNode2;
+						z0voltage = (iFile.xVect.at((int)VP)[imintd] - iFile.xVect.at((int)VN)[imintd]); //xlines[currentLabel].Z0 * (x.at((int)VP)[imintd] - x.at((int)VN)[imintd]);
 						RHSvalue = VB + z0voltage;
 					}
 					else {
@@ -254,16 +254,16 @@ void transient_simulation(InputFile& iFile) {
 				case '2':
 					if ((imintd) > 0) {
 						/* Assign the voltage source value at the time - TD to the RHS value */
-						VP = iFile.matA.xlines.at(currentLabel).pNode1;
-						VN = iFile.matA.xlines.at(currentLabel).nNode1;
+						VP = iFile.matA.xlines[currentLabel].pNode1;
+						VN = iFile.matA.xlines[currentLabel].nNode1;
 						/* If the xline positive node is connected to ground */
-						if (VP == -1.0) VB = -iFile.xVect.at((int)VN).at(imintd);
+						if (VP == -1.0) VB = -iFile.xVect.at((int)VN)[imintd];
 						/* If the xline negative node is connected to ground */
-						else if (VN == -1.0) VB = iFile.xVect.at((int)VP).at(imintd);
+						else if (VN == -1.0) VB = iFile.xVect.at((int)VP)[imintd];
 						/* If both nodes are not connected to ground */
-						else VB = iFile.xVect.at((int)VP).at(imintd) - iFile.xVect.at((int)VN).at(imintd);
-						VN = iFile.matA.xlines.at(currentLabel).iNode1;
-						z0voltage = (iFile.xVect.at((int)VP).at(imintd) - iFile.xVect.at((int)VN).at(imintd)); //xlines.at(currentLabel).Z0 * (x.at((int)VP).at(imintd) - x.at((int)VN).at(imintd));
+						else VB = iFile.xVect.at((int)VP)[imintd] - iFile.xVect.at((int)VN)[imintd];
+						VN = iFile.matA.xlines[currentLabel].iNode1;
+						z0voltage = (iFile.xVect.at((int)VP)[imintd] - iFile.xVect.at((int)VN)[imintd]); //xlines[currentLabel].Z0 * (x.at((int)VP)[imintd] - x.at((int)VN)[imintd]);
 						RHSvalue = VB + z0voltage;
 					}
 					else {
@@ -273,7 +273,7 @@ void transient_simulation(InputFile& iFile) {
 				}
 			}
 			/* Add the RHS value as determined above to the correct spot in the RHS vector */
-			//RHS.at(columnIndex) = RHSvalue;
+			//RHS[columnIndex] = RHSvalue;
 			RHS.push_back(RHSvalue);
 			rowCounter++;
 		}
@@ -286,7 +286,7 @@ void transient_simulation(InputFile& iFile) {
 		/* Set the LHS values equal to the returning value provided by the KLU solution */
 		lhsValues = LHS_PRE;
 		for (int m = 0; m < lhsValues.size(); m++) {
-			iFile.xVect.at(m).at(i) = lhsValues.at(m);
+			iFile.xVect[m][i] = lhsValues[m];
 		}
 
 		/* Guess next junction voltage */
@@ -298,11 +298,11 @@ void transient_simulation(InputFile& iFile) {
 			if(thisJunction.jjRtype == 1) {
 				if (thisJunction.VB >= thisJunction.jjVg && thisJunction.superconducting) {
 					for(int k = 0; k < iFile.matA.mElements.size(); k++) {
-						if(iFile.matA.mElements.at(k).label == thisJunction.label && iFile.matA.mElements.at(k).junctionEntry) {
-							if(iFile.matA.mElements.at(k).junctionDirection == 'P')
-								iFile.matA.mElements.at(k).value = ((2 * iFile.matA.mElements.at(k).tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements.at(k).tokens.at("RN"));
-							else if (iFile.matA.mElements.at(k).junctionDirection == 'N')
-								iFile.matA.mElements.at(k).value = -((2 * iFile.matA.mElements.at(k).tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements.at(k).tokens.at("RN"));
+						if(iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
+							if(iFile.matA.mElements[k].junctionDirection == 'P')
+								iFile.matA.mElements[k].value = ((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("RN"));
+							else if (iFile.matA.mElements[k].junctionDirection == 'N')
+								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("RN"));
 						}
 					}
 					thisJunction.superconducting = false;
@@ -312,11 +312,11 @@ void transient_simulation(InputFile& iFile) {
 				}
 				else if (thisJunction.VB < thisJunction.jjVg && !thisJunction.superconducting) {
 					for(int k = 0; k < iFile.matA.mElements.size(); k++) {
-						if(iFile.matA.mElements.at(k).label == thisJunction.label && iFile.matA.mElements.at(k).junctionEntry) {
-							if(iFile.matA.mElements.at(k).junctionDirection == 'P')
-								iFile.matA.mElements.at(k).value = ((2 * iFile.matA.mElements.at(k).tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements.at(k).tokens.at("R0"));
-							else if (iFile.matA.mElements.at(k).junctionDirection == 'N')
-								iFile.matA.mElements.at(k).value = -((2 * iFile.matA.mElements.at(k).tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements.at(k).tokens.at("R0"));
+						if(iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
+							if(iFile.matA.mElements[k].junctionDirection == 'P')
+								iFile.matA.mElements[k].value = ((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("R0"));
+							else if (iFile.matA.mElements[k].junctionDirection == 'N')
+								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("R0"));
 						}
 					}
 					thisJunction.superconducting = true;
