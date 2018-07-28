@@ -34,13 +34,13 @@ https://github.com/JoeyDelp/JoSIM/releases
 - Libraries: sudo pip install numpy matplotlib
 
 ## CHANGELOG
-## v1.3 - 28/07/2018
+### v1.3 - 28/07/2018
 - Addition of mutual inductance with the netlist label **K**
 - Addition of the sinusoidal source (Voltage and Current)
 - Various bug fixes
 - AGFP now works
 
-## v1.2 - 17/07/2018
+### v1.2 - 17/07/2018
 - New Release brings RType=1 to the RCSJ model of the Josephson Junction.
 - Various bugs have been fixed. 
 - Data structures have been majorly altered.
