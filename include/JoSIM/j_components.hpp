@@ -9,12 +9,12 @@ Return JJ parameters from tokens
 */
 void
 jj_comp(std::vector<std::string> tokens,
-        InputFile& iFile,
-        int& jj_type,
-        double& jj_cap,
-        double& jj_rn,
-        double& jj_rzero,
-        double& jj_icrit,
-        double& jj_rtype,
-        double& jj_vgap);
+	InputFile& iFile,
+	int& jj_type,
+	double& jj_cap,
+	double& jj_rn,
+	double& jj_rzero,
+	double& jj_icrit,
+	double& jj_rtype,
+	double& jj_vgap);
 #endif

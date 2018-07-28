@@ -43,5 +43,6 @@
         "utility": "cpp",
         "__locale": "cpp"
     },
-    "C_Cpp.dimInactiveRegions": false
+    "C_Cpp.dimInactiveRegions": false,
+    "cmake.configureOnOpen": true
 }

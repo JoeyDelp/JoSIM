@@ -107,9 +107,9 @@ void transient_simulation(InputFile& iFile) {
 			//columnIndex = index_of(columnNames, columnIndexLabel);
 			simJunctions[j].label = currentLabel;
 			/* Try to identify the column index of the positive node */
-			simJunctions[j].vPositive = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VP"); 
+			simJunctions[j].vPositive = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VP");
 			/* Try to identify the column index of the negative node */
-			simJunctions[j].vNegative = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VN"); 
+			simJunctions[j].vNegative = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VN");
 			/* Try to identify the column index of the phase node, panic if not found */
 			try { simJunctions[j].bPhase = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-PHASE"); }
 			catch (const std::out_of_range&) { simulation_errors(JJPHASE_NODE_NOT_FOUND, currentLabel); }
@@ -163,8 +163,14 @@ void transient_simulation(InputFile& iFile) {
 	int old_progress = 0;
 	int imintd = 0;
 	std::string pBar;
+	/* Mutual inductance variables */
+	double mutualL = 0.0;
+	double CUR2 = 0.0;
+	/* Now the loop */
 	for (int i = 0; i < simSize; i++) {
-		std::cout << '\r';
+#ifndef NO_PRINT 
+			std::cout << '\r';
+#endif
 		/* Start of initialization of the B matrix */
 		RHS.clear();
 		rowCounter = 0;
@@ -177,7 +183,7 @@ void transient_simulation(InputFile& iFile) {
 				for (auto k : nodeConnectionVector[rowCounter]) {
 					/* Add junction as calculated at the end of the current loop to the RHS */
 					if (k[0] == 'B') {
-						if(j == simJunctions.at("R_" + k).positiveNodeRow) RHSvalue += simJunctions.at("R_" + k).Is;
+						if (j == simJunctions.at("R_" + k).positiveNodeRow) RHSvalue += simJunctions.at("R_" + k).Is;
 						else if (j == simJunctions.at("R_" + k).negativeNodeRow) RHSvalue -= simJunctions.at("R_" + k).Is;
 					}
 					/* Add the current value to the RHS in the correct row */
@@ -197,7 +203,7 @@ void transient_simulation(InputFile& iFile) {
 				/* Identify the column index of the negative node */
 				VN = iNNC[rowCounter];
 				/* Try to identify the column index of the inductor current node */
-				try { 
+				try {
 					CUR = iCNC[rowCounter];
 					LCUR = lhsValues.at((int)CUR);
 				}
@@ -208,8 +214,18 @@ void transient_simulation(InputFile& iFile) {
 				else if (VN == -1.0) VB = lhsValues.at((int)VP);
 				/* If both nodes are not connected to ground */
 				else VB = lhsValues.at((int)VP) - lhsValues.at((int)VN);
-				/* R_L = (-2L/hn)IL - VL*/
-				RHSvalue = (-2 * inductance / iFile.tsim.maxtstep)*LCUR - VB;
+				if (!iFile.matA.branchRelations[currentLabel].mutI2.empty()) {
+					RHSvalue = (-2 * inductance / iFile.tsim.maxtstep)*LCUR - VB;
+					for (int c = 0; c < iFile.matA.branchRelations[currentLabel].mutI2.size(); c++) {
+						CUR2 = lhsValues.at(iFile.matA.branchRelations[currentLabel].current2RowIndex[c]);
+						mutualL = iFile.matA.branchRelations[currentLabel].mutualInductance[c];
+						RHSvalue -= mutualL * CUR2;
+					}
+				}
+				else {
+					/* R_L = (-2L/hn)IL - VL*/
+					RHSvalue = (-2 * inductance / iFile.tsim.maxtstep)*LCUR - VB;
+				}
 			}
 			/* If this row item is identified as a junction row */
 			else if (j[2] == 'B') {
@@ -226,11 +242,11 @@ void transient_simulation(InputFile& iFile) {
 				RHSvalue = iFile.matA.sources[currentLabel][i];
 			}
 			else if (j[2] == 'T') {
-                /* Identify the transmission line label */
-                currentLabel = j.substr(2);
+				/* Identify the transmission line label */
+				currentLabel = j.substr(2);
 				char OneOrTwo = currentLabel.at(currentLabel.find('-') + 2);
 				currentLabel.erase(currentLabel.find('-'), 3);
-                imintd = i - (iFile.matA.xlines[currentLabel].TD/iFile.tsim.maxtstep);
+				imintd = i - (iFile.matA.xlines[currentLabel].TD / iFile.tsim.maxtstep);
 				switch (OneOrTwo) {
 				case '1':
 					if ((imintd) > 0) {
@@ -282,6 +298,9 @@ void transient_simulation(InputFile& iFile) {
 		/* Solve Ax=b */
 		LHS_PRE = RHS;
 		ok = klu_tsolve(Symbolic, Numeric, iFile.matA.Nsize, 1, &LHS_PRE.front(), &Common);
+		if(!ok) {
+			matrix_errors(MATRIX_SINGULAR, "");
+		}
 
 		/* Set the LHS values equal to the returning value provided by the KLU solution */
 		lhsValues = LHS_PRE;
@@ -295,11 +314,11 @@ void transient_simulation(InputFile& iFile) {
 			if (j.second.vPositive == -1) thisJunction.VB = (-lhsValues.at(j.second.vNegative));
 			else if (j.second.vNegative == -1) thisJunction.VB = (lhsValues.at(j.second.vPositive));
 			else thisJunction.VB = (lhsValues.at(j.second.vPositive) - lhsValues.at(j.second.vNegative));
-			if(thisJunction.jjRtype == 1) {
+			if (thisJunction.jjRtype == 1) {
 				if (thisJunction.VB >= thisJunction.jjVg && thisJunction.superconducting) {
-					for(int k = 0; k < iFile.matA.mElements.size(); k++) {
-						if(iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
-							if(iFile.matA.mElements[k].junctionDirection == 'P')
+					for (int k = 0; k < iFile.matA.mElements.size(); k++) {
+						if (iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
+							if (iFile.matA.mElements[k].junctionDirection == 'P')
 								iFile.matA.mElements[k].value = ((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("RN"));
 							else if (iFile.matA.mElements[k].junctionDirection == 'N')
 								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("RN"));
@@ -311,9 +330,9 @@ void transient_simulation(InputFile& iFile) {
 					Numeric = klu_factor(&iFile.matA.rowptr.front(), &iFile.matA.colind.front(), &iFile.matA.nzval.front(), Symbolic, &Common);
 				}
 				else if (thisJunction.VB < thisJunction.jjVg && !thisJunction.superconducting) {
-					for(int k = 0; k < iFile.matA.mElements.size(); k++) {
-						if(iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
-							if(iFile.matA.mElements[k].junctionDirection == 'P')
+					for (int k = 0; k < iFile.matA.mElements.size(); k++) {
+						if (iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
+							if (iFile.matA.mElements[k].junctionDirection == 'P')
 								iFile.matA.mElements[k].value = ((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("R0"));
 							else if (iFile.matA.mElements[k].junctionDirection == 'N')
 								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("R0"));
@@ -326,9 +345,11 @@ void transient_simulation(InputFile& iFile) {
 				}
 			}
 			thisJunction.Phase = lhsValues.at(j.second.bPhase);
-			thisJunction.VB_dt = (2 / iFile.tsim.maxtstep)*(thisJunction.VB - thisJunction.VB_Prev) - thisJunction.VB_dt_Prev;
+			if (i > 3) thisJunction.VB_dt = (2 / iFile.tsim.maxtstep)*(thisJunction.VB - thisJunction.VB_Prev) - thisJunction.VB_dt_Prev;
+			else thisJunction.VB_dt = 0;
 			thisJunction.VB_Guess = thisJunction.VB + iFile.tsim.maxtstep*thisJunction.VB_dt;
 			thisJunction.Phase_Guess = thisJunction.Phase + (hn_2_2e_hbar)*(thisJunction.VB + thisJunction.VB_Guess);
+			//if ((thisJunction.Phase_Guess - thisJunction.Phase) > M_PI/5) std::cout << "PHASE GUESS" << std::endl;
 			thisJunction.Is = -thisJunction.jjIcrit * sin(thisJunction.Phase_Guess) + (((2 * thisJunction.jjCap) / iFile.tsim.maxtstep)*thisJunction.VB) + (thisJunction.jjCap * thisJunction.VB_dt);
 			thisJunction.VB_Prev = thisJunction.VB;
 			thisJunction.VB_dt_Prev = thisJunction.VB_dt;
@@ -342,14 +363,20 @@ void transient_simulation(InputFile& iFile) {
 		old_progress = progress;
 		incremental_progress = incremental_progress + increments;
 		progress = (int)(incremental_progress);
+#ifndef NO_PRINT
 		if (progress > old_progress) {
 			std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
 			pBar = "[";
 			for (int p = 0; p <= (int)(progress_increments * i); p++) {
-			  pBar.append("=");
+				pBar.append("=");
 			}
 			std::cout << std::setw(31) << std::left << pBar << "]";
 		}
+#endif
 	}
+#ifndef NO_PRINT
 	std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
+#else
+	std::cout << " done" << std::endl;
+#endif
 }

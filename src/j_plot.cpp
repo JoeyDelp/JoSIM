@@ -26,9 +26,9 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 				/* If more than one node is specified */
 				if (tokens.size() == 4) {
 					/* If second node is ground */
-					if(tokens[3] == "0" || tokens[3] == "GND") {
+					if (tokens[3] == "0" || tokens[3] == "GND") {
 						label = "NODE VOLTAGE " + tokens[2];
-						if (tokens[2][0] == 'X') { 
+						if (tokens[2][0] == 'X') {
 							labeltokens = tokenize_delimeter(tokens[2], "_");
 							std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 							tokens[2] = labeltokens[0];
@@ -201,13 +201,12 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 							if (i.VPindex == -1) trace = iFile.xVect.at(i.VNindex);
 							else if (i.VNindex == -1) trace = iFile.xVect.at(i.VPindex);
 							else std::transform(iFile.xVect.at(i.VPindex).begin(), iFile.xVect.at(i.VPindex).end(), iFile.xVect.at(i.VNindex).begin(), trace.begin(), std::minus<double>());
-							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
+							std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1 / i.value)));
 							label = "DEVICE CURRENT " + i.label;
 							traceLabel.push_back(label);
 							traceData.push_back(trace);
 						}
 						else if (tokens[2][0] == 'C') {
-
 						}
 						else if (tokens[2][0] == 'L') {
 							if (i.CURindex == -1) simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, i.label);
@@ -249,23 +248,23 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 			tokens = tokenize_space(string);
 			for (int k = 1; k < tokens.size(); k++) {
 				/* If plotting voltage */
-				if(tokens[k][0] == 'V') {
+				if (tokens[k][0] == 'V') {
 					/* Identify part between brackets */
 					nodesToPlot = tokens[k].substr(2);
 					nodesToPlot = nodesToPlot.substr(0, nodesToPlot.size() - 1);
 					/* If multiple arguments are specified for V */
 					if (nodesToPlot.find(',') != std::string::npos) {
 						nodesTokens = tokenize_delimeter(nodesToPlot, ",");
-						if(nodesTokens.size() > 2) {
+						if (nodesTokens.size() > 2) {
 							plotting_errors(TOO_MANY_NODES, string);
 						}
 						/* Ensure node 1 is not ground */
-						if(nodesTokens[0] == "0" || nodesTokens[0] == "GND") {
-							if(nodesTokens[1] == "0" || nodesTokens[1] == "GND") {
+						if (nodesTokens[0] == "0" || nodesTokens[0] == "GND") {
+							if (nodesTokens[1] == "0" || nodesTokens[1] == "GND") {
 								plotting_errors(BOTH_ZERO, string);
 							}
 							else {
-								if (nodesTokens[1][0] == 'X') { 
+								if (nodesTokens[1][0] == 'X') {
 									labeltokens = tokenize_delimeter(tokens[1], "_");
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									nodesTokens[1] = labeltokens[0];
@@ -292,8 +291,8 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 						}
 						/* Check if node 2 is ground */
 						else {
-							if(tokens[1] == "0" || tokens[1] == "GND") {
-								if (tokens[0][0] == 'X') { 
+							if (tokens[1] == "0" || tokens[1] == "GND") {
+								if (tokens[0][0] == 'X') {
 									labeltokens = tokenize_delimeter(tokens[0], "_");
 									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
 									tokens[0] = labeltokens[0];
@@ -353,15 +352,15 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 					/* If only one argument is specified for V */
 					else {
 						/* Ensure node is not ground */
-						if(nodesToPlot != "0" || nodesToPlot != "GND") {
-							if (nodesToPlot[0] == 'X') { 
-									labeltokens = tokenize_delimeter(nodesToPlot, "_");
-									std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
-									nodesToPlot = labeltokens[0];
-									for (int n = 1; n < labeltokens.size(); n++) {
-										nodesToPlot = nodesToPlot + "|" + labeltokens[n];
-									}
+						if (nodesToPlot != "0" || nodesToPlot != "GND") {
+							if (nodesToPlot[0] == 'X') {
+								labeltokens = tokenize_delimeter(nodesToPlot, "_");
+								std::rotate(labeltokens.begin(), labeltokens.end() - 1, labeltokens.end());
+								nodesToPlot = labeltokens[0];
+								for (int n = 1; n < labeltokens.size(); n++) {
+									nodesToPlot = nodesToPlot + "|" + labeltokens[n];
 								}
+							}
 							label = "C_NV" + nodesToPlot;
 							/* If this is a node voltage */
 							if (std::find(iFile.matA.columnNames.begin(), iFile.matA.columnNames.end(), label) != iFile.matA.columnNames.end()) {
@@ -414,13 +413,12 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 								if (i.VPindex == -1) trace = iFile.xVect.at(i.VNindex);
 								else if (i.VNindex == -1) trace = iFile.xVect.at(i.VPindex);
 								else std::transform(iFile.xVect.at(i.VPindex).begin(), iFile.xVect.at(i.VPindex).end(), iFile.xVect.at(i.VNindex).begin(), trace.begin(), std::minus<double>());
-								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1/i.value)));
+								std::transform(trace.begin(), trace.end(), trace.begin(), std::bind(std::multiplies<double>(), std::placeholders::_1, (1 / i.value)));
 								label = "DEVICE CURRENT " + i.label;
 								traceLabel.push_back(label);
 								traceData.push_back(trace);
 							}
 							else if (nodesToPlot[0] == 'C') {
-
 							}
 							else if (nodesToPlot[0] == 'L') {
 								if (i.CURindex == -1) simulation_errors(INDUCTOR_CURRENT_NOT_FOUND, i.label);
@@ -483,12 +481,12 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 			tokens = tokenize_space(string);
 			for (int k = 1; k < tokens.size(); k++) {
 				index1 = tokens[k].find("@");
-				if(index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1) + tokens[k].substr(index1+1);
+				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1) + tokens[k].substr(index1 + 1);
 				index1 = tokens[k].find(".at(");
-				if(index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
+				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
 				index1 = tokens[k].find(".");
-				if(index1 != std::string::npos) {
-					tokens[k] = tokens[k].substr(0, index1) + "_" + tokens[k].substr(index1+1);
+				if (index1 != std::string::npos) {
+					tokens[k] = tokens[k].substr(0, index1) + "_" + tokens[k].substr(index1 + 1);
 				}
 				/* If this is a current source */
 				if (iFile.matA.sources.find(tokens[k]) != iFile.matA.sources.end()) {
@@ -504,71 +502,70 @@ void traces_to_plot(InputFile& iFile, std::vector<std::string> controlPart, std:
 	Function that creates a plotting window with all available traces to plot
 */
 int plot_all_traces(InputFile& iFile) {
-	#ifdef USING_FLTK
-		Fl_Window * win = new Fl_Window(1240, 768);
-		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
-		std::vector<Fl_Chart *> Charts;
-		std::string label;
-		int counter = 0;
+#ifdef USING_FLTK
+	Fl_Window * win = new Fl_Window(1240, 768);
+	Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
+	std::vector<Fl_Chart *> Charts;
+	std::string label;
+	int counter = 0;
+	for (auto i : iFile.matA.columnNames) {
+		label = substring_after(i, "C_");
+		Charts.push_back(new Fl_Chart(20, 20 + (counter * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
+		Charts[counter]->type(FL_LINE_CHART);
+		for (int j = 0; j < iFile.xVect[counter].size(); j++) {
+			Charts[counter]->add(iFile.xVect[counter][j]);
+		}
+		Charts[counter]->color(FL_WHITE);
+		Charts[counter]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
+		Charts[counter]->copy_label(label.c_str());
+		counter++;
+	}
+	win->resizable(scroll);
+	win->label(INPUT_FILE.c_str());
+	win->show();
+	return(Fl::run());
+#elif USING_MATPLOTLIB
+	int counter = 0;
+	if (iFile.matA.columnNames.size() <= 3) {
+		plt::figure();
+		//plt::figure_size(800, 600);
 		for (auto i : iFile.matA.columnNames) {
-			label = substring_after(i, "C_");
-			Charts.push_back(new Fl_Chart(20, 20 + (counter * (scroll->h() / 3)), scroll->w() - 40, (scroll->h()/3 - 20)));
-			Charts[counter]->type(FL_LINE_CHART);
-			for (int j = 0; j < iFile.xVect[counter].size(); j++) {
-				Charts[counter]->add(iFile.xVect[counter][j]);
-
-			}
-			Charts[counter]->color(FL_WHITE);
-			Charts[counter]->align(FL_ALIGN_INSIDE|FL_ALIGN_CENTER|FL_ALIGN_TOP);
-			Charts[counter]->copy_label(label.c_str());
+			plt::subplot(iFile.matA.columnNames.size(), 1, counter + 1);
+			plt::grid(true);
+			plt::plot(iFile.timeAxis, iFile.xVect[counter]);
+			plt::title(substring_after(i, "C_"));
+			if (substring_after(i, "C_")[0] == 'N') plt::ylabel("Voltage (V)");
+			else if (substring_after(i, "C_")[0] == 'I') plt::ylabel("Current (A)");
+			else if (substring_after(i, "C_")[0] == 'P') plt::ylabel("Phase (rads)");
 			counter++;
 		}
-		win->resizable(scroll);
-		win->label(INPUT_FILE.c_str());
-		win->show();
-		return(Fl::run());
-	#elif USING_MATPLOTLIB
-		int counter = 0;
-		if (iFile.matA.columnNames.size() <= 3) {
-			plt::figure();
+		plt::xlabel("Time (s)");
+		plt::tight_layout();
+		plt::show();
+	}
+	else {
+		for (int j = 0; j < iFile.matA.columnNames.size(); j = j + 3) {
+			counter = j;
 			//plt::figure_size(800, 600);
-			for (auto i : iFile.matA.columnNames) {
-				plt::subplot(iFile.matA.columnNames.size(), 1, counter + 1);
+			plt::figure();
+			while ((counter < iFile.matA.columnNames.size()) && (counter < j + 3)) {
+				plt::subplot(3, 1, (counter - j) + 1);
 				plt::grid(true);
 				plt::plot(iFile.timeAxis, iFile.xVect[counter]);
-				plt::title(substring_after(i, "C_"));
-				if(substring_after(i, "C_")[0] == 'N') plt::ylabel("Voltage (V)");
-				else if (substring_after(i, "C_")[0] == 'I') plt::ylabel("Current (A)");
-				else if (substring_after(i, "C_")[0] == 'P') plt::ylabel("Phase (rads)");
+				plt::title(substring_after(iFile.matA.columnNames[counter], "C_"));
+				if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'N') plt::ylabel("Voltage (V)");
+				else if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'I') plt::ylabel("Current (A)");
+				else if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'P') plt::ylabel("Phase (rads)");
 				counter++;
 			}
 			plt::xlabel("Time (s)");
 			plt::tight_layout();
-			plt::show();
+			plt::show(false);
 		}
-		else {
-			for (int j = 0; j < iFile.matA.columnNames.size(); j = j + 3) {
-				counter = j;
-				//plt::figure_size(800, 600);
-				plt::figure();
-				while((counter < iFile.matA.columnNames.size()) && (counter < j + 3)) {
-					plt::subplot(3, 1, (counter - j) + 1);
-					plt::grid(true);
-					plt::plot(iFile.timeAxis, iFile.xVect[counter]);
-					plt::title(substring_after(iFile.matA.columnNames[counter], "C_"));
-					if(substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'N') plt::ylabel("Voltage (V)");
-					else if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'I') plt::ylabel("Current (A)");
-					else if (substring_after(iFile.matA.columnNames[counter], "C_")[0] == 'P') plt::ylabel("Phase (rads)");
-					counter++;
-				}
-				plt::xlabel("Time (s)");
-				plt::tight_layout();
-				plt::show(false);
-			}
-			plt::show();
-		}
-		return 0;
-	#endif
+		plt::show();
+	}
+	return 0;
+#endif
 	return 0;
 }
 
@@ -576,116 +573,116 @@ int plot_all_traces(InputFile& iFile) {
 	Function that creates a plotting window only for the specified plots in the simulation
 */
 int plot_traces(InputFile& iFile) {
-	#ifdef USING_FLTK
-		std::vector<std::string> traceLabel;
-		std::vector<std::vector<double>> traceData;
-		traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-		Fl_Window * win = new Fl_Window(1240, 768);
-		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
-		std::vector<Fl_Chart *> Charts;
-		if(traceLabel.size() > 0) {
+#ifdef USING_FLTK
+	std::vector<std::string> traceLabel;
+	std::vector<std::vector<double>> traceData;
+	traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	Fl_Window * win = new Fl_Window(1240, 768);
+	Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
+	std::vector<Fl_Chart *> Charts;
+	if (traceLabel.size() > 0) {
+		for (int i = 0; i < traceLabel.size(); i++) {
+			Charts.push_back(new Fl_Chart(20, 20 + (i * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
+			Charts[i]->type(FL_LINE_CHART);
+			for (int j = 0; j < traceData[i].size(); j++) {
+				Charts[i]->add(traceData[i][j]);
+			}
+			Charts[i]->color(FL_WHITE);
+			Charts[i]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
+			Charts[i]->copy_label(traceLabel[i].c_str());
+		}
+	}
+	else if (traceLabel.size() == 0) {
+		std::cout << "W: Plotting requested but no plot/print/save commands found." << std::endl;
+		std::cout << "W: Plotting all the node voltages by default." << std::endl;
+		int j = 0;
+		std::string label;
+		for (int i = 0; i < iFile.matA.columnNames.size(); i++) {
+			label = substring_after(iFile.matA.columnNames[i], "C_");
+			if (label[0] == 'N') {
+				Charts.push_back(new Fl_Chart(20, 20 + (j * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
+				Charts[j]->type(FL_LINE_CHART);
+				for (int k = 0; k < iFile.xVect[i].size(); k++) {
+					Charts[j]->add(iFile.xVect[i][k]);
+				}
+				Charts[j]->color(FL_WHITE);
+				Charts[j]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
+				Charts[j]->copy_label(label.c_str());
+				j++;
+			}
+		}
+	}
+	win->resizable(win);
+	win->label(INPUT_FILE.c_str());
+	win->show();
+	return(Fl::run());
+#elif USING_MATPLOTLIB
+	std::vector<std::string> traceLabel;
+	std::vector<std::vector<double>> traceData;
+	traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	if (traceLabel.size() > 0) {
+		if (traceLabel.size() <= 3) {
+			//plt::figure_size(800, 600);
+			plt::figure();
 			for (int i = 0; i < traceLabel.size(); i++) {
-				Charts.push_back(new Fl_Chart(20, 20 + (i * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
-				Charts[i]->type(FL_LINE_CHART);
-				for (int j = 0; j < traceData[i].size(); j++) {
-					Charts[i]->add(traceData[i][j]);
-				}
-				Charts[i]->color(FL_WHITE);
-				Charts[i]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
-				Charts[i]->copy_label(traceLabel[i].c_str());
+				plt::subplot(traceLabel.size(), 1, i + 1);
+				plt::grid(true);
+				plt::plot(iFile.timeAxis, traceData[i]);
+				plt::title(traceLabel[i].c_str());
+				if (traceLabel[i].find("VOLTAGE") != std::string::npos) plt::ylabel("Voltage (V)");
+				else if (traceLabel[i].find("CURRENT") != std::string::npos) plt::ylabel("Current (A)");
+				else if (traceLabel[i].find("PHASE") != std::string::npos) plt::ylabel("Phase (rads)");
 			}
+			plt::xlabel("Time (s)");
+			plt::tight_layout();
+			plt::show();
 		}
-		else if (traceLabel.size() == 0) {
-			std::cout << "W: Plotting requested but no plot/print/save commands found." << std::endl;
-			std::cout << "W: Plotting all the node voltages by default." << std::endl;
-			int j = 0;
-			std::string label;
-			for (int i = 0; i < iFile.matA.columnNames.size(); i++) {
-				label = substring_after(iFile.matA.columnNames[i], "C_");
-				if(label[0] == 'N') {
-					Charts.push_back(new Fl_Chart(20, 20 + (j * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
-					Charts[j]->type(FL_LINE_CHART);
-					for (int k = 0; k < iFile.xVect[i].size(); k++) {
-						Charts[j]->add(iFile.xVect[i][k]);
-					}
-					Charts[j]->color(FL_WHITE);
-					Charts[j]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
-					Charts[j]->copy_label(label.c_str());
-					j++;
-				}
-			}
-		}
-		win->resizable(win);
-		win->label(INPUT_FILE.c_str());
-		win->show();
-		return(Fl::run());
-	#elif USING_MATPLOTLIB
-		std::vector<std::string> traceLabel;
-		std::vector<std::vector<double>> traceData;
-		traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-		if(traceLabel.size() > 0) {
-			if (traceLabel.size() <= 3) {
+		else {
+			for (int j = 0; j < traceLabel.size(); j = j + 3) {
+				int  i = j;
 				//plt::figure_size(800, 600);
 				plt::figure();
-				for (int i = 0; i < traceLabel.size(); i++) {
-					plt::subplot(traceLabel.size(), 1, i + 1);
+				while ((i < traceLabel.size()) && (i < j + 3)) {
+					plt::subplot(3, 1, (i - j) + 1);
 					plt::grid(true);
 					plt::plot(iFile.timeAxis, traceData[i]);
 					plt::title(traceLabel[i].c_str());
-					if(traceLabel[i].find("VOLTAGE") != std::string::npos) plt::ylabel("Voltage (V)");
-					else if (traceLabel[i].find("CURRENT") != std::string::npos) plt::ylabel("Current (A)");
-					else if (traceLabel[i].find("PHASE") != std::string::npos) plt::ylabel("Phase (rads)");
+					if (traceLabel[i].find("VOLTAGE") != std::string::npos) { plt::ylabel("Voltage (V)"); }
+					else if (traceLabel[i].find("CURRENT") != std::string::npos) { plt::ylabel("Current (A)"); }
+					else if (traceLabel[i].find("PHASE") != std::string::npos) { plt::ylabel("Phase (rads)"); }
+					i++;
 				}
 				plt::xlabel("Time (s)");
 				plt::tight_layout();
-				plt::show();
+				plt::show(false);
 			}
-			else {
-				for (int j = 0; j < traceLabel.size(); j = j + 3) {
-					int  i = j;
-					//plt::figure_size(800, 600);
-					plt::figure();
-					while((i < traceLabel.size()) && (i < j + 3)) {
-						plt::subplot(3, 1, (i - j) + 1);
-						plt::grid(true);
-						plt::plot(iFile.timeAxis, traceData[i]);
-						plt::title(traceLabel[i].c_str());
-						if(traceLabel[i].find("VOLTAGE") != std::string::npos) { plt::ylabel("Voltage (V)"); }
-						else if (traceLabel[i].find("CURRENT") != std::string::npos) { plt::ylabel("Current (A)"); }
-						else if (traceLabel[i].find("PHASE") != std::string::npos) { plt::ylabel("Phase (rads)"); }
-						i++;
-					}
-					plt::xlabel("Time (s)");
-					plt::tight_layout();
-					plt::show(false);
-				}
-				plt::show();
+			plt::show();
+		}
+	}
+	else if (traceLabel.size() == 0) {
+		std::cout << "W: Plotting requested but no plot/print/save commands found." << std::endl;
+		std::cout << "W: Plotting all the node voltages by default." << std::endl;
+		// Find all the NV column indices
+		std::vector<int> nvIndices;
+		for (int i = 0; i < iFile.matA.columnNames.size(); i++) if (iFile.matA.columnNames[i][2] == 'N') nvIndices.push_back(i);
+		for (int j = 0; j < nvIndices.size(); j = j + 3) {
+			int  i = j;
+			plt::figure_size(800, 600);
+			while ((i < nvIndices.size()) && (i < j + 3)) {
+				plt::subplot(3, 1, (i - j) + 1);
+				plt::grid(true);
+				plt::plot(iFile.timeAxis, iFile.xVect.at(nvIndices[i]));
+				plt::title(substring_after(iFile.matA.columnNames.at(nvIndices[i]), "C_").c_str());
+				plt::ylabel("Voltage (V)");
+				i++;
 			}
+			plt::xlabel("Time (s)");
+			plt::tight_layout();
+			plt::show(false);
 		}
-		else if(traceLabel.size() == 0) {
-			std::cout << "W: Plotting requested but no plot/print/save commands found." << std::endl;
-			std::cout << "W: Plotting all the node voltages by default." << std::endl;
-			// Find all the NV column indices
-			std::vector<int> nvIndices;
-			for(int i = 0; i < iFile.matA.columnNames.size(); i++) if(iFile.matA.columnNames[i][2] == 'N') nvIndices.push_back(i);
-			for (int j = 0; j < nvIndices.size(); j = j + 3) {
-					int  i = j;
-					plt::figure_size(800, 600);
-					while((i < nvIndices.size()) && (i < j + 3)) {
-						plt::subplot(3, 1, (i - j) + 1);
-						plt::grid(true);
-						plt::plot(iFile.timeAxis, iFile.xVect.at(nvIndices[i]));
-						plt::title(substring_after(iFile.matA.columnNames.at(nvIndices[i]), "C_").c_str());
-						plt::ylabel("Voltage (V)");
-						i++;
-					}
-					plt::xlabel("Time (s)");
-					plt::tight_layout();
-					plt::show(false);
-				}
-				plt::show();
-		}
-		return 0;
-  #endif
+		plt::show();
+	}
+	return 0;
+#endif
 	return 0;
 }

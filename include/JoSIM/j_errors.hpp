@@ -42,6 +42,7 @@
 #define INVALID_SUBCIRCUIT_NODES 16
 #define TIME_ERROR 17
 #define MISSING_SUBCIRCUIT_NAME 18
+#define MUT_ERROR 19
 /*
   Control error codes
 */
@@ -79,6 +80,9 @@
 #define PULSE_FALL_TIME_ZERO 7
 #define PULSE_WIDTH_ZERO 8
 #define PULSE_REPEAT 9
+#define SIN_TOO_FEW_ARGUMENTS 10
+#define SIN_TOO_MANY_ARGUMENTS 11
+#define SIN_VA_ZERO 12
 /*
 	Simulation error codes
 */
@@ -86,6 +90,7 @@
 #define JJICRIT_NOT_FOUND 1
 #define JJPHASE_NODE_NOT_FOUND 2
 #define INDUCTOR_CURRENT_NOT_FOUND 3
+#define MATRIX_SINGULAR 4
 /*
 	Plotting error codes
 */

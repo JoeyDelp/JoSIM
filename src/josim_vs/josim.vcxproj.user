@@ -20,6 +20,14 @@
     <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_SPECIAL|Win32'">
+    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_NO_PRINT|Win32'">
+    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_FLTK|Win32'">
     <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
@@ -41,6 +49,14 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_None|x64'">
+    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_SPECIAL|x64'">
+    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_NO_PRINT|x64'">
     <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

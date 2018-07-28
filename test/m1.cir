@@ -1,0 +1,26 @@
+* Test for mutual inductance
+*I1  0   1   pwl(0 0 10u 0 20u 1m 30u -1m)
+V1 0 1 sin(0 10 3G 0 0)
+L1  1   2   1
+R1  2   0   1u
+V2  21  0   pwl(0 0)
+L2  21  22  2
+R2  22  0   1u
+V3  31  0   pwl(0 0)
+L3  31  32  3
+R3  32  0   1u
+V4  41  0   pwl(0 0)
+L4  41  42  4
+R4  42  0   1u
+K12 L1 L2 0.5
+K13 L1 L3 -0.2
+K23 L2 L3 0.1
+K14 L1 L4 0.1
+K24 L2 L4 -0.3
+K34 L3 L4 -0.4
+.tran 1p 4n 0 1p
+.print DEVI L1
+.print DEVI L2
+.print DEVI L3
+.print DEVI L4
+.end

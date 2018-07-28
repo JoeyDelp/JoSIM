@@ -6,10 +6,10 @@
 
 void
 parse_expression(std::string expName,
-                 std::string expr,
-                 std::unordered_map<std::string, double>& parVal,
-                 std::unordered_map<std::string, double>& globalParVal,
-                 std::string subckt = "NONE");
+	std::string expr,
+	std::unordered_map<std::string, double>& parVal,
+	std::unordered_map<std::string, double>& globalParVal,
+	std::string subckt = "NONE");
 
 int
 prec_lvl(std::string op);

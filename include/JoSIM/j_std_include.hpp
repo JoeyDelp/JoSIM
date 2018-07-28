@@ -4,7 +4,7 @@
 #define J_STD_INCLUDE
 
 // Version info
-#define VERSION 1.2
+#define VERSION 1.3
 
 // Executable info
 #ifndef WIN32
@@ -31,6 +31,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+#include <cctype>
 #ifdef USING_OPENMP
 #include <omp.h>
 #endif
