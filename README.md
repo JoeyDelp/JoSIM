@@ -38,7 +38,7 @@ https://github.com/JoeyDelp/JoSIM/releases
 - Addition of mutual inductance with the netlist label **K**
 - Addition of the sinusoidal source (Voltage and Current)
 - Various bug fixes
-- AGFP now works
+- AQFP now works
 
 ### v1.2 - 17/07/2018
 - New Release brings RType=1 to the RCSJ model of the Josephson Junction.
