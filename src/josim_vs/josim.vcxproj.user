@@ -37,7 +37,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_Matplotlib|x64'">
-    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\test\dcsfq_jtl_sink.js</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\test\jsim_n-rtype=0.cir</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_FLTK|x64'">

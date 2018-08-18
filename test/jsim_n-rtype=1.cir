@@ -1,0 +1,180 @@
+**** **** **** **** **** **** **** **** **** **** **** 
+*JSIM control file for CADENCE by kameda@cq.jp.nec.com
+**** **** **** **** **** **** **** **** **** **** ****
+
+*JSIM model (old)
+*.model jjmod jj(Rtype=1, Vg=2.8mV, Cap=0.218pF, R0=200ohm, Rn=17ohm, Icrit=0.1mA)
+
+*JSIM model (HSTP to match with WRSpice model)
+.model jjmod jj(Rtype=1, Vg=2.8mV, Cap=0.06pF, R0=100ohm, Rn=17ohm, Icrit=0.1mA)
+
+*** netlist file ***
+**** **** **** **** **** **** **** ****+
+*** Lib : hstp_ayala_lib
+*** Cell: TimingTest_aqfp014_bfrChain
+*** View: schematic
+*** Mar 15 18:03:59 2018
+**** **** **** **** **** **** **** ****
+
+*** bfr
+.subckt bfr          1          2          3          4          5          6
+***      dcin     dcout       din      dout       xin      xout
+Kxout              Lx       Lout 0.000
+Kd1                Ld         L1 -0.143
+Kxq                Lx         Lq 0.000
+Kdout              Ld       Lout 0.000
+Kxd                Lx         Ld 0.284
+Kdq                Ld         Lq 0.000
+Kd2                Ld         L2 -0.143
+Kx1                Lx         L1 -0.200
+Kx2                Lx         L2 -0.200
+Kout               Lq       Lout -0.469
+Ld                 1         2   6.090pH fcheck
+Lx                 5         6   5.560pH fcheck
+Lin                3         7   0.804pH fcheck
+L1                 7         8   1.400pH fcheck
+L2                 9         7   1.400pH fcheck
+Lout              10         4  27.600pH fcheck
+Lq                 7         0   8.030pH fcheck
+R1                10         0   1.000pohm
+B2                 9         0  jjmod area=0.50
+B1                 8         0  jjmod area=0.50
+.ends
+
+*** bias_ac_gnd
+.subckt bias_ac_gnd         11
+***         a
+L0                11         0   0.100pH fcheck
+.ends
+
+*** bias_dc_gnd
+.subckt bias_dc_gnd         11
+***         a
+L0                11         0   0.100pH fcheck
+.ends
+
+*** top cell: TimingTest_aqfp014_bfrChain
+XI11              bfr         12         13         14          0         16         17
+*** ("15") mapped to 0
+XI10              bfr         18         13         19         14         20         21
+XI9               bfr         18         22         23         19         24         17
+XI8               bfr         25         22         26         23         27         21
+XI7               bfr         25         28         29         26         24          8
+XI6               bfr         30         28         31         29         27         32
+XI5               bfr         30         33         34         31         35          8
+XI4               bfr         36         33         37         34         38         32
+XI3               bfr         36         39         40         41         35         42
+XI2               bfr          7         39         43         40         38         44
+XI1               bfr          7         45         46         43         47         42
+XI0               bfr         48         45         49         46         50         44
+Vin   51   0   PWL(0ps 0mV 1ps -5mV 200ps -5mV 201ps 5mV 400ps 5mV 401ps -5mV 600ps -5mV 601ps 5mV 800ps 5mV 801ps -5mV 1000ps -5mV 1001ps 5mV 1200ps 5mV 1400ps 5mV 1401ps -5mV 1600ps -5mV 1800ps -5mV )
+Vxd               52         0  PWL(0ps 0mV 20ps 1238mV)
+Vx2               53         0  SIN(0 926mV 5GHz 200ps 0)
+Vx1               54         0  SIN(0 926mV 5GHz 250ps 0)
+Rin               51        49  1000.00ohm
+Rxd1              52        55  1000.00ohm
+Rx2               53        56  1000.00ohm
+Rx1               54        57  1000.00ohm
+Lx1               57        50   0.100pH fcheck
+Lx2               56        47   0.100pH fcheck
+Lxd1              55        48   0.100pH fcheck
+LIC               41        37   8.120pH fcheck
+XI15       bias_ac_gnd         20
+XI13       bias_ac_gnd         16
+XI14       bias_dc_gnd         12
+
+*** netlist file ***
+
+*** jsim input file ***
+.tran 0.2ps 2200ps 0ps 0.1ps
+.print devi Lx1
+.print devi Lx2
+.print devi Lxd1
+
+.print devi XI0_Lx
+.print devv XI0_Lx
+.print devi XI0_Lin
+.print devi XI0_Lq
+.print phase XI0_B1
+.print phase XI0_B2
+
+.print devi XI1_Lx
+.print devv XI1_Lx
+.print devi XI1_Lin
+.print devi XI1_Lq
+.print phase XI1_B1
+.print phase XI1_B2
+
+.print devi XI2_Lx
+.print devv XI2_Lx
+.print devi XI2_Lin
+.print devi XI2_Lq
+.print phase XI2_B1
+.print phase XI2_B2
+
+.print devi XI3_Lx
+.print devv XI3_Lx
+.print devi XI3_Lin
+.print devi XI3_Lq
+.print phase XI3_B1
+.print phase XI3_B2
+
+.print devi LIC
+.print devv LIC
+
+.print devi XI4_Lx
+.print devv XI4_Lx
+.print devi XI4_Lin
+.print devi XI4_Lq
+.print phase XI4_B1
+.print phase XI4_B2
+
+.print devi XI5_Lx
+.print devv XI5_Lx
+.print devi XI5_Lin
+.print devi XI5_Lq
+.print phase XI5_B1
+.print phase XI5_B2
+
+.print devi XI6_Lx
+.print devv XI6_Lx
+.print devi XI6_Lin
+.print devi XI6_Lq
+.print phase XI6_B1
+.print phase XI6_B2
+
+.print devi XI7_Lx
+.print devv XI7_Lx
+.print devi XI7_Lin
+.print devi XI7_Lq
+.print phase XI7_B1
+.print phase XI7_B2
+
+.print devi XI8_Lx
+.print devv XI8_Lx
+.print devi XI8_Lin
+.print devi XI8_Lq
+.print phase XI8_B1
+.print phase XI8_B2
+
+.print devi XI9_Lx
+.print devv XI9_Lx
+.print devi XI9_Lin
+.print devi XI9_Lq
+.print phase XI9_B1
+.print phase XI9_B2
+
+.print devi XI10_Lx
+.print devv XI10_Lx
+.print devi XI10_Lin
+.print devi XI10_Lq
+.print phase XI10_B1
+.print phase XI10_B2
+
+.print devi XI11_Lx
+.print devv XI11_Lx
+.print devi XI11_Lin
+.print devi XI11_Lq
+.print phase XI11_B1
+.print phase XI11_B2
+*** jsim input file ***

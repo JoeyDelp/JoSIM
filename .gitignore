@@ -298,3 +298,4 @@ test/MITLL_DFFT.cir
 build
 
 doc/src
+*.dat
