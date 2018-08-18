@@ -14,13 +14,12 @@ void identify_simulation(InputFile& iFile) {
 			simtokens = tokenize_delimeter(i, " ,");
 			if (simtokens.size() < 2) {
 				control_errors(TRANS_ERROR, "Too few parameters: " + i);
-				iFile.tsim.prstep = 1E-12;
+				iFile.tsim.maxtstep = 1E-12;
 				iFile.tsim.tstop = 1E-9;
 				iFile.tsim.tstart = 0;
-				iFile.tsim.maxtstep = 1E-12;
 			}
 			else {
-				iFile.tsim.prstep = modifier(simtokens[1]);
+				iFile.tsim.maxtstep = modifier(simtokens[1]);
 				if (simtokens.size() > 2) {
 					iFile.tsim.tstop = modifier(simtokens[2]);
 					if (simtokens.size() > 3) {
@@ -315,7 +314,8 @@ void transient_simulation(InputFile& iFile) {
 			else if (j.second.vNegative == -1) thisJunction.VB = (lhsValues.at(j.second.vPositive));
 			else thisJunction.VB = (lhsValues.at(j.second.vPositive) - lhsValues.at(j.second.vNegative));
 			if (thisJunction.jjRtype == 1) {
-				if (thisJunction.VB >= thisJunction.jjVg && thisJunction.superconducting) {
+				if ((thisJunction.VB >= thisJunction.jjVg && thisJunction.superconducting) || 
+					(thisJunction.VB <= -thisJunction.jjVg && thisJunction.superconducting)) {
 					for (int k = 0; k < iFile.matA.mElements.size(); k++) {
 						if (iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
 							if (iFile.matA.mElements[k].junctionDirection == 'P')
@@ -329,7 +329,8 @@ void transient_simulation(InputFile& iFile) {
 					/* Do numeric factorization of matrix */
 					Numeric = klu_factor(&iFile.matA.rowptr.front(), &iFile.matA.colind.front(), &iFile.matA.nzval.front(), Symbolic, &Common);
 				}
-				else if (thisJunction.VB < thisJunction.jjVg && !thisJunction.superconducting) {
+				else if ((thisJunction.VB < thisJunction.jjVg && !thisJunction.superconducting) &&
+						 (thisJunction.VB > -thisJunction.jjVg && !thisJunction.superconducting)) {
 					for (int k = 0; k < iFile.matA.mElements.size(); k++) {
 						if (iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
 							if (iFile.matA.mElements[k].junctionDirection == 'P')
