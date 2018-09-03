@@ -16,12 +16,14 @@ class rcsj_sim_object
 public:
 	int vPositive, vNegative, bPhase;
 	std::string label, positiveNodeRow, negativeNodeRow;
-	int jjRtype;
+	int jjRtype, currentState, previousState, mptrPP, mptrPN, mptrNP, mptrNN;
 	bool superconducting;
-	double jjIcrit, jjCap, jjVg, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
-		Phase_Guess, Phase_Prev, Is;
+	double jjIcrit, jjCap, jjVg, jjRzero, jjRn, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
+		Phase_Guess, Phase_Prev, Is, delV, transitionCurrent, gLarge, middle, upper, subCond, transCond, normalCond;
 	rcsj_sim_object()
 	{
+		previousState = SUBGAP;
+		currentState = SUBGAP;
 		superconducting = true;
 		vPositive = -1;
 		vNegative = -1;
@@ -34,6 +36,13 @@ public:
 		Phase_Guess = 0.0;
 		Phase_Prev = 0.0;
 		Is = 0.0;
+		delV = 0.1E-3;
+		transitionCurrent = 0.0;
+		gLarge = 0.0;
+		mptrPP = -1;
+		mptrPN = -1;
+		mptrNP = -1;
+		mptrNN = -1;
 	}
 };
 

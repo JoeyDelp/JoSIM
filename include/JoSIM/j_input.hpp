@@ -200,9 +200,11 @@ public:
 	trans_sim()
 	{
 		tstart = 0.0;
+		tstop = 0.0;
+		prstep = 1E-12;
 		maxtstep = 1E-12;
 	}
-	double simsize() { return (tstop - tstart) / maxtstep; }
+	double simsize() { return (tstop - tstart) / prstep; }
 };
 
 /*

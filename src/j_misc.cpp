@@ -312,10 +312,10 @@ function_parse(std::string str, InputFile& iFile)
 			function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
 		std::vector<double> timesteps, values;
 		for (int i = 0; i < tokens.size(); i = i + 2) {
-			if (modifier(tokens[i]) > iFile.tsim.tstop) {
-				timesteps.push_back(modifier(tokens.at(i - 2)));
-			}
-			else
+			//if (modifier(tokens[i]) > iFile.tsim.tstop) {
+			//	timesteps.push_back(modifier(tokens.at(i - 2)));
+			//}
+			//else
 				timesteps.push_back(modifier(tokens[i]));
 		}
 		for (int i = 1; i < tokens.size(); i = i + 2) {
@@ -335,19 +335,28 @@ function_parse(std::string str, InputFile& iFile)
 			function_errors(TOO_FEW_VALUES,
 				std::to_string(timesteps.size()) + " timesteps & " +
 				std::to_string(timesteps.size()) + " values");
+		if((timesteps.back() > iFile.tsim.tstop) && (values.back() > values[values.size() - 2])) {
+			values[values.size() - 1] = (iFile.tsim.tstop / timesteps.back())*(values.back() - values[values.size() - 2]);
+			timesteps[timesteps.size() - 1] = iFile.tsim.tstop;
+		}
+		else if((timesteps.back() > iFile.tsim.tstop) && (values.back() == values[values.size() - 2])) {
+			timesteps[timesteps.size() - 1] = iFile.tsim.tstop;
+		}
 		if (values.at(values.size() - 1) != 0.0) {
 			std::fill(functionOfT.begin() +
-				timesteps.at(timesteps.size() - 1) / iFile.tsim.maxtstep,
+				timesteps.at(timesteps.size() - 1) / iFile.tsim.prstep,
 				functionOfT.end(),
 				values.at(values.size() - 1));
 		}
 		double startpoint, endpoint, value = 0.0;
 		for (int i = 1; i < timesteps.size(); i++) {
-			startpoint = timesteps.at(i - 1) / iFile.tsim.maxtstep;
-			endpoint = timesteps[i] / iFile.tsim.maxtstep;
-			for (int j = (int)startpoint; j < (int)endpoint; j++) {
+			startpoint = ceil(timesteps.at(i - 1) / iFile.tsim.prstep);
+			endpoint = ceil(timesteps[i] / iFile.tsim.prstep);
+			functionOfT[startpoint] = values.at(i-1);
+			for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
 				if (values.at(i - 1) < values[i])
-					value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
+					if(values.at(i - 1) < 0) value = values.at(i - 1) + (values.at(i) - (values.at(i-1))) / (endpoint - startpoint) * (j - (int)startpoint);
+					else value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
 				else if (values.at(i - 1) > values[i])
 					value = values.at(i - 1) - ((values.at(i - 1) - (values.at(i))) / (endpoint - startpoint) *
 					(j - (int)startpoint));
@@ -379,8 +388,8 @@ function_parse(std::string str, InputFile& iFile)
 		if (pulseRepeat == 0.0)
 			if (VERBOSE)
 				function_errors(PULSE_REPEAT, tokens[6]);
-		int PR = pulseRepeat / iFile.tsim.maxtstep;
-		int TD = timeDelay / iFile.tsim.maxtstep;
+		int PR = pulseRepeat / iFile.tsim.prstep;
+		int TD = timeDelay / iFile.tsim.prstep;
 		std::vector<double> timesteps, values;
 		double timestep;
 		for (int i = 0; i < ((iFile.tsim.simsize() - TD) / PR); i++) {
@@ -412,15 +421,17 @@ function_parse(std::string str, InputFile& iFile)
 		}
 		double startpoint, endpoint, value;
 		for (int i = 1; i < timesteps.size(); i++) {
-			startpoint = timesteps.at(i - 1) / iFile.tsim.maxtstep;
-			endpoint = timesteps[i] / iFile.tsim.maxtstep;
-			for (int j = startpoint; j < endpoint; j++) {
+			startpoint = ceil(timesteps.at(i - 1) / iFile.tsim.prstep);
+			endpoint = ceil(timesteps[i] / iFile.tsim.prstep);
+			functionOfT[startpoint] = values.at(i-1);
+			for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
 				if (values.at(i - 1) < values[i])
-					value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
+					if(values.at(i - 1) < 0) value = values.at(i - 1) + (values.at(i) - (values.at(i-1))) / (endpoint - startpoint) * (j - (int)startpoint);
+					else value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
 				else if (values.at(i - 1) > values[i])
-					value = values.at(i - 1) - (values.at(i - 1) / (endpoint - startpoint) *
+					value = values.at(i - 1) - ((values.at(i - 1) - (values.at(i))) / (endpoint - startpoint) *
 					(j - (int)startpoint));
-				else
+				else if (values.at(i - 1) == values[i])
 					value = values[i];
 				functionOfT[j] = value;
 			}
@@ -452,9 +463,9 @@ function_parse(std::string str, InputFile& iFile)
 		}
 		double currentTimestep, value;
 		int beginTime;
-		beginTime = TD / iFile.tsim.maxtstep;
+		beginTime = TD / iFile.tsim.prstep;
 		for (int i = beginTime; i < iFile.tsim.simsize(); i++) {
-			currentTimestep = i * iFile.tsim.maxtstep;
+			currentTimestep = i * iFile.tsim.prstep;
 			value = VO + VA * sin(2 * M_PI * FREQ * (currentTimestep - TD)) * exp(-THETA * (currentTimestep - TD));
 			functionOfT[i] = value;
 		}
@@ -465,11 +476,13 @@ function_parse(std::string str, InputFile& iFile)
 		Helper function for finding the depth of subcircuits in the design
 */
 bool
-findX(std::vector<std::string>& segment, std::string& theLine)
+findX(std::vector<std::string>& segment, std::string& theLine, int &linePos)
 {
-	for (auto i : segment) {
-		if (i[0] == 'X') {
-			theLine = i;
+	for (int i = linePos; i < segment.size(); i++) {
+		if (segment[i][0] == 'X') {
+			theLine = segment[i];
+			if(i < segment.size() - 1) linePos = i + 1;
+			else linePos = segment.size() - 1;
 			return true;
 		}
 	}
@@ -486,34 +499,37 @@ subCircuitDepth(std::vector<std::string> segment,
 {
 	std::string subcktLine, subcktName;
 	std::vector<std::string> tokens;
-	if (findX(segment, subcktLine)) {
-		tokens = tokenize_space(subcktLine);
-		thisDepth++;
-		if (thisDepth > overallDepth)
-			overallDepth = thisDepth;
-		// Check if the second token can be identified as a subcircuit name. If yes
-		// then
-		if (iFile.subcircuitSegments.find(tokens[1]) !=
-			iFile.subcircuitSegments.end()) {
-			// Identify the type of subcircuit
-			subcktName = tokens[1];
+	int linePos = 0;
+	for(auto k : segment) {
+		if (findX(segment, subcktLine, linePos)) {
+			tokens = tokenize_space(subcktLine);
+			thisDepth++;
+			if (thisDepth > overallDepth)
+				overallDepth = thisDepth;
+			// Check if the second token can be identified as a subcircuit name. If yes
+			// then
+			if (iFile.subcircuitSegments.find(tokens[1]) !=
+				iFile.subcircuitSegments.end()) {
+				// Identify the type of subcircuit
+				subcktName = tokens[1];
+			}
+			else if (iFile.subcircuitSegments.find(tokens.back()) !=
+				iFile.subcircuitSegments.end()) {
+				// Identify the type of subcircuit
+				subcktName = tokens.back();
+			}
+			else {
+				// The subcircuit name was not found therefore error out
+				invalid_component_errors(MISSING_SUBCIRCUIT_NAME, subcktLine);
+			}
+			subCircuitDepth(iFile.subcircuitSegments[subcktName].lines,
+				iFile,
+				thisDepth,
+				overallDepth);
 		}
-		else if (iFile.subcircuitSegments.find(tokens.back()) !=
-			iFile.subcircuitSegments.end()) {
-			// Identify the type of subcircuit
-			subcktName = tokens.back();
-		}
-		else {
-			// The subcircuit name was not found therefore error out
-			invalid_component_errors(MISSING_SUBCIRCUIT_NAME, subcktLine);
-		}
-		subCircuitDepth(iFile.subcircuitSegments[subcktName].lines,
-			iFile,
-			thisDepth,
-			overallDepth);
+		else
+			thisDepth = 1;
 	}
-	else
-		thisDepth = 1;
 	return overallDepth;
 }
 /*

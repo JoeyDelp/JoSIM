@@ -295,7 +295,12 @@ test/MITLL_DFFT.cir
 .vscode/c_cpp_properties.json
 
 # CMake build directories
+release_build
 build
+
+# .vscode directorie
+.vscode
 
 doc/src
 *.dat
+*.json

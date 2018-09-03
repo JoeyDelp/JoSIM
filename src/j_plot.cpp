@@ -621,7 +621,7 @@ int plot_traces(InputFile& iFile) {
 	std::vector<std::vector<double>> traceData;
 	traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 	if (traceLabel.size() > 0) {
-		if (traceLabel.size() <= 3) {
+		if (traceLabel.size() <= 4) {
 			//plt::figure_size(800, 600);
 			plt::figure();
 			for (int i = 0; i < traceLabel.size(); i++) {
@@ -638,12 +638,12 @@ int plot_traces(InputFile& iFile) {
 			plt::show();
 		}
 		else {
-			for (int j = 0; j < traceLabel.size(); j = j + 3) {
+			for (int j = 0; j < traceLabel.size(); j = j + 4) {
 				int  i = j;
 				//plt::figure_size(800, 600);
 				plt::figure();
-				while ((i < traceLabel.size()) && (i < j + 3)) {
-					plt::subplot(3, 1, (i - j) + 1);
+				while ((i < traceLabel.size()) && (i < j + 4)) {
+					plt::subplot(4, 1, (i - j) + 1);
 					plt::grid(true);
 					plt::plot(iFile.timeAxis, traceData[i]);
 					plt::title(traceLabel[i].c_str());
@@ -665,11 +665,11 @@ int plot_traces(InputFile& iFile) {
 		// Find all the NV column indices
 		std::vector<int> nvIndices;
 		for (int i = 0; i < iFile.matA.columnNames.size(); i++) if (iFile.matA.columnNames[i][2] == 'N') nvIndices.push_back(i);
-		for (int j = 0; j < nvIndices.size(); j = j + 3) {
+		for (int j = 0; j < nvIndices.size(); j = j + 4) {
 			int  i = j;
-			plt::figure_size(800, 600);
-			while ((i < nvIndices.size()) && (i < j + 3)) {
-				plt::subplot(3, 1, (i - j) + 1);
+			plt::figure_size(800, 800);
+			while ((i < nvIndices.size()) && (i < j + 4)) {
+				plt::subplot(4, 1, (i - j) + 1);
 				plt::grid(true);
 				plt::plot(iFile.timeAxis, iFile.xVect.at(nvIndices[i]));
 				plt::title(substring_after(iFile.matA.columnNames.at(nvIndices[i]), "C_").c_str());

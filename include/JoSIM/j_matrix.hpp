@@ -10,17 +10,12 @@
 void
 matrix_A(InputFile& iFile);
 /*
-Create the A matrix in Compressed Row Storage (CRS) format
+ Identify each non zero matrix element
 */
 void
 create_A_matrix(InputFile& iFile);
 /*
-Print A matrix
-*/
-void
-print_A_matrix(InputFile& iFile);
-/*
-Create A matrix in CSR format
+  Create A matrix in CSR format
 */
 void csr_A_matrix(InputFile& iFile);
 #endif

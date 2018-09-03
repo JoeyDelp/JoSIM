@@ -41,8 +41,10 @@
         "queue": "cpp",
         "stack": "cpp",
         "utility": "cpp",
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "cfenv": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "C_Cpp.configurationWarnings": "Disabled"
 }

@@ -14,3 +14,7 @@ extern int subcktConv;
 #define PHI_ZERO 2.06783383113E-15
 #define LEFT 0
 #define RIGHT 1
+
+#define SUBGAP 0
+#define TRANSITION 1
+#define NORMAL 2

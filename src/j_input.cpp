@@ -82,7 +82,8 @@ std::vector<std::string> recurseSubckt(std::unordered_map<std::string, Subcircui
 	ckts.clear();
 	if (subckts[part].containsSubckt) {
 		for (auto i : subckts[part].subckts) {
-			ckts = recurseSubckt(subckts, i);
+			t = recurseSubckt(subckts, i);
+			ckts.insert(ckts.end(), t.begin(), t.end());
 		}
 	}
 	if (!subckts[part].subckts.empty())

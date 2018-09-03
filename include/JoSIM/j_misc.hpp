@@ -76,7 +76,7 @@ function_parse(std::string str, InputFile& iFile);
 Helper function for finding the depth of subcircuits in the design
 */
 bool
-findX(std::vector<std::string>& segment, std::string& theLine);
+findX(std::vector<std::string>& segment, std::string& theLine, int &linePos);
 /*
 Function that finds the depth of the subcircuits in the design
 */
@@ -108,7 +108,7 @@ Template function that does to_string but with precision
 */
 template<typename T>
 std::string
-precise_to_string(const T a_value, const int n = 30)
+precise_to_string(const T a_value, const int n = 50)
 {
 	std::ostringstream out;
 	out << std::fixed << std::setprecision(n) << a_value;

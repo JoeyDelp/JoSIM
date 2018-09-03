@@ -19,7 +19,7 @@ void identify_simulation(InputFile& iFile) {
 				iFile.tsim.tstart = 0;
 			}
 			else {
-				iFile.tsim.maxtstep = modifier(simtokens[1]);
+				iFile.tsim.prstep = modifier(simtokens[1]);
 				if (simtokens.size() > 2) {
 					iFile.tsim.tstop = modifier(simtokens[2]);
 					if (simtokens.size() > 3) {
@@ -85,8 +85,9 @@ void transient_simulation(InputFile& iFile) {
 	std::vector<std::string> tokens;
 	std::unordered_map<std::string, rcsj_sim_object> simJunctions;
 	double VP, VN, CUR, LCUR, VB, RHSvalue, inductance, z0voltage;
-	double hn_2_2e_hbar = (iFile.tsim.maxtstep / 2)*(2 * M_PI / PHI_ZERO);
+	double hn_2_2e_hbar = (iFile.tsim.prstep / 2)*(2 * M_PI / PHI_ZERO);
 	int ok, rowCounter;
+	bool needsLU = false;
 	klu_symbolic * Symbolic;
 	klu_common Common;
 	klu_numeric * Numeric;
@@ -120,6 +121,18 @@ void transient_simulation(InputFile& iFile) {
 			catch (const std::out_of_range&) { simulation_errors(JJICRIT_NOT_FOUND, currentLabel); }
 			simJunctions[j].jjVg = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-VGAP");
 			simJunctions[j].jjRtype = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-RTYPE");
+			simJunctions[j].jjRn = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-RN");
+			simJunctions[j].jjRzero = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-R0");
+			simJunctions[j].gLarge = (((simJunctions[j].jjVg + simJunctions[j].delV)/simJunctions[j].jjRn) - ((simJunctions[j].jjVg)/simJunctions[j].jjRzero))/simJunctions[j].delV;
+			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_PP") != 0) simJunctions[j].mptrPP = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_PP");
+			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_PN") != 0) simJunctions[j].mptrPN = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_PN");
+			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_NP") != 0) simJunctions[j].mptrNP = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_NP");
+			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_NN") != 0) simJunctions[j].mptrNN = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_NN");
+			simJunctions[j].middle = simJunctions[j].jjVg + simJunctions[j].delV;
+			simJunctions[j].upper = simJunctions[j].jjVg + 2 * simJunctions[j].delV;
+			simJunctions[j].subCond = (2 * simJunctions[j].jjCap)/iFile.tsim.prstep + 1/simJunctions[j].jjRzero;
+			simJunctions[j].transCond = (2 * simJunctions[j].jjCap)/iFile.tsim.prstep + simJunctions[j].gLarge;
+			simJunctions[j].normalCond = (2 * simJunctions[j].jjCap)/iFile.tsim.prstep + 1/simJunctions[j].jjRn;
 			/* If the junction positive node is connected to ground */
 			if (simJunctions[j].vPositive == -1) {
 				simJunctions[j].VB = -lhsValues.at(simJunctions[j].vNegative);
@@ -214,7 +227,7 @@ void transient_simulation(InputFile& iFile) {
 				/* If both nodes are not connected to ground */
 				else VB = lhsValues.at((int)VP) - lhsValues.at((int)VN);
 				if (!iFile.matA.branchRelations[currentLabel].mutI2.empty()) {
-					RHSvalue = (-2 * inductance / iFile.tsim.maxtstep)*LCUR - VB;
+					RHSvalue = (-2 * inductance / iFile.tsim.prstep)*LCUR - VB;
 					for (int c = 0; c < iFile.matA.branchRelations[currentLabel].mutI2.size(); c++) {
 						CUR2 = lhsValues.at(iFile.matA.branchRelations[currentLabel].current2RowIndex[c]);
 						mutualL = iFile.matA.branchRelations[currentLabel].mutualInductance[c];
@@ -223,7 +236,7 @@ void transient_simulation(InputFile& iFile) {
 				}
 				else {
 					/* R_L = (-2L/hn)IL - VL*/
-					RHSvalue = (-2 * inductance / iFile.tsim.maxtstep)*LCUR - VB;
+					RHSvalue = (-2 * inductance / iFile.tsim.prstep)*LCUR - VB;
 				}
 			}
 			/* If this row item is identified as a junction row */
@@ -231,7 +244,7 @@ void transient_simulation(InputFile& iFile) {
 				/* Identify the junction label */
 				currentLabel = j.substr(2);
 				/* R_B = Phi(n-1) + (hn/2)(2e/hbar)VB */
-				RHSvalue = simJunctions[j].Phase_Prev + ((hn_2_2e_hbar)*simJunctions[j].VB);
+				RHSvalue = simJunctions[j].Phase + ((hn_2_2e_hbar)*simJunctions[j].VB);
 			}
 			/* If this row item is identified as a voltage source row */
 			else if (j[2] == 'V') {
@@ -245,7 +258,7 @@ void transient_simulation(InputFile& iFile) {
 				currentLabel = j.substr(2);
 				char OneOrTwo = currentLabel.at(currentLabel.find('-') + 2);
 				currentLabel.erase(currentLabel.find('-'), 3);
-				imintd = i - (iFile.matA.xlines[currentLabel].TD / iFile.tsim.maxtstep);
+				imintd = i - (iFile.matA.xlines[currentLabel].TD / iFile.tsim.prstep);
 				switch (OneOrTwo) {
 				case '1':
 					if ((imintd) > 0) {
@@ -313,45 +326,123 @@ void transient_simulation(InputFile& iFile) {
 			if (j.second.vPositive == -1) thisJunction.VB = (-lhsValues.at(j.second.vNegative));
 			else if (j.second.vNegative == -1) thisJunction.VB = (lhsValues.at(j.second.vPositive));
 			else thisJunction.VB = (lhsValues.at(j.second.vPositive) - lhsValues.at(j.second.vNegative));
+			thisJunction.VB_dt = (2 / iFile.tsim.prstep)*(thisJunction.VB - thisJunction.VB_Prev) - thisJunction.VB_dt_Prev;
+			thisJunction.VB_Guess = thisJunction.VB + iFile.tsim.prstep*thisJunction.VB_dt;
 			if (thisJunction.jjRtype == 1) {
-				if ((thisJunction.VB >= thisJunction.jjVg && thisJunction.superconducting) || 
-					(thisJunction.VB <= -thisJunction.jjVg && thisJunction.superconducting)) {
-					for (int k = 0; k < iFile.matA.mElements.size(); k++) {
-						if (iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
-							if (iFile.matA.mElements[k].junctionDirection == 'P')
-								iFile.matA.mElements[k].value = ((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("RN"));
-							else if (iFile.matA.mElements[k].junctionDirection == 'N')
-								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("RN"));
+				if(fabs(thisJunction.VB_Guess) <= thisJunction.jjVg) {
+					thisJunction.transitionCurrent = 0.0;
+					if(thisJunction.mptrPP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.subCond) {
+							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.subCond;
+							needsLU = true;
 						}
 					}
-					thisJunction.superconducting = false;
-					csr_A_matrix(iFile);
-					/* Do numeric factorization of matrix */
-					Numeric = klu_factor(&iFile.matA.rowptr.front(), &iFile.matA.colind.front(), &iFile.matA.nzval.front(), Symbolic, &Common);
+					if(thisJunction.mptrNN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNN].value != thisJunction.subCond) {
+							iFile.matA.mElements[thisJunction.mptrNN].value = thisJunction.subCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrPN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPN].value != -thisJunction.subCond) {
+							iFile.matA.mElements[thisJunction.mptrPN].value = -thisJunction.subCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrNP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNP].value != -thisJunction.subCond) {
+							iFile.matA.mElements[thisJunction.mptrNP].value = -thisJunction.subCond;
+							needsLU = true;
+						}
+					}
 				}
-				else if ((thisJunction.VB < thisJunction.jjVg && !thisJunction.superconducting) &&
-						 (thisJunction.VB > -thisJunction.jjVg && !thisJunction.superconducting)) {
-					for (int k = 0; k < iFile.matA.mElements.size(); k++) {
-						if (iFile.matA.mElements[k].label == thisJunction.label && iFile.matA.mElements[k].junctionEntry) {
-							if (iFile.matA.mElements[k].junctionDirection == 'P')
-								iFile.matA.mElements[k].value = ((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("R0"));
-							else if (iFile.matA.mElements[k].junctionDirection == 'N')
-								iFile.matA.mElements[k].value = -((2 * iFile.matA.mElements[k].tokens.at("CAP")) / iFile.tsim.maxtstep) + (1 / iFile.matA.mElements[k].tokens.at("R0"));
+				else if(fabs(thisJunction.VB_Guess) <= thisJunction.middle && fabs(thisJunction.VB_Guess) > thisJunction.jjVg) {
+					if(thisJunction.VB_Guess < 0) thisJunction.transitionCurrent = -thisJunction.jjVg*((1/thisJunction.jjRzero) - thisJunction.gLarge);
+					else thisJunction.transitionCurrent = thisJunction.jjVg*((1/thisJunction.jjRzero) - thisJunction.gLarge);
+					if(thisJunction.mptrPP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.transCond;
+							needsLU = true;
 						}
 					}
-					thisJunction.superconducting = true;
-					csr_A_matrix(iFile);
-					/* Do numeric factorization of matrix */
-					Numeric = klu_factor(&iFile.matA.rowptr.front(), &iFile.matA.colind.front(), &iFile.matA.nzval.front(), Symbolic, &Common);
+					if(thisJunction.mptrNN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNN].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrNN].value = thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrPN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPN].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrPN].value = -thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrNP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNP].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrNP].value = -thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+					needsLU = true;
+				}
+				else if(fabs(thisJunction.VB_Guess) <= thisJunction.upper && fabs(thisJunction.VB_Guess) > thisJunction.middle) {
+					thisJunction.transitionCurrent = thisJunction.VB_Guess*((1/thisJunction.jjRn) - thisJunction.gLarge);
+					if(thisJunction.mptrPP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrNN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNN].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrNN].value = thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrPN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPN].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrPN].value = -thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrNP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNP].value != thisJunction.transCond) {
+							iFile.matA.mElements[thisJunction.mptrNP].value = -thisJunction.transCond;
+							needsLU = true;
+						}
+					}
+				}
+				else if(fabs(thisJunction.VB_Guess) >= thisJunction.upper) {
+					thisJunction.transitionCurrent = 0.0;
+					if(thisJunction.mptrPP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.normalCond) {
+							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.normalCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrNN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNN].value != thisJunction.normalCond) {
+							iFile.matA.mElements[thisJunction.mptrNN].value = thisJunction.normalCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrPN != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrPN].value != thisJunction.normalCond) {
+							iFile.matA.mElements[thisJunction.mptrPN].value = -thisJunction.normalCond;
+							needsLU = true;
+						}
+					}
+					if(thisJunction.mptrNP != -1) {
+						if(iFile.matA.mElements[thisJunction.mptrNP].value != thisJunction.normalCond) {
+							iFile.matA.mElements[thisJunction.mptrNP].value = -thisJunction.normalCond;
+							needsLU = true;
+						}
+					}
 				}
 			}
 			thisJunction.Phase = lhsValues.at(j.second.bPhase);
-			if (i > 3) thisJunction.VB_dt = (2 / iFile.tsim.maxtstep)*(thisJunction.VB - thisJunction.VB_Prev) - thisJunction.VB_dt_Prev;
-			else thisJunction.VB_dt = 0;
-			thisJunction.VB_Guess = thisJunction.VB + iFile.tsim.maxtstep*thisJunction.VB_dt;
 			thisJunction.Phase_Guess = thisJunction.Phase + (hn_2_2e_hbar)*(thisJunction.VB + thisJunction.VB_Guess);
-			//if ((thisJunction.Phase_Guess - thisJunction.Phase) > M_PI/5) std::cout << "PHASE GUESS" << std::endl;
-			thisJunction.Is = -thisJunction.jjIcrit * sin(thisJunction.Phase_Guess) + (((2 * thisJunction.jjCap) / iFile.tsim.maxtstep)*thisJunction.VB) + (thisJunction.jjCap * thisJunction.VB_dt);
+			thisJunction.Is = -thisJunction.jjIcrit * sin(thisJunction.Phase_Guess) + (((2 * thisJunction.jjCap) / iFile.tsim.prstep)*thisJunction.VB) + (thisJunction.jjCap * thisJunction.VB_dt) - thisJunction.transitionCurrent;
 			thisJunction.VB_Prev = thisJunction.VB;
 			thisJunction.VB_dt_Prev = thisJunction.VB_dt;
 			thisJunction.Phase_Prev = thisJunction.Phase;
@@ -359,8 +450,14 @@ void transient_simulation(InputFile& iFile) {
 			/* Store the junction currents for printing */
 			iFile.junctionCurrents.at(j.first).push_back(thisJunction.Is);
 		}
+		if(needsLU) {
+				csr_A_matrix(iFile);
+				/* Do numeric factorization of matrix */
+				Numeric = klu_factor(&iFile.matA.rowptr.front(), &iFile.matA.colind.front(), &iFile.matA.nzval.front(), Symbolic, &Common);
+				needsLU = false;
+		}
 		/* Add the current time value to the time axis for plotting purposes */
-		iFile.timeAxis.push_back(i*iFile.tsim.maxtstep);
+		iFile.timeAxis.push_back(i*iFile.tsim.prstep);
 		old_progress = progress;
 		incremental_progress = incremental_progress + increments;
 		progress = (int)(incremental_progress);
