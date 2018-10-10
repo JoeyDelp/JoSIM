@@ -34,6 +34,11 @@ https://github.com/JoeyDelp/JoSIM/releases
 - Libraries: sudo pip install numpy matplotlib
 
 ## CHANGELOG
+### v2.0 - 10/10/2018
+- New analysis method that allows Modified Nodal Phase Analysis (see ReadMe)
+- Major memory improvement by not creating intermediate A matrix
+- Various bug fixes
+
 ### v1.3 - 28/07/2018
 - Addition of mutual inductance with the netlist label **K**
 - Addition of the sinusoidal source (Voltage and Current)
