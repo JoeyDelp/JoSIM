@@ -112,7 +112,7 @@ X04 JTLSTRING1000 4 5
 X05 JTLSTRING1000 5 6
 X06 SINK 6
 
-.tran 0.25p 1000p 0 0.25p
+.tran 0.25p 3000p 0 0.25p
 .print nodev 1 0
 .print nodev 2 0
 .print nodev 3 0

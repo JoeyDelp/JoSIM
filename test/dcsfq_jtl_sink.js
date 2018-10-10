@@ -74,3 +74,7 @@ X05 	   SINK       5
 .print nodev 3 0
 *.print nodev 4 0
 .print nodev 5 0
+*.print devi IA
+*.print phase X03_B01
+*.print phase X03_B02
+*.print phase X05_ROUT

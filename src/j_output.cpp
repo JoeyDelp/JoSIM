@@ -10,7 +10,8 @@ write_data(InputFile& iFile)
 {
 	std::vector<std::string> traceLabel;
 	std::vector<std::vector<double>> traceData;
-	traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	if(analType == VANAL) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (analType == PANAL) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 	std::ofstream outfile(OUTPUT_PATH);
 	if (outfile.is_open()) {
 		if (!traceLabel.empty()) {
@@ -56,7 +57,7 @@ write_data(InputFile& iFile)
 	}
 }
 /*
-		Function that writes a legacy output file in JSIM_N format
+	Function that writes a legacy output file in JSIM_N format
 */
 void
 write_legacy_data(InputFile& iFile)
@@ -64,7 +65,8 @@ write_legacy_data(InputFile& iFile)
 	std::string label;
 	std::vector<std::string> traceLabel, tokens;
 	std::vector<std::vector<double>> traceData;
-	traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	if(analType == VANAL) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (analType == PANAL) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 	std::ofstream outfile(OUTPUT_LEGACY_PATH);
 	if (outfile.is_open()) {
 		outfile << "time"
@@ -93,14 +95,15 @@ write_legacy_data(InputFile& iFile)
 	}
 }
 /*
-		Function that writes the output to cout as requested by the user
+	Function that writes the output to cout as requested by the user
 */
 void
 write_cout(InputFile& iFile)
 {
 	std::vector<std::string> traceLabel;
 	std::vector<std::vector<double>> traceData;
-	traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	if(analType == VANAL) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (analType == PANAL) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 	if (!traceLabel.empty()) {
 		std::cout << "time"
 			<< " ";

@@ -10,10 +10,15 @@
 void
 matrix_A(InputFile& iFile);
 /*
- Identify each non zero matrix element
+ Identify each non zero matrix element in voltage form
 */
 void
-create_A_matrix(InputFile& iFile);
+create_A_matrix_volt(InputFile& iFile);
+/*
+ Identify each non zero matrix element in phase form
+*/
+void
+create_A_matrix_phase(InputFile& iFile);
 /*
   Create A matrix in CSR format
 */

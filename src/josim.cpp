@@ -14,7 +14,8 @@ DEVELOPER = false;
 int subcktDepth,
 thisDepth = 1,
 overallDepth = 1,
-subcktConv = LEFT;
+subcktConv = LEFT,
+analType = VANAL;
 
 /*
   JoSIM entry point
@@ -55,17 +56,26 @@ main(int argc, char* argv[])
 		// If argument string starts with a dash
 		if (argv[i][0] == '-') {
 			switch (argv[i][1]) {
-				// Help menu
+			// Help menu
 			case 'h':
 				std::cout << "JoSIM help interface\n";
 				std::cout << "====================\n";
+				std::cout << std::setw(13) << std::left << "-a(nalysis)" << std::setw(3)
+					<< std::left << "|"
+					<< "Specifies the analysis type." << std::endl;
+				std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+					<< std::left << "|"
+					<< "0 for Voltage analysis (Default)" << std::endl;	
+				std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+					<< std::left << "|"
+					<< "1 for Phase analysis" << std::endl;	
 				std::cout << std::setw(13) << std::left << "-c(onvention)" << std::setw(3)
 					<< std::left << "|"
 					<< "Sets the subcircuit convention to left(0) or right(1)."
 					<< std::endl;
 				std::cout << std::setw(13) << std::left << "  " << std::setw(3)
 					<< std::left << "|"
-					<< "Default is left. WRSpice (normal SPICE uses right)"
+					<< "Default is left. WRSpice (normal SPICE) use right"
 					<< std::endl;
 				std::cout << std::setw(13) << std::left << "  " << std::setw(3)
 					<< std::left << "|"
@@ -109,7 +119,37 @@ main(int argc, char* argv[])
 					<< std::endl;
 				std::cout << std::endl;
 				exit(0);
-				// Sets subcircuit convention
+			// Sets analysis type
+			case 'a':
+				// Complains if missing an input file
+				if (i == (argc - 1)) error_handling(INPUT_ERROR);
+				// Analysis not specified, use default
+				if (argv[i + 1][0] == '-') {
+					analType = VANAL;
+				}
+				else {
+					// If the next argument is not the final argument
+					if ((i + 1) != (argc - 1)) {
+						// Set the analysis type
+						if (argv[i + 1][0] == '1') analType = PANAL;
+						else analType = VANAL;
+					}
+					else {
+						// Analysis not specified, use default
+						analType = VANAL;
+					}
+				}
+				// Let the user know which convention is used
+				if(analType == VANAL) {
+					std::cout << "Analysis type: Voltage" << std::endl;
+					std::cout << std::endl;
+				}
+				else if(analType == PANAL) {
+					std::cout << "Analysis type: Phase" << std::endl;
+					std::cout << std::endl;
+				}
+				break;
+			// Sets subcircuit convention
 			case 'c':
 				// Complains if missing an input file
 				if (i == (argc - 1)) error_handling(INPUT_ERROR);
@@ -129,14 +169,26 @@ main(int argc, char* argv[])
 						subcktConv = LEFT;
 					}
 				}
+				// Let the user know which convention is used
+				if(subcktConv == LEFT) {
+					std::cout << "Subcircuit convention: JSIM" << std::endl;
+					std::cout << std::endl;
+				}
+				else if(subcktConv == RIGHT) {
+					std::cout << "Subcircuit convention: SPICE" << std::endl;
+					std::cout << std::endl;
+				}
 				break;
-				// Enables plotting
+			// Enables plotting
 			case 'g':
 				// Complains if missing an input file
 				if (i == (argc - 1)) error_handling(INPUT_ERROR);
 				PLOTTING = true;
+				// Let the user know if plotting is enabled or not
+				std::cout << "Plotting enabled" << std::endl;
+				std::cout << std::endl;
 				break;
-				// Output (csv) file path
+			// Output (csv) file path
 			case 'o':
 				// Complains if missing an input file
 				if (i == (argc - 1)) error_handling(INPUT_ERROR);
@@ -169,7 +221,7 @@ main(int argc, char* argv[])
 					}
 				}
 				break;
-				// Output (Legacy) file path
+			// Output (Legacy) file path
 			case 'm':
 				// Complains if missing input file
 				if (i == (argc - 1)) error_handling(INPUT_ERROR);
@@ -201,7 +253,7 @@ main(int argc, char* argv[])
 					}
 				}
 				break;
-				// Enable verbose mode
+			// Enable verbose mode
 			case 'v':
 				// Complain if this is the only argument
 				if (i == (argc - 1)) error_handling(INPUT_ERROR);
@@ -291,9 +343,11 @@ main(int argc, char* argv[])
 	// Parse the input file and create an A matrix
 	matrix_A(iFile);
 	// Decide which simulation to do based on commands specified
-	if (iFile.simulationType == TRANSIENT)
+	if (iFile.simulationType == TRANSIENT) {
 		// Do a transient simulation
-		transient_simulation(iFile);
+		if(analType == VANAL) transient_voltage_simulation(iFile);
+		else if(analType == PANAL) transient_phase_simulation(iFile);
+	}
 	// If plotting is specified
 	if (PLOTTING) {
 		// No plotting engine compiled
