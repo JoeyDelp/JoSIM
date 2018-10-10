@@ -462,6 +462,12 @@ plotting_errors(int errorCode, std::string whatPart)
 			<< std::endl;
 		std::cout << std::endl;
 		break;
+	case VOLTAGE_IN_PHASE:
+		std::cout << "W: Attempting to plot voltage in phase mode simulation with line: " << std::endl;
+		std::cout << "W: " << whatPart << std::endl;
+		std::cout << "W: Voltage was not solved in this simulation. Unable to plot voltage." << std::endl;
+		std::cout << std::endl;
+		break;
 	default:
 		std::cout << "E: Unknown plotting error: " << whatPart << std::endl;
 		exit(0);

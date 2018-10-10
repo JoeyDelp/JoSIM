@@ -100,6 +100,7 @@
 #define NO_SUCH_NODE_FOUND 3
 #define TOO_MANY_NODES 4
 #define BOTH_ZERO 5
+#define VOLTAGE_IN_PHASE 6
 /*
 	Parsing error codes
 */

@@ -4,7 +4,7 @@
 #define J_STD_INCLUDE
 
 // Version info
-#define VERSION 1.3
+#define VERSION 2.0
 
 // Executable info
 #ifndef WIN32

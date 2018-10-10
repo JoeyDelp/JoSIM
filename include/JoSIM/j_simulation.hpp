@@ -10,21 +10,19 @@
 #define PHASE 3
 #define NONE_SPECIFIED 4
 
-/* RCSJ simulation object*/
+/* Voltage RCSJ simulation object*/
 class rcsj_sim_object
 {
 public:
 	int vPositive, vNegative, bPhase;
 	std::string label, positiveNodeRow, negativeNodeRow;
 	int jjRtype, currentState, previousState, mptrPP, mptrPN, mptrNP, mptrNN;
-	bool superconducting;
 	double jjIcrit, jjCap, jjVg, jjRzero, jjRn, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
 		Phase_Guess, Phase_Prev, Is, delV, transitionCurrent, gLarge, middle, upper, subCond, transCond, normalCond;
 	rcsj_sim_object()
 	{
 		previousState = SUBGAP;
 		currentState = SUBGAP;
-		superconducting = true;
 		vPositive = -1;
 		vNegative = -1;
 		bPhase = -1;
@@ -47,13 +45,19 @@ public:
 };
 
 /*
-  Identify simulation type. Be it transient, ac, dc or phase
+	Identify simulation type. Be it transient, ac, dc or phase
 */
 void
 identify_simulation(InputFile& iFile);
 /*
-		Perform transient simulation
+	Perform transient simulation
 */
 void
-transient_simulation(InputFile& iFile);
+transient_voltage_simulation(InputFile& iFile);
+
+/*
+	Perform transient simulation
+*/
+void
+transient_phase_simulation(InputFile& iFile);
 #endif

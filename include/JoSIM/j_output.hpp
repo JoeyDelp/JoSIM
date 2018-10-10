@@ -13,7 +13,7 @@ void write_data(InputFile &iFile);
 */
 void write_legacy_data(InputFile &iFile);
 /*
-		Function that writes the output to cout as requested by the user
+	Function that writes the output to cout as requested by the user
 */
 void write_cout(InputFile& iFile);
 #endif

@@ -535,7 +535,7 @@ R175       359        0          2
 X176       JTL        0          285        360
 R176       360        0          2         
 .tran 0.5p 1n 0 0.25p
-*.print DEVV X1_L6
+.print DEVV X1_L6
 .print DEVV R169
 .print DEVV R170
 .print DEVV R171
