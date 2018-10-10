@@ -42,7 +42,9 @@
         "stack": "cpp",
         "utility": "cpp",
         "__locale": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "__functional_base_03": "cpp",
+        "__tuple": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "cmake.configureOnOpen": true,
