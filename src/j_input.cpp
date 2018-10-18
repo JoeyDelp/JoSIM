@@ -27,6 +27,7 @@ void parse_model(std::string s, std::unordered_map<std::string, Model>& m)
 			else if (p[0] == "DELV") m[sname].jj.delv = p[1];
 			else if (p[0] == "ICON") m[sname].jj.icon = p[1];
 			else if (p[0] == "ICRIT") m[sname].jj.icrit = p[1];
+			else if (p[0] == "ICFACT" || p[0] == "ICFCT") m[sname].jj.icfact = p[1];
 			else if (p[0] == "RNORMAL" || p[0] == "RN") m[sname].jj.rnormal = p[1];
 			else if (p[0] == "RZERO" || p[0] == "R0") m[sname].jj.rzero = p[1];
 			else if (p[0] == "VG") m[sname].jj.vg = p[1];

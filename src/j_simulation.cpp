@@ -124,13 +124,14 @@ void transient_voltage_simulation(InputFile& iFile) {
 			simJunctions[j].jjRtype = (int)iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-RTYPE");
 			simJunctions[j].jjRn = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-RN");
 			simJunctions[j].jjRzero = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-R0");
-			simJunctions[j].gLarge = (((simJunctions[j].jjVg + simJunctions[j].delV)/simJunctions[j].jjRn) - ((simJunctions[j].jjVg)/simJunctions[j].jjRzero))/simJunctions[j].delV;
+			simJunctions[j].jjIcfact = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-ICFACT");
+			simJunctions[j].gLarge = simJunctions[j].jjIcrit / (simJunctions[j].jjIcfact * simJunctions[j].delV);
 			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_PP") != 0) simJunctions[j].mptrPP = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_PP");
 			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_PN") != 0) simJunctions[j].mptrPN = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_PN");
 			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_NP") != 0) simJunctions[j].mptrNP = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_NP");
 			if(iFile.matA.bMatrixConductanceMap[j].count(currentLabel + "-MPTR_NN") != 0) simJunctions[j].mptrNN = iFile.matA.bMatrixConductanceMap[j].at(currentLabel + "-MPTR_NN");
-			simJunctions[j].middle = simJunctions[j].jjVg + simJunctions[j].delV;
-			simJunctions[j].upper = simJunctions[j].jjVg + 2 * simJunctions[j].delV;
+			simJunctions[j].lower = simJunctions[j].jjVg - 0.5 * simJunctions[j].delV;
+			simJunctions[j].upper = simJunctions[j].jjVg + 0.5 * simJunctions[j].delV;
 			simJunctions[j].subCond = (2 * simJunctions[j].jjCap)/iFile.tsim.prstep + 1/simJunctions[j].jjRzero;
 			simJunctions[j].transCond = (2 * simJunctions[j].jjCap)/iFile.tsim.prstep + simJunctions[j].gLarge;
 			simJunctions[j].normalCond = (2 * simJunctions[j].jjCap)/iFile.tsim.prstep + 1/simJunctions[j].jjRn;
@@ -330,7 +331,7 @@ void transient_voltage_simulation(InputFile& iFile) {
 			thisJunction.VB_dt = (2 / iFile.tsim.prstep)*(thisJunction.VB - thisJunction.VB_Prev) - thisJunction.VB_dt_Prev;
 			thisJunction.VB_Guess = thisJunction.VB + iFile.tsim.prstep*thisJunction.VB_dt;
 			if (thisJunction.jjRtype == 1) {
-				if(fabs(thisJunction.VB_Guess) <= thisJunction.jjVg) {
+				if(fabs(thisJunction.VB_Guess) < thisJunction.lower) {
 					thisJunction.transitionCurrent = 0.0;
 					if(thisJunction.mptrPP != -1) {
 						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.subCond) {
@@ -357,9 +358,9 @@ void transient_voltage_simulation(InputFile& iFile) {
 						}
 					}
 				}
-				else if(fabs(thisJunction.VB_Guess) <= thisJunction.middle && fabs(thisJunction.VB_Guess) > thisJunction.jjVg) {
-					if(thisJunction.VB_Guess < 0) thisJunction.transitionCurrent = -thisJunction.jjVg*((1/thisJunction.jjRzero) - thisJunction.gLarge);
-					else thisJunction.transitionCurrent = thisJunction.jjVg*((1/thisJunction.jjRzero) - thisJunction.gLarge);
+				else if(fabs(thisJunction.VB_Guess) < thisJunction.upper) {
+					if(thisJunction.VB_Guess < 0) thisJunction.transitionCurrent = -thisJunction.lower*((1/thisJunction.jjRzero) - thisJunction.gLarge);
+					else thisJunction.transitionCurrent = thisJunction.lower*((1/thisJunction.jjRzero) - thisJunction.gLarge);
 					if(thisJunction.mptrPP != -1) {
 						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.transCond) {
 							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.transCond;
@@ -385,35 +386,9 @@ void transient_voltage_simulation(InputFile& iFile) {
 						}
 					}
 				}
-				else if(fabs(thisJunction.VB_Guess) <= thisJunction.upper && fabs(thisJunction.VB_Guess) > thisJunction.middle) {
-					thisJunction.transitionCurrent = thisJunction.VB_Guess*((1/thisJunction.jjRn) - thisJunction.gLarge);
-					if(thisJunction.mptrPP != -1) {
-						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.transCond) {
-							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.transCond;
-							needsLU = true;
-						}
-					}
-					if(thisJunction.mptrNN != -1) {
-						if(iFile.matA.mElements[thisJunction.mptrNN].value != thisJunction.transCond) {
-							iFile.matA.mElements[thisJunction.mptrNN].value = thisJunction.transCond;
-							needsLU = true;
-						}
-					}
-					if(thisJunction.mptrPN != -1) {
-						if(iFile.matA.mElements[thisJunction.mptrPN].value != thisJunction.transCond) {
-							iFile.matA.mElements[thisJunction.mptrPN].value = -thisJunction.transCond;
-							needsLU = true;
-						}
-					}
-					if(thisJunction.mptrNP != -1) {
-						if(iFile.matA.mElements[thisJunction.mptrNP].value != thisJunction.transCond) {
-							iFile.matA.mElements[thisJunction.mptrNP].value = -thisJunction.transCond;
-							needsLU = true;
-						}
-					}
-				}
-				else if(fabs(thisJunction.VB_Guess) >= thisJunction.upper) {
-					thisJunction.transitionCurrent = 0.0;
+				else {
+					if(thisJunction.VB_Guess < 0) thisJunction.transitionCurrent = -(thisJunction.jjIcrit/thisJunction.jjIcfact + thisJunction.jjVg * (1/thisJunction.jjRzero) - thisJunction.lower * (1/thisJunction.jjRn));
+					else thisJunction.transitionCurrent = (thisJunction.jjIcrit/thisJunction.jjIcfact + thisJunction.jjVg * (1/thisJunction.jjRzero) - thisJunction.lower * (1/thisJunction.jjRn));
 					if(thisJunction.mptrPP != -1) {
 						if(iFile.matA.mElements[thisJunction.mptrPP].value != thisJunction.normalCond) {
 							iFile.matA.mElements[thisJunction.mptrPP].value = thisJunction.normalCond;
@@ -654,7 +629,7 @@ void transient_phase_simulation(InputFile& iFile) {
 			thisJJ.Pn2 = thisJJ.Pn1;
 			thisJJ.dPn2 = thisJJ.dPn1;
 			if (thisJJ.Rtype == 1) {
-				if(fabs(thisJJ.V0) <= thisJJ.Vg) {
+				if(fabs(thisJJ.V0) < thisJJ.lower) {
 					thisJJ.It = 0.0;
 					if(thisJJ.RmptrP != -1) {
 						if(iFile.matA.mElements[thisJJ.RmptrP].value != thisJJ.subCond) {
@@ -669,7 +644,7 @@ void transient_phase_simulation(InputFile& iFile) {
 						}
 					}
 				}
-				else if(fabs(thisJJ.V0) <= thisJJ.middle && fabs(thisJJ.V0) > thisJJ.Vg) {
+				else if(fabs(thisJJ.V0) < thisJJ.upper) {
 					if(thisJJ.V0 < 0) thisJJ.It = -thisJJ.Vg*((1/thisJJ.R0) - thisJJ.gLarge);
 					else thisJJ.It = thisJJ.Vg * ((1/thisJJ.R0) - thisJJ.gLarge);
 					if(thisJJ.RmptrP != -1) {
@@ -685,23 +660,9 @@ void transient_phase_simulation(InputFile& iFile) {
 						}
 					}
 				}
-				else if(fabs(thisJJ.V0) <= thisJJ.upper && fabs(thisJJ.V0) > thisJJ.middle) {
-					thisJJ.It = thisJJ.V0 * ((1/thisJJ.RN) - thisJJ.gLarge);
-					if(thisJJ.RmptrP != -1) {
-						if(iFile.matA.mElements[thisJJ.RmptrP].value != thisJJ.transCond) {
-							iFile.matA.mElements[thisJJ.RmptrP].value = thisJJ.transCond;
-							needsLU = true;
-						}
-					}
-					if(thisJJ.RmptrN != -1) {
-						if(iFile.matA.mElements[thisJJ.RmptrN].value != -thisJJ.transCond) {
-							iFile.matA.mElements[thisJJ.RmptrN].value = -thisJJ.transCond;
-							needsLU = true;
-						}
-					}
-				}
-				else if(fabs(thisJJ.V0) >= thisJJ.upper) {
-					thisJJ.It = 0.0;
+				else {
+					if(thisJJ.V0 < 0) thisJJ.It = -((thisJJ.Ic/thisJJ.IcFact) + ((1/thisJJ.R0) * thisJJ.lower) - ((1/thisJJ.RN) * thisJJ.upper));
+					else thisJJ.It = ((thisJJ.Ic/thisJJ.IcFact) + ((1/thisJJ.R0) * thisJJ.lower) - ((1/thisJJ.RN) * thisJJ.upper));
 					if(thisJJ.RmptrP != -1) {
 						if(iFile.matA.mElements[thisJJ.RmptrP].value != thisJJ.normalCond) {
 							iFile.matA.mElements[thisJJ.RmptrP].value = thisJJ.normalCond;

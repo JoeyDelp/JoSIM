@@ -668,13 +668,9 @@ create_A_matrix_volt(InputFile& iFile)
 			/* Identify the JJ parameters based on the model*/
 			int jj_type = 0;
 			std::unordered_map<std::string, double> jj_tokens;
-			double jj_cap = 0.0;
-			double jj_rn = 0.0;
-			double jj_rzero = 0.0;
-			double jj_icrit = 0.0;
-			double jj_rtype = 0;
-			double jj_vgap = 0.0;
-			jj_comp(devicetokens, iFile, jj_type, jj_cap, jj_rn, jj_rzero, jj_icrit, jj_rtype, jj_vgap);
+			double jj_cap, jj_rn, jj_rzero, jj_icrit, jj_rtype, jj_vgap, jj_icfact, jj_delv;
+			jj_cap = jj_rn = jj_rzero = jj_icrit = jj_rtype = jj_vgap = jj_icfact = jj_delv = 0.0;
+			jj_comp(devicetokens, iFile, jj_type, jj_cap, jj_rn, jj_rzero, jj_icrit, jj_rtype, jj_vgap, jj_icfact, jj_delv);
 			cName = "C_P" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
 			if (rowMap.count(rName) == 0) {
@@ -702,6 +698,7 @@ create_A_matrix_volt(InputFile& iFile)
 				iFile.matA.bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
 				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
 				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VGAP"] = jj_vgap;
+				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICFACT"] = jj_icfact;
 				pGND = false;
 			}
 			else
@@ -723,6 +720,7 @@ create_A_matrix_volt(InputFile& iFile)
 				iFile.matA.bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
 				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
 				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VGAP"] = jj_vgap;
+				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICFACT"] = jj_icfact;
 				nGND = false;
 			}
 			else
@@ -856,6 +854,7 @@ create_A_matrix_volt(InputFile& iFile)
 			iFile.matA.bMatrixConductanceMap[rName][label + "-VGAP"] = jj_vgap;
 			iFile.matA.bMatrixConductanceMap[rName][label + "-R0"] = jj_rzero;
 			iFile.matA.bMatrixConductanceMap[rName][label + "-RN"] = jj_rn;
+			iFile.matA.bMatrixConductanceMap[rName][label + "-ICFACT"] = jj_icfact;
 			/* Element identification for use later when plotting values*/
 			cElement.label = label;
 			cElement.value = value;
@@ -1956,15 +1955,10 @@ create_A_matrix_phase(InputFile& iFile)
 			/* Identify the JJ parameters based on the model*/
 			int jj_type = 0;
 			std::unordered_map<std::string, double> jj_tokens;
-			double jj_cap = 0.0;
-			double jj_rn = 0.0;
-			double jj_rzero = 0.0;
-			double jj_icrit = 0.0;
-			double jj_rtype = 0;
-			double jj_vgap = 0.0;
+			double jj_rtype = 0.0;
 			jj_comp(devicetokens, iFile, iFile.pJJ[jj].Rtype,
 					 iFile.pJJ[jj].C, iFile.pJJ[jj].RN, iFile.pJJ[jj].R0,
-					 iFile.pJJ[jj].Ic, jj_rtype, iFile.pJJ[jj].Vg);
+					 iFile.pJJ[jj].Ic, jj_rtype, iFile.pJJ[jj].Vg, iFile.pJJ[jj].IcFact, iFile.pJJ[jj].DelV);
 			iFile.pJJ[jj].Rtype = jj_rtype;
 			cVolt = "C_V" + devicetokens[0] + "-VJ";
 			rVolt = "R_" + devicetokens[0] + "-VJ";
@@ -2067,10 +2061,9 @@ create_A_matrix_phase(InputFile& iFile)
 			iFile.matA.mElements.push_back(e);
 			e.junctionEntry = false;
 			/* Junction parameters */
-			iFile.pJJ[jj].RT = iFile.pJJ[jj].RTn1 = iFile.pJJ[jj].R0;
-			iFile.pJJ[jj].gLarge = (((iFile.pJJ[jj].Vg + iFile.pJJ[jj].DelV)/iFile.pJJ[jj].RN) - ((iFile.pJJ[jj].Vg)/iFile.pJJ[jj].R0))/iFile.pJJ[jj].DelV;
-			iFile.pJJ[jj].middle = iFile.pJJ[jj].Vg + iFile.pJJ[jj].DelV;
-			iFile.pJJ[jj].upper = iFile.pJJ[jj].Vg + 2 * iFile.pJJ[jj].DelV;
+			iFile.pJJ[jj].gLarge = iFile.pJJ[jj].Ic / (iFile.pJJ[jj].IcFact * iFile.pJJ[jj].DelV);
+			iFile.pJJ[jj].lower = iFile.pJJ[jj].Vg - 0.5*iFile.pJJ[jj].DelV;
+			iFile.pJJ[jj].upper = iFile.pJJ[jj].Vg + 0.5 * iFile.pJJ[jj].DelV;
 			iFile.pJJ[jj].subCond = 1 / iFile.pJJ[jj].R0 + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
 			iFile.pJJ[jj].transCond = iFile.pJJ[jj].gLarge + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
 			iFile.pJJ[jj].normalCond = 1 / iFile.pJJ[jj].RN + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);

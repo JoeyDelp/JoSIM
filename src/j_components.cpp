@@ -14,7 +14,9 @@ jj_comp(std::vector<std::string> tokens,
 	double& jj_rzero,
 	double& jj_icrit,
 	double& jj_rtype,
-	double& jj_vgap)
+	double& jj_vgap,
+	double& jj_icfact,
+	double& jj_delv)
 {
 	/* Assume tokens 0-2 are label, pnode, nnode so they can be ignored */
 	// However not the case when Junction is a 3 terminal device
@@ -99,6 +101,12 @@ jj_comp(std::vector<std::string> tokens,
 				if (iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icrit) != 0)
 					jj_icrit = iFile.subcircuitSegments[subcktName].parVal.at(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icrit);
 				else jj_icrit = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icrit);
+				if (iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icfact) != 0)
+					jj_icfact = iFile.subcircuitSegments[subcktName].parVal.at(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icfact);
+				else jj_icfact = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.icfact);
+				if (iFile.subcircuitSegments[subcktName].parVal.count(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.delv) != 0)
+					jj_delv = iFile.subcircuitSegments[subcktName].parVal.at(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.delv);
+				else jj_delv = modifier(iFile.subcircuitSegments[subcktName].subcktModels[modname].jj.delv);
 			}
 			else if (iFile.mainModels.count(modname) != 0) {
 				if (iFile.parVal.count(iFile.mainModels[modname].jj.vg) != 0)
@@ -119,6 +127,12 @@ jj_comp(std::vector<std::string> tokens,
 				if (iFile.parVal.count(iFile.mainModels[modname].jj.icrit) != 0)
 					jj_icrit = iFile.parVal.at(iFile.mainModels[modname].jj.icrit);
 				else jj_icrit = modifier(iFile.mainModels[modname].jj.icrit);
+				if (iFile.parVal.count(iFile.mainModels[modname].jj.icfact) != 0)
+					jj_icfact = iFile.parVal.at(iFile.mainModels[modname].jj.icfact);
+				else jj_icfact = modifier(iFile.mainModels[modname].jj.icfact);
+				if (iFile.parVal.count(iFile.mainModels[modname].jj.delv) != 0)
+					jj_delv = iFile.parVal.at(iFile.mainModels[modname].jj.delv);
+				else jj_delv = modifier(iFile.mainModels[modname].jj.delv);
 			}
 			else invalid_component_errors(MODEL_NOT_DEFINED, modname);
 		}
@@ -142,6 +156,12 @@ jj_comp(std::vector<std::string> tokens,
 				if (iFile.parVal.count(iFile.mainModels[modname].jj.icrit) != 0)
 					jj_icrit = iFile.parVal.at(iFile.mainModels[modname].jj.icrit);
 				else jj_icrit = modifier(iFile.mainModels[modname].jj.icrit);
+				if (iFile.parVal.count(iFile.mainModels[modname].jj.icfact) != 0)
+					jj_icfact = iFile.parVal.at(iFile.mainModels[modname].jj.icfact);
+				else jj_icfact = modifier(iFile.mainModels[modname].jj.icfact);
+				if (iFile.parVal.count(iFile.mainModels[modname].jj.delv) != 0)
+					jj_delv = iFile.parVal.at(iFile.mainModels[modname].jj.delv);
+				else jj_delv = modifier(iFile.mainModels[modname].jj.delv);
 			}
 			else invalid_component_errors(MODEL_NOT_DEFINED, modname);
 		}
