@@ -16,5 +16,7 @@ jj_comp(std::vector<std::string> tokens,
 	double& jj_rzero,
 	double& jj_icrit,
 	double& jj_rtype,
-	double& jj_vgap);
+	double& jj_vgap,
+	double& jj_icfact,
+	double& jj_delv);
 #endif

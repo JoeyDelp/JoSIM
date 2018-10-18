@@ -17,8 +17,8 @@ public:
 	int vPositive, vNegative, bPhase;
 	std::string label, positiveNodeRow, negativeNodeRow;
 	int jjRtype, currentState, previousState, mptrPP, mptrPN, mptrNP, mptrNN;
-	double jjIcrit, jjCap, jjVg, jjRzero, jjRn, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
-		Phase_Guess, Phase_Prev, Is, delV, transitionCurrent, gLarge, middle, upper, subCond, transCond, normalCond;
+	double jjIcrit, jjCap, jjVg, jjRzero, jjIcfact, jjRn, VB, VB_Prev, VB_dt, VB_dt_Prev, VB_Guess, Phase,
+		Phase_Guess, Phase_Prev, Is, delV, transitionCurrent, gLarge, lower, upper, subCond, transCond, normalCond;
 	rcsj_sim_object()
 	{
 		previousState = SUBGAP;

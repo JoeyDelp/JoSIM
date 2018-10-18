@@ -166,7 +166,7 @@ class phase_JJ {
 	// Model type
 	int Rtype;
 	// Characteristics
-	double R0, RN, RT, RTn1, C, Ic, DelV, Vg, Is, It, gLarge, middle, upper, subCond, transCond, normalCond;
+	double R0, RN, C, Ic, IcFact, DelV, Vg, Is, It, gLarge, lower, upper, subCond, transCond, normalCond;
 	// Ic sin pi0 storage vector
 	std::vector<double> junctionCurrent;
 	phase_JJ() {
@@ -184,9 +184,9 @@ class phase_JJ {
 		Is = 0.0;
 		C = 2.5E-12;
 		Ic = 1E-3;
+		IcFact = M_PI/4;
 		It = 0.0;
 		gLarge = 0.0;
-		RTn1 = RT = R0;
 	}
 };
 
@@ -243,7 +243,7 @@ class phase_VS {
 /* Inductor Branch Relation Class */
 class inductor_br
 {
-public:
+	public:
 	int index, current1RowIndex, current1ColumnIndex;
 	std::vector<int> current2RowIndex, current2ColumnIndex;
 	double inductance;
@@ -255,7 +255,7 @@ public:
 /* A Matrix Class */
 class A_matrix
 {
-public:
+	public:
 	std::unordered_map<std::string, std::unordered_map<std::string, double>>
 		bMatrixConductanceMap;
 	std::unordered_map<std::string, double> impedanceMap;
@@ -289,8 +289,8 @@ public:
 /* RCSJ Model */
 class model_rcsj
 {
-public:
-	std::string rtype, cct, vg, delv, icon, rzero, rnormal, cap, icrit;
+	public:
+	std::string rtype, cct, vg, delv, icon, rzero, rnormal, cap, icrit, icfact;
 	// Default RCSJ model constructor
 	model_rcsj()
 	{
@@ -303,6 +303,7 @@ public:
 		rnormal = "5";
 		cap = "2.5E-12";
 		icrit = "1E-3";
+		icfact = std::to_string(M_PI / 4);
 	}
 };
 
