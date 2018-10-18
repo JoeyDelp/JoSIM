@@ -21,6 +21,8 @@ https://github.com/JoeyDelp/JoSIM/releases
 - Matplotlib versions compiled using Python 3.6 and require Anaconda3 to be installed and the following environment variables to be set.
 - PYTHONHOME = Anaconda3 directory
 - QT_QPA_PLATFORM_PLUGIN_PATH = %PYTHONHOME%/Library/plugins/platforms
+
+- NOTE: In some cases it might be necessary to add the %PYTHONHOME% to the system PATH variable as well.
 ### Mac (macOS High Sierra 10.13.5)
 - Matplotlib versions compiled using Python 3.6 and require Homebrew Python 3.6 to be installed.
 - System python can also be used and should also require the next step.
@@ -34,6 +36,11 @@ https://github.com/JoeyDelp/JoSIM/releases
 - Libraries: sudo pip install numpy matplotlib
 
 ## CHANGELOG
+### v2.0 - 10/10/2018
+- New analysis method that allows Modified Nodal Phase Analysis (see ReadMe)
+- Major memory improvement by not creating intermediate A matrix
+- Various bug fixes
+
 ### v1.3 - 28/07/2018
 - Addition of mutual inductance with the netlist label **K**
 - Addition of the sinusoidal source (Voltage and Current)
