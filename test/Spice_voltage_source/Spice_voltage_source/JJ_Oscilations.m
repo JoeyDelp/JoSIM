@@ -1,6 +1,6 @@
 % JJ Oscilation example test in matlab
-PHI0 = 2.06783383113E-15;
-hbar_2e = 2*pi/PHI0;
+phi0 = 2.06783383113E-15;
+hbar_2e = 2*pi/phi0;
 hn = 0.0025E-12;
 N = 4000;
 % JJ Model
@@ -10,9 +10,9 @@ jj_rn = 16;
 jj_r0 = 16;
 jj_icrit = 0.1E-3;
 C = jj_c * jj_area;
-Rn = jj_rn / jj_area;
-R0 = jj_r0 / jj_area;
-Vg = 2.8E-3;
+rN = jj_rn / jj_area;
+r0 = jj_r0 / jj_area;
+vG = 2.8E-3;
 IA = 0;
 for i = 1:(30E-15/hn - 1)
     IA = [IA, (200E-6 - 0)/(30E-15 - 0) * (i*hn)];
@@ -32,8 +32,8 @@ phin_2 = 0;
 T = zeros(1, N);
 
 %           V+                  V-              Phi
-rBp =   [  2*C/hn + 1/Rn,    -2*C/hn - 1/Rn,     0];
-rBn =   [ -2*C/hn - 1/Rn,     2*C/hn + 1/Rn,     0];
+rBp =   [  2*C/hn + 1/rN,    -2*C/hn - 1/rN,     0];
+rBn =   [ -2*C/hn - 1/rN,     2*C/hn + 1/rN,     0];
 rPhi=   [-hn/2 * hbar_2e,    hn/2 * hbar_2e,     1];
 
 A = [rBp; rBn; rPhi];

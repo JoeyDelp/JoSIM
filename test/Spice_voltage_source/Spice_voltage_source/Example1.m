@@ -10,7 +10,7 @@ N = 5000;
 IA = [zeros(1,5), ones(1,(N-5))];
 VB = [zeros(1,5), 3*ones(1,(N-5))];
 
-%        VN1       VN2       VN3   VN4        VN5  IR1 IL1 IR2 IL2 IR3 IL3 IR4
+%        vn1       vn2       VN3   VN4        VN5  IR1 IL1 IR2 IL2 IR3 IL3 IR4
 rR1 = [  1/R1,    -1/R1,        0,    0,         0, -1,  0,  0,  0,  0,  0,  0];
 rL1 = [     0, h/(2*L1),        0,    0,         0,  0, -1,  0,  0,  0,  0,  0];
 rR2 = [     0,     1/R2,    -1/R2,    0,         0,  0,  0, -1,  0,  0,  0,  0];

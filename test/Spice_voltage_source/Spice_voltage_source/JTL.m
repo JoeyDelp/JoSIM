@@ -4,9 +4,9 @@ hbar_2e = 3.038510188E15;
 hn = 0.25E-12;
 N = 4000;
 % JJ Model
-Rn = 16;
-R0 = 160;
-Vg = 2.5E-3;
+rN = 16;
+r0 = 160;
+vG = 2.5E-3;
 C = 0.07E-12;
 Icrit = 0.1E-3;
 % Components
@@ -43,20 +43,20 @@ L4_mat(9,9) = -2 * L4 / hn;
 L5_mat(2,10) = -1;
 L5_mat(10,2) = -1;
 L5_mat(10,10) = -2 * L5 / hn;
-B1_mat(1,1) = (2 * C / hn) + (1/R0);
+B1_mat(1,1) = (2 * C / hn) + (1/r0);
 B1_mat(4,1) = (-hn / 2) * hbar_2e;
 B1_mat(4,4) = 1;
-B2_mat(3,3) = (2 * C / hn) + (1/R0);
+B2_mat(3,3) = (2 * C / hn) + (1/r0);
 B2_mat(5,3) = (-hn / 2) * hbar_2e;
 B2_mat(5,5) = 1;
 A_00 = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + B1_mat + B2_mat;
-B1_mat(1,1) = (2 * C / hn) + (1/Rn);
+B1_mat(1,1) = (2 * C / hn) + (1/rN);
 A_n0 = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + B1_mat + B2_mat;
-B1_mat(1,1) = (2 * C / hn) + (1/R0);
-B2_mat(3,3) = (2 * C / hn) + (1/Rn);
+B1_mat(1,1) = (2 * C / hn) + (1/r0);
+B2_mat(3,3) = (2 * C / hn) + (1/rN);
 A_0n = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + B1_mat + B2_mat;
-B1_mat(1,1) = (2 * C / hn) + (1/Rn);
-B2_mat(3,3) = (2 * C / hn) + (1/Rn);
+B1_mat(1,1) = (2 * C / hn) + (1/rN);
+B2_mat(3,3) = (2 * C / hn) + (1/rN);
 A_nn = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + B1_mat + B2_mat;
 
 % Sources
@@ -112,8 +112,8 @@ A = A_00;
 for i = 1:N
     IsB1 = -Icrit * sin(phiN1_1 + hn/2 * hbar_2e * (VN1_1 + VN1_1 + hn*(VN1_1d))) + ((2*C/hn) * VN1_1) + (C * VN1_1d);
     IsB2 = -Icrit * sin(phiN3_1 + hn/2 * hbar_2e * (VN3_1 + VN3_1 + hn*(VN3_1d))) + ((2*C/hn) * VN3_1) + (C * VN3_1d);
-    VN1 = LHS(1);
-    VN2 = LHS(2);
+    vn1 = LHS(1);
+    vn2 = LHS(2);
     VN3 = LHS(3);
     VPhi1 = LHS(4);
     VPhi2 = LHS(5);
@@ -127,11 +127,11 @@ for i = 1:N
     RHS_3 = IsB2;
     RHS_phi1 = phiN1_1 + (hn/2 * hbar_2e)*(VN1_1);
     RHS_phi2 = phiN3_1 + (hn/2 * hbar_2e)*(VN3_1);
-    RHS_IL1 = -(2*L1)/hn*(IL1_1) - (VN1);
-    RHS_IL2 = -(2*L2)/hn*(IL2_1) - (VN2 - VN1);
-    RHS_IL3 = -(2*L3)/hn*(IL3_1) - (VN3 - VN2);
+    RHS_IL1 = -(2*L1)/hn*(IL1_1) - (vn1);
+    RHS_IL2 = -(2*L2)/hn*(IL2_1) - (vn2 - vn1);
+    RHS_IL3 = -(2*L3)/hn*(IL3_1) - (VN3 - vn2);
     RHS_IL4 = -(2*L4)/hn*(IL4_1) - (VN3);
-    RHS_IL5 = -(2*L5)/hn*(IL5_1) - (VN2);
+    RHS_IL5 = -(2*L5)/hn*(IL5_1) - (vn2);
     RHS = [RHS_1; RHS_2; RHS_3; RHS_phi1; RHS_phi2; RHS_IL1; RHS_IL2; RHS_IL3; RHS_IL4; RHS_IL5];
     LHS = A\RHS;
     V_N1(i) = LHS(1);
@@ -155,14 +155,14 @@ for i = 1:N
     VN3_1 = LHS(4);
     VN3_2d = VN3_1d;
     VN3_1d = (2/hn)*(VN3_1 - VN3_2) - VN3_2d;
-    if LHS(1) > Vg
-        if LHS(3) > Vg
+    if LHS(1) > vG
+        if LHS(3) > vG
             A = A_nn;
         else
             A = A_n0;
         end
     else
-        if LHS(3) > Vg
+        if LHS(3) > vG
             A = A_0n;
         else
             A = A_00;

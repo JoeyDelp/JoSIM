@@ -1,31 +1,23 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_matrix.hpp"
+#include "j_matrix.h"
 
-/*
-  Systematically create A matrix
-*/
 void
-matrix_A(InputFile& iFile)
-{
-	if(analType == VANAL) create_A_matrix_volt(iFile);
-	else if(analType == PANAL) create_A_matrix_phase(iFile);
+Matrix::matrix_A(InputFile& iFile) {
+	if(cArg.analysisT == VANALYSIS) Matrix::create_A_matrix_volt(iFile);
+	else if(cArg.analysisT == PANALYSIS) Matrix::create_A_matrix_phase(iFile);
 	if (iFile.matA.rowNames.size() != iFile.matA.columnNames.size())
-		matrix_errors(NON_SQUARE,
+		Errors::matrix_errors(NON_SQUARE,
 			std::to_string(iFile.matA.columnNames.size()) + "x" +
 			std::to_string(iFile.matA.rowNames.size()));
-	if (VERBOSE)
+	if (cArg.verbose)
 		std::cout << std::setw(35) << std::left
 		<< "A matrix dimensions: " << iFile.matA.columnNames.size() << "\n\n";
 	csr_A_matrix(iFile);
 }
 
-/*
-  Identify each non zero matrix element in voltage form
-*/
 void
-create_A_matrix_volt(InputFile& iFile)
-{
+Matrix::create_A_matrix_volt(InputFile& iFile) {
 	std::string cName, rName, cNameP, rNameP, cNameN, rNameN;
 	std::vector<std::string> devicetokens, componentLabels;
 	devicetokens.clear();
@@ -34,27 +26,50 @@ create_A_matrix_volt(InputFile& iFile)
 	std::unordered_map<std::string, int> rowMap, columnMap;
 	rowMap.clear();
 	columnMap.clear();
-	int rowCounter, colCounter;
+	int rowCounter, colCounter, expStart, expEnd;
 	bool pGND, nGND;
-	rowCounter = 0;
-	colCounter = 0;
-	/* Main circuit node identification */
+	rowCounter = colCounter = 0;
 	for (auto i : iFile.maincircuitSegment) {
-		element cElement;
-		devicetokens = tokenize_space(i);
+		expStart = expEnd = -1;
+		devicetokens = Misc::tokenize_space(i);
+		for (int t = 0; t < devicetokens.size(); t++) {
+			if(devicetokens[t].find('{') != std::string::npos) {
+				expStart = t;
+			}
+			if(devicetokens[t].find('}') != std::string::npos) {
+				expEnd = t;
+			}
+		}
+		if(expStart == -1 && expEnd != -1) Errors::invalid_component_errors(INVALID_EXPR, i);
+		else if(expStart != -1 && expEnd == -1) Errors::invalid_component_errors(INVALID_EXPR, i);
+		if (expStart != -1 && expStart == expEnd) {
+			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
+			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+		}
+		else if (expStart != -1 && expEnd != -1) {
+			int d = expStart + 1;
+			while (expStart != expEnd) {
+				devicetokens[expStart] += devicetokens[d];
+				devicetokens.erase(devicetokens.begin()+d);
+				expEnd--;
+			}
+			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
+			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+		}
 		double value = 0.0;
-		/* Check if label exists, if not there is a bug in the program */
 		try {
 			label = devicetokens[0];
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
 				componentLabels.end())
 				componentLabels.push_back(label);
 			else {
-				invalid_component_errors(DUPLICATE_LABEL, label);
+				Errors::invalid_component_errors(DUPLICATE_LABEL, label);
 			}
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_LABEL, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_LABEL, i);
 		}
 		if (label.find_first_of("|") != std::string::npos) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
@@ -64,39 +79,41 @@ create_A_matrix_volt(InputFile& iFile)
 		try {
 			nodeP = devicetokens[1];
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_PNODE, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_PNODE, i);
 		}
 		/* Check if negative node exists, if not it's a bad device line definition
 		 */
 		try {
 			nodeN = devicetokens[2];
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_NNODE, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_NNODE, i);
 		}
 		/**************/
 		/** RESISTOR **/
 		/**************/
 		if (i[0] == 'R') {
-			/* Create a new matrix element for the resistor */
+			std::string R = label;
 			matrix_element e;
-			/* Check if value exists, if not it's a bad resistor definition */
 			try {
 				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
 					value = iFile.parVal.at(devicetokens[3]);
 				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
 					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 				else
-					value = modifier(devicetokens[3]);
+					value = Misc::modifier(devicetokens[3]);
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(RES_ERROR, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(RES_ERROR, i);
 			}
-			/* Check if positive node is connected to ground */
+			iFile.voltRes[R].label = R;
+			iFile.voltRes[R].value = value;
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				iFile.voltRes[R].posNodeR = rNameP;
+				iFile.voltRes[R].posNodeC = cNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -105,17 +122,16 @@ create_A_matrix_volt(InputFile& iFile)
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
-				/* Add the resistance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameP][label] = 0.0;
 				iFile.matA.nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				iFile.voltRes[R].negNodeR = rNameN;
+				iFile.voltRes[R].negNodeC = cNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -124,226 +140,77 @@ create_A_matrix_volt(InputFile& iFile)
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
-				/* Add the resistance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN][label] = 0.0;
 				iFile.matA.nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rNameP];
+				iFile.voltRes[R].posNRow = rowMap[rNameP];
+				iFile.voltRes[R].posNCol = columnMap[cNameP];
 				e.value = 1 / value;
+				iFile.voltRes[R].ppPtr = iFile.matA.mElements.size();
 				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
-				/* If positive and negative node is not grounded */
 				if (!nGND) {
-					/* Positive node row and negative node column */
 					e.label = label;
-					e.columnIndex = columnMap[cNameN];
+					e.colIndex = columnMap[cNameN];
 					e.rowIndex = rowMap[rNameP];
+					iFile.voltRes[R].posNRow = rowMap[rNameP];
+					iFile.voltRes[R].negNCol = columnMap[cNameN];
 					e.value = -1 / value;
+					iFile.voltRes[R].pnPtr = iFile.matA.mElements.size();
 					iFile.matA.mElements.push_back(e);
-					/* Add the column index of the negative node to the positive node row
-					 * of the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
-					/* Negative node row and positive node column */
 					e.label = label;
-					e.columnIndex = columnMap[cNameP];
+					e.colIndex = columnMap[cNameP];
 					e.rowIndex = rowMap[rNameN];
+					iFile.voltRes[R].negNRow = rowMap[rNameN];
+					iFile.voltRes[R].posNCol = columnMap[cNameP];
 					e.value = -1 / value;
+					iFile.voltRes[R].npPtr = iFile.matA.mElements.size();
 					iFile.matA.mElements.push_back(e);
-					/* Add the column index of the positive node to the negative node row
-					 * of the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rNameN];
+					iFile.voltRes[R].negNRow = rowMap[rNameN];
+					iFile.voltRes[R].negNCol = columnMap[cNameN];
+					e.value = 1 / value;
+					iFile.voltRes[R].nnPtr = iFile.matA.mElements.size();
+					iFile.matA.mElements.push_back(e);
 				}
 			}
-			/* If negative node is not grounded */
-			if (!nGND) {
-				/* Negative node row and column */
+			else if (!nGND) {
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rNameN];
+				iFile.voltRes[R].negNRow = rowMap[rNameN];
+				iFile.voltRes[R].negNCol = columnMap[cNameN];
 				e.value = 1 / value;
+				iFile.voltRes[R].nnPtr = iFile.matA.mElements.size();
 				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the negative node to the negative node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
 			}
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/***************/
 		/** CAPACITOR **/
 		/***************/
 		else if (i[0] == 'C') {
-			/* Create a new matrix element for the resistor */
+			std::string C = label;
 			matrix_element e;
-			/* Check if value exists, if not it's a bad capacitor definition */
 			try {
 				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
 					value = iFile.parVal.at(devicetokens[3]);
 				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
 					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 				else
-					value = modifier(devicetokens[3]);
+					value = Misc::modifier(devicetokens[3]);
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(CAP_ERROR, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(CAP_ERROR, i);
 			}
-			/* Check if positive node is connected to ground */
-			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
-				cNameP = "C_NV" + nodeP;
-				rNameP = "R_N" + nodeP;
-				if (rowMap.count(rNameP) == 0) {
-					rowMap[rNameP] = rowCounter;
-					rowCounter++;
-				}
-				if (columnMap.count(cNameP) == 0) {
-					columnMap[cNameP] = colCounter;
-					colCounter++;
-				}
-				/* Add the capacitance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameP][label] = value;
-				iFile.matA.nodeConnections[rNameP].push_back(label);
-				pGND = false;
-			}
-			else
-				pGND = true;
-			/* Check if negative node is connected to ground */
-			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
-				cNameN = "C_NV" + nodeN;
-				rNameN = "R_N" + nodeN;
-				if (rowMap.count(rNameN) == 0) {
-					rowMap[rNameN] = rowCounter;
-					rowCounter++;
-				}
-				if (columnMap.count(cNameN) == 0) {
-					columnMap[cNameN] = colCounter;
-					colCounter++;
-				}
-				/* Add the capacitance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN][label] = -value;
-				iFile.matA.nodeConnections[rNameN].push_back(label);
-				nGND = false;
-			}
-			else
-				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
-			if (!pGND) {
-				/* Positive node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rNameP];
-				e.value = value / iFile.tsim.prstep;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row in
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
-				if (!nGND) {
-					/* Positive node row and negative node column */
-					e.label = label;
-					e.columnIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rNameP];
-					e.value = -value / iFile.tsim.prstep;
-					iFile.matA.mElements.push_back(e);
-					/* Add the column index of the negative node to the positive node row
-					 * in the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
-					/* Negative node row and positive node column */
-					e.label = label;
-					e.columnIndex = columnMap[cNameP];
-					e.rowIndex = rowMap[rNameN];
-					e.value = -value / iFile.tsim.prstep;
-					iFile.matA.mElements.push_back(e);
-					/* Add the column index of the positive node to the negative node row
-					 * in the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
-				}
-			}
-			/* If negative node is not grounded */
-			if (!nGND) {
-				/* Negative node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rNameN];
-				e.value = value / iFile.tsim.prstep;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the negative node to the negative node row in
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
-			}
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
-		}
-		/**************/
-		/** INDUCTOR **/
-		/**************/
-		else if (i[0] == 'L') {
-			/* Create a new matrix element for the resistor */
-			matrix_element e;
-			/* Check if value exists, if not it's a bad inductor definition */
-			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
-				else
-					value = modifier(devicetokens[3]);
-			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(IND_ERROR, i);
-			}
+			iFile.voltCap[C].label = devicetokens[0];
+			iFile.voltCap[C].value = value;
 			cName = "C_I" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
 			if (rowMap.count(rName) == 0) {
@@ -354,13 +221,13 @@ create_A_matrix_volt(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Add the inductor value to the conductance map */
-			iFile.matA.impedanceMap[rName] = value;
-			iFile.matA.bMatrixConductanceMap[rName][label] = value;
-			/* Check if positive node is connected to ground */
+			iFile.voltCap[C].curNodeC = cName;
+			iFile.voltCap[C].curNodeR = rName;
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				iFile.voltCap[C].posNodeC = cNameP; 
+				iFile.voltCap[C].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -369,17 +236,16 @@ create_A_matrix_volt(InputFile& iFile)
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
-				/* Add the 0.0 to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameP][label] = 0.0;
 				iFile.matA.nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				iFile.voltCap[C].negNodeC = cNameN;
+				iFile.voltCap[C].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -388,114 +254,200 @@ create_A_matrix_volt(InputFile& iFile)
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
-				/* Add the 0.0 to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN][label] = 0.0;
 				iFile.matA.nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			iFile.matA.bMatrixConductanceMap[rName][label + "-VP"] = -1.0;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-VN"] = -1.0;
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
-				if (!nGND) {
-					/* Add the column index of the negative node to the positive node row
-					 * of the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
-					/* Add the column index of the positive node to the negative node row
-					 * of the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
-				}
-				/* Positive node row and inductor current node column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cNameP];
+				e.rowIndex = rowMap[rName];
+				iFile.voltCap[C].posNCol = e.colIndex;
+				iFile.voltCap[C].curNRow = e.rowIndex;
+				e.value = 1;
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameP];
+				iFile.voltCap[C].curNCol = e.colIndex;
+				iFile.voltCap[C].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Inductor node row and positive node column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
-				e.value = 1;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the inductor node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rName][label + "-VP"] = (double)e.columnIndex;
+				if (!nGND) {
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rName];
+					iFile.voltCap[C].negNCol = e.colIndex;
+					iFile.voltCap[C].curNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cName];
+					e.rowIndex = rowMap[rNameN];
+					iFile.voltCap[C].curNCol = e.colIndex;
+					iFile.voltCap[C].negNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+				}
 			}
-			if (!nGND) {
-				/* Add the column index of the negative node to the negative node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
-				/* Negative node row and inductor current node column */
+			else if (!nGND) {
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cNameN];
+				e.rowIndex = rowMap[rName];
+				iFile.voltCap[C].negNCol = e.colIndex;
+				iFile.voltCap[C].curNRow = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
+				iFile.voltCap[C].curNCol = e.colIndex;
+				iFile.voltCap[C].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Inductor node row and negative node column*/
-				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
-				e.value = -1;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the negative node to the inductor node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rName][label + "-VN"] = (double)e.columnIndex;
 			}
-			/* Inductor node row and inductor current node column*/
 			e.label = label;
-			e.columnIndex = columnMap[cName];
+			e.colIndex = columnMap[cName];
 			e.rowIndex = rowMap[rName];
-			e.value = (-2 * value) / iFile.tsim.prstep;
-			iFile.matA.branchRelations[label].current1RowIndex = rowMap.at(rName);
-			iFile.matA.branchRelations[label].current1ColumnIndex = columnMap[cName];
-			iFile.matA.branchRelations[label].inductance = value;
-			iFile.matA.branchRelations[label].mutI1 = label;
+			iFile.voltCap[C].curNCol = e.colIndex;
+			iFile.voltCap[C].curNRow = e.rowIndex;
+			e.value = iFile.tsim.prstep / (2 * value);
+			iFile.voltCap[C].capPtr = iFile.matA.mElements.size();
 			iFile.matA.mElements.push_back(e);
-			/* Add the column index of the inductor current node to the inductor node
-			 * row of the conductance map */
-			 /* This will be used to identify the voltage later */
-			iFile.matA.bMatrixConductanceMap[rName][label + "-I"] = (double)e.columnIndex;
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			cElement.CURindex = columnMap[cName];
+		}
+		/**************/
+		/** INDUCTOR **/
+		/**************/
+		else if (i[0] == 'L') {
+			std::string L = label;
+			matrix_element e;
+			try {
+				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
+					value = iFile.parVal.at(devicetokens[3]);
+				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
+					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				else
+					value = Misc::modifier(devicetokens[3]);
+			}
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(IND_ERROR, i);
+			}
+			iFile.voltInd[L].label = label;
+			iFile.voltInd[L].value = value;
+			cName = "C_I" + devicetokens[0];
+			rName = "R_" + devicetokens[0];
+			if (rowMap.count(rName) == 0) {
+				rowMap[rName] = rowCounter;
+				rowCounter++;
+			}
+			if (columnMap.count(cName) == 0) {
+				columnMap[cName] = colCounter;
+				colCounter++;
+			}
+			iFile.voltInd[L].curNodeC = cName;
+			iFile.voltInd[L].curNodeR = rName;
+			iFile.matA.impedanceMap[rName] = value;
+			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
+				cNameP = "C_NV" + nodeP;
+				rNameP = "R_N" + nodeP;
+				iFile.voltInd[L].posNodeC = cNameP;
+				iFile.voltInd[L].posNodeR = rNameP;
+				if (rowMap.count(rNameP) == 0) {
+					rowMap[rNameP] = rowCounter;
+					rowCounter++;
+				}
+				if (columnMap.count(cNameP) == 0) {
+					columnMap[cNameP] = colCounter;
+					colCounter++;
+				}
+				iFile.matA.nodeConnections[rNameP].push_back(label);
+				pGND = false;
+			}
+			else
+				pGND = true;
+			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
+				cNameN = "C_NV" + nodeN;
+				rNameN = "R_N" + nodeN;
+				iFile.voltInd[L].negNodeC = cNameN;
+				iFile.voltInd[L].negNodeR = rNameN;
+				if (rowMap.count(rNameN) == 0) {
+					rowMap[rNameN] = rowCounter;
+					rowCounter++;
+				}
+				if (columnMap.count(cNameN) == 0) {
+					columnMap[cNameN] = colCounter;
+					colCounter++;
+				}
+				iFile.matA.nodeConnections[rNameN].push_back(label);
+				nGND = false;
+			}
+			else
+				nGND = true;
 			if (!pGND) {
+				e.label = label;
+				e.colIndex = columnMap[cName];
+				e.rowIndex = rowMap[rNameP];
+				iFile.voltInd[L].curNCol = e.colIndex;
+				iFile.voltInd[L].posNRow = e.rowIndex;
+				e.value = 1;
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cNameP];
+				e.rowIndex = rowMap[rName];
+				iFile.voltInd[L].posNCol = e.colIndex;
+				iFile.voltInd[L].curNRow = e.rowIndex;
+				e.value = 1;
+				iFile.matA.mElements.push_back(e);
 				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
+					e.label = label;
+					e.colIndex = columnMap[cName];
+					e.rowIndex = rowMap[rNameN];
+					iFile.voltInd[L].curNCol = e.colIndex;
+					iFile.voltInd[L].negNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rName];
+					iFile.voltInd[L].negNCol = e.colIndex;
+					iFile.voltInd[L].curNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
 				}
 			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
+			else if (!nGND) {
+				e.label = label;
+				e.colIndex = columnMap[cName];
+				e.rowIndex = rowMap[rNameN];
+				iFile.voltInd[L].curNCol = e.colIndex;
+				iFile.voltInd[L].negNRow = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cNameN];
+				e.rowIndex = rowMap[rName];
+				iFile.voltInd[L].negNCol = e.colIndex;
+				iFile.voltInd[L].curNRow = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
 			}
-			iFile.matA.elements.push_back(cElement);
+			e.label = label;
+			e.colIndex = columnMap[cName];
+			e.rowIndex = rowMap[rName];
+			iFile.voltInd[L].curNCol = e.colIndex;
+			iFile.voltInd[L].curNRow = e.rowIndex;
+			e.value = (-2 * value) / iFile.tsim.prstep;
+			iFile.voltInd[L].indPtr = iFile.matA.mElements.size();
+			iFile.matA.mElements.push_back(e);
 		}
 		/********************/
 		/** VOLTAGE SOURCE **/
 		/********************/
 		else if (i[0] == 'V') {
-			/* Create a new matrix element for the resistor */
+			std::string V = label;
 			matrix_element e;
-			/* Parse the function identified (if any)*/
-			iFile.matA.sources[label] = function_parse(i, iFile);
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
 			cName = "C_" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
 			if (rowMap.count(rName) == 0) {
@@ -506,10 +458,13 @@ create_A_matrix_volt(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
+			iFile.voltVs[V].curNodeC = cName;
+			iFile.voltVs[V].curNodeR = rName;
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				iFile.voltVs[V].posNodeC = cNameP;
+				iFile.voltVs[V].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -523,10 +478,11 @@ create_A_matrix_volt(InputFile& iFile)
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				iFile.voltVs[V].negNodeC = cNameN;
+				iFile.voltVs[V].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -540,70 +496,60 @@ create_A_matrix_volt(InputFile& iFile)
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and voltage node column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameP];
+				iFile.voltVs[V].curNCol = e.colIndex;
+				iFile.voltVs[V].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Voltage node row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName];
+				iFile.voltVs[V].posNCol = e.colIndex;
+				iFile.voltVs[V].curNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
+				if (!nGND) {
+					e.label = label;
+					e.colIndex = columnMap[cName];
+					e.rowIndex = rowMap[rNameN];
+					iFile.voltVs[V].curNCol = e.colIndex;
+					iFile.voltVs[V].negNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rName];
+					iFile.voltVs[V].negNCol = e.colIndex;
+					iFile.voltVs[V].curNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+				}
 			}
-			/* If negative node is not grounded */
-			if (!nGND) {
-				/* Negative node row and voltage node column */
+			else if (!nGND) {
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
+				iFile.voltVs[V].curNCol = e.colIndex;
+				iFile.voltVs[V].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Voltage node row and negative node column*/
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rName];
+				iFile.voltVs[V].negNCol = e.colIndex;
+				iFile.voltVs[V].curNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* Voltage node row and voltage node column*/
-			;
-			/* Add the column index of the phase node to the junction node row of the
-			 * conductance map */
-			 /* This will be used to identify the voltage later */
-			iFile.matA.bMatrixConductanceMap[rName][label] = (double)e.columnIndex;
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/********************/
 		/** CURRENT SOURCE **/
 		/********************/
 		else if (i[0] == 'I') {
-			/* Parse the function identified (if any)*/
-			iFile.matA.sources[label] = function_parse(i, iFile);
-			/* Check if positive node is connected to ground */
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
@@ -615,13 +561,11 @@ create_A_matrix_volt(InputFile& iFile)
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
-				iFile.matA.bMatrixConductanceMap[rNameP][label] = 1.0;
 				iFile.matA.nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
@@ -633,46 +577,40 @@ create_A_matrix_volt(InputFile& iFile)
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
-				/* Add the 0.0 to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN][label] = 1.0;
 				iFile.matA.nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else
 				nGND = true;
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/************************/
 		/** JOSEPHSON JUNCTION **/
 		/************************/
 		else if (i[0] == 'B') {
-			/* Create a new matrix element for the junction */
+			std::string jj = label;
 			matrix_element e;
-			/* Identify the JJ parameters based on the model*/
-			int jj_type = 0;
-			std::unordered_map<std::string, double> jj_tokens;
-			double jj_cap, jj_rn, jj_rzero, jj_icrit, jj_rtype, jj_vgap, jj_icfact, jj_delv;
-			jj_cap = jj_rn = jj_rzero = jj_icrit = jj_rtype = jj_vgap = jj_icfact = jj_delv = 0.0;
-			jj_comp(devicetokens, iFile, jj_type, jj_cap, jj_rn, jj_rzero, jj_icrit, jj_rtype, jj_vgap, jj_icfact, jj_delv);
+			std::string modName = "", area = "";
+			for (int t = devicetokens.size() - 1; t > 2; t--) {
+				if (devicetokens[t].find("=") == std::string::npos) {
+					if (iFile.models.count(devicetokens[t]) != 0) 
+						modName = devicetokens[t];
+					else Errors::invalid_component_errors(MODEL_NOT_DEFINED,
+														  devicetokens[t]);
+				}
+				if (devicetokens[t].find("AREA") != std::string::npos) {
+					area = devicetokens[t].substr(
+						devicetokens[t].find_first_of('=') + 1,
+						devicetokens[t].size() - 1);
+				}
+			}
+			if(area == "" && cArg.verbose) Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, "");
+			iFile.voltJJ[jj].label = jj;
+			Component::jj_comp(modName, area, jj);
+			iFile.voltJJ[jj].label = label;
 			cName = "C_P" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
+			iFile.voltJJ[jj].phaseNodeC = cName;
+			iFile.voltJJ[jj].phaseNodeR = rName;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -681,10 +619,11 @@ create_A_matrix_volt(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
+				iFile.voltJJ[jj].posNodeC = cNameP;
+				iFile.voltJJ[jj].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -694,19 +633,15 @@ create_A_matrix_volt(InputFile& iFile)
 					colCounter++;
 				}
 				iFile.matA.nodeConnections[rNameP].push_back(label);
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-RTYPE"] = jj_rtype;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VGAP"] = jj_vgap;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICFACT"] = jj_icfact;
 				pGND = false;
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NV" + nodeN;
 				rNameN = "R_N" + nodeN;
+				iFile.voltJJ[jj].negNodeC = cNameN;
+				iFile.voltJJ[jj].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -716,452 +651,149 @@ create_A_matrix_volt(InputFile& iFile)
 					colCounter++;
 				}
 				iFile.matA.nodeConnections[rNameN].push_back(label);
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-RTYPE"] = jj_rtype;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-CAP"] = jj_cap;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICRIT"] = jj_icrit;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VGAP"] = jj_vgap;
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-ICFACT"] = jj_icfact;
 				nGND = false;
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			iFile.matA.bMatrixConductanceMap[rName][label + "-VP"] = -1.0;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-VN"] = -1.0;
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rNameP];
-				e.junctionEntry = true;
-				e.tokens["RN"] = jj_rn;
-				e.tokens["CAP"] = jj_cap;
-				e.tokens["R0"] = jj_rzero;
-				e.junctionDirection = 'P';
-				e.value = ((2 * jj_cap) / iFile.tsim.prstep) + (1 / jj_rzero);
+				iFile.voltJJ[jj].posNCol = e.colIndex;
+				iFile.voltJJ[jj].posNRow = e.rowIndex;
+				e.value = ((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0);
+				iFile.voltJJ[jj].ppPtr = iFile.matA.mElements.size();
 				iFile.matA.mElements.push_back(e);
-				iFile.matA.bMatrixConductanceMap[rName][label + "-MPTR_PP"] = iFile.matA.mElements.size() - 1;
-				e.junctionEntry = false;
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
-				if (!nGND) {
-					/* Positive node row and negative node column */
-					e.label = label;
-					e.columnIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rNameP];
-					e.junctionEntry = true;
-					e.tokens["RN"] = jj_rn;
-					e.tokens["CAP"] = jj_cap;
-					e.tokens["R0"] = jj_rzero;
-					e.junctionDirection = 'N';
-					e.value = -(((2 * jj_cap) / iFile.tsim.prstep) + (1 / jj_rzero));
-					iFile.matA.mElements.push_back(e);
-					iFile.matA.bMatrixConductanceMap[rName][label + "-MPTR_PN"] = iFile.matA.mElements.size() - 1;
-					e.junctionEntry = false;
-					/* Add the column index of the negative node to the positive node row
-					 * of the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
-					/* Negative node row and positive node column */
-					e.label = label;
-					e.columnIndex = columnMap[cNameP];
-					e.rowIndex = rowMap[rNameN];
-					e.junctionEntry = true;
-					e.tokens["RN"] = jj_rn;
-					e.tokens["CAP"] = jj_cap;
-					e.tokens["R0"] = jj_rzero;
-					e.junctionDirection = 'N';
-					e.value = -(((2 * jj_cap) / iFile.tsim.prstep) + (1 / jj_rzero));
-					iFile.matA.mElements.push_back(e);
-					iFile.matA.bMatrixConductanceMap[rName][label + "-MPTR_NP"] = iFile.matA.mElements.size() - 1;
-					e.junctionEntry = false;
-					/* Add the column index of the positive node to the negative node row
-					 * of the conductance map */
-					 /* This will be used to identify the voltage later */
-					iFile.matA.bMatrixConductanceMap[rNameN][label + "-VP"] = (double)e.columnIndex;
-				}
-				/* Positive node row and phase node column */
-				;
-				e.junctionEntry = false;
-				/* Add the column index of the phase node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-PHASE"] = (double)e.columnIndex;
-				/* Junction node row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName];
+				iFile.voltJJ[jj].posNCol = e.colIndex;
+				iFile.voltJJ[jj].phaseNRow = e.rowIndex;
 				e.value = (-iFile.tsim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
 				iFile.matA.mElements.push_back(e);
-				e.junctionEntry = false;
-				/* Add the column index of the positive node to the junction node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rName][label + "-VP"] = (double)e.columnIndex;
+				if (!nGND) {
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rNameP];
+					iFile.voltJJ[jj].negNCol = e.colIndex;
+					iFile.voltJJ[jj].posNRow = e.rowIndex;
+					e.value = -(((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0));
+					iFile.voltJJ[jj].npPtr = iFile.matA.mElements.size();
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameP];
+					e.rowIndex = rowMap[rNameN];
+					iFile.voltJJ[jj].posNCol = e.colIndex;
+					iFile.voltJJ[jj].negNRow = e.rowIndex;
+					e.value = -(((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0));
+					iFile.voltJJ[jj].pnPtr = iFile.matA.mElements.size();
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rNameN];
+					iFile.voltJJ[jj].negNCol = e.colIndex;
+					iFile.voltJJ[jj].negNRow = e.rowIndex;
+					e.value = ((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0);
+					iFile.voltJJ[jj].nnPtr = iFile.matA.mElements.size();
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rName];
+					iFile.voltJJ[jj].negNCol = e.colIndex;
+					iFile.voltJJ[jj].phaseNRow = e.rowIndex;
+					e.value = (iFile.tsim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
+					iFile.matA.mElements.push_back(e);
+				}
 			}
-			/* If negative node is not grounded */
-			if (!nGND) {
-				/* Negative node row and column */
+			else if (!nGND) {
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rNameN];
-				e.junctionEntry = true;
-				e.tokens["RN"] = jj_rn;
-				e.tokens["CAP"] = jj_cap;
-				e.tokens["R0"] = jj_rzero;
-				e.junctionDirection = 'P';
-				e.value = ((2 * jj_cap) / iFile.tsim.prstep) + (1 / jj_rzero);
+				e.colIndex = columnMap[cNameN];
+				e.rowIndex = rowMap[rNameP];
+				iFile.voltJJ[jj].negNCol = e.colIndex;
+				iFile.voltJJ[jj].posNRow = e.rowIndex;
+				e.value = -(((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0));
+				iFile.voltJJ[jj].npPtr = iFile.matA.mElements.size();
 				iFile.matA.mElements.push_back(e);
-				iFile.matA.bMatrixConductanceMap[rName][label + "-MPTR_NN"] = iFile.matA.mElements.size() - 1;
-				e.junctionEntry = false;
-				/* Add the column index of the negative node to the negative node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameN][label + "-VN"] = (double)e.columnIndex;
-				/* Add the column index of the phase node to the negative node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameN][label + "-PHASE"] = (double)e.columnIndex;
-				/* Junction node row and negative node column*/
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
+				e.colIndex = columnMap[cNameP];
+				e.rowIndex = rowMap[rNameN];
+				iFile.voltJJ[jj].posNCol = e.colIndex;
+				iFile.voltJJ[jj].negNRow = e.rowIndex;
+				e.value = -(((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0));
+				iFile.voltJJ[jj].pnPtr = iFile.matA.mElements.size();
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cNameN];
+				e.rowIndex = rowMap[rNameN];
+				iFile.voltJJ[jj].negNCol = e.colIndex;
+				iFile.voltJJ[jj].negNRow = e.rowIndex;
+				e.value = ((2 * iFile.voltJJ.at(jj).C) / iFile.tsim.prstep) + (1 / iFile.voltJJ.at(jj).r0);
+				iFile.voltJJ[jj].nnPtr = iFile.matA.mElements.size();
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rName];
+				iFile.voltJJ[jj].negNCol = e.colIndex;
+				iFile.voltJJ[jj].phaseNRow = e.rowIndex;
 				e.value = (iFile.tsim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
 				iFile.matA.mElements.push_back(e);
-				e.junctionEntry = false;
-				/* Add the column index of the negative node to the junction node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rName][label + "-VN"] = (double)e.columnIndex;
 			}
-			/* Junction node row and phase node column*/
 			e.label = label;
-			e.columnIndex = columnMap[cName];
+			e.colIndex = columnMap[cName];
 			e.rowIndex = rowMap[rName];
+			iFile.voltJJ[jj].phaseNCol = e.colIndex;
+			iFile.voltJJ[jj].phaseNRow = e.rowIndex;
 			e.value = 1;
 			iFile.matA.mElements.push_back(e);
-			e.junctionEntry = false;
-			/* Add the column index of the phase node to the junction node row of the
-			 * conductance map */
-			 /* This will be used to identify the voltage later */
-			iFile.matA.bMatrixConductanceMap[rName][label + "-PHASE"] = (double)e.columnIndex;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-RTYPE"] = jj_rtype;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-CAP"] = jj_cap;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-ICRIT"] = jj_icrit;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-VGAP"] = jj_vgap;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-R0"] = jj_rzero;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-RN"] = jj_rn;
-			iFile.matA.bMatrixConductanceMap[rName][label + "-ICFACT"] = jj_icfact;
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
+			iFile.voltJJ[jj].gLarge = iFile.voltJJ.at(jj).iC / (iFile.voltJJ.at(jj).iCFact * iFile.voltJJ.at(jj).delV);
+			iFile.voltJJ[jj].lowerB = iFile.voltJJ.at(jj).vG - 0.5*iFile.voltJJ.at(jj).delV;
+			iFile.voltJJ[jj].upperB = iFile.voltJJ.at(jj).vG + 0.5 * iFile.voltJJ.at(jj).delV;
+			iFile.voltJJ[jj].subCond = 1 / iFile.voltJJ.at(jj).r0 + ((2*iFile.voltJJ.at(jj).C) / iFile.tsim.prstep);
+			iFile.voltJJ[jj].transCond = iFile.voltJJ.at(jj).gLarge + ((2*iFile.voltJJ.at(jj).C) / iFile.tsim.prstep);
+			iFile.voltJJ[jj].normalCond = 1 / iFile.voltJJ.at(jj).rN + ((2*iFile.voltJJ.at(jj).C) / iFile.tsim.prstep);
+			iFile.voltJJ[jj].Del0 = 1.76 * BOLTZMANN * iFile.voltJJ.at(jj).tC;
+			iFile.voltJJ[jj].Del = iFile.voltJJ.at(jj).Del0 * sqrt(cos((M_PI/2) * 
+				(iFile.voltJJ.at(jj).T/iFile.voltJJ.at(jj).tC) * (iFile.voltJJ.at(jj).T/iFile.voltJJ.at(jj).tC)));
+			iFile.voltJJ[jj].rNCalc = ((M_PI * iFile.voltJJ.at(jj).Del) / (2 * EV * iFile.voltJJ.at(jj).iC)) * 
+				tanh(iFile.voltJJ.at(jj).Del / (2 * BOLTZMANN * iFile.voltJJ.at(jj).T));
+			iFile.voltJJ[jj].iS = -iFile.voltJJ.at(jj).iC * sin(iFile.voltJJ.at(jj).phi0);
 		}
 		/***********************/
 		/** TRANSMISSION LINE **/
 		/***********************/
 		else if (i[0] == 'T') {
-			std::string nodeP2, nodeN2, TN1, TN2, TV1, TV2, cNameP2, rNameP2, cNameN2,
-				rNameN2, cNameNI1, rNameNI1, cNameNI2, rNameNI2, cName1, rName1, cName2,
-				rName2;
-			bool p2GND, n2GND;
-			double TimeDelay = 0.0;
-			/* Check if positive node 2 exists, if not it's a bad device line
-			 * definition */
-			try {
-				nodeP2 = devicetokens[3];
-			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(MISSING_PNODE, i);
-			}
-			/* Check if negative node 2 exists, if not it's a bad device line
-			 * definition */
-			try {
-				nodeN2 = devicetokens[4];
-			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(MISSING_NNODE, i);
-			}
-			TN1 = "1" + label;
-			TN2 = "2" + label;
-			TV1 = label + "-V1";
-			TV2 = label + "-V2";
-			/* Create a new matrix element for the first Z0 */
+			std::string Tx = label, cName2, rName2, cNameP2, rNameP2, cNameN2, 
+				rNameN2, nodeP2, nodeN2;
+			bool pGND2, nGND2;
 			matrix_element e;
-			if (devicetokens.size() < 7) {
-				invalid_component_errors(TIME_ERROR, i);
+			double z0 = 10, tD = 0.0;
+			for (int t = 5; t < devicetokens.size(); t++) {
+				if(devicetokens[t].find("TD") != std::string::npos)
+					tD = Parser::parse_return_expression(
+						devicetokens[t].substr(devicetokens[t].find("TD=") + 3,
+						devicetokens[t].size() - 1), iFile.parVal, iFile.parVal);
+				else if(devicetokens[t].find("Z0") != std::string::npos)
+					z0 = Parser::parse_return_expression(
+						devicetokens[t].substr(devicetokens[t].find("Z0=") + 3,
+						devicetokens[t].size() - 1), iFile.parVal, iFile.parVal);
+				else if(devicetokens[t].find("LOSSLESS") != std::string::npos) {}
+				else Errors::invalid_component_errors(INVALID_TX_DEFINED, i);
 			}
-			/* Check if value exists, if not it's a bad Z0 definition */
-			for (size_t l = 5; l < devicetokens.size(); l++) {
-				if (devicetokens[l].find("TD") != std::string::npos)
-					TimeDelay = modifier((devicetokens[l]).substr(3));
-				else if (devicetokens[l].find("Z0") != std::string::npos)
-					value = modifier((devicetokens[l]).substr(3));
-			}
-			iFile.matA.xlines[label].Z0 = value;
-			iFile.matA.xlines[label].label = label;
-			iFile.matA.xlines[label].TD = TimeDelay;
-			/* Check if positive node is connected to ground */
-			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
-				cNameP = "C_NV" + nodeP;
-				rNameP = "R_N" + nodeP;
-				/* If row does not already exist, add to rows */
-				if (rowMap.count(rNameP) == 0) {
-					rowMap[rNameP] = rowCounter;
-					rowCounter++;
-				}
-				/* If column does not already exist, add to columns */
-				if (columnMap.count(cNameP) == 0) {
-					columnMap[cNameP] = colCounter;
-					colCounter++;
-				}
-				/* Add the resistance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameP][label] = 0.0;
-				iFile.matA.nodeConnections[rNameP].push_back(label);
-				pGND = false;
-			}
-			else
-				pGND = true;
-			/* Check if negative node is connected to ground */
-			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
-				cNameN = "C_NV" + nodeN;
-				rNameN = "R_N" + nodeN;
-				/* If row does not already exist, add to rows */
-				if (rowMap.count(rNameN) == 0) {
-					rowMap[rNameN] = rowCounter;
-					rowCounter++;
-				}
-				/* If column does not already exist, add to columns */
-				if (columnMap.count(cNameN) == 0) {
-					columnMap[cNameN] = colCounter;
-					colCounter++;
-				}
-				/* Add the resistance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN][label] = 0.0;
-				iFile.matA.nodeConnections[rNameN].push_back(label);
-				nGND = false;
-			}
-			else
-				nGND = true;
-			/* Check if second positive node is connected to ground */
-			if (nodeP2 != "0" && nodeP2.find("GND") == std::string::npos) {
-				cNameP2 = "C_NV" + nodeP2;
-				rNameP2 = "R_N" + nodeP2;
-				/* If row does not already exist, add to rows */
-				if (rowMap.count(rNameP2) == 0) {
-					rowMap[rNameP2] = rowCounter;
-					rowCounter++;
-				}
-				/* If column does not already exist, add to columns */
-				if (columnMap.count(cNameP2) == 0) {
-					columnMap[cNameP2] = colCounter;
-					colCounter++;
-				}
-				/* Add the resistance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameP2][label] = 0.0;
-				iFile.matA.nodeConnections[rNameP2].push_back(label);
-				p2GND = false;
-			}
-			else
-				p2GND = true;
-			/* Check if second negative node is connected to ground */
-			if (nodeN2 != "0" && nodeN2.find("GND") == std::string::npos) {
-				cNameN2 = "C_NV" + nodeN2;
-				rNameN2 = "R_N" + nodeN2;
-				/* If row does not already exist, add to rows */
-				if (rowMap.count(rNameN2) == 0) {
-					rowMap[rNameN2] = rowCounter;
-					rowCounter++;
-				}
-				/* If column does not already exist, add to columns */
-				if (columnMap.count(cNameN2) == 0) {
-					columnMap[cNameN2] = colCounter;
-					colCounter++;
-				}
-				/* Add the resistance value to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN2][label] = 0.0;
-				iFile.matA.nodeConnections[rNameN2].push_back(label);
-				n2GND = false;
-			}
-			else
-				n2GND = true;
-			/* Add the intermediate node 1 */
-			cNameNI1 = "C_NV" + TN1;
-			rNameNI1 = "R_N" + TN1;
-			/* If row does not already exist, add to rows */
-			if (rowMap.count(rNameNI1) == 0) {
-				rowMap[rNameNI1] = rowCounter;
+			iFile.txLine[Tx].label = label;
+			iFile.txLine[Tx].k = tD / iFile.tsim.prstep;
+			iFile.txLine[Tx].value = z0;
+			cName = "C_I1" + devicetokens[0];
+			rName = "R_" + devicetokens[0] + "-I1";
+			cName2 = "C_I2" + devicetokens[0];
+			rName2 = "R_" + devicetokens[0] + "-I2";
+			if (rowMap.count(rName) == 0) {
+				rowMap[rName] = rowCounter;
 				rowCounter++;
 			}
-			/* If column does not already exist, add to columns */
-			if (columnMap.count(cNameNI1) == 0) {
-				columnMap[cNameNI1] = colCounter;
+			if (columnMap.count(cName) == 0) {
+				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Add the resistance value to the conductance map */
-			iFile.matA.bMatrixConductanceMap[rNameNI1][label] = 0.0;
-			iFile.matA.nodeConnections[rNameNI1].push_back(label);
-			/* Add the intermediate node 2 */
-			cNameNI2 = "C_NV" + TN2;
-			rNameNI2 = "R_N" + TN2;
-			/* If row does not already exist, add to rows */
-			if (rowMap.count(rNameNI2) == 0) {
-				rowMap[rNameNI2] = rowCounter;
-				rowCounter++;
-			}
-			/* If column does not already exist, add to columns */
-			if (columnMap.count(cNameNI2) == 0) {
-				columnMap[cNameNI2] = colCounter;
-				colCounter++;
-			}
-			/* Add the resistance value to the conductance map */
-			iFile.matA.bMatrixConductanceMap[rNameNI2][label] = 0.0;
-			iFile.matA.nodeConnections[rNameNI2].push_back(label);
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
-			if (!pGND) {
-				/* Positive node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				iFile.matA.xlines[label].pNode1 = columnMap[cNameP];
-				e.rowIndex = rowMap[rNameP];
-				e.value = 1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VP"] = (double)e.columnIndex;
-				/* If positive and intermediate node is not grounded */
-				/* Positive node row and intermediate node column */
-				e.columnIndex = columnMap[cNameNI1];
-				iFile.matA.xlines[label].iNode1 = columnMap[cNameNI1];
-				e.rowIndex = rowMap[rNameP];
-				e.value = -1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the negative node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP][label + "-VN"] = (double)e.columnIndex;
-				/* Intermediate node row and positive node column */
-				e.columnIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rNameNI1];
-				e.value = -1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the negative node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameNI1][label + "-VP"] = (double)e.columnIndex;
-				/* Intermediate node row and column */
-				e.columnIndex = columnMap[cNameNI1];
-				e.rowIndex = rowMap[rNameNI1];
-				e.value = 1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameNI1][label + "-VP"] = (double)e.columnIndex;
-			}
-			else {
-				/* Intermediate node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameNI1];
-				iFile.matA.xlines[label].iNode1 = columnMap[cNameNI1];
-				e.rowIndex = rowMap[rNameNI1];
-				e.value = 1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameNI1][label + "-VP"] = (double)e.columnIndex;
-			}
-			/* If second positive node is not grounded */
-			if (!p2GND) {
-				/* Positive node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameP2];
-				iFile.matA.xlines[label].pNode2 = columnMap[cNameP2];
-				e.rowIndex = rowMap[rNameP2];
-				e.value = 1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP2][label + "-VP"] = (double)e.columnIndex;
-				/* If positive and intermediate node is not grounded */
-				/* Positive node row and intermediate node column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameNI2];
-				iFile.matA.xlines[label].iNode2 = columnMap[cNameNI2];
-				e.rowIndex = rowMap[rNameP2];
-				e.value = -1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the negative node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameP2][label + "-VN"] = (double)e.columnIndex;
-				/* Intermediate node row and positive node column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameP2];
-				e.rowIndex = rowMap[rNameNI2];
-				e.value = -1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the negative node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameNI2][label + "-VP"] = (double)e.columnIndex;
-				/* Intermediate node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameNI2];
-				e.rowIndex = rowMap[rNameNI2];
-				e.value = 1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameNI2][label + "-VP"] = (double)e.columnIndex;
-			}
-			else {
-				/* Intermediate node row and column */
-				e.label = label;
-				e.columnIndex = columnMap[cNameNI2];
-				iFile.matA.xlines[label].iNode2 = columnMap[cNameNI2];
-				e.rowIndex = rowMap[rNameNI2];
-				e.value = 1 / value;
-				iFile.matA.mElements.push_back(e);
-				/* Add the column index of the positive node to the positive node row of
-				 * the conductance map */
-				 /* This will be used to identify the voltage later */
-				iFile.matA.bMatrixConductanceMap[rNameNI2][label + "-VP"] = (double)e.columnIndex;
-			}
-			cName1 = "C_" + TV1;
-			rName1 = "R_" + TV1;
-			if (rowMap.count(rName1) == 0) {
-				rowMap[rName1] = rowCounter;
-				rowCounter++;
-			}
-			if (columnMap.count(cName1) == 0) {
-				columnMap[cName1] = colCounter;
-				colCounter++;
-			}
-			cName2 = "C_" + TV2;
-			rName2 = "R_" + TV2;
 			if (rowMap.count(rName2) == 0) {
 				rowMap[rName2] = rowCounter;
 				rowCounter++;
@@ -1170,68 +802,206 @@ create_A_matrix_volt(InputFile& iFile)
 				columnMap[cName2] = colCounter;
 				colCounter++;
 			}
-			/* Intermediate node 1 row and voltage node 1 column */
-			e.label = label;
-			e.columnIndex = columnMap[cName1];
-			e.rowIndex = rowMap[rNameNI1];
-			e.value = 1;
-			iFile.matA.mElements.push_back(e);
-			/* Voltage node 1 row and intermediate node 1 column */
-			e.label = label;
-			e.columnIndex = columnMap[cNameNI1];
-			e.rowIndex = rowMap[rName1];
-			e.value = 1;
-			iFile.matA.mElements.push_back(e);
-			/* Add the column index of the phase node to the voltage node row of the
-			 * conductance map */
-			 /* This will be used to identify the voltage later */
-			iFile.matA.bMatrixConductanceMap[rName1][label] = (double)e.columnIndex;
-			/* Intermediate node 2 row and voltage node 2 column */
-			e.label = label;
-			e.columnIndex = columnMap[cName2];
-			e.rowIndex = rowMap[rNameNI2];
-			e.value = 1;
-			iFile.matA.mElements.push_back(e);
-			/* Voltage node 2 row and intermediate node 2 column */
-			e.label = label;
-			e.columnIndex = columnMap[cNameNI2];
-			e.rowIndex = rowMap[rName2];
-			e.value = 1;
-			iFile.matA.mElements.push_back(e);
-			/* Add the column index of the phase node to the voltage node row of the
-			 * conductance map */
-			 /* This will be used to identify the voltage later */
-			iFile.matA.bMatrixConductanceMap[rName2][label] = (double)e.columnIndex;
-			if (!nGND) {
-				/* Negative node 1 row and voltage node 1 column */
+			iFile.txLine[Tx].curNode1C = cName;
+			iFile.txLine[Tx].curNode1R = rName;
+			iFile.txLine[Tx].curNode2C = cName2;
+			iFile.txLine[Tx].curNode2R = rName2;
+			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
+				cNameP = "C_NV" + nodeP;
+				rNameP = "R_N" + nodeP;
+				iFile.txLine[Tx].posNodeC = cNameP;
+				iFile.txLine[Tx].posNodeR = rNameP;
+				if (rowMap.count(rNameP) == 0) {
+					rowMap[rNameP] = rowCounter;
+					rowCounter++;
+				}
+				if (columnMap.count(cNameP) == 0) {
+					columnMap[cNameP] = colCounter;
+					colCounter++;
+				}
+				iFile.matA.nodeConnections[rNameP].push_back(label);
+				pGND = false;
+			}
+			else
+				pGND = true;
+			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
+				cNameN = "C_NV" + nodeN;
+				rNameN = "R_N" + nodeN;
+				iFile.txLine[Tx].negNodeC = cNameN;
+				iFile.txLine[Tx].negNodeR = rNameN;
+				if (rowMap.count(rNameN) == 0) {
+					rowMap[rNameN] = rowCounter;
+					rowCounter++;
+				}
+				if (columnMap.count(cNameN) == 0) {
+					columnMap[cNameN] = colCounter;
+					colCounter++;
+				}
+				iFile.matA.nodeConnections[rNameN].push_back(label);
+				nGND = false;
+			}
+			else
+				nGND = true;
+			try {
+				nodeP2 = devicetokens[3];
+			}
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(MISSING_PNODE, i);
+			}
+			/* Check if negative node exists, if not it's a bad device line definition
+			*/
+			try {
+				nodeN2 = devicetokens[4];
+			}
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(MISSING_NNODE, i);
+			}
+			if (nodeP2 != "0" && nodeP2.find("GND") == std::string::npos) {
+				cNameP2 = "C_NV" + nodeP2;
+				rNameP2 = "R_N" + nodeP2;
+				iFile.txLine[Tx].posNode2C = cNameP2;
+				iFile.txLine[Tx].posNode2R = rNameP2;
+				if (rowMap.count(rNameP2) == 0) {
+					rowMap[rNameP2] = rowCounter;
+					rowCounter++;
+				}
+				if (columnMap.count(cNameP2) == 0) {
+					columnMap[cNameP2] = colCounter;
+					colCounter++;
+				}
+				iFile.matA.nodeConnections[rNameP2].push_back(label);
+				pGND2 = false;
+			}
+			else
+				pGND2 = true;
+			if (nodeN2 != "0" && nodeN2.find("GND") == std::string::npos) {
+				cNameN2 = "C_NV" + nodeN2;
+				rNameN2 = "R_N" + nodeN2;
+				iFile.txLine[Tx].negNode2C = cNameN2;
+				iFile.txLine[Tx].negNode2R = rNameN2;
+				if (rowMap.count(rNameN2) == 0) {
+					rowMap[rNameN2] = rowCounter;
+					rowCounter++;
+				}
+				if (columnMap.count(cNameN2) == 0) {
+					columnMap[cNameN2] = colCounter;
+					colCounter++;
+				}
+				iFile.matA.nodeConnections[rNameN2].push_back(label);
+				nGND2 = false;
+			}
+			else
+				nGND2 = true;
+			if (!pGND) {
 				e.label = label;
-				e.columnIndex = columnMap[cName1];
+				e.colIndex = columnMap[cName];
+				e.rowIndex = rowMap[rNameP];
+				iFile.txLine[Tx].curN1Col = e.colIndex;
+				iFile.txLine[Tx].posNRow = e.rowIndex;
+				e.value = 1;
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cNameP];
+				e.rowIndex = rowMap[rName];
+				iFile.txLine[Tx].posNCol = e.colIndex;
+				iFile.txLine[Tx].curN1Row = e.rowIndex;
+				e.value = 1;
+				iFile.matA.mElements.push_back(e);
+				if (!nGND) {
+					e.label = label;
+					e.colIndex = columnMap[cName];
+					e.rowIndex = rowMap[rNameN];
+					iFile.txLine[Tx].curN1Col = e.colIndex;
+					iFile.txLine[Tx].negNRow = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameN];
+					e.rowIndex = rowMap[rName];
+					iFile.txLine[Tx].negNCol = e.colIndex;
+					iFile.txLine[Tx].curN1Row = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+				}
+			}
+			else if (!nGND) {
+				e.label = label;
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
+				iFile.txLine[Tx].curN1Col = e.colIndex;
+				iFile.txLine[Tx].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Voltage node 1 row and negative node 1 column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				iFile.matA.xlines[label].nNode1 = columnMap[cNameN];
-				e.rowIndex = rowMap[rName1];
-				e.value = 1;
+				e.colIndex = columnMap[cNameN];
+				e.rowIndex = rowMap[rName];
+				iFile.txLine[Tx].negNCol = e.colIndex;
+				iFile.txLine[Tx].curN1Row = e.rowIndex;
+				e.value = -1;
 				iFile.matA.mElements.push_back(e);
 			}
-			if (!n2GND) {
-				/* Negative node 2 row and voltage node 2 column */
+			e.label = label;
+			e.colIndex = columnMap[cName];
+			e.rowIndex = rowMap[rName];
+			iFile.txLine[Tx].curN1Col = e.colIndex;
+			iFile.txLine[Tx].curN1Row = e.rowIndex;
+			e.value = -z0;
+			iFile.matA.mElements.push_back(e);
+			if (!pGND2) {
 				e.label = label;
-				e.columnIndex = columnMap[cName2];
-				e.rowIndex = rowMap[rNameN2];
+				e.colIndex = columnMap[cName2];
+				e.rowIndex = rowMap[rNameP2];
+				iFile.txLine[Tx].curN2Col = e.colIndex;
+				iFile.txLine[Tx].posN2Row = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Voltage node 2 row and intermediate node 2 column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameN2];
-				iFile.matA.xlines[label].iNode2 = columnMap[cNameN2];
+				e.colIndex = columnMap[cNameP2];
 				e.rowIndex = rowMap[rName2];
+				iFile.txLine[Tx].posN2Col = e.colIndex;
+				iFile.txLine[Tx].curN2Row = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
+				if (!nGND2) {
+					e.label = label;
+					e.colIndex = columnMap[cName2];
+					e.rowIndex = rowMap[rNameN2];
+					iFile.txLine[Tx].curN2Col = e.colIndex;
+					iFile.txLine[Tx].negN2Row = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+					e.label = label;
+					e.colIndex = columnMap[cNameN2];
+					e.rowIndex = rowMap[rName2];
+					iFile.txLine[Tx].negN2Col = e.colIndex;
+					iFile.txLine[Tx].curN2Row = e.rowIndex;
+					e.value = -1;
+					iFile.matA.mElements.push_back(e);
+				}
 			}
+			else if (!nGND2) {
+				e.label = label;
+				e.colIndex = columnMap[cName2];
+				e.rowIndex = rowMap[rNameN2];
+				iFile.txLine[Tx].curN2Col = e.colIndex;
+				iFile.txLine[Tx].negN2Row = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+				e.label = label;
+				e.colIndex = columnMap[cNameN2];
+				e.rowIndex = rowMap[rName2];
+				iFile.txLine[Tx].negN2Col = e.colIndex;
+				iFile.txLine[Tx].curN2Row = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+			}
+			e.label = label;
+			e.colIndex = columnMap[cName2];
+			e.rowIndex = rowMap[rName2];
+			iFile.txLine[Tx].curN2Col = e.colIndex;
+			iFile.txLine[Tx].curN2Row = e.rowIndex;
+			e.value = -z0;
+			iFile.matA.mElements.push_back(e);
 		}
 		/*********************/
 		/** MUTUAL COUPLING **/
@@ -1241,63 +1011,53 @@ create_A_matrix_volt(InputFile& iFile)
 		}
 	}
 	double mutualL = 0.0, cf = 0.0;
-	// Handle mutual inductances outside loop due to chicken egg situation
 	for (auto i : iFile.mutualInductanceLines) {
-		// Tokenize the line
-		devicetokens = tokenize_space(i);
-		// Check if label exists, if not there is a bug in the program
+		devicetokens = Misc::tokenize_space(i);
 		try {
 			label = devicetokens[0];
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_LABEL, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_LABEL, i);
 		}
 		if (label.find_first_of("|") != std::string::npos) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
 		}
-		// Check if coupling factor k exists, if not it's a bad mutual coupling definition
 		try {
 			if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
 				cf = iFile.parVal.at(devicetokens[3]);
 			else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
 				cf = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 			else
-				cf = modifier(devicetokens[3]);
+				cf = Misc::modifier(devicetokens[3]);
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MUT_ERROR, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MUT_ERROR, i);
 		}
-		// Next identify the 2 coupling inductors
 		std::string ind1, ind2;
 		ind1 = devicetokens[1];
 		ind2 = devicetokens[2];
-		// Calculate the coupling factor M
-		cf = cf * sqrt(iFile.matA.impedanceMap["R_" + ind1] * iFile.matA.impedanceMap["R_" + ind2]);
+		if(iFile.voltInd.count(ind1) == 0) Errors::invalid_component_errors(MISSING_INDUCTOR, ind1);
+		if(iFile.voltInd.count(ind2) == 0) Errors::invalid_component_errors(MISSING_INDUCTOR, ind2);
+		cf = cf * sqrt(iFile.voltInd.at(ind1).value * iFile.voltInd.at(ind2).value);
 		mutualL = ((2 * cf) / iFile.tsim.prstep);
-		iFile.matA.branchRelations.at(ind1).mutualInductance.push_back(mutualL);
-		iFile.matA.branchRelations.at(ind2).mutualInductance.push_back(mutualL);
-		iFile.matA.branchRelations.at(ind1).mutI2.push_back(ind2);
-		iFile.matA.branchRelations.at(ind2).mutI2.push_back(ind1);
-		iFile.matA.branchRelations.at(ind1).current2RowIndex.push_back(iFile.matA.branchRelations.at(ind2).current1RowIndex);
-		iFile.matA.branchRelations.at(ind2).current2RowIndex.push_back(iFile.matA.branchRelations.at(ind1).current1RowIndex);
-		iFile.matA.branchRelations.at(ind1).current2ColumnIndex.push_back(iFile.matA.branchRelations.at(ind2).current1ColumnIndex);
-		iFile.matA.branchRelations.at(ind2).current2ColumnIndex.push_back(iFile.matA.branchRelations.at(ind1).current1ColumnIndex);
-		// Inductor1
+		iFile.voltInd.at(ind1).mut[ind2] = mutualL;
+		iFile.voltInd.at(ind2).mut[ind1] = mutualL;
 		matrix_element e;
 		e.label = label;
-		e.columnIndex = iFile.matA.branchRelations.at(ind1).current2ColumnIndex.back();
-		e.rowIndex = iFile.matA.branchRelations.at(ind1).current1RowIndex;
+		e.colIndex = iFile.voltInd.at(ind1).curNCol;
+		e.rowIndex = iFile.voltInd.at(ind2).curNRow;
 		e.value = -mutualL;
+		iFile.voltInd.at(ind1).mutPtr[ind2] = iFile.matA.mElements.size();
 		iFile.matA.mElements.push_back(e);
-		// Inductor2
 		e.label = label;
-		e.columnIndex = iFile.matA.branchRelations.at(ind2).current2ColumnIndex.back();
-		e.rowIndex = iFile.matA.branchRelations.at(ind2).current1RowIndex;
+		e.colIndex = iFile.voltInd.at(ind2).curNCol;
+		e.rowIndex = iFile.voltInd.at(ind1).curNRow;
 		e.value = -mutualL;
+		iFile.voltInd.at(ind2).mutPtr[ind1] = iFile.matA.mElements.size();
 		iFile.matA.mElements.push_back(e);
 	}
-	std::map<int, std::string> rowMapFlip = flip_map(rowMap);
-	std::map<int, std::string> columnMapFlip = flip_map(columnMap);
+	std::map<int, std::string> rowMapFlip = Misc::flip_map(rowMap);
+	std::map<int, std::string> columnMapFlip = Misc::flip_map(columnMap);
 	std::transform(
 		rowMapFlip.begin(),
 		rowMapFlip.end(),
@@ -1314,8 +1074,7 @@ create_A_matrix_volt(InputFile& iFile)
   Identify each non zero matrix element in phase form
 */
 void
-create_A_matrix_phase(InputFile& iFile)
-{
+Matrix::create_A_matrix_phase(InputFile& iFile) {
 	std::string cName, rName, cNameP, rNameP, cNameN, rNameN;
 	std::vector<std::string> devicetokens, componentLabels;
 	devicetokens.clear();
@@ -1324,14 +1083,39 @@ create_A_matrix_phase(InputFile& iFile)
 	std::unordered_map<std::string, int> rowMap, columnMap;
 	rowMap.clear();
 	columnMap.clear();
-	int rowCounter, colCounter;
+	int rowCounter, colCounter, expStart, expEnd;
 	bool pGND, nGND;
-	rowCounter = 0;
-	colCounter = 0;
+	rowCounter = colCounter = 0;
 	/* Main circuit node identification */
 	for (auto i : iFile.maincircuitSegment) {
-		element cElement;
-		devicetokens = tokenize_space(i);
+		expStart = expEnd = -1;
+		devicetokens = Misc::tokenize_space(i);
+				for (int t = 0; t < devicetokens.size(); t++) {
+			if(devicetokens[t].find('{') != std::string::npos) {
+				expStart = t;
+			}
+			if(devicetokens[t].find('}') != std::string::npos) {
+				expEnd = t;
+			}
+		}
+		if(expStart == -1 && expEnd != -1) Errors::invalid_component_errors(INVALID_EXPR, i);
+		else if(expStart != -1 && expEnd == -1) Errors::invalid_component_errors(INVALID_EXPR, i);
+		if (expStart != -1 && expStart == expEnd) {
+			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
+			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+		}
+		else if (expStart != -1 && expEnd != -1) {
+			int d = expStart + 1;
+			while (expStart != expEnd) {
+				devicetokens[expStart] += devicetokens[d];
+				devicetokens.erase(devicetokens.begin()+d);
+				expEnd--;
+			}
+			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
+			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+		}
 		double value = 0.0;
 		/* Check if label exists, if not there is a bug in the program */
 		try {
@@ -1340,11 +1124,11 @@ create_A_matrix_phase(InputFile& iFile)
 				componentLabels.end())
 				componentLabels.push_back(label);
 			else {
-				invalid_component_errors(DUPLICATE_LABEL, label);
+				Errors::invalid_component_errors(DUPLICATE_LABEL, label);
 			}
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_LABEL, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_LABEL, i);
 		}
 		if (label.find_first_of("|") != std::string::npos) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
@@ -1354,40 +1138,38 @@ create_A_matrix_phase(InputFile& iFile)
 		try {
 			nodeP = devicetokens[1];
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_PNODE, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_PNODE, i);
 		}
 		/* Check if negative node exists, if not it's a bad device line definition
 		 */
 		try {
 			nodeN = devicetokens[2];
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_NNODE, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_NNODE, i);
 		}
 		/********************/
 		/** PHASE RESISTOR **/
 		/********************/
 		if (i[0] == 'R') {
 			std::string R = devicetokens[0];
-			/* Create a new matrix element for the resistor */
 			matrix_element e;
-			/* Check if value exists, if not it's a bad resistor definition */
 			try {
 				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					iFile.pRes[R].R = iFile.parVal.at(devicetokens[3]);
+					iFile.phaseRes[R].value = iFile.parVal.at(devicetokens[3]);
 				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					iFile.pRes[R].R = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+					iFile.phaseRes[R].value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 				else
-					iFile.pRes[R].R = modifier(devicetokens[3]);
+					iFile.phaseRes[R].value = Misc::modifier(devicetokens[3]);
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(RES_ERROR, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(RES_ERROR, i);
 			}
 			cName = "C_I" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
-			iFile.pRes[R].bIResistorC = cName;
-			iFile.pRes[R].bIResistorR = rName;
+			iFile.phaseRes[R].curNodeC = cName;
+			iFile.phaseRes[R].curNodeR = rName;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1396,12 +1178,11 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
-				iFile.pRes[R].pPositiveC = cNameP;
-				iFile.pRes[R].pPositiveR = rNameP;
+				iFile.phaseRes[R].posNodeC = cNameP;
+				iFile.phaseRes[R].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -1415,12 +1196,11 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
-				iFile.pRes[R].pNegativeC = cNameN;
-				iFile.pRes[R].pNegativeR = rNameN;
+				iFile.phaseRes[R].negNodeC = cNameN;
+				iFile.phaseRes[R].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -1434,93 +1214,64 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and resistor current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameP];
-				iFile.pRes[R].pPR = e.rowIndex;
+				iFile.phaseRes[R].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Resistor current row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				iFile.pRes[R].pPC = e.columnIndex;
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName];
+				iFile.phaseRes[R].posNCol = e.colIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
 			}
 			if (!nGND) {
-				/* Negative node row and resistor current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
-				iFile.pRes[R].pNR = e.rowIndex;
+				iFile.phaseRes[R].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Resistor current row and negative node column*/
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				iFile.pRes[R].pNC = e.columnIndex;
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rName];
+				iFile.phaseRes[R].negNCol = e.colIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* Resistor current row and resistor current column*/
 			e.label = label;
-			e.columnIndex = columnMap[cName];
-			iFile.pRes[R].bIC = e.columnIndex;
+			e.colIndex = columnMap[cName];
 			e.rowIndex = rowMap[rName];
-			iFile.pRes[R].bIR = e.rowIndex;
-			e.value = -(M_PI * iFile.pRes[R].R * iFile.tsim.prstep) / PHI_ZERO;
-			iFile.pRes[R].Rmptr = iFile.matA.mElements.size();
+			iFile.phaseRes[R].curNCol = e.colIndex;
+			iFile.phaseRes[R].curNRow = e.rowIndex;
+			e.value = -(M_PI * iFile.phaseRes[R].value * iFile.tsim.prstep) / PHI_ZERO;
+			iFile.phaseRes[R].resPtr = iFile.matA.mElements.size();
 			iFile.matA.mElements.push_back(e);
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = iFile.pRes[R].R;
-			cElement.CURindex = columnMap[cName];
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/*********************/
 		/** PHASE CAPACITOR **/
 		/*********************/
 		else if (i[0] == 'C') {
 			std::string C = devicetokens[0];
-			/* Create a new matrix element for the capacitor */
 			matrix_element e;
-			/* Check if value exists, if not it's a bad capacitor definition */
 			try {
 				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					iFile.pCap[C].C = iFile.parVal.at(devicetokens[3]);
+					iFile.phaseCap[C].value = iFile.parVal.at(devicetokens[3]);
 				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					iFile.pCap[C].C = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+					iFile.phaseCap[C].value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 				else
-					iFile.pCap[C].C = modifier(devicetokens[3]);
+					iFile.phaseCap[C].value = Misc::modifier(devicetokens[3]);
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(CAP_ERROR, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(CAP_ERROR, i);
 			}
 			cName = "C_I" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
-			iFile.pCap[C].bICapacitorC = cName;
-			iFile.pCap[C].bICapacitorR = rName;
+			iFile.phaseCap[C].curNodeC = cName;
+			iFile.phaseCap[C].curNodeR = rName;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1529,12 +1280,11 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
-				iFile.pCap[C].pPositiveC = cNameP;
-				iFile.pCap[C].pPositiveR = rNameP;
+				iFile.phaseCap[C].posNodeC = cNameP;
+				iFile.phaseCap[C].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -1548,12 +1298,11 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
-				iFile.pCap[C].pNegativeC = cNameN;
-				iFile.pCap[C].pNegativeR = rNameN;
+				iFile.phaseCap[C].negNodeC = cNameN;
+				iFile.phaseCap[C].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -1567,92 +1316,64 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				nGND = true;
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and capacitor current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameP];
-				iFile.pCap[C].pPR = e.rowIndex;
+				iFile.phaseCap[C].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Capacitor current row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				iFile.pCap[C].pPC = e.columnIndex;
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName];
+				iFile.phaseCap[C].posNCol = e.colIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* If negative node is not grounded */
 			if (!nGND) {
-				/* Negative node row and capacitor current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
-				iFile.pCap[C].pNR = e.rowIndex;
+				iFile.phaseCap[C].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Capacitor current row and negative node column*/
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				iFile.pCap[C].pNC = e.columnIndex;
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rName];
+				iFile.phaseCap[C].negNCol = e.colIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* Capacitor current row and capacitor current column*/
 			e.label = label;
-			e.columnIndex = columnMap[cName];
-			iFile.pCap[C].bIC = e.columnIndex;
+			e.colIndex = columnMap[cName];
 			e.rowIndex = rowMap[rName];
-			iFile.pCap[C].bIR = e.rowIndex;
-			e.value = (-2 * M_PI * iFile.tsim.prstep * iFile.tsim.prstep) / (PHI_ZERO * 4 * value);
-			iFile.pCap[C].Cmptr = iFile.matA.mElements.size();
+			iFile.phaseCap[C].curNCol = e.colIndex;
+			iFile.phaseCap[C].curNRow = e.rowIndex;
+			e.value = (-2 * M_PI * iFile.tsim.prstep * iFile.tsim.prstep) / (PHI_ZERO * 4 * iFile.phaseCap[C].value);
+			iFile.phaseCap[C].capPtr = iFile.matA.mElements.size();
 			iFile.matA.mElements.push_back(e);
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = iFile.pCap[C].C;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/********************/
 		/** PHASE INDUCTOR **/
 		/********************/
 		else if (i[0] == 'L') {
 			std::string L = devicetokens[0];
-			/* Create a new matrix element for the inductor */
 			matrix_element e;
-			/* Check if value exists, if not it's a bad inductor definition */
 			try {
 				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					iFile.pInd[L].L = iFile.parVal.at(devicetokens[3]);
+					iFile.phaseInd[L].value = iFile.parVal.at(devicetokens[3]);
 				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					iFile.pInd[L].L = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+					iFile.phaseInd[L].value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 				else
-					iFile.pInd[L].L = modifier(devicetokens[3]);
+					iFile.phaseInd[L].value = Misc::modifier(devicetokens[3]);
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(IND_ERROR, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(IND_ERROR, i);
 			}
 			cName = "C_I" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
-			iFile.pInd[L].bIInductorC = cName;
-			iFile.pInd[L].bIInductorR = rName;
+			iFile.phaseInd[L].curNodeC = cName;
+			iFile.phaseInd[L].curNodeR = rName;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1661,12 +1382,11 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
-				iFile.pInd[L].pPositiveC = cNameP;
-				iFile.pInd[L].pPositiveR = rNameP;
+				iFile.phaseInd[L].posNodeC = cNameP;
+				iFile.phaseInd[L].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -1680,12 +1400,11 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
-				iFile.pInd[L].pNegativeC = cNameN;
-				iFile.pInd[L].pNegativeR = rNameN;
+				iFile.phaseInd[L].negNodeC = cNameN;
+				iFile.phaseInd[L].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -1699,84 +1418,54 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and inductor current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameP];
-				iFile.pInd[L].pPR = e.rowIndex;
+				iFile.phaseInd[L].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Inductor current row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				iFile.pInd[L].pPC = e.columnIndex;
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName];
-				iFile.pInd[L].bIR = e.rowIndex;
+				iFile.phaseInd[L].posNCol = e.colIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
 			}
 			if (!nGND) {
-				/* Negative node row and inductor current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
-				iFile.pInd[L].pNR = e.rowIndex;
+				iFile.phaseInd[L].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Inductor current row and negative node column*/
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				iFile.pInd[L].pNC = e.columnIndex;
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rName];
+				iFile.phaseInd[L].negNCol = e.colIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* Inductor node row and inductor current node column*/
 			e.label = label;
-			e.columnIndex = columnMap[cName];
-			iFile.pInd[L].bIC = e.columnIndex;
+			e.colIndex = columnMap[cName];
 			e.rowIndex = rowMap[rName];
-			iFile.pInd[L].bIR = e.rowIndex;
-			e.value = -(iFile.pInd[L].L * 2 * M_PI) / PHI_ZERO;
-			iFile.pInd[L].Lmptr = iFile.matA.mElements.size();
+			iFile.phaseInd[L].curNCol = e.colIndex;
+			iFile.phaseInd[L].curNRow = e.rowIndex;
+			e.value = -(iFile.phaseInd[L].value * 2 * M_PI) / PHI_ZERO;
+			iFile.phaseInd[L].indPtr = iFile.matA.mElements.size();
 			iFile.matA.mElements.push_back(e);
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values */
-			cElement.label = label;
-			cElement.value = iFile.pInd[L].L;
-			cElement.CURindex = columnMap[cName];
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/**************************/
 		/** PHASE VOLTAGE SOURCE **/
 		/**************************/
 		else if (i[0] == 'V') {
 			std::string VS = devicetokens[0];
-			/* Create a new matrix element for the voltage source */
 			matrix_element e;
-			/* Parse the function identified (if any)*/
-			iFile.matA.sources[label] = function_parse(i, iFile);
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
 			cName = "C_" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
-			iFile.pVS[VS].bIVoltC = cName;
-			iFile.pVS[VS].bIVoltR = rName;
+			iFile.phaseVs[VS].curNodeC = cName;
+			iFile.phaseVs[VS].curNodeR = rName;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1785,12 +1474,11 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cName] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
-				iFile.pVS[VS].pPositiveC = cNameP;
-				iFile.pVS[VS].pPositiveR = rNameP;
+				iFile.phaseVs[VS].posNodeC = cNameP;
+				iFile.phaseVs[VS].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -1804,12 +1492,11 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
-				iFile.pVS[VS].pNegativeC = cNameN;
-				iFile.pVS[VS].pNegativeR = rNameN;
+				iFile.phaseVs[VS].negNodeC = cNameN;
+				iFile.phaseVs[VS].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -1823,72 +1510,44 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and voltage current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
-				iFile.pVS[VS].bIC = e.columnIndex;
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameP];
-				iFile.pVS[VS].pPR = e.rowIndex;
+				iFile.phaseVs[VS].curNCol = e.colIndex;
+				iFile.phaseVs[VS].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Voltage current row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				iFile.pVS[VS].pPC = e.columnIndex;
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName];
-				iFile.pVS[VS].bIR = e.rowIndex;
+				iFile.phaseVs[VS].posNCol = e.colIndex;
+				iFile.phaseVs[VS].curNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* If negative node is not grounded */
 			if (!nGND) {
-				/* Negative node row and voltage current column */
 				e.label = label;
-				e.columnIndex = columnMap[cName];
-				iFile.pVS[VS].bIC = e.columnIndex;
+				e.colIndex = columnMap[cName];
 				e.rowIndex = rowMap[rNameN];
-				iFile.pVS[VS].pNR = e.rowIndex;
+				iFile.phaseVs[VS].curNCol = e.colIndex;
+				iFile.phaseVs[VS].negNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				/* Voltage current row and negative node column*/
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				iFile.pVS[VS].pNC = e.columnIndex;
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rName];
-				iFile.pVS[VS].bIR = e.rowIndex;
+				iFile.phaseVs[VS].negNCol = e.colIndex;
+				iFile.phaseVs[VS].curNRow = e.rowIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
 			}
-			/* End of add elements to matrix section */
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/********************/
 		/** CURRENT SOURCE **/
 		/********************/
 		else if (i[0] == 'I') {
-			/* Parse the function identified (if any)*/
-			iFile.matA.sources[label] = function_parse(i, iFile);
-			/* Check if positive node is connected to ground */
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
@@ -1900,13 +1559,11 @@ create_A_matrix_phase(InputFile& iFile)
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
-				iFile.matA.bMatrixConductanceMap[rNameP][label] = 1.0;
 				iFile.matA.nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
@@ -1918,31 +1575,11 @@ create_A_matrix_phase(InputFile& iFile)
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
-				/* Add the 0.0 to the conductance map */
-				iFile.matA.bMatrixConductanceMap[rNameN][label] = 1.0;
 				iFile.matA.nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else
 				nGND = true;
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
 		}
 		/******************************/
 		/** PHASE JOSEPHSON JUNCTION **/
@@ -1950,20 +1587,28 @@ create_A_matrix_phase(InputFile& iFile)
 		else if (i[0] == 'B') {
 			std::string cVolt, rVolt, jj;
 			jj = devicetokens[0];
-			/* Create a new matrix element for the junction */
 			matrix_element e;
-			/* Identify the JJ parameters based on the model*/
-			int jj_type = 0;
-			std::unordered_map<std::string, double> jj_tokens;
-			double jj_rtype = 0.0;
-			jj_comp(devicetokens, iFile, iFile.pJJ[jj].Rtype,
-					 iFile.pJJ[jj].C, iFile.pJJ[jj].RN, iFile.pJJ[jj].R0,
-					 iFile.pJJ[jj].Ic, jj_rtype, iFile.pJJ[jj].Vg, iFile.pJJ[jj].IcFact, iFile.pJJ[jj].DelV);
-			iFile.pJJ[jj].Rtype = jj_rtype;
-			cVolt = "C_V" + devicetokens[0] + "-VJ";
-			rVolt = "R_" + devicetokens[0] + "-VJ";
-			iFile.pJJ[jj].vColumn = cVolt;
-			iFile.pJJ[jj].vRow = rVolt;
+			std::string modName = "", area = "";
+			for (int t = devicetokens.size() - 1; t > 2; t--) {
+				if (devicetokens[t].find("=") == std::string::npos) {
+					if (iFile.models.count(devicetokens[t]) != 0) 
+						modName = devicetokens[t];
+					else Errors::invalid_component_errors(MODEL_NOT_DEFINED,
+														  devicetokens[t]);
+				}
+				if (devicetokens[t].find("AREA") != std::string::npos) {
+					area = devicetokens[t].substr(
+						devicetokens[t].find_first_of('=') + 1,
+						devicetokens[t].size() - 1);
+				}
+			}
+			if(area == "") Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, "");
+			iFile.phaseJJ[jj].label = jj;
+			Component::jj_comp_phase(modName, area, jj);
+			cVolt = "C_V" + devicetokens[0];
+			rVolt = "R_" + devicetokens[0];
+			iFile.phaseJJ[jj].voltNodeC = cVolt;
+			iFile.phaseJJ[jj].voltNodeR = rVolt;
 			if (rowMap.count(rVolt) == 0) {
 				rowMap[rVolt] = rowCounter;
 				rowCounter++;
@@ -1972,12 +1617,11 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cVolt] = colCounter;
 				colCounter++;
 			}
-			/* Check if positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
-				iFile.pJJ[jj].pPositiveC = cNameP;
-				iFile.pJJ[jj].pPositiveR = rNameP;
+				iFile.phaseJJ[jj].posNodeC = cNameP;
+				iFile.phaseJJ[jj].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
@@ -1991,12 +1635,11 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				pGND = true;
-			/* Check if negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
-				iFile.pJJ[jj].pNegativeC = cNameN;
-				iFile.pJJ[jj].pNegativeR = rNameN;
+				iFile.phaseJJ[jj].negNodeC = cNameN;
+				iFile.phaseJJ[jj].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
@@ -2010,81 +1653,53 @@ create_A_matrix_phase(InputFile& iFile)
 			}
 			else
 				nGND = true;
-			/* Start of add elements to matrix section */
-			/* If positive node is not grounded */
 			if (!pGND) {
-				/* Positive node row and Voltage column */
 				e.label = label;
-				e.columnIndex = columnMap[cVolt];
+				e.colIndex = columnMap[cVolt];
 				e.rowIndex = rowMap[rNameP];
-				iFile.pJJ[jj].pPR = e.rowIndex;;
-				e.value = 1 / iFile.pJJ[jj].R0 + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
-				iFile.pJJ[jj].RmptrP = iFile.matA.mElements.size();
+				iFile.phaseJJ[jj].posNRow = e.rowIndex;;
+				e.value = 1 / iFile.phaseJJ[jj].r0 + ((2*iFile.phaseJJ[jj].C) / iFile.tsim.prstep);
+				iFile.phaseJJ[jj].pPtr = iFile.matA.mElements.size();
 				iFile.matA.mElements.push_back(e);
-				e.junctionEntry = false;
-				/* Volt row and positive node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameP];
-				iFile.pJJ[jj].pPC = e.columnIndex;
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rVolt];
+				iFile.phaseJJ[jj].posNCol = e.colIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				e.junctionEntry = false;
 			}
-			/* If negative node is not grounded */
 			if (!nGND) {
-				/* Negative node row and Voltage column */
 				e.label = label;
-				e.columnIndex = columnMap[cVolt];
+				e.colIndex = columnMap[cVolt];
 				e.rowIndex = rowMap[rNameN];
-				iFile.pJJ[jj].pNR = e.rowIndex;				
-				e.value = -1 / iFile.pJJ[jj].R0 - ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
-				iFile.pJJ[jj].RmptrN = iFile.matA.mElements.size();
+				iFile.phaseJJ[jj].negNRow = e.rowIndex;				
+				e.value = -1 / iFile.phaseJJ[jj].r0 - ((2*iFile.phaseJJ[jj].C) / iFile.tsim.prstep);
+				iFile.phaseJJ[jj].nPtr = iFile.matA.mElements.size();
 				iFile.matA.mElements.push_back(e);
-				e.junctionEntry = false;
-				/* Volt row and negative node column */
 				e.label = label;
-				e.columnIndex = columnMap[cNameN];
-				iFile.pJJ[jj].pNC = e.columnIndex;
+				e.colIndex = columnMap[cNameN];
 				e.rowIndex = rowMap[rVolt];	
+				iFile.phaseJJ[jj].negNCol = e.colIndex;
 				e.value = -1;
 				iFile.matA.mElements.push_back(e);
-				e.junctionEntry = false;
 			}
-			/* Voltage row and column */
 			e.label = label;
-			e.columnIndex = columnMap[cVolt];
-			iFile.pJJ[jj].vC = e.columnIndex;
+			e.colIndex = columnMap[cVolt];
 			e.rowIndex = rowMap[rVolt];
-			iFile.pJJ[jj].vR = e.rowIndex;
+			iFile.phaseJJ[jj].voltNCol = e.colIndex;
+			iFile.phaseJJ[jj].voltNRow = e.rowIndex;
 			e.value = -(iFile.tsim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
 			iFile.matA.mElements.push_back(e);
-			e.junctionEntry = false;
-			/* Junction parameters */
-			iFile.pJJ[jj].gLarge = iFile.pJJ[jj].Ic / (iFile.pJJ[jj].IcFact * iFile.pJJ[jj].DelV);
-			iFile.pJJ[jj].lower = iFile.pJJ[jj].Vg - 0.5*iFile.pJJ[jj].DelV;
-			iFile.pJJ[jj].upper = iFile.pJJ[jj].Vg + 0.5 * iFile.pJJ[jj].DelV;
-			iFile.pJJ[jj].subCond = 1 / iFile.pJJ[jj].R0 + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
-			iFile.pJJ[jj].transCond = iFile.pJJ[jj].gLarge + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
-			iFile.pJJ[jj].normalCond = 1 / iFile.pJJ[jj].RN + ((2*iFile.pJJ[jj].C) / iFile.tsim.prstep);
-			/* Element identification for use later when plotting values*/
-			cElement.label = label;
-			cElement.value = value;
-			if (!pGND) {
-				if (!nGND) {
-					cElement.VPindex = columnMap[cNameP];
-					cElement.VNindex = columnMap[cNameN];
-				}
-				else {
-					cElement.VPindex = columnMap[cNameP];
-				}
-			}
-			else {
-				if (!nGND) {
-					cElement.VNindex = columnMap[cNameN];
-				}
-			}
-			iFile.matA.elements.push_back(cElement);
+			iFile.phaseJJ[jj].gLarge = iFile.phaseJJ[jj].iC / (iFile.phaseJJ[jj].iCFact * iFile.phaseJJ[jj].delV);
+			iFile.phaseJJ[jj].lower = iFile.phaseJJ[jj].vG - 0.5*iFile.phaseJJ[jj].delV;
+			iFile.phaseJJ[jj].upper = iFile.phaseJJ[jj].vG + 0.5 * iFile.phaseJJ[jj].delV;
+			iFile.phaseJJ[jj].subCond = 1 / iFile.phaseJJ[jj].r0 + ((2*iFile.phaseJJ[jj].C) / iFile.tsim.prstep);
+			iFile.phaseJJ[jj].transCond = iFile.phaseJJ[jj].gLarge + ((2*iFile.phaseJJ[jj].C) / iFile.tsim.prstep);
+			iFile.phaseJJ[jj].normalCond = 1 / iFile.phaseJJ[jj].rN + ((2*iFile.phaseJJ[jj].C) / iFile.tsim.prstep);
+			iFile.phaseJJ[jj].Del0 = 1.76 * BOLTZMANN * iFile.phaseJJ[jj].tC;
+			iFile.phaseJJ[jj].Del = iFile.phaseJJ[jj].Del0 * sqrt(cos((M_PI/2) * (iFile.phaseJJ[jj].T/iFile.phaseJJ[jj].tC) * (iFile.phaseJJ[jj].T/iFile.phaseJJ[jj].tC)));
+			iFile.phaseJJ[jj].rNCalc = ((M_PI * iFile.phaseJJ[jj].Del) / (2 * EV * iFile.phaseJJ[jj].iC)) * tanh(iFile.phaseJJ[jj].Del / (2 * BOLTZMANN * iFile.phaseJJ[jj].T));
+			iFile.phaseJJ[jj].iS = -iFile.phaseJJ[jj].iC * sin(iFile.phaseJJ[jj].phi0);
 		}
 		/*****************************/
 		/** PHASE TRANSMISSION LINE **/
@@ -2094,41 +1709,34 @@ create_A_matrix_phase(InputFile& iFile)
 				rNameN2, cName1, rName1, cName2,
 				rName2, tl;
 			bool p2GND, n2GND;
-			/* Check if positive node 2 exists, if not it's a bad device line
-			 * definition */
 			tl = devicetokens[0];
 			try {
 				nodeP2 = devicetokens[3];
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(MISSING_PNODE, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(MISSING_PNODE, i);
 			}
-			/* Check if negative node 2 exists, if not it's a bad device line
-			 * definition */
 			try {
 				nodeN2 = devicetokens[4];
 			}
-			catch (const std::out_of_range&) {
-				invalid_component_errors(MISSING_NNODE, i);
+			catch (std::exception &e) {
+				Errors::invalid_component_errors(MISSING_NNODE, i);
 			}
-			/* Create a new matrix element for the first Z0 */
 			matrix_element e;
 			if (devicetokens.size() < 7) {
-				invalid_component_errors(TIME_ERROR, i);
+				Errors::invalid_component_errors(TIME_ERROR, i);
 			}
-			/* Check if value exists, if not it's a bad Z0 definition */
 			for (size_t l = 5; l < devicetokens.size(); l++) {
 				if (devicetokens[l].find("TD") != std::string::npos)
-					iFile.pTL[tl].TD = modifier((devicetokens[l]).substr(3));
+					iFile.txPhase[tl].tD = Misc::modifier((devicetokens[l]).substr(3));
 				else if (devicetokens[l].find("Z0") != std::string::npos)
-					iFile.pTL[tl].Z0 = modifier((devicetokens[l]).substr(3));
+					iFile.txPhase[tl].value = Misc::modifier((devicetokens[l]).substr(3));
 			}
-			iFile.pTL[tl].k = iFile.pTL[tl].TD / iFile.tsim.prstep;
-			/* Create a branch relation for the TL current I1 */
+			iFile.txPhase[tl].k = iFile.txPhase[tl].tD / iFile.tsim.prstep;
 			cName1 = "C_I1" + label;
 			rName1 = "R_" + label + "-I1";
-			iFile.pTL[tl].bCurrentC1 = cName1;
-			iFile.pTL[tl].bCurrentR1 = rName1;
+			iFile.txPhase[tl].curNode1C = cName1;
+			iFile.txPhase[tl].curNode1R = rName1;
 			if (rowMap.count(rName1) == 0) {
 				rowMap[rName1] = rowCounter;
 				rowCounter++;
@@ -2137,11 +1745,10 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cName1] = colCounter;
 				colCounter++;
 			}
-			/* Create a branch relation for the TL current I2 */
 			cName2 = "C_I2" + label;
 			rName2 = "R_" + label + "-I2";
-			iFile.pTL[tl].bCurrentC2 = cName2;
-			iFile.pTL[tl].bCurrentR2 = rName2;
+			iFile.txPhase[tl].curNode2C = cName2;
+			iFile.txPhase[tl].curNode2R = rName2;
 			if (rowMap.count(rName2) == 0) {
 				rowMap[rName2] = rowCounter;
 				rowCounter++;
@@ -2150,168 +1757,139 @@ create_A_matrix_phase(InputFile& iFile)
 				columnMap[cName2] = colCounter;
 				colCounter++;
 			}
-			/* Check if 1st positive node is connected to ground */
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
-				iFile.pTL[tl].pPositiveC1 = cNameP;
-				iFile.pTL[tl].pPositiveR1 = rNameP;
-				/* If row does not already exist, add to rows */
+				iFile.txPhase[tl].posNodeC = cNameP;
+				iFile.txPhase[tl].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
 					rowCounter++;
 				}
-				/* If column does not already exist, add to columns */
 				if (columnMap.count(cNameP) == 0) {
 					columnMap[cNameP] = colCounter;
 					colCounter++;
 				}
-				/* Add the resistance value to the conductance map */
 				iFile.matA.nodeConnections[rNameP].push_back(label);
 				pGND = false;
 			}
 			else
 				pGND = true;
-			/* Check if 1st negative node is connected to ground */
 			if (nodeN != "0" && nodeN.find("GND") == std::string::npos) {
 				cNameN = "C_NP" + nodeN;
 				rNameN = "R_N" + nodeN;
-				iFile.pTL[tl].pNegativeC1 = cNameN;
-				iFile.pTL[tl].pNegativeR1 = rNameN;
-				/* If row does not already exist, add to rows */
+				iFile.txPhase[tl].negNodeC = cNameN;
+				iFile.txPhase[tl].negNodeR = rNameN;
 				if (rowMap.count(rNameN) == 0) {
 					rowMap[rNameN] = rowCounter;
 					rowCounter++;
 				}
-				/* If column does not already exist, add to columns */
 				if (columnMap.count(cNameN) == 0) {
 					columnMap[cNameN] = colCounter;
 					colCounter++;
 				}
-				/* Add the resistance value to the conductance map */
 				iFile.matA.nodeConnections[rNameN].push_back(label);
 				nGND = false;
 			}
 			else
 				nGND = true;
-			/* Check if 2nd positive node is connected to ground */
 			if (nodeP2 != "0" && nodeP2.find("GND") == std::string::npos) {
 				cNameP2 = "C_NP" + nodeP2;
 				rNameP2 = "R_N" + nodeP2;
-				iFile.pTL[tl].pPositiveC2 = cNameP2;
-				iFile.pTL[tl].pPositiveR2 = rNameP2;
-				/* If row does not already exist, add to rows */
+				iFile.txPhase[tl].posNode2C = cNameP2;
+				iFile.txPhase[tl].posNode2R = rNameP2;
 				if (rowMap.count(rNameP2) == 0) {
 					rowMap[rNameP2] = rowCounter;
 					rowCounter++;
 				}
-				/* If column does not already exist, add to columns */
 				if (columnMap.count(cNameP2) == 0) {
 					columnMap[cNameP2] = colCounter;
 					colCounter++;
 				}
-				/* Add the resistance value to the conductance map */
 				iFile.matA.nodeConnections[rNameP2].push_back(label);
 				p2GND = false;
 			}
 			else
 				p2GND = true;
-			/* Check if 2nd negative node is connected to ground */
 			if (nodeN2 != "0" && nodeN2.find("GND") == std::string::npos) {
 				cNameN2 = "C_NP" + nodeN2;
 				rNameN2 = "R_N" + nodeN2;
-				iFile.pTL[tl].pNegativeC2 = cNameN2;
-				iFile.pTL[tl].pNegativeR2 = rNameN2;
-				/* If row does not already exist, add to rows */
+				iFile.txPhase[tl].negNode2C = cNameN2;
+				iFile.txPhase[tl].negNode2R = rNameN2;
 				if (rowMap.count(rNameN2) == 0) {
 					rowMap[rNameN2] = rowCounter;
 					rowCounter++;
 				}
-				/* If column does not already exist, add to columns */
 				if (columnMap.count(cNameN2) == 0) {
 					columnMap[cNameN2] = colCounter;
 					colCounter++;
 				}
-				/* Add the resistance value to the conductance map */
 				iFile.matA.nodeConnections[rNameN2].push_back(label);
 				n2GND = false;
 			}
 			else
 				n2GND = true;
-			/* Start of add elements to matrix section */
-			/* If 1st positive node is not grounded */
 			if (!pGND) {
-				/* TL current 1 row and positive node column */
-				e.columnIndex = columnMap[cNameP];
-				iFile.pTL[tl].pPC1 = e.columnIndex;
+				e.colIndex = columnMap[cNameP];
 				e.rowIndex = rowMap[rName1];
+				iFile.txPhase[tl].posNCol = e.colIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Positive node row and TL current 1 column */
-				e.columnIndex = columnMap[cName1];
+				e.colIndex = columnMap[cName1];
 				e.rowIndex = rowMap[rNameP];
-				iFile.pTL[tl].pPR1 = e.rowIndex;
+				iFile.txPhase[tl].posNRow = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				if(!nGND) {
-					/* TL current 1 row and negative node column */
-					e.columnIndex = columnMap[cNameN];
-					iFile.pTL[tl].pNC1 = e.columnIndex;
-					e.rowIndex = rowMap[rName1];
-					e.value = -1;
-					iFile.matA.mElements.push_back(e);
-					/* Negative node row and TL current 1 column */
-					e.columnIndex = columnMap[cName1];
-					e.rowIndex = rowMap[rNameN];
-					iFile.pTL[tl].pNR1 = e.rowIndex;
-					e.value = -1;
-					iFile.matA.mElements.push_back(e);
-				}
 			}
-			/* If second positive node is not grounded */
+			if(!nGND) {
+				e.colIndex = columnMap[cNameN];
+				e.rowIndex = rowMap[rName1];
+				iFile.txPhase[tl].negNCol = e.colIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+				e.colIndex = columnMap[cName1];
+				e.rowIndex = rowMap[rNameN];
+				iFile.txPhase[tl].negNRow = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+			}
 			if (!p2GND) {
-				/* TL current 2 row and positive node column */
-				e.columnIndex = columnMap[cNameP2];
-				iFile.pTL[tl].pPC2 = e.columnIndex;
+				e.colIndex = columnMap[cNameP2];
 				e.rowIndex = rowMap[rName2];
+				iFile.txPhase[tl].posN2Col = e.colIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				/* Positive node row and TL current 2 column */
-				e.columnIndex = columnMap[cName2];
+				e.colIndex = columnMap[cName2];
 				e.rowIndex = rowMap[rNameP2];
-				iFile.pTL[tl].pPR2 = e.rowIndex;
+				iFile.txPhase[tl].posN2Row = e.rowIndex;
 				e.value = 1;
 				iFile.matA.mElements.push_back(e);
-				if(!n2GND) {
-					/* TL current 2 row and negative node column */
-					e.columnIndex = columnMap[cNameN2];
-					iFile.pTL[tl].pNC2 = e.columnIndex;
-					e.rowIndex = rowMap[rName2];
-					e.value = -1;
-					iFile.matA.mElements.push_back(e);
-					/* Negative node row and TL current 2 column */
-					e.columnIndex = columnMap[cName2];
-					e.rowIndex = rowMap[rNameN2];
-					iFile.pTL[tl].pNR2 = e.rowIndex;
-					e.value = -1;
-					iFile.matA.mElements.push_back(e);
-				}
 			}
-			/* TL current 1 row and column */
+			if(!n2GND) {
+				e.colIndex = columnMap[cNameN2];
+				iFile.txPhase[tl].negN2Col = e.colIndex;
+				e.rowIndex = rowMap[rName2];
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+				e.colIndex = columnMap[cName2];
+				e.rowIndex = rowMap[rNameN2];
+				iFile.txPhase[tl].negN2Row = e.rowIndex;
+				e.value = -1;
+				iFile.matA.mElements.push_back(e);
+			}
 			e.label = label;
-			e.columnIndex = columnMap[cName1];
-			iFile.pTL[tl].bIC1 = e.columnIndex;
+			e.colIndex = columnMap[cName1];
 			e.rowIndex = rowMap[rName1];
-			iFile.pTL[tl].bIR1 = e.rowIndex;
-			e.value = -(M_PI * iFile.tsim.prstep * iFile.pTL[tl].Z0) / (PHI_ZERO);
+			iFile.txPhase[tl].curN1Col = e.colIndex;
+			iFile.txPhase[tl].curN1Row = e.rowIndex;
+			e.value = -(M_PI * iFile.tsim.prstep * iFile.txPhase[tl].value) / (PHI_ZERO);
 			iFile.matA.mElements.push_back(e);
-			/* TL current 2 row and column */
 			e.label = label;
-			e.columnIndex = columnMap[cName2];
-			iFile.pTL[tl].bIC2 = e.columnIndex;
+			e.colIndex = columnMap[cName2];
 			e.rowIndex = rowMap[rName2];
-			iFile.pTL[tl].bIR2 = e.rowIndex;			
-			e.value = -(M_PI * iFile.tsim.prstep * iFile.pTL[tl].Z0) / (PHI_ZERO);
+			iFile.txPhase[tl].curN2Col = e.colIndex;
+			iFile.txPhase[tl].curN2Row = e.rowIndex;			
+			e.value = -(M_PI * iFile.tsim.prstep * iFile.txPhase[tl].value) / (PHI_ZERO);
 			iFile.matA.mElements.push_back(e);
 		}
 		/*********************/
@@ -2322,56 +1900,48 @@ create_A_matrix_phase(InputFile& iFile)
 		}
 	}
 	double mutualL = 0.0, cf = 0.0;
-	// Handle mutual inductances outside loop due to chicken egg situation
 	for (auto i : iFile.mutualInductanceLines) {
-		// Tokenize the line
-		devicetokens = tokenize_space(i);
-		// Check if label exists, if not there is a bug in the program
+		devicetokens = Misc::tokenize_space(i);
 		try {
 			label = devicetokens[0];
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MISSING_LABEL, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MISSING_LABEL, i);
 		}
 		if (label.find_first_of("|") != std::string::npos) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
 		}
-		// Check if coupling factor k exists, if not it's a bad mutual coupling definition
 		try {
 			if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
 				cf = iFile.parVal.at(devicetokens[3]);
 			else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
 				cf = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
 			else
-				cf = modifier(devicetokens[3]);
+				cf = Misc::modifier(devicetokens[3]);
 		}
-		catch (const std::out_of_range&) {
-			invalid_component_errors(MUT_ERROR, i);
+		catch (std::exception &e) {
+			Errors::invalid_component_errors(MUT_ERROR, i);
 		}
-		// Next identify the 2 coupling inductors
 		std::string ind1, ind2;
 		ind1 = devicetokens[1];
 		ind2 = devicetokens[2];
-		// Calculate the coupling factor M
-		mutualL = cf * sqrt(iFile.pInd[ind1].L * iFile.pInd[ind2].L);
-		// Inductor1
+		mutualL = cf * sqrt(iFile.phaseInd[ind1].value * iFile.phaseInd[ind2].value);
 		matrix_element e;
 		e.label = label;
-		e.columnIndex = iFile.pInd[ind2].bIC;
-		e.rowIndex = iFile.pInd[ind1].bIR;
+		e.colIndex = iFile.phaseInd[ind2].curNCol;
+		e.rowIndex = iFile.phaseInd[ind1].curNRow;
 		e.value = -(mutualL * 2 * M_PI) / PHI_ZERO;
-		iFile.pInd[ind1].Mmptr = iFile.matA.mElements.size();
+		iFile.phaseInd[ind1].mutPtr = iFile.matA.mElements.size();
 		iFile.matA.mElements.push_back(e);
-		// Inductor2
 		e.label = label;
-		e.columnIndex = iFile.pInd[ind1].bIC;
-		e.rowIndex = iFile.pInd[ind2].bIR;
+		e.colIndex = iFile.phaseInd[ind1].curNCol;
+		e.rowIndex = iFile.phaseInd[ind2].curNRow;
 		e.value = -(mutualL * 2 * M_PI) / PHI_ZERO;
-		iFile.pInd[ind2].Mmptr = iFile.matA.mElements.size();
+		iFile.phaseInd[ind2].mutPtr = iFile.matA.mElements.size();
 		iFile.matA.mElements.push_back(e);
 	}
-	std::map<int, std::string> rowMapFlip = flip_map(rowMap);
-	std::map<int, std::string> columnMapFlip = flip_map(columnMap);
+	std::map<int, std::string> rowMapFlip = Misc::flip_map(rowMap);
+	std::map<int, std::string> columnMapFlip = Misc::flip_map(columnMap);
 	std::transform(
 		rowMapFlip.begin(),
 		rowMapFlip.end(),
@@ -2387,7 +1957,7 @@ create_A_matrix_phase(InputFile& iFile)
 /*
  Create the A matrix in CSR format
  */
-void csr_A_matrix(InputFile& iFile) {
+void Matrix::csr_A_matrix(InputFile& iFile) {
 	iFile.matA.Nsize = iFile.matA.rowNames.size();
 	iFile.matA.Msize = iFile.matA.columnNames.size();
 	std::vector<std::map<int,double>> aMat(iFile.matA.rowNames.size());
@@ -2396,7 +1966,7 @@ void csr_A_matrix(InputFile& iFile) {
 	iFile.matA.rowptr.clear();
 	iFile.matA.rowptr.push_back(0);
 	for (auto i : iFile.matA.mElements){
-		aMat[i.rowIndex][i.columnIndex] += i.value;
+		aMat[i.rowIndex][i.colIndex] += i.value;
 	}
 	for(auto i : aMat) {
 		for (auto j : i) {

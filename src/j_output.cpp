@@ -1,18 +1,17 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_output.hpp"
+#include "j_output.h"
 
 /*
-		Function that writes the output file as requested by the user
+	 Function that writes the output file as requested by the user
 */
 void
-write_data(InputFile& iFile)
-{
+Output::write_data(InputFile& iFile) {
 	std::vector<std::string> traceLabel;
 	std::vector<std::vector<double>> traceData;
-	if(analType == VANAL) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-	else if (analType == PANAL) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-	std::ofstream outfile(OUTPUT_PATH);
+	if(cArg.analysisT == VANALYSIS) Plot::traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (cArg.analysisT == PANALYSIS) Plot::phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	std::ofstream outfile(cArg.outName);
 	if (outfile.is_open()) {
 		if (!traceLabel.empty()) {
 			outfile << "time"
@@ -60,24 +59,23 @@ write_data(InputFile& iFile)
 	Function that writes a legacy output file in JSIM_N format
 */
 void
-write_legacy_data(InputFile& iFile)
-{
+Output::write_legacy_data(InputFile& iFile) {
 	std::string label;
 	std::vector<std::string> traceLabel, tokens;
 	std::vector<std::vector<double>> traceData;
-	if(analType == VANAL) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-	else if (analType == PANAL) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-	std::ofstream outfile(OUTPUT_LEGACY_PATH);
+	if(cArg.analysisT == VANALYSIS) Plot::traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (cArg.analysisT == PANALYSIS) Plot::phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	std::ofstream outfile(cArg.outName);
 	if (outfile.is_open()) {
 		outfile << "time"
 			<< " ";
 		for (int i = 0; i < traceLabel.size() - 1; i++) {
-			tokens = tokenize_space(traceLabel[i]);
+			tokens = Misc::tokenize_space(traceLabel[i]);
 			label = tokens[0];
 			for (int j = 1; j < tokens.size(); j++) label = label + "_" + tokens[j];
 			outfile << label << " ";
 		}
-		tokens = tokenize_space(traceLabel.at(traceLabel.size() - 1));
+		tokens = Misc::tokenize_space(traceLabel.at(traceLabel.size() - 1));
 		label = tokens[0];
 		for (int j = 1; j < tokens.size(); j++) label = label + "_" + tokens[j];
 		outfile << label << "\n";
@@ -95,15 +93,79 @@ write_legacy_data(InputFile& iFile)
 	}
 }
 /*
+	Function that writes a wr output file for opening in WRspice
+*/
+void 
+Output::write_wr_data(InputFile &iFile) {
+	std::string label;
+	std::vector<std::string> traceLabel, tokens;
+	std::vector<std::vector<double>> traceData;
+	if(cArg.analysisT == VANALYSIS) Plot::traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (cArg.analysisT == PANALYSIS) Plot::phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	std::ofstream outfile(cArg.outName);
+	if (outfile.is_open()) {
+		outfile << "Title: CKT1\n";
+		std::time_t result = std::time(nullptr);
+		outfile << "Date: " << std::asctime(std::localtime(&result));
+		outfile << "Plotname: Transient analysis JoSIM\n";
+		outfile << "Flags: real\n";
+		outfile << "No. Variables: " << traceData.size() + 1 << "\n";
+		outfile << "No. Points: " << traceData.at(0).size() << "\n";
+		outfile << "Command: version 4.3.8\n";
+		outfile << "Variables:\n";
+		outfile << " 0 time S\n";
+		for (int i = 0; i < traceLabel.size(); i++) {
+			tokens = Misc::tokenize_space(traceLabel[i]);
+			if(tokens[0] == "NODE") {
+				if(tokens[1] == "VOLTAGE") {
+					if (tokens.size() > 3) outfile << " " 
+						<< i+1 << " v(" << tokens[2] << "," << tokens[4] <<") V\n";
+					else outfile << " " << i+1 << " v(" << tokens[2] <<") V\n";
+				}
+				else if(tokens[1] == "PHASE") {
+					if (tokens.size() > 3) outfile << " " 
+						<< i+1 << " p(" << tokens[2] << "," << tokens[4] <<") P\n";
+					else outfile << " " << i+1 << " p(" << tokens[2] <<") P\n";
+				}
+			}
+			else if(tokens[0] == "DEVICE") {
+				if(tokens[1] == "VOLTAGE") {
+					outfile << " " << i+1 << " " << tokens[2] <<" V\n";
+				}
+				else if(tokens[1] == "CURRENT") {
+					outfile << " " << i+1 << " " << tokens[2] <<" C\n";
+				}
+				else if(tokens[1] == "PHASE") {
+					outfile << " " << i+1 << " " << tokens[2] <<" P\n";
+				}
+			}
+			else if(tokens[0] == "PHASE") {
+				outfile << " " << i+1 << " " << tokens[2] <<" P\n";
+			}
+		}
+		outfile << "Values:\n";
+		for (int i = 0; i < traceData[0].size(); i++) {
+			outfile << " " << i << " " 
+				<< std::fixed << std::scientific << std::setprecision(16)
+				<< iFile.timeAxis[i] << "\n";
+			for (int j = 0; j < traceData.size(); j++) {
+				outfile << " " << std::string( Misc::numDigits(i), ' ' ) 
+					<< " " << std::fixed << std::scientific << std::setprecision(16)
+					<< traceData.at(j).at(i) << "\n";
+			}
+		}
+		outfile.close();
+	}
+}
+/*
 	Function that writes the output to cout as requested by the user
 */
 void
-write_cout(InputFile& iFile)
-{
+Output::write_cout(InputFile& iFile) {
 	std::vector<std::string> traceLabel;
 	std::vector<std::vector<double>> traceData;
-	if(analType == VANAL) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-	else if (analType == PANAL) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	if(cArg.analysisT == VANALYSIS) Plot::traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+	else if (cArg.analysisT == PANALYSIS) Plot::phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 	if (!traceLabel.empty()) {
 		std::cout << "time"
 			<< " ";
