@@ -2,9 +2,9 @@
 
 hn = 0.25E-12;
 N = 4000;
-Rn = 16;
-R0 = 16;
-Vg = 2.5E-3;
+rN = 16;
+r0 = 16;
+vG = 2.5E-3;
 C = 0.07E-12;
 Icrit = 0.1E-3;
 IA = 0;
@@ -30,8 +30,8 @@ phin_2 = 0;
 T = zeros(1, N);
 
 %           V+                  V-              Phi
-rBp =   [  2*C/hn + 1/Rn,    -2*C/hn - 1/Rn,     0];
-rBn =   [ -2*C/hn - 1/Rn,     2*C/hn + 1/Rn,     0];
+rBp =   [  2*C/hn + 1/rN,    -2*C/hn - 1/rN,     0];
+rBn =   [ -2*C/hn - 1/rN,     2*C/hn + 1/rN,     0];
 rPhi=   [-hn/2 * hbar_2e,    hn/2 * hbar_2e,     1];
 
 A = [rBp; rBn; rPhi];

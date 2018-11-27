@@ -6,9 +6,9 @@ hn = 0.25E-12;
 N = 4000;
 
 %% JJ Model
-Rn = 16;
-R0 = 160;
-Vg = 2.8E-3;
+rN = 16;
+r0 = 160;
+vG = 2.8E-3;
 C = 0.07E-12;
 Icrit = 0.1E-3;
 
@@ -77,24 +77,24 @@ R1_mat(16,16) = -1;
 B1_mat(2,17) = 1;
 B1_mat(7,2) = -hn/2 * hbar_2e;
 B1_mat(7,7) = 1;
-B1_mat(17,2) = 2*C / hn + 1/R0 + 1/RB1;
+B1_mat(17,2) = 2*C / hn + 1/r0 + 1/RB1;
 B1_mat(17,17) = -1;
 % B2
 B2_mat(4,18) = 1;
 B2_mat(8,4) = -hn/2 * hbar_2e;
 B2_mat(8,8) = 1;
-B2_mat(18,4) = 2*C / hn + 1/R0 + 1/RB2;
+B2_mat(18,4) = 2*C / hn + 1/r0 + 1/RB2;
 B2_mat(18,18) = -1;
 
 %% A Matrix Assembly
 A_00 = VA_mat + IB_mat + L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat;
-B1_mat(17,2) = (2 * C / hn) + (1/Rn);
+B1_mat(17,2) = (2 * C / hn) + (1/rN);
 A_n0 = VA_mat + IB_mat + L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat;
-B1_mat(17,2) = (2 * C / hn) + (1/R0);
-B2_mat(18,4) = (2 * C / hn) + (1/Rn);
+B1_mat(17,2) = (2 * C / hn) + (1/r0);
+B2_mat(18,4) = (2 * C / hn) + (1/rN);
 A_0n = VA_mat + IB_mat + L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat;
-B1_mat(17,2) = (2 * C / hn) + (1/Rn);
-B2_mat(18,4) = (2 * C / hn) + (1/Rn);
+B1_mat(17,2) = (2 * C / hn) + (1/rN);
+B2_mat(18,4) = (2 * C / hn) + (1/rN);
 A_nn = VA_mat + IB_mat + L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat;
 
 %% Sources
@@ -222,14 +222,14 @@ for i = 1:N
     % Time storage
     T(i) = hn*i;
     % Vgap threshold check
-    if LHS(1) > Vg
-        if LHS(3) > Vg
+    if LHS(1) > vG
+        if LHS(3) > vG
             A = A_nn;
         else
             A = A_n0;
         end
     else
-        if LHS(3) > Vg
+        if LHS(3) > vG
             A = A_0n;
         else
             A = A_00;

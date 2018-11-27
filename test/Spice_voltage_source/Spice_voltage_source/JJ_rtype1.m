@@ -2,9 +2,9 @@
 
 hn = 0.25E-12;
 N = 4000;
-Rn = 16;
-R0 = 160;
-Vg = 2.5E-3;
+rN = 16;
+r0 = 160;
+vG = 2.5E-3;
 C = 0.07E-12;
 Icrit = 0.1E-3;
 IA = 0;
@@ -31,14 +31,14 @@ T = zeros(1, N);
 
 % Asubgap
 %           V+                  V-              Phi
-rBp0 =   [  2*C/hn + 1/R0,    -2*C/hn - 1/R0,     0];
-rBn0 =   [ -2*C/hn - 1/R0,     2*C/hn + 1/R0,     0];
+rBp0 =   [  2*C/hn + 1/r0,    -2*C/hn - 1/r0,     0];
+rBn0 =   [ -2*C/hn - 1/r0,     2*C/hn + 1/r0,     0];
 rPhi0=   [-hn/2 * hbar_2e,    hn/2 * hbar_2e,     1];
 
 % Anormal
 %           V+                  V-              Phi
-rBp =   [  2*C/hn + 1/Rn,    -2*C/hn - 1/Rn,     0];
-rBn =   [ -2*C/hn - 1/Rn,     2*C/hn + 1/Rn,     0];
+rBp =   [  2*C/hn + 1/rN,    -2*C/hn - 1/rN,     0];
+rBn =   [ -2*C/hn - 1/rN,     2*C/hn + 1/rN,     0];
 rPhi=   [-hn/2 * hbar_2e,    hn/2 * hbar_2e,     1];
 
 A = [rBp0; rBn0; rPhi0];
@@ -69,7 +69,7 @@ for i = 1:N
     Vpn_2d = Vpn_1d;
     Vpn_1d = (2/hn)*(Vpn_1 - Vpn_2) - Vpn_2d;
     %Vnn_1 = LHS(2);
-    if LHS(1) > Vg
+    if LHS(1) > vG
         A = [rBp; rBn; rPhi];
         A = A(2:3, 2:3);
     end

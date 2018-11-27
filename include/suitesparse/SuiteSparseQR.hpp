@@ -222,7 +222,7 @@ template <typename Entry> struct spqr_numeric
 
     Entry **Rblock ;    // size nf.  R [f] is an (Entry *) pointer to the
                         // R block for front F.  It is an upper trapezoidal
-                        // of size Rm(f)-by-Rn(f), but only the upper
+                        // of size Rm(f)-by-rN(f), but only the upper
                         // triangular part is stored in column-packed format.
 
     Entry **Stacks ;    // size ns; an array of stacks holding the R and H

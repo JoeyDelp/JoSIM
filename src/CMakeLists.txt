@@ -10,4 +10,5 @@ set(JOSIM_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/j_errors.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/j_components.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/j_parser.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/j_args.cpp
         PARENT_SCOPE)

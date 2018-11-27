@@ -1,12 +1,12 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_errors.hpp"
+#include "j_errors.h"
 
 /*
   Function that manages different error codes. This function will be huge.
 */
 void
-error_handling(int errorCode)
+Errors::error_handling(int errorCode)
 {
 	switch (errorCode) {
 	case DEF_ERROR:
@@ -66,7 +66,7 @@ error_handling(int errorCode)
 			<< std::endl;
 		break;
 	case CANNOT_OPEN_FILE:
-		std::cout << "E: Input file " << INPUT_PATH
+		std::cout << "E: Input file " << cArg.inName
 			<< " cannot be found or opened." << std::endl;
 		std::cout << "E: Please ensure that the file exists and can be opened."
 			<< std::endl;
@@ -86,8 +86,31 @@ error_handling(int errorCode)
 			<< "   either \"-DUSING_FLTK\" or \"-DUSING_MATPLOTLIB\" options."
 			<< std::endl;
 		break;
+	case FINAL_ARG_SWITCH:
+		std::cout << "E: Missing input file. Last argument is a switch."
+			<< std::endl;
+		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
+		std::cout << std::endl;
+		std::cout << "E: For further help use the -h switch" << std::endl;
+		exit(0);
+	case INVALID_ANALYSIS:
+		std::cout << "E: Invalid analysis type specified. 0 - Voltage, 1 - Phase."
+			<< std::endl;
+		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
+		std::cout << std::endl;
+		std::cout << "E: For further help use the -h switch" << std::endl;
+		exit(0);
+	case INVALID_CONVENTION:
+		std::cout << "E: Invalid subcircuit convention specified. 0 - JSIM, 1 - WRspice."
+			<< std::endl;
+		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
+		std::cout << std::endl;
+		std::cout << "E: For further help use the -h switch" << std::endl;
+		exit(0);
 	default:
 		std::cout << "E: Unknown handling error." << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -95,7 +118,7 @@ error_handling(int errorCode)
   Invalid component declaration error function
 */
 void
-invalid_component_errors(int errorCode, std::string whatPart)
+Errors::invalid_component_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case RES_ERROR:
@@ -174,11 +197,28 @@ invalid_component_errors(int errorCode, std::string whatPart)
 			<< std::endl;
 		exit(0);
 	case MUT_ERROR:
-		std::cout << "E: Missing mutual coupling factor " << std::endl;
+		std::cout << "E: Missing mutual coupling factor. " << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
+		exit(0);
+	case INVALID_EXPR:
+		std::cout << "E: Invalid expression statement found. " << std::endl;
+		std::cout << "E: Infringing line: " << whatPart << std::endl;
+		exit(0);
+	case INVALID_TX_DEFINED:
+		std::cout << "E: Invalid definition for transmission line found. " 
+			<< std::endl; 
+		std::cout << "E: Infringing line: " << whatPart << std::endl;
+		exit(0);
+	case MISSING_INDUCTOR:
+		std::cout << "E: Invalid mutual coupling defined. Missing inductor "
+			<< whatPart << std::endl;
+		std::cout << "E: Please ensure that " << whatPart << " exists."
+			<< std::endl;
 		exit(0);
 	default:
 		std::cout << "E: Unknown invalid component error." << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -186,7 +226,7 @@ invalid_component_errors(int errorCode, std::string whatPart)
   Missing simulation and incorrect control parameters specified
 */
 void
-control_errors(int errorCode, std::string whatPart)
+Errors::control_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case TRANS_ERROR:
@@ -214,6 +254,8 @@ control_errors(int errorCode, std::string whatPart)
 		exit(0);
 	default:
 		std::cout << "E: Unknown control error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -221,7 +263,7 @@ control_errors(int errorCode, std::string whatPart)
 Model declaration error function
 */
 [[noreturn]] void
-model_errors(int errorCode, std::string whatPart)
+Errors::model_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case PARAM_TYPE_ERROR:
@@ -231,8 +273,14 @@ model_errors(int errorCode, std::string whatPart)
 	case UNKNOWN_MODEL_TYPE:
 		std::cout << "E: Unknown model type " << whatPart << " specified." << std::endl;
 		exit(0);
+	case BAD_MODEL_DEFINITION:
+		std::cout << "E: Bad model definition found." << std::endl;
+		std::cout << "E: Infringing line: " << whatPart << std::endl;
+		exit(0);
 	default:
 		std::cout << "E: Unknown model error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -240,7 +288,7 @@ model_errors(int errorCode, std::string whatPart)
   Matrix creation error function
 */
 void
-matrix_errors(int errorCode, std::string whatPart)
+Errors::matrix_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case NON_SQUARE:
@@ -252,13 +300,15 @@ matrix_errors(int errorCode, std::string whatPart)
 		exit(0);
 	default:
 		std::cout << "E: Unknown matrix error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 	}
 }
 /*
   Misc error function
 */
 [[noreturn]] void
-misc_errors(int errorCode, std::string whatPart)
+Errors::misc_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case STOD_ERROR:
@@ -267,6 +317,8 @@ misc_errors(int errorCode, std::string whatPart)
 		exit(0);
 	default:
 		std::cout << "E: Unknown misc error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -274,7 +326,7 @@ misc_errors(int errorCode, std::string whatPart)
 Function parser error function
 */
 void
-function_errors(int errorCode, std::string whatPart)
+Errors::function_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case INITIAL_VALUES:
@@ -309,7 +361,7 @@ function_errors(int errorCode, std::string whatPart)
 		exit(0);
 	case PULSE_TOO_FEW_ARGUMENTS:
 		std::cout
-			<< "E: Total arguments specified do not match the required for PULSE."
+			<< "E: Total arguments specified do not match the required for PULSE. "
 			<< whatPart << " specified." << std::endl;
 		std::cout << "E: Please refer to the PULSE definition: PULSE(0 V2 TD TR "
 			"TF PW PER)"
@@ -343,14 +395,14 @@ function_errors(int errorCode, std::string whatPart)
 		break;
 	case SIN_TOO_FEW_ARGUMENTS:
 		std::cout
-			<< "E: Total arguments specified do not match the required for SIN."
+			<< "E: Total arguments specified do not match the required for SIN. "
 			<< whatPart << " specified." << std::endl;
 		std::cout << "E: Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)"
 			<< std::endl;
 		exit(0);
 	case SIN_TOO_MANY_ARGUMENTS:
 		std::cout
-			<< "E: Total arguments specified do not match the required for SIN."
+			<< "E: Total arguments specified do not match the required for SIN. "
 			<< whatPart << " specified." << std::endl;
 		std::cout << "E: Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)"
 			<< std::endl;
@@ -362,8 +414,38 @@ function_errors(int errorCode, std::string whatPart)
 		std::cout << "W: Program will continue but SIN command is redundant."
 			<< std::endl;
 		break;
+	case CUS_TOO_FEW_ARGUMENTS:
+		std::cout
+			<< "E: Total arguments specified do not match the required for CUS. "
+			<< whatPart << " specified." << std::endl;
+		std::cout << "E: Please refer to the CUS definition: CUS(WaveFile.dat TS SF IM <TD PER>)"
+			<< std::endl;
+		break;
+	case CUS_TOO_MANY_ARGUMENTS:
+		std::cout
+			<< "E: Total arguments specified do not match the required for CUS. "
+			<< whatPart << " specified." << std::endl;
+		std::cout << "E: Please refer to the CUS definition: CUS(WaveFile.dat TS SF IM <TD PER>)"
+			<< std::endl;
+		break;
+	case CUS_SF_ZERO:
+		std::cout
+			<< "W: CUS scale factor is 0.0, this renders the function redundant."
+			<< std::endl;
+		std::cout << "W: Program will continue but SIN command is redundant."
+			<< std::endl;
+		break;
+	case CUS_WF_NOT_FOUND:
+		std::cout
+			<< "W: CUS waveform file was not found."
+			<< whatPart << " specified." << std::endl;
+		std::cout << "W: Program will terminate."
+			<< std::endl;
+		exit(0);
 	default:
 		std::cout << "E: Unknown function error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -371,7 +453,7 @@ function_errors(int errorCode, std::string whatPart)
 Simulation error function
 */
 [[noreturn]] void
-simulation_errors(int errorCode, std::string whatPart)
+Errors::simulation_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case JJCAP_NOT_FOUND:
@@ -410,6 +492,8 @@ simulation_errors(int errorCode, std::string whatPart)
 		exit(0);
 	default:
 		std::cout << "E: Unknown simulation error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
@@ -417,7 +501,7 @@ simulation_errors(int errorCode, std::string whatPart)
 Plotting error function
 */
 void
-plotting_errors(int errorCode, std::string whatPart)
+Errors::plotting_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case NO_SUCH_PLOT_TYPE:
@@ -470,12 +554,14 @@ plotting_errors(int errorCode, std::string whatPart)
 		break;
 	default:
 		std::cout << "E: Unknown plotting error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }
 /* Parsing errors */
 void
-parsing_errors(int errorCode, std::string whatPart)
+Errors::parsing_errors(int errorCode, std::string whatPart)
 {
 	switch (errorCode) {
 	case EXPRESSION_ARLEADY_DEFINED:
@@ -509,6 +595,46 @@ parsing_errors(int errorCode, std::string whatPart)
 		exit(0);
 	default:
 		std::cout << "E: Unknown parsing error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
+		exit(0);
+	}
+}
+/* IV curve generation errors */
+void
+Errors::iv_errors(int errorCode, std::string whatPart)
+{
+	switch(errorCode) {
+	case NO_TRANSIENT_ANALYSIS:
+		std::cout << "E: No transient analysis specified. IV curve generation cannot continue."
+		<< std::endl;
+		std::cout << "E: Please include a transient analysis. See manual for more details."
+		<< std::endl;
+		std::cout << std::endl;
+		exit(0);
+	case NO_INPUT_SWEEP:
+		std::cout << "E: No input sweep specified. IV curve generation cannot continue."
+		<< std::endl;
+		std::cout << "E: Please specify a sweep. See manual for more details."
+		<< std::endl;
+		std::cout << std::endl;
+		exit(0);
+	case SOURCE_NOT_IDENTIFIED:
+		std::cout << "E: Invalid source specified to sweep. Please ensure correct sweep label."
+		<< std::endl;
+		std::cout << std::endl;
+		exit(0);
+	case SWEEP_NOT_PWL:
+		std::cout << "W: Sweep not PWL. For IV curve please sweep PWL."
+		<< std::endl;
+		std::cout << "W: Infringing sweep: " << whatPart << std::endl;
+		std::cout << "W: Ignoring sweep." << std::endl;
+		std::cout << std::endl;
+		break;
+	default:
+		std::cout << "E: Unknown IV curve error: " << whatPart << std::endl;
+		std::cout << "E: Please contact the developer." << std::endl;
+		std::cout << std::endl;
 		exit(0);
 	}
 }

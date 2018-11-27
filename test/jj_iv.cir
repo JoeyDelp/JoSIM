@@ -1,0 +1,10 @@
+* jj_iv.js
+IS         0          1          pwl(0      0 5p 25E-7)
+B1         1          0          jj1        area=1
+R1         1          0          8       
+.model jj1 jj(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rN=16, icrit=0.1mA)
+.tran 0.25p 1n 0 0.25p
+.print DEVI IS
+.print NODEV 1 0
+.sweep PWL IS 25E-7 250E-6 25E-7
+.end

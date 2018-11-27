@@ -1,13 +1,13 @@
 // Copyright (c) 2018 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_misc.hpp"
+#include "j_misc.h"
 
 /*
   Returns the file part of a path if a path is present else returns entire path
   (file)
 */
 std::string
-file_from_path(std::string path)
+Misc::file_from_path(std::string path)
 {
 	auto posLastSlash = path.find_last_of("/\\");
 	if (posLastSlash == std::string::npos) {
@@ -23,7 +23,7 @@ file_from_path(std::string path)
   https://stackoverflow.com/questions/20446201/how-to-check-if-string-ends-with-txt
 */
 bool
-has_suffix(const std::string& str, const std::string& suffix)
+Misc::has_suffix(const std::string& str, const std::string& suffix)
 {
 	return str.size() >= suffix.size() &&
 		str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
@@ -33,7 +33,7 @@ has_suffix(const std::string& str, const std::string& suffix)
   spaces
 */
 bool
-starts_with(std::string input, char test)
+Misc::starts_with(std::string input, char test)
 {
 	for (auto i : input) {
 		if (i != ' ') {
@@ -47,7 +47,7 @@ starts_with(std::string input, char test)
   1 or 0 sets full stats or not. Debug setting only. Not available to user.
 */
 void
-circuit_stats(int full, InputFile& iFile)
+Misc::circuit_stats(int full, InputFile& iFile)
 {
 	std::stringstream ss;
 	std::cout << "Circuit characteristics:" << std::endl;
@@ -115,7 +115,7 @@ circuit_stats(int full, InputFile& iFile)
   Turn string into tokens using only spaces
 */
 std::vector<std::string>
-tokenize_space(std::string c)
+Misc::tokenize_space(std::string c)
 {
 	std::string::size_type pos, lastPos = 0, length = c.length();
 	std::string delimiters = " \t";
@@ -145,7 +145,7 @@ tokenize_space(std::string c)
   Turn string into tokens using any delimiter (slower)
 */
 std::vector<std::string>
-tokenize_delimeter(std::string c, std::string d)
+Misc::tokenize_delimeter(std::string c, std::string d)
 {
 	std::vector<std::string> tokens;
 	std::stringstream stringStream(c);
@@ -166,7 +166,7 @@ tokenize_delimeter(std::string c, std::string d)
   Count values equal to specified value in given map
 */
 int
-map_value_count(std::unordered_map<std::string, int> map, int value)
+Misc::map_value_count(std::unordered_map<std::string, int> map, int value)
 {
 	int counter = 0;
 	for (auto i : map) {
@@ -180,15 +180,24 @@ map_value_count(std::unordered_map<std::string, int> map, int value)
   Eg. "5PS" returns 5E-12
 */
 double
-modifier(std::string value)
+Misc::modifier(std::string value)
 {
 	std::string::size_type sz;
 	double number;
 	try {
-		number = std::stod(value, &sz);
+		if(!std::isdigit(value[0]) && value[0] != '-') {
+			number = Parser::parse_return_expression(value);
+			sz = value.size();
+		}
+		else number = std::stod(value, &sz);
 	}
 	catch (const std::invalid_argument&) {
-		misc_errors(STOD_ERROR, value);
+		Errors::misc_errors(STOD_ERROR, value);
+		throw;
+	}
+	catch (std::exception &e) {
+		Errors::misc_errors(STOD_ERROR, value);
+		throw;
 	}
 	switch (value.substr(sz)[0]) {
 		/* mega */
@@ -234,7 +243,7 @@ modifier(std::string value)
   Unique vector push. Only pushes if item being pushed is unique
 */
 void
-unique_push(std::vector<std::string>& vector, std::string string)
+Misc::unique_push(std::vector<std::string>& vector, std::string string)
 {
 	if (std::find(vector.begin(), vector.end(), string) == vector.end()) {
 		vector.push_back(string);
@@ -244,7 +253,7 @@ unique_push(std::vector<std::string>& vector, std::string string)
   Fetch index of value in vector, if not found return -1
 */
 int
-index_of(std::vector<std::string> vector, std::string value)
+Misc::index_of(std::vector<std::string> vector, std::string value)
 {
 	int counter = 0;
 	for (const auto& i : vector) {
@@ -261,7 +270,7 @@ index_of(std::vector<std::string> vector, std::string value)
   Substring from after specified string
 */
 std::string
-substring_after(std::string str, std::string whatpart)
+Misc::substring_after(std::string str, std::string whatpart)
 {
 	std::size_t pos = 0;
 	std::string substring;
@@ -274,7 +283,7 @@ substring_after(std::string str, std::string whatpart)
 Substring from before specified string
 */
 std::string
-substring_before(std::string str, std::string whatpart)
+Misc::substring_before(std::string str, std::string whatpart)
 {
 	std::size_t pos = 0;
 	std::string substring;
@@ -291,8 +300,7 @@ substring_before(std::string str, std::string whatpart)
   values for the duration of the simulation.
 */
 std::vector<double>
-function_parse(std::string str, InputFile& iFile)
-{
+Misc::function_parse(std::string str, InputFile& iFile) {
 	std::vector<double> functionOfT(iFile.tsim.simsize(), 0.0);
 	std::vector<std::string> tokens;
 	std::string posVarName, subckt = "";
@@ -309,7 +317,7 @@ function_parse(std::string str, InputFile& iFile)
 	/* PWL */
 	if (str.find("PWL") != std::string::npos) {
 		if (std::stod(tokens[0]) != 0.0 || std::stod(tokens[1]) != 0.0)
-			function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
+			Errors::function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
 		std::vector<double> timesteps, values;
 		for (int i = 0; i < tokens.size(); i = i + 2) {
 			//if (modifier(tokens[i]) > iFile.tsim.tstop) {
@@ -328,11 +336,11 @@ function_parse(std::string str, InputFile& iFile)
 				values.push_back(modifier(tokens[i]));
 		}
 		if (timesteps.size() < values.size())
-			function_errors(TOO_FEW_TIMESTEPS,
+			Errors::function_errors(TOO_FEW_TIMESTEPS,
 				std::to_string(timesteps.size()) + " timesteps & " +
 				std::to_string(timesteps.size()) + " values");
 		if (timesteps.size() > values.size())
-			function_errors(TOO_FEW_VALUES,
+			Errors::function_errors(TOO_FEW_VALUES,
 				std::to_string(timesteps.size()) + " timesteps & " +
 				std::to_string(timesteps.size()) + " values");
 		if((timesteps.back() > iFile.tsim.tstop) && (values.back() > values[values.size() - 2])) {
@@ -369,25 +377,25 @@ function_parse(std::string str, InputFile& iFile)
 	/* PULSE */
 	else if (str.find("PULSE") != std::string::npos) {
 		if (std::stod(tokens[0]) != 0.0)
-			function_errors(INITIAL_PULSE_VALUE, tokens[0]);
+			Errors::function_errors(INITIAL_PULSE_VALUE, tokens[0]);
 		if (tokens.size() < 7)
-			function_errors(PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
+			Errors::function_errors(PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
 		double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
 		vPeak = modifier(tokens[1]);
 		if (vPeak == 0.0)
-			if (VERBOSE)
-				function_errors(PULSE_VPEAK_ZERO, tokens[1]);
+			if (cArg.verbose)
+				Errors::function_errors(PULSE_VPEAK_ZERO, tokens[1]);
 		timeDelay = modifier(tokens[2]);
 		timeRise = modifier(tokens[3]);
 		timeFall = modifier(tokens[4]);
 		pulseWidth = modifier(tokens[5]);
 		if (pulseWidth == 0.0)
-			if (VERBOSE)
-				function_errors(PULSE_WIDTH_ZERO, tokens[5]);
+			if (cArg.verbose)
+				Errors::function_errors(PULSE_WIDTH_ZERO, tokens[5]);
 		pulseRepeat = modifier(tokens[6]);
 		if (pulseRepeat == 0.0)
-			if (VERBOSE)
-				function_errors(PULSE_REPEAT, tokens[6]);
+			if (cArg.verbose)
+				Errors::function_errors(PULSE_REPEAT, tokens[6]);
 		int PR = pulseRepeat / iFile.tsim.prstep;
 		int TD = timeDelay / iFile.tsim.prstep;
 		std::vector<double> timesteps, values;
@@ -440,15 +448,15 @@ function_parse(std::string str, InputFile& iFile)
 	/* SIN(VO VA <FREQ <TD <THETA>>>) */	
 	else if (str.find("SIN") != std::string::npos) {
 		if (tokens.size() < 2)
-			function_errors(SIN_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
+			Errors::function_errors(SIN_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
 		if (tokens.size() > 5)
-			function_errors(SIN_TOO_MANY_ARGUMENTS, std::to_string(tokens.size()));
+			Errors::function_errors(SIN_TOO_MANY_ARGUMENTS, std::to_string(tokens.size()));
 		double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1/iFile.tsim.tstop, THETA = 0.0;
 		VO = modifier(tokens[0]);
 		VA = modifier(tokens[1]);
 		if (VA == 0.0)
-			if (VERBOSE)
-				function_errors(SIN_VA_ZERO, tokens[1]);
+			if (cArg.verbose)
+				Errors::function_errors(SIN_VA_ZERO, tokens[1]);
 		if (tokens.size() == 5) {
 			FREQ = modifier(tokens[2]);
 			TD = modifier(tokens[3]);
@@ -470,13 +478,77 @@ function_parse(std::string str, InputFile& iFile)
 			functionOfT[i] = value;
 		}
 	}
+	/* CUSTOM: CUS(WaveFile.dat TS SF IM <TD PER>) */
+	else if (str.find("CUS") != std::string::npos) {
+		if (tokens.size() < 2)
+			Errors::function_errors(CUS_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
+		if (tokens.size() > 5)
+			Errors::function_errors(CUS_TOO_MANY_ARGUMENTS, std::to_string(tokens.size()));
+		std::string WFline = tokens[0];
+		std::vector<std::string> WF;
+		double TS = 0.0, SF = 0.0, TD = 0.0;
+		int IM = 0, PER = 0;
+		TS = modifier(tokens[1]);
+		SF = modifier(tokens[2]);
+		if (SF == 0.0)
+			if (cArg.verbose)
+				Errors::function_errors(CUS_SF_ZERO, tokens[2]);
+		IM = stoi(tokens[3]);
+		if (tokens.size() == 6) {
+			TD = modifier(tokens[4]);
+			PER = stoi(tokens[5]);
+		}
+		else if (tokens.size() == 5) {
+			TD = modifier(tokens[4]);
+		}
+		std::ifstream wffile(WFline);
+		if (wffile.good()) getline(wffile, WFline);
+		else Errors::function_errors(CUS_WF_NOT_FOUND, WFline);
+		wffile.close();
+		WF = tokenize_delimeter(WFline, " ,;");
+		std::vector<double> timesteps, values;
+		for (int i = 0; i < WF.size(); i++) {
+			values.push_back(modifier(WF[i]) * SF);
+			timesteps.push_back(TD + i * TS);
+		}
+		if(TS < iFile.tsim.prstep) TS = iFile.tsim.prstep;
+		double functionSize = (iFile.tsim.tstop - TD)/TS;
+		if(PER == 1) {
+			double repeats = functionSize / values.size();
+			double lastTimestep = timesteps.back();
+			for(int j = 0; j < repeats; j++) {
+				lastTimestep = timesteps.back() + TS;
+				for (int i = 0; i < WF.size(); i++) {
+					values.push_back(modifier(WF[i]) * SF);
+					timesteps.push_back(lastTimestep + i * TS);
+				}
+			}
+		}
+		double startpoint, endpoint, value = 0.0;
+		for (int i = 1; i < timesteps.size(); i++) {
+			startpoint = ceil(timesteps.at(i - 1) / iFile.tsim.prstep);
+			endpoint = ceil(timesteps[i] / iFile.tsim.prstep);
+			functionOfT[startpoint] = values.at(i-1);
+			for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
+				if (values.at(i - 1) < values[i])
+					if(values.at(i - 1) < 0) value = values.at(i - 1) + (values.at(i) - (values.at(i-1))) / (endpoint - startpoint) * (j - (int)startpoint);
+					else value = values.at(i - 1) + (values.at(i) - (values.at(i-1)))  / (endpoint - startpoint) * (j - (int)startpoint);
+				else if (values.at(i - 1) > values[i])
+					value = values.at(i - 1) - ((values.at(i - 1) - (values.at(i))) / (endpoint - startpoint) *
+					(j - (int)startpoint));
+				else if (values.at(i - 1) == values[i])
+					value = values[i];
+				functionOfT[j] = value;
+			}
+		}
+	}
 	return functionOfT;
 }
 /*
 		Helper function for finding the depth of subcircuits in the design
 */
 bool
-findX(std::vector<std::string>& segment, std::string& theLine, int &linePos)
+Misc::findX(std::vector<std::string>& segment, std::string& theLine, int &linePos)
 {
 	for (int i = linePos; i < segment.size(); i++) {
 		if (segment[i][0] == 'X') {
@@ -492,7 +564,7 @@ findX(std::vector<std::string>& segment, std::string& theLine, int &linePos)
 		Function that finds the depth of the subcircuits in the design
 */
 int
-subCircuitDepth(std::vector<std::string> segment,
+Misc::subCircuitDepth(std::vector<std::string> segment,
 	InputFile& iFile,
 	int& thisDepth,
 	int& overallDepth)
@@ -520,7 +592,7 @@ subCircuitDepth(std::vector<std::string> segment,
 			}
 			else {
 				// The subcircuit name was not found therefore error out
-				invalid_component_errors(MISSING_SUBCIRCUIT_NAME, subcktLine);
+				Errors::invalid_component_errors(MISSING_SUBCIRCUIT_NAME, subcktLine);
 			}
 			subCircuitDepth(iFile.subcircuitSegments[subcktName].lines,
 				iFile,
@@ -535,9 +607,19 @@ subCircuitDepth(std::vector<std::string> segment,
 /*
   Compare two strings. Return difference
 */
-std::string stringSubtract(std::string src, std::string comp)
+std::string Misc::stringSubtract(std::string src, std::string comp)
 {
 	int srcIt = src.size() - 1, compIt = comp.size() - 1;
 	std::string rslt = src;
 	return rslt;
+}
+
+int Misc::numDigits(int number) {
+    int digits = 0;
+    if (number <= 0) digits = 1; // remove this line if '-' counts as a digit
+    while (number) {
+        number /= 10;
+        digits++;
+    }
+    return digits;
 }

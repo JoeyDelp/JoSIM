@@ -1,7 +1,7 @@
 clear;
 % JTL test in matlab (voltage input)
-PHI0 = 2.06783383113E-15;
-e2_over_h = 2*pi/PHI0;
+phi0 = 2.06783383113E-15;
+e2_over_h = 2*pi/phi0;
 hn = 0.25E-12;
 runtime = 1000E-12;
 N = round(runtime/hn);
@@ -12,9 +12,9 @@ jj_rn = 16;
 jj_r0 = 160;
 jj_icrit = 0.1E-3;
 C = jj_c * jj_area;
-Rn = jj_rn / jj_area;
-R0 = jj_r0 / jj_area;
-Vg = 2.8E-3;
+rN = jj_rn / jj_area;
+r0 = jj_r0 / jj_area;
+vG = 2.8E-3;
 Icrit = jj_icrit * jj_area;
 % Components
 L1 = 2E-12;
@@ -100,11 +100,11 @@ L5_mat(R_L5,C_IL5) = -2 * L5 / hn;
 
 R1_mat(R_N5,C_NV5) = 1/R1;
 
-B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/R0) + (1/RB1);
+B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/r0) + (1/RB1);
 B1_mat(R_B1,C_NV2) = (-hn / 2) * e2_over_h;
 B1_mat(R_B1,C_PB1) = 1;
 
-B2_mat(R_N4,C_NV4) = (2 * C / hn) + (1/R0) + (1/RB2);
+B2_mat(R_N4,C_NV4) = (2 * C / hn) + (1/r0) + (1/RB2);
 B2_mat(R_B2,C_NV4) = (-hn / 2) * e2_over_h;
 B2_mat(R_B2,C_PB2) = 1;
 
@@ -112,13 +112,13 @@ VA_mat(R_N1,C_VA) = 1;
 VA_mat(R_VA,C_NV1) = 1;
 
 A_00 = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat + VA_mat;
-B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/Rn) + (1/RB1);
+B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/rN) + (1/RB1);
 A_n0 = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat + VA_mat;
-B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/R0) + (1/RB1);
-B2_mat(R_N4,C_NV4) = (2 * C / hn) + (1/Rn) + (1/RB2);
+B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/r0) + (1/RB1);
+B2_mat(R_N4,C_NV4) = (2 * C / hn) + (1/rN) + (1/RB2);
 A_0n = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat + VA_mat;
-B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/Rn) + (1/RB1);
-B2_mat(R_N4,C_NV4) = (2 * C / hn) + (1/Rn) + (1/RB2);
+B1_mat(R_N2,C_NV2) = (2 * C / hn) + (1/rN) + (1/RB1);
+B2_mat(R_N4,C_NV4) = (2 * C / hn) + (1/rN) + (1/RB2);
 A_nn = L1_mat + L2_mat + L3_mat + L4_mat + L5_mat + R1_mat + B1_mat + B2_mat + VA_mat;
 
 % Sources
@@ -235,14 +235,14 @@ for i = 1:N
     V_Phi1(i) = LHS(C_PB1);
     V_Phi2(i) = LHS(C_PB2);
     
-%     if LHS(C_NV2) > Vg
-%         if LHS(C_NV4) > Vg
+%     if LHS(C_NV2) > vG
+%         if LHS(C_NV4) > vG
 %             A = A_nn;
 %         else
 %             A = A_n0;
 %         end
 %     else
-%         if LHS(C_NV4) > Vg
+%         if LHS(C_NV4) > vG
 %             A = A_0n;
 %         else
 %             A = A_00;
