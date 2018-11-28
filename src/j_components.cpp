@@ -3,7 +3,7 @@
 #include "j_components.h"
 
 void
-Component::jj_comp(std::string modName, std::string area, std::string jjLabel) {
+Component::jj_comp(std::string modName, std::string area, std::string jjLabel, std::string subckt) {
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
 	jj_volt jj = iFile.voltJJ.at(jjLabel);
@@ -21,7 +21,7 @@ Component::jj_comp(std::string modName, std::string area, std::string jjLabel) {
 			}
 			else if((itemToken.size() == 1) && (i != paramTokens.size() - 1))
 				Errors::model_errors(BAD_MODEL_DEFINITION, iFile.models.at(modName));
-			value = Parser::parse_return_expression(itemToken.at(1));
+			value = Parser::parse_return_expression(itemToken.at(1), subckt);
 			if(itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP") jj.vG = value;
 			else if(itemToken.at(0) == "IC" || itemToken.at(0) == "ICRIT") jj.iC = value;
 			else if(itemToken.at(0) == "RTYPE") jj.rType = (int)value;
@@ -37,7 +37,7 @@ Component::jj_comp(std::string modName, std::string area, std::string jjLabel) {
 			else if(itemToken.at(0) == "PHI") jj.phi0 = jj.pn1 = value;
 		}
 		if (area == "") value = 1.0;
-		else value = Parser::parse_return_expression(area);
+		else value = Parser::parse_return_expression(area, subckt);
 		jj.C = jj.C * value;
 		jj.rN = jj.rN / value;
 		jj.r0 = jj.r0 / value;
@@ -54,7 +54,7 @@ Component::jj_comp(std::string modName, std::string area, std::string jjLabel) {
 }
 
 void
-Component::jj_comp_phase(std::string modName, std::string area, std::string jjLabel) {
+Component::jj_comp_phase(std::string modName, std::string area, std::string jjLabel, std::string subckt) {
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
 	jj_phase jj = iFile.phaseJJ.at(jjLabel);
@@ -72,7 +72,7 @@ Component::jj_comp_phase(std::string modName, std::string area, std::string jjLa
 			}
 			else if((itemToken.size() == 1) && (i != paramTokens.size() - 1))
 				Errors::model_errors(BAD_MODEL_DEFINITION, iFile.models.at(modName));
-			value = Parser::parse_return_expression(itemToken.at(1));
+			value = Parser::parse_return_expression(itemToken.at(1), subckt);
 			if(itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP") jj.vG = value;
 			else if(itemToken.at(0) == "IC" || itemToken.at(0) == "ICRIT") jj.iC = value;
 			else if(itemToken.at(0) == "RTYPE") jj.rType = (int)value;
@@ -88,7 +88,7 @@ Component::jj_comp_phase(std::string modName, std::string area, std::string jjLa
 			else if(itemToken.at(0) == "PHI") jj.phi0 = jj.pn1 = value;
 		}
 		if (area == "") value = 1.0;
-		else value = Parser::parse_return_expression(area);
+		else value = Parser::parse_return_expression(area, subckt);
 		jj.C = jj.C * value;
 		jj.rN = jj.rN / value;
 		jj.r0 = jj.r0 / value;

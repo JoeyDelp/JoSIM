@@ -6,8 +6,7 @@
   Function that manages different error codes. This function will be huge.
 */
 void
-Errors::error_handling(int errorCode)
-{
+Errors::error_handling(int errorCode) {
 	switch (errorCode) {
 	case DEF_ERROR:
 		std::cout << "E: Invalid definitions file specifier." << std::endl;
@@ -118,8 +117,7 @@ Errors::error_handling(int errorCode)
   Invalid component declaration error function
 */
 void
-Errors::invalid_component_errors(int errorCode, std::string whatPart)
-{
+Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case RES_ERROR:
 		std::cout << "E: Resistor value error" << std::endl;
@@ -226,8 +224,7 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart)
   Missing simulation and incorrect control parameters specified
 */
 void
-Errors::control_errors(int errorCode, std::string whatPart)
-{
+Errors::control_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case TRANS_ERROR:
 		std::cout << "W: Invalid transient analysis specified. " << whatPart
@@ -263,8 +260,7 @@ Errors::control_errors(int errorCode, std::string whatPart)
 Model declaration error function
 */
 [[noreturn]] void
-Errors::model_errors(int errorCode, std::string whatPart)
-{
+Errors::model_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case PARAM_TYPE_ERROR:
 		std::cout << "E: Unknown model parameter " << whatPart << " specified."
@@ -326,8 +322,7 @@ Errors::misc_errors(int errorCode, std::string whatPart)
 Function parser error function
 */
 void
-Errors::function_errors(int errorCode, std::string whatPart)
-{
+Errors::function_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case INITIAL_VALUES:
 		std::cout << "E: Invalid PWL definition found. The value of " << whatPart
@@ -453,8 +448,7 @@ Errors::function_errors(int errorCode, std::string whatPart)
 Simulation error function
 */
 [[noreturn]] void
-Errors::simulation_errors(int errorCode, std::string whatPart)
-{
+Errors::simulation_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case JJCAP_NOT_FOUND:
 		std::cout << "E: Capacitor value for " << whatPart
@@ -501,8 +495,7 @@ Errors::simulation_errors(int errorCode, std::string whatPart)
 Plotting error function
 */
 void
-Errors::plotting_errors(int errorCode, std::string whatPart)
-{
+Errors::plotting_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case NO_SUCH_PLOT_TYPE:
 		std::cout << "W: Unknown plot type defined. " << whatPart
@@ -561,8 +554,7 @@ Errors::plotting_errors(int errorCode, std::string whatPart)
 }
 /* Parsing errors */
 void
-Errors::parsing_errors(int errorCode, std::string whatPart)
-{
+Errors::parsing_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case EXPRESSION_ARLEADY_DEFINED:
 		std::cout << "W: Expression for " << whatPart
@@ -602,8 +594,7 @@ Errors::parsing_errors(int errorCode, std::string whatPart)
 }
 /* IV curve generation errors */
 void
-Errors::iv_errors(int errorCode, std::string whatPart)
-{
+Errors::iv_errors(int errorCode, std::string whatPart) {
 	switch(errorCode) {
 	case NO_TRANSIENT_ANALYSIS:
 		std::cout << "E: No transient analysis specified. IV curve generation cannot continue."

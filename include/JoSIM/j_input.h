@@ -217,9 +217,6 @@ class tx_phase : public tx_line {
 		}
 };
 
-/*
-Matrix element class
-*/
 class matrix_element {
 	public:
 	std::string label;
@@ -227,8 +224,7 @@ class matrix_element {
 	int colIndex;
 	double value;
 	/* Default matrix element constructor */
-	matrix_element()
-	{
+	matrix_element() {
 		label = "NOTHING";
 		rowIndex = -1;
 		colIndex = -1;
@@ -236,12 +232,10 @@ class matrix_element {
 	}
 };
 
-/* A Matrix Class */
 class A_matrix {
 	public:
 	std::unordered_map<std::string, double> impedanceMap;
-	std::unordered_map<std::string, std::vector<std::string>>
-		nodeConnections;
+	std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
 	std::vector<matrix_element> mElements;
 	std::vector<std::string> rowNames, columnNames;
 	std::vector<double> nzval;
@@ -270,19 +264,16 @@ class Subcircuit {
 	std::vector<std::string> subckts;
 	int componentCount = 0,
 		jjCount = 0;
-	std::unordered_map<std::string, double> parVal;
 	bool containsSubckt = false;
 };
 
-/* Transient analysis simulation object*/
 class trans_sim {
 	public:
 	double prstep;
 	double tstop;
 	double tstart;
 	double maxtstep;
-	trans_sim()
-	{
+	trans_sim() {
 		tstart = 0.0;
 		tstop = 0.0;
 		prstep = 1E-12;
@@ -291,19 +282,31 @@ class trans_sim {
 	double simsize() { return (tstop - tstart) / prstep; }
 };
 
+class param_values {
+	public:
+		std::unordered_map<std::string, std::string> unparsedMap;
+		std::unordered_map<std::string, double> paramMap;
+		void insertUParam(std::string paramName, std::string paramExpression, 
+			std::string subcktName = "");
+		void insertParam(std::string paramName, double paramValue, 
+			std::string subcktName = "");
+		double returnParam(std::string paramName, std::string subcktName = "");
+		param_values() { }
+};
+
 void 
 check_model(std::string s, std::string sbcktName = "");
 
 std::vector<std::string> 
 recurseSubckt(std::unordered_map<std::string, Subcircuit> subckts, std::string part);
 
-/* Input File Object Class */
 class InputFile {
 	std::vector<std::string> lines;
 
 	public:
 	std::unordered_map<std::string, std::string> models;
 	trans_sim tsim;
+	param_values paramValues;
 	std::vector<std::string> maincircuitSegment, controlPart, subckts;
 	std::unordered_map<std::string, Subcircuit> subcircuitSegments;
 	std::unordered_map<std::string, int> subCircuitComponentCount,

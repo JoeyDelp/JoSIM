@@ -180,13 +180,13 @@ Misc::map_value_count(std::unordered_map<std::string, int> map, int value)
   Eg. "5PS" returns 5E-12
 */
 double
-Misc::modifier(std::string value)
+Misc::modifier(std::string value, std::string subckt)
 {
 	std::string::size_type sz;
 	double number;
 	try {
 		if(!std::isdigit(value[0]) && value[0] != '-') {
-			number = Parser::parse_return_expression(value);
+			number = Parser::parse_return_expression(value, subckt);
 			sz = value.size();
 		}
 		else number = std::stod(value, &sz);
@@ -300,14 +300,14 @@ Misc::substring_before(std::string str, std::string whatpart)
   values for the duration of the simulation.
 */
 std::vector<double>
-Misc::function_parse(std::string str, InputFile& iFile) {
+Misc::function_parse(std::string str, InputFile& iFile, std::string subckt) {
 	std::vector<double> functionOfT(iFile.tsim.simsize(), 0.0);
 	std::vector<std::string> tokens;
-	std::string posVarName, subckt = "";
+	std::string posVarName; //subckt = "";
 	tokens = tokenize_space(str);
-	if (tokens[0].find_first_of("|") != std::string::npos) {
-		subckt = iFile.subcircuitNameMap.at(tokens[0].substr(tokens[0].find_first_of("|") + 1));
-	}
+	// if (tokens[0].find_first_of("|") != std::string::npos) {
+	// 	subckt = iFile.subcircuitNameMap.at(tokens[0].substr(tokens[0].find_first_of("|") + 1));
+	// }
 	/* Identify string parrameter part of the string */
 	auto first = str.find('(') + 1;
 	auto last = str.find(')');
@@ -327,13 +327,12 @@ Misc::function_parse(std::string str, InputFile& iFile) {
 				timesteps.push_back(modifier(tokens[i]));
 		}
 		for (int i = 1; i < tokens.size(); i = i + 2) {
-			if (iFile.parVal.find(tokens[i]) != iFile.parVal.end())
-				values.push_back(iFile.parVal.at(tokens[i]));
-			else if (!subckt.empty() &&
-				iFile.subcircuitSegments[subckt].parVal.find(tokens[i]) != iFile.subcircuitSegments[subckt].parVal.end())
-				values.push_back(iFile.subcircuitSegments[subckt].parVal.at(tokens[i]));
+			if (iFile.paramValues.paramMap.count(tokens[i]) != 0)
+				values.push_back(iFile.paramValues.returnParam(tokens[i], subckt));
+			else if (iFile.paramValues.paramMap.count(tokens[i] + "|" + subckt) != 0)
+				values.push_back(iFile.paramValues.returnParam(tokens[i], subckt));
 			else
-				values.push_back(modifier(tokens[i]));
+				values.push_back(modifier(tokens[i], subckt));
 		}
 		if (timesteps.size() < values.size())
 			Errors::function_errors(TOO_FEW_TIMESTEPS,
@@ -381,18 +380,18 @@ Misc::function_parse(std::string str, InputFile& iFile) {
 		if (tokens.size() < 7)
 			Errors::function_errors(PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
 		double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
-		vPeak = modifier(tokens[1]);
+		vPeak = modifier(tokens[1], subckt);
 		if (vPeak == 0.0)
 			if (cArg.verbose)
 				Errors::function_errors(PULSE_VPEAK_ZERO, tokens[1]);
-		timeDelay = modifier(tokens[2]);
-		timeRise = modifier(tokens[3]);
-		timeFall = modifier(tokens[4]);
-		pulseWidth = modifier(tokens[5]);
+		timeDelay = modifier(tokens[2], subckt);
+		timeRise = modifier(tokens[3], subckt);
+		timeFall = modifier(tokens[4], subckt);
+		pulseWidth = modifier(tokens[5], subckt);
 		if (pulseWidth == 0.0)
 			if (cArg.verbose)
 				Errors::function_errors(PULSE_WIDTH_ZERO, tokens[5]);
-		pulseRepeat = modifier(tokens[6]);
+		pulseRepeat = modifier(tokens[6], subckt);
 		if (pulseRepeat == 0.0)
 			if (cArg.verbose)
 				Errors::function_errors(PULSE_REPEAT, tokens[6]);
@@ -452,22 +451,22 @@ Misc::function_parse(std::string str, InputFile& iFile) {
 		if (tokens.size() > 5)
 			Errors::function_errors(SIN_TOO_MANY_ARGUMENTS, std::to_string(tokens.size()));
 		double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1/iFile.tsim.tstop, THETA = 0.0;
-		VO = modifier(tokens[0]);
-		VA = modifier(tokens[1]);
+		VO = modifier(tokens[0], subckt);
+		VA = modifier(tokens[1], subckt);
 		if (VA == 0.0)
 			if (cArg.verbose)
 				Errors::function_errors(SIN_VA_ZERO, tokens[1]);
 		if (tokens.size() == 5) {
-			FREQ = modifier(tokens[2]);
-			TD = modifier(tokens[3]);
-			THETA = modifier(tokens[4]);
+			FREQ = modifier(tokens[2], subckt);
+			TD = modifier(tokens[3], subckt);
+			THETA = modifier(tokens[4], subckt);
 		}
 		else if (tokens.size() == 4) {
-			FREQ = modifier(tokens[2]);
-			TD = modifier(tokens[3]);
+			FREQ = modifier(tokens[2], subckt);
+			TD = modifier(tokens[3], subckt);
 		}
 		else if (tokens.size() == 3) {
-			FREQ = modifier(tokens[2]);
+			FREQ = modifier(tokens[2], subckt);
 		}
 		double currentTimestep, value;
 		int beginTime;
@@ -488,18 +487,18 @@ Misc::function_parse(std::string str, InputFile& iFile) {
 		std::vector<std::string> WF;
 		double TS = 0.0, SF = 0.0, TD = 0.0;
 		int IM = 0, PER = 0;
-		TS = modifier(tokens[1]);
-		SF = modifier(tokens[2]);
+		TS = modifier(tokens[1], subckt);
+		SF = modifier(tokens[2], subckt);
 		if (SF == 0.0)
 			if (cArg.verbose)
 				Errors::function_errors(CUS_SF_ZERO, tokens[2]);
 		IM = stoi(tokens[3]);
 		if (tokens.size() == 6) {
-			TD = modifier(tokens[4]);
+			TD = modifier(tokens[4], subckt);
 			PER = stoi(tokens[5]);
 		}
 		else if (tokens.size() == 5) {
-			TD = modifier(tokens[4]);
+			TD = modifier(tokens[4], subckt);
 		}
 		std::ifstream wffile(WFline);
 		if (wffile.good()) getline(wffile, WFline);
@@ -508,7 +507,7 @@ Misc::function_parse(std::string str, InputFile& iFile) {
 		WF = tokenize_delimeter(WFline, " ,;");
 		std::vector<double> timesteps, values;
 		for (int i = 0; i < WF.size(); i++) {
-			values.push_back(modifier(WF[i]) * SF);
+			values.push_back(modifier(WF[i], subckt) * SF);
 			timesteps.push_back(TD + i * TS);
 		}
 		if(TS < iFile.tsim.prstep) TS = iFile.tsim.prstep;
@@ -519,7 +518,7 @@ Misc::function_parse(std::string str, InputFile& iFile) {
 			for(int j = 0; j < repeats; j++) {
 				lastTimestep = timesteps.back() + TS;
 				for (int i = 0; i < WF.size(); i++) {
-					values.push_back(modifier(WF[i]) * SF);
+					values.push_back(modifier(WF[i], subckt) * SF);
 					timesteps.push_back(lastTimestep + i * TS);
 				}
 			}

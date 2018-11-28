@@ -757,9 +757,9 @@ Plot::traces_to_plot(InputFile& iFile,
 				index1 = tokens[k].find(".at(");
 				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
 				index1 = tokens[k].find(".");
-				if (index1 != std::string::npos) {
-					tokens[k] = tokens[k].substr(0, index1) + "_" + tokens[k].substr(index1 + 1);
-				}
+				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1) + "|" + tokens[k].substr(index1 + 1);
+				index1 = tokens[k].find("[");
+				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
 				/* If this is a current source */
 				if (iFile.matA.sources.find(tokens[k]) != iFile.matA.sources.end()) {
 					label = "CURRENT " + tokens[k];
@@ -1804,8 +1804,10 @@ void Plot::phase_traces_to_plot(InputFile& iFile, std::vector<std::string> contr
 				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
 				index1 = tokens[k].find(".");
 				if (index1 != std::string::npos) {
-					tokens[k] = tokens[k].substr(0, index1) + "_" + tokens[k].substr(index1 + 1);
+					tokens[k] = tokens[k].substr(0, index1) + "|" + tokens[k].substr(index1 + 1);
 				}
+				index1 = tokens[k].find("[");
+				if (index1 != std::string::npos) tokens[k] = tokens[k].substr(0, index1);
 				/* If this is a current source */
 				if (iFile.matA.sources.find(tokens[k]) != iFile.matA.sources.end()) {
 					label = "CURRENT " + tokens[k];

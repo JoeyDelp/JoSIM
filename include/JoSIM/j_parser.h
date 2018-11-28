@@ -12,19 +12,11 @@ class Parser {
 		void
 		parse_expression(std::string expName,
 			std::string expr,
-			std::unordered_map<std::string, double>& parVal,
-			std::unordered_map<std::string, double>& globalParVal,
-			std::string subckt = "NONE");
+			std::string subckt = "");
 
 		static
 		double
-		parse_return_expression(std::string expr);
-
-		static
-		double
-		parse_return_expression(std::string expr, 
-			std::unordered_map<std::string, double>& parVal, 
-			std::unordered_map<std::string, double>& globalParVal);
+		parse_return_expression(std::string expr, std::string subckt = "");
 
 		static
 		int

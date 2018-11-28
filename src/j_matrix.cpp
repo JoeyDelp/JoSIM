@@ -22,7 +22,7 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 	std::vector<std::string> devicetokens, componentLabels;
 	devicetokens.clear();
 	componentLabels.clear();
-	std::string label, nodeP, nodeN, subckt;
+	std::string label, nodeP, nodeN, subckt = "";
 	std::unordered_map<std::string, int> rowMap, columnMap;
 	rowMap.clear();
 	columnMap.clear();
@@ -45,7 +45,7 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 		if (expStart != -1 && expStart == expEnd) {
 			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
 			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
-			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart]), 25);
 		}
 		else if (expStart != -1 && expEnd != -1) {
 			int d = expStart + 1;
@@ -56,7 +56,7 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			}
 			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
 			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
-			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart]), 25);
 		}
 		double value = 0.0;
 		try {
@@ -74,16 +74,13 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 		if (label.find_first_of("|") != std::string::npos) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
 		}
-		/* Check if positive node exists, if not it's a bad device line definition
-		 */
+		else subckt = "";
 		try {
 			nodeP = devicetokens[1];
 		}
 		catch (std::exception &e) {
 			Errors::invalid_component_errors(MISSING_PNODE, i);
 		}
-		/* Check if negative node exists, if not it's a bad device line definition
-		 */
 		try {
 			nodeN = devicetokens[2];
 		}
@@ -97,10 +94,10 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			std::string R = label;
 			matrix_element e;
 			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -199,10 +196,10 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			std::string C = label;
 			matrix_element e;
 			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -323,10 +320,10 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			std::string L = label;
 			matrix_element e;
 			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -447,7 +444,7 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 		else if (i[0] == 'V') {
 			std::string V = label;
 			matrix_element e;
-			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile, subckt);
 			cName = "C_" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
 			if (rowMap.count(rName) == 0) {
@@ -549,7 +546,7 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 		/** CURRENT SOURCE **/
 		/********************/
 		else if (i[0] == 'I') {
-			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile, subckt);
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
@@ -592,10 +589,22 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			std::string modName = "", area = "";
 			for (int t = devicetokens.size() - 1; t > 2; t--) {
 				if (devicetokens[t].find("=") == std::string::npos) {
-					if (iFile.models.count(devicetokens[t]) != 0) 
+					if (iFile.models.count(devicetokens[t]) != 0) {
 						modName = devicetokens[t];
-					else Errors::invalid_component_errors(MODEL_NOT_DEFINED,
+						break;
+					}
+					else if (iFile.models.count(
+							devicetokens[t].substr(devicetokens[t].find("|") + 1,
+													devicetokens[t].size() - 1))
+							 != 0) { 
+						modName = devicetokens[t].substr(devicetokens[t].find("|") + 1,
+													devicetokens[t].size() - 1);
+						break;
+					}
+					else { Errors::invalid_component_errors(MODEL_NOT_DEFINED,
 														  devicetokens[t]);
+							break;
+					}
 				}
 				if (devicetokens[t].find("AREA") != std::string::npos) {
 					area = devicetokens[t].substr(
@@ -605,7 +614,7 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			}
 			if(area == "" && cArg.verbose) Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, "");
 			iFile.voltJJ[jj].label = jj;
-			Component::jj_comp(modName, area, jj);
+			Component::jj_comp(modName, area, jj, subckt);
 			iFile.voltJJ[jj].label = label;
 			cName = "C_P" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
@@ -771,11 +780,11 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 				if(devicetokens[t].find("TD") != std::string::npos)
 					tD = Parser::parse_return_expression(
 						devicetokens[t].substr(devicetokens[t].find("TD=") + 3,
-						devicetokens[t].size() - 1), iFile.parVal, iFile.parVal);
+						devicetokens[t].size() - 1));
 				else if(devicetokens[t].find("Z0") != std::string::npos)
 					z0 = Parser::parse_return_expression(
 						devicetokens[t].substr(devicetokens[t].find("Z0=") + 3,
-						devicetokens[t].size() - 1), iFile.parVal, iFile.parVal);
+						devicetokens[t].size() - 1));
 				else if(devicetokens[t].find("LOSSLESS") != std::string::npos) {}
 				else Errors::invalid_component_errors(INVALID_TX_DEFINED, i);
 			}
@@ -1023,10 +1032,10 @@ Matrix::create_A_matrix_volt(InputFile& iFile) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
 		}
 		try {
-			if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-				cf = iFile.parVal.at(devicetokens[3]);
-			else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-				cf = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+			if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+				cf = iFile.paramValues.paramMap.at(devicetokens[3]);
+			else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					cf = iFile.paramValues.returnParam(devicetokens[3], subckt);
 			else
 				cf = Misc::modifier(devicetokens[3]);
 		}
@@ -1103,7 +1112,7 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 		if (expStart != -1 && expStart == expEnd) {
 			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
 			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
-			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart]), 25);
 		}
 		else if (expStart != -1 && expEnd != -1) {
 			int d = expStart + 1;
@@ -1114,7 +1123,7 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			}
 			devicetokens[expStart] = devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1, devicetokens[expStart].size() - 1);
 			devicetokens[expStart] = devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
-			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart], iFile.parVal, iFile.parVal), 25);
+			devicetokens[expStart] = Misc::precise_to_string(Parser::parse_return_expression(devicetokens[expStart]), 25);
 		}
 		double value = 0.0;
 		/* Check if label exists, if not there is a bug in the program */
@@ -1133,6 +1142,7 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 		if (label.find_first_of("|") != std::string::npos) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
 		}
+		else subckt = "";
 		/* Check if positive node exists, if not it's a bad device line definition
 		 */
 		try {
@@ -1156,12 +1166,12 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			std::string R = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					iFile.phaseRes[R].value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					iFile.phaseRes[R].value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
 				else
-					iFile.phaseRes[R].value = Misc::modifier(devicetokens[3]);
+					value = Misc::modifier(devicetokens[3]);
 			}
 			catch (std::exception &e) {
 				Errors::invalid_component_errors(RES_ERROR, i);
@@ -1170,6 +1180,8 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			rName = "R_" + devicetokens[0];
 			iFile.phaseRes[R].curNodeC = cName;
 			iFile.phaseRes[R].curNodeR = rName;
+			iFile.phaseRes[R].value = value;
+			iFile.phaseRes[R].label = R;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1258,12 +1270,12 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			std::string C = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					iFile.phaseCap[C].value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					iFile.phaseCap[C].value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
 				else
-					iFile.phaseCap[C].value = Misc::modifier(devicetokens[3]);
+					value = Misc::modifier(devicetokens[3]);
 			}
 			catch (std::exception &e) {
 				Errors::invalid_component_errors(CAP_ERROR, i);
@@ -1272,6 +1284,8 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			rName = "R_" + devicetokens[0];
 			iFile.phaseCap[C].curNodeC = cName;
 			iFile.phaseCap[C].curNodeR = rName;
+			iFile.phaseCap[C].value = value;
+			iFile.phaseCap[C].label = C;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1360,12 +1374,12 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			std::string L = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-					iFile.phaseInd[L].value = iFile.parVal.at(devicetokens[3]);
-				else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-					iFile.phaseInd[L].value = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
+				if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					value = iFile.paramValues.returnParam(devicetokens[3], subckt);
 				else
-					iFile.phaseInd[L].value = Misc::modifier(devicetokens[3]);
+					value = Misc::modifier(devicetokens[3]);
 			}
 			catch (std::exception &e) {
 				Errors::invalid_component_errors(IND_ERROR, i);
@@ -1374,6 +1388,8 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			rName = "R_" + devicetokens[0];
 			iFile.phaseInd[L].curNodeC = cName;
 			iFile.phaseInd[L].curNodeR = rName;
+			iFile.phaseInd[L].value = value;
+			iFile.phaseInd[L].label = L;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1461,11 +1477,12 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 		else if (i[0] == 'V') {
 			std::string VS = devicetokens[0];
 			matrix_element e;
-			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile, subckt);
 			cName = "C_" + devicetokens[0];
 			rName = "R_" + devicetokens[0];
 			iFile.phaseVs[VS].curNodeC = cName;
 			iFile.phaseVs[VS].curNodeR = rName;
+			iFile.phaseVs[VS].label = VS;
 			if (rowMap.count(rName) == 0) {
 				rowMap[rName] = rowCounter;
 				rowCounter++;
@@ -1547,7 +1564,7 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 		/** CURRENT SOURCE **/
 		/********************/
 		else if (i[0] == 'I') {
-			iFile.matA.sources[label] = Misc::function_parse(i, iFile);
+			iFile.matA.sources[label] = Misc::function_parse(i, iFile, subckt);
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NP" + nodeP;
 				rNameP = "R_N" + nodeP;
@@ -1591,10 +1608,23 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			std::string modName = "", area = "";
 			for (int t = devicetokens.size() - 1; t > 2; t--) {
 				if (devicetokens[t].find("=") == std::string::npos) {
-					if (iFile.models.count(devicetokens[t]) != 0) 
+					if (iFile.models.count(devicetokens[t]) != 0) {
 						modName = devicetokens[t];
-					else Errors::invalid_component_errors(MODEL_NOT_DEFINED,
+						break;
+					}
+					else if (iFile.models.count(
+							devicetokens[t].substr(devicetokens[t].find("|") + 1,
+													devicetokens[t].size() - 1))
+							 != 0) { 
+						modName = devicetokens[t].substr(devicetokens[t].find("|") + 1,
+													devicetokens[t].size() - 1);
+						break;
+					}
+					else {
+						Errors::invalid_component_errors(MODEL_NOT_DEFINED,
 														  devicetokens[t]);
+						break;
+					}
 				}
 				if (devicetokens[t].find("AREA") != std::string::npos) {
 					area = devicetokens[t].substr(
@@ -1604,7 +1634,7 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			}
 			if(area == "") Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, "");
 			iFile.phaseJJ[jj].label = jj;
-			Component::jj_comp_phase(modName, area, jj);
+			Component::jj_comp_phase(modName, area, jj, subckt);
 			cVolt = "C_V" + devicetokens[0];
 			rVolt = "R_" + devicetokens[0];
 			iFile.phaseJJ[jj].voltNodeC = cVolt;
@@ -1912,12 +1942,12 @@ Matrix::create_A_matrix_phase(InputFile& iFile) {
 			subckt = iFile.subcircuitNameMap.at(label.substr(label.find_first_of("|") + 1));
 		}
 		try {
-			if (iFile.parVal.find(devicetokens[3]) != iFile.parVal.end())
-				cf = iFile.parVal.at(devicetokens[3]);
-			else if (iFile.subcircuitSegments[subckt].parVal.find(devicetokens[3]) != iFile.subcircuitSegments[subckt].parVal.end())
-				cf = iFile.subcircuitSegments[subckt].parVal.at(devicetokens[3]);
-			else
-				cf = Misc::modifier(devicetokens[3]);
+			if (iFile.paramValues.paramMap.count(devicetokens[3]) != 0)
+					cf = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else if (iFile.paramValues.paramMap.count(devicetokens[3] + "|" + subckt) != 0)
+					cf = iFile.paramValues.returnParam(devicetokens[3], subckt);
+				else
+					cf = Misc::modifier(devicetokens[3]);
 		}
 		catch (std::exception &e) {
 			Errors::invalid_component_errors(MUT_ERROR, i);

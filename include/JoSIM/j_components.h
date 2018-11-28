@@ -9,10 +9,10 @@ class Component {
 	public:
 		static
 		void
-		jj_comp(std::string modName, std::string area, std::string jjLabel);
+		jj_comp(std::string modName, std::string area, std::string jjLabel, std::string subckt = "");
 
 		static
 		void
-		jj_comp_phase(std::string modName, std::string area, std::string jjLabel);
+		jj_comp_phase(std::string modName, std::string area, std::string jjLabel, std::string subckt = "");
 };
 #endif

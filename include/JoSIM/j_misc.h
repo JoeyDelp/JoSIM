@@ -55,7 +55,7 @@ class Misc {
     */
     static
     double
-    modifier(std::string value);
+    modifier(std::string value, std::string subckt = "");
     /*
       Unique vector push. Only pushes if item being pushed is unique
     */
@@ -86,7 +86,7 @@ class Misc {
     */
     static
     std::vector<double>
-    function_parse(std::string str, InputFile& iFile);
+    function_parse(std::string str, InputFile& iFile, std::string subckt = "");
     /*
     Helper function for finding the depth of subcircuits in the design
     */

@@ -15,11 +15,8 @@ std::vector<std::string> funcs(funcsArray,
 	sizeof(funcsArray) / sizeof(std::string));
 
 void
-Parser::parse_expression(std::string expName, std::string expr, 
-	std::unordered_map<std::string, double>& parVal, 
-	std::unordered_map<std::string, double>& globalParVal, 
-	std::string subckt) {
-	if (parVal.find("expName") != parVal.end())
+Parser::parse_expression(std::string expName, std::string expr, std::string subckt) {
+	if (iFile.paramValues.paramMap.count("expName") != 0)
 		Errors::parsing_errors(EXPRESSION_ARLEADY_DEFINED, expName);
 	std::string expToEval = expr;
 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
@@ -27,91 +24,85 @@ Parser::parse_expression(std::string expName, std::string expr,
 	std::string partToEval;
 	int opLoc, popCount = 0;
 	double result = 0.0;
-	// While there are tokens to read
+	std::string stringSuffix = "";
+	if(subckt != "") stringSuffix = "|" + subckt;
 	while (!expToEval.empty()) {
-		// Read a token
 		opLoc = expToEval.find_first_of("/*-+(){}[]^");
-		// Check to make sure it's not scientific notation
 		if (expToEval[opLoc] == '-')
 			if (opLoc != 0)
 				if (expToEval[opLoc - 1] == 'E')
 					opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-		// If operator location is zero substring after the operator
 		if (opLoc == 0)
 			partToEval = expToEval.substr(0, opLoc + 1);
 		else
 			partToEval = expToEval.substr(0, opLoc);
-		// If token is a number
 		if (isdigit(partToEval[0])) {
-			// Push number to RPN Queue
 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
 			qType.push_back('V');
 		}
-		// Else if token is a variable with a value
-		else if ((parVal.find(partToEval) != parVal.end()) ||
-			(globalParVal.find(partToEval) != globalParVal.end())) {
-			// Check if subckt variable or not
-			if (subckt != "NONE") {
-				// Push variable to RPN Queue
+		else if ((iFile.paramValues.paramMap.count(partToEval) != 0) ||
+			(iFile.paramValues.paramMap.count(partToEval + stringSuffix) != 0)) {
+			if (subckt != "") {
 				rpnQueue.push_back(
-					Misc::precise_to_string(parVal[partToEval]));
+					Misc::precise_to_string(iFile.paramValues.paramMap.at(
+						partToEval + stringSuffix)));
 				qType.push_back('V');
 			}
 			else {
-				// Push variable to RPN Queue
-				rpnQueue.push_back(Misc::precise_to_string(parVal[partToEval]));
+				rpnQueue.push_back(Misc::precise_to_string(
+					iFile.paramValues.paramMap.at(partToEval)));
 				qType.push_back('V');
 			}
 		}
-		// Else if token is a function
+		else if ((iFile.paramValues.unparsedMap.count(partToEval) != 0) ||
+			(iFile.paramValues.unparsedMap.count(partToEval + stringSuffix) != 0)) {
+			if (subckt != "") {
+				Parser::parse_expression(partToEval,
+					iFile.paramValues.unparsedMap.at(partToEval + stringSuffix), subckt);
+				rpnQueue.push_back(
+					Misc::precise_to_string(iFile.paramValues.paramMap.at(
+						partToEval + stringSuffix)));
+				qType.push_back('V');
+			}
+			else {
+				Parser::parse_expression(partToEval,
+					iFile.paramValues.unparsedMap.at(partToEval), subckt);
+				rpnQueue.push_back(Misc::precise_to_string(
+					iFile.paramValues.paramMap.at(partToEval)));
+				qType.push_back('V');
+			}
+		}
 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
-			// Push to Operator Stack
 			opStack.push_back(partToEval);
-		// Else if operator
 		else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
-			/* While (((Function at top of operator stack) OR (Operator at top of
-			   operator stack with greater precedence) OR (Operator at top of operator
-			   stack with equal precedence and left associative)) AND (Operator at top
-			   of operator stack is not a left bracket))
-		   */
 			while ((!opStack.empty()) &&
 				(((prec_lvl(opStack.back()) == 4) ||
 				(prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
 					(opStack.back().find_first_of("([{") == std::string::npos) &&
 					(partToEval != "^"))) {
-				// Pop operators from the operator stack onto RPN Queue
 				rpnQueue.push_back(opStack.back());
 				qType.push_back('O');
 				opStack.pop_back();
 			}
-			// Push operator to stack
 			opStack.push_back(partToEval);
 		}
-		// Else if token is left bracket
 		else if (partToEval.find_first_of("([{") != std::string::npos)
-			// Push to operator stack
 			opStack.push_back(partToEval);
-		// Else if token is right bracket
 		else if (partToEval.find_first_of(")]}") != std::string::npos) {
-			// While operator at top of operator stack is not left bracket
 			while ((!opStack.empty()) &&
 				(opStack.back().find_first_of("([{") == std::string::npos)) {
-				// Pop operator from operator stack to RPN Queue
 				rpnQueue.push_back(opStack.back());
 				qType.push_back('O');
 				opStack.pop_back();
 			}
-			// Pop the left bracket from the operator stack
 			if ((!opStack.empty()) &&
 				(opStack.back().find_first_of("([{") != std::string::npos))
 				opStack.pop_back();
 			else
 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
 		}
-		// Else unknown function
 		else
 			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
-		// If operator location is zero substring after the operator
 		if (opLoc == 0)
 			expToEval = expToEval.substr(opLoc + 1);
 		if (opLoc == -1)
@@ -119,46 +110,32 @@ Parser::parse_expression(std::string expName, std::string expr,
 		else
 			expToEval = expToEval.substr(opLoc);
 	}
-	// If there are no more tokens to read
 	if (expToEval.empty())
-		// While there are still operators on the operator stack
 		while (!opStack.empty()) {
 			if (opStack.back().find_first_of("([{") != std::string::npos)
 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
 			else {
-				// Pop the operator from the operator stack to the RPN Queue
 				rpnQueue.push_back(opStack.back());
 				qType.push_back('O');
 				opStack.pop_back();
 			}
 		}
-	// Now that we have the RPN notation for the expression we can solve it and
-	// store it
 	while (rpnQueue.size() > 1) {
-		// Clear copies
 		rpnQueueCopy.clear();
 		qTypeCopy.clear();
-		// Loop through the type queue looking for operators
 		for (int i = 0; i < qType.size(); i++) {
-			// If a value is identified
 			if (qType[i] == 'V') {
-				// Push the value to the RPN Queue Copy
 				rpnQueueCopy.push_back(rpnQueue[i]);
-				// Push the value type to the type queue copy
 				qTypeCopy.push_back('V');
 			}
-			// Else if an operator is identified
 			else if (qType[i] == 'O') {
-				// If i is 0 then no values only operator meaning invalid RPN
 				if (i == 0)
 					Errors::parsing_errors(INVALID_RPN, expr);
-				// Else if i is less than 2 (meaning only 1 value identified)
 				else if (i < 2) {
 					rpnQueueCopy.pop_back();
 					rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
 						rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
 				}
-				// Else 2 or more values identified
 				else {
 					result = parse_operator(rpnQueue[i],
 						Misc::modifier(rpnQueue[i - 2]),
@@ -170,7 +147,6 @@ Parser::parse_expression(std::string expName, std::string expr,
 						qTypeCopy.pop_back();
 					rpnQueueCopy.push_back(Misc::precise_to_string(result));
 				}
-				// Append the rest of the Queues if there is anything left
 				if (rpnQueue.size() >= i) {
 					rpnQueueCopy.insert(
 						rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
@@ -182,90 +158,81 @@ Parser::parse_expression(std::string expName, std::string expr,
 		rpnQueue = rpnQueueCopy;
 		qType = qTypeCopy;
 	}
-	parVal[expName] = Misc::modifier(rpnQueue.back());
+	if(expName.find("|" + subckt) != std::string::npos)
+		iFile.paramValues.insertParam(expName, Misc::modifier(rpnQueue.back()));
+	else 
+		iFile.paramValues.insertParam(expName, Misc::modifier(rpnQueue.back()), subckt);
 }
 
 double
-Parser::parse_return_expression(std::string expr) {
+Parser::parse_return_expression(std::string expr, std::string subckt) {
 	std::string expToEval = expr;
 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
 	std::vector<char> qType, qTypeCopy;
 	std::string partToEval;
 	int opLoc, popCount = 0;
 	double result = 0.0;
-	// While there are tokens to read
 	while (!expToEval.empty()) {
-		// Read a token
 		opLoc = expToEval.find_first_of("/*-+(){}[]^");
-		// Check to make sure it's not scientific notation
 		if (expToEval[opLoc] == '-')
 			if (opLoc != 0)
 				if (expToEval[opLoc - 1] == 'E')
 					opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-		// If operator location is zero substring after the operator
 		if (opLoc == 0)
 			partToEval = expToEval.substr(0, opLoc + 1);
 		else
 			partToEval = expToEval.substr(0, opLoc);
-		// If token is a number
 		if (isdigit(partToEval[0])) {
-			// Push number to RPN Queue
 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
 			qType.push_back('V');
 		}
-		// Else if token is a function
+		else if (iFile.paramValues.paramMap.count(partToEval) != 0) {
+			rpnQueue.push_back(Misc::precise_to_string(
+				iFile.paramValues.paramMap.at(partToEval)));
+			qType.push_back('V');
+		}
+		else if (subckt != "") {
+			if (iFile.paramValues.paramMap.count(partToEval + "|" + subckt) != 0) {
+				rpnQueue.push_back(Misc::precise_to_string(
+					iFile.paramValues.paramMap.at(partToEval + "|" + subckt)));
+				qType.push_back('V');
+			}
+		}
 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
-			// Push to Operator Stack
 			opStack.push_back(partToEval);
 		else if (consts.count(partToEval) != 0){
 			rpnQueue.push_back(Misc::precise_to_string(consts[partToEval]));
 			qType.push_back('V');
 		}
-		// Else if operator
 		else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
-			/* While (((Function at top of operator stack) OR (Operator at top of
-			   operator stack with greater precedence) OR (Operator at top of operator
-			   stack with equal precedence and left associative)) AND (Operator at top
-			   of operator stack is not a left bracket))
-		   */
 			while ((!opStack.empty()) &&
 				(((prec_lvl(opStack.back()) == 4) ||
 				(prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
 					(opStack.back().find_first_of("([{") == std::string::npos) &&
 					(partToEval != "^"))) {
-				// Pop operators from the operator stack onto RPN Queue
 				rpnQueue.push_back(opStack.back());
 				qType.push_back('O');
 				opStack.pop_back();
 			}
-			// Push operator to stack
 			opStack.push_back(partToEval);
 		}
-		// Else if token is left bracket
 		else if (partToEval.find_first_of("([{") != std::string::npos)
-			// Push to operator stack
 			opStack.push_back(partToEval);
-		// Else if token is right bracket
 		else if (partToEval.find_first_of(")]}") != std::string::npos) {
-			// While operator at top of operator stack is not left bracket
 			while ((!opStack.empty()) &&
 				(opStack.back().find_first_of("([{") == std::string::npos)) {
-				// Pop operator from operator stack to RPN Queue
 				rpnQueue.push_back(opStack.back());
 				qType.push_back('O');
 				opStack.pop_back();
 			}
-			// Pop the left bracket from the operator stack
 			if ((!opStack.empty()) &&
 				(opStack.back().find_first_of("([{") != std::string::npos))
 				opStack.pop_back();
 			else
 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
 		}
-		// Else unknown function
 		else
 			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
-		// If operator location is zero substring after the operator
 		if (opLoc == 0)
 			expToEval = expToEval.substr(opLoc + 1);
 		if (opLoc == -1)
@@ -273,46 +240,32 @@ Parser::parse_return_expression(std::string expr) {
 		else
 			expToEval = expToEval.substr(opLoc);
 	}
-	// If there are no more tokens to read
 	if (expToEval.empty())
-		// While there are still operators on the operator stack
 		while (!opStack.empty()) {
 			if (opStack.back().find_first_of("([{") != std::string::npos)
 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
 			else {
-				// Pop the operator from the operator stack to the RPN Queue
 				rpnQueue.push_back(opStack.back());
 				qType.push_back('O');
 				opStack.pop_back();
 			}
 		}
-	// Now that we have the RPN notation for the expression we can solve it and
-	// store it
 	while (rpnQueue.size() > 1) {
-		// Clear copies
 		rpnQueueCopy.clear();
 		qTypeCopy.clear();
-		// Loop through the type queue looking for operators
 		for (int i = 0; i < qType.size(); i++) {
-			// If a value is identified
 			if (qType[i] == 'V') {
-				// Push the value to the RPN Queue Copy
 				rpnQueueCopy.push_back(rpnQueue[i]);
-				// Push the value type to the type queue copy
 				qTypeCopy.push_back('V');
 			}
-			// Else if an operator is identified
 			else if (qType[i] == 'O') {
-				// If i is 0 then no values only operator meaning invalid RPN
 				if (i == 0)
 					Errors::parsing_errors(INVALID_RPN, expr);
-				// Else if i is less than 2 (meaning only 1 value identified)
 				else if (i < 2) {
 					rpnQueueCopy.pop_back();
 					rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
 						rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
 				}
-				// Else 2 or more values identified
 				else {
 					result = parse_operator(rpnQueue[i],
 						Misc::modifier(rpnQueue[i - 2]),
@@ -324,170 +277,6 @@ Parser::parse_return_expression(std::string expr) {
 						qTypeCopy.pop_back();
 					rpnQueueCopy.push_back(Misc::precise_to_string(result));
 				}
-				// Append the rest of the Queues if there is anything left
-				if (rpnQueue.size() >= i) {
-					rpnQueueCopy.insert(
-						rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
-					qTypeCopy.insert(qTypeCopy.end(), qType.begin() + i + 1, qType.end());
-				}
-				break;
-			}
-		}
-		rpnQueue = rpnQueueCopy;
-		qType = qTypeCopy;
-	}
-	return Misc::modifier(rpnQueue.back());
-}
-
-double
-Parser::parse_return_expression(std::string expr, 
-	std::unordered_map<std::string, double>& parVal, 
-	std::unordered_map<std::string, double>& globalParVal) {
-	std::string expToEval = expr;
-	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
-	std::vector<char> qType, qTypeCopy;
-	std::string partToEval;
-	int opLoc, popCount = 0;
-	double result = 0.0;
-	// While there are tokens to read
-	while (!expToEval.empty()) {
-		// Read a token
-		opLoc = expToEval.find_first_of("/*-+(){}[]^");
-		// Check to make sure it's not scientific notation
-		if (expToEval[opLoc] == '-')
-			if (opLoc != 0)
-				if (expToEval[opLoc - 1] == 'E')
-					opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-		// If operator location is zero substring after the operator
-		if (opLoc == 0)
-			partToEval = expToEval.substr(0, opLoc + 1);
-		else
-			partToEval = expToEval.substr(0, opLoc);
-		// If token is a number
-		if (isdigit(partToEval[0])) {
-			// Push number to RPN Queue
-			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
-			qType.push_back('V');
-		}
-		// Else if token is a variable with a value
-		else if ((parVal.find(partToEval) != parVal.end()) ||
-			(globalParVal.find(partToEval) != globalParVal.end())) {
-			// Push variable to RPN Queue
-			rpnQueue.push_back(Misc::precise_to_string(parVal[partToEval]));
-			qType.push_back('V');
-		}
-		// Else if token is a function
-		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
-			// Push to Operator Stack
-			opStack.push_back(partToEval);
-		else if (consts.count(partToEval) != 0){
-			rpnQueue.push_back(Misc::precise_to_string(consts[partToEval]));
-			qType.push_back('V');
-		}
-		// Else if operator
-		else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
-			/* While (((Function at top of operator stack) OR (Operator at top of
-			   operator stack with greater precedence) OR (Operator at top of operator
-			   stack with equal precedence and left associative)) AND (Operator at top
-			   of operator stack is not a left bracket))
-		   */
-			while ((!opStack.empty()) &&
-				(((prec_lvl(opStack.back()) == 4) ||
-				(prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
-					(opStack.back().find_first_of("([{") == std::string::npos) &&
-					(partToEval != "^"))) {
-				// Pop operators from the operator stack onto RPN Queue
-				rpnQueue.push_back(opStack.back());
-				qType.push_back('O');
-				opStack.pop_back();
-			}
-			// Push operator to stack
-			opStack.push_back(partToEval);
-		}
-		// Else if token is left bracket
-		else if (partToEval.find_first_of("([{") != std::string::npos)
-			// Push to operator stack
-			opStack.push_back(partToEval);
-		// Else if token is right bracket
-		else if (partToEval.find_first_of(")]}") != std::string::npos) {
-			// While operator at top of operator stack is not left bracket
-			while ((!opStack.empty()) &&
-				(opStack.back().find_first_of("([{") == std::string::npos)) {
-				// Pop operator from operator stack to RPN Queue
-				rpnQueue.push_back(opStack.back());
-				qType.push_back('O');
-				opStack.pop_back();
-			}
-			// Pop the left bracket from the operator stack
-			if ((!opStack.empty()) &&
-				(opStack.back().find_first_of("([{") != std::string::npos))
-				opStack.pop_back();
-			else
-				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
-		}
-		// Else unknown function
-		else
-			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
-		// If operator location is zero substring after the operator
-		if (opLoc == 0)
-			expToEval = expToEval.substr(opLoc + 1);
-		if (opLoc == -1)
-			expToEval = "";
-		else
-			expToEval = expToEval.substr(opLoc);
-	}
-	// If there are no more tokens to read
-	if (expToEval.empty())
-		// While there are still operators on the operator stack
-		while (!opStack.empty()) {
-			if (opStack.back().find_first_of("([{") != std::string::npos)
-				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
-			else {
-				// Pop the operator from the operator stack to the RPN Queue
-				rpnQueue.push_back(opStack.back());
-				qType.push_back('O');
-				opStack.pop_back();
-			}
-		}
-	// Now that we have the RPN notation for the expression we can solve it and
-	// store it
-	while (rpnQueue.size() > 1) {
-		// Clear copies
-		rpnQueueCopy.clear();
-		qTypeCopy.clear();
-		// Loop through the type queue looking for operators
-		for (int i = 0; i < qType.size(); i++) {
-			// If a value is identified
-			if (qType[i] == 'V') {
-				// Push the value to the RPN Queue Copy
-				rpnQueueCopy.push_back(rpnQueue[i]);
-				// Push the value type to the type queue copy
-				qTypeCopy.push_back('V');
-			}
-			// Else if an operator is identified
-			else if (qType[i] == 'O') {
-				// If i is 0 then no values only operator meaning invalid RPN
-				if (i == 0)
-					Errors::parsing_errors(INVALID_RPN, expr);
-				// Else if i is less than 2 (meaning only 1 value identified)
-				else if (i < 2) {
-					rpnQueueCopy.pop_back();
-					rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
-						rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
-				}
-				// Else 2 or more values identified
-				else {
-					result = parse_operator(rpnQueue[i],
-						Misc::modifier(rpnQueue[i - 2]),
-						Misc::modifier(rpnQueue[i - 1]),
-						popCount);
-					for (int k = 0; k < popCount; k++)
-						rpnQueueCopy.pop_back();
-					if (popCount == 2)
-						qTypeCopy.pop_back();
-					rpnQueueCopy.push_back(Misc::precise_to_string(result));
-				}
-				// Append the rest of the Queues if there is anything left
 				if (rpnQueue.size() >= i) {
 					rpnQueueCopy.insert(
 						rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
