@@ -140,7 +140,11 @@ Output::write_wr_data(InputFile &iFile) {
 				}
 			}
 			else if(tokens[0] == "PHASE") {
-				outfile << " " << i+1 << " " << tokens[2] <<" P\n";
+				outfile << " " << i+1 << " " << tokens[1] <<" P\n";
+			}
+			else if(tokens[0] == "CURRENT") {
+				std::replace(tokens[1].begin(), tokens[1].end(), '|', '.');
+				outfile << " " << i+1 << " " << "@" << tokens[1] << "[c] C\n"; 
 			}
 		}
 		outfile << "Values:\n";

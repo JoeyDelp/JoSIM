@@ -315,7 +315,7 @@ InputFile::sub_in_subcircuits(std::vector<std::string>& segment,
 									if (iFile.paramValues.paramMap.count(
 											Misc::substring_after(tokens[k], "AREA=")
 															+ "|" + subckt) != 0)
-										tokens[k] = Misc::precise_to_string(
+										tokens[k] = "AREA=" + Misc::precise_to_string(
 											iFile.paramValues.paramMap.at(
 												Misc::substring_after(tokens[k], "AREA=")
 												+ "|" + subckt));
