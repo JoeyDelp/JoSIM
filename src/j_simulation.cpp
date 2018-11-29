@@ -316,7 +316,7 @@ void Simulation::transient_voltage_simulation(InputFile& iFile) {
 			thisJunction.pn1 = lhsValues.at(thisJunction.phaseNRow);
 			thisJunction.phi0 = thisJunction.pn1 + (hn_2_2e_hbar)*(thisJunction.vn1 + thisJunction.v0);
 			// thisJunction.iS = -thisJunction.iC * sin(thisJunction.phi0) + (((2 * thisJunction.C) / iFile.tsim.prstep)*thisJunction.vn1) + (thisJunction.C * thisJunction.dVn1) - thisJunction.iT;
-			thisJunction.iS = ((M_PI * thisJunction.Del) / (2 * EV * thisJunction.rNCalc)) * (sin(thisJunction.phi0)/sqrt(1 - thisJunction.D * (sin(thisJunction.phi0 / 2)*sin(thisJunction.phi0 / 2))))
+			thisJunction.iS = -((M_PI * thisJunction.Del) / (2 * EV * thisJunction.rNCalc)) * (sin(thisJunction.phi0)/sqrt(1 - thisJunction.D * (sin(thisJunction.phi0 / 2)*sin(thisJunction.phi0 / 2))))
 								* tanh((thisJunction.Del)/(2*BOLTZMANN*thisJunction.T) * sqrt(1-thisJunction.D * (sin(thisJunction.phi0 / 2)*sin(thisJunction.phi0 / 2))))
 								+ (((2 * thisJunction.C) / iFile.tsim.prstep)*thisJunction.vn1) + (thisJunction.C * thisJunction.dVn1) - thisJunction.iT;
 			thisJunction.vn2 = thisJunction.vn1;
@@ -581,7 +581,7 @@ void Simulation::transient_phase_simulation(InputFile& iFile) {
 				}
 			}
 			// thisJJ.iS = -thisJJ.iC * sin(thisJJ.phi0) + ((2 * thisJJ.C) / iFile.tsim.prstep) * thisJJ.vn1 + thisJJ.C * thisJJ.dVn1 - thisJJ.It;
-			thisJJ.iS = ((M_PI * thisJJ.Del) / (2 * EV * thisJJ.rNCalc)) * (sin(thisJJ.phi0)/sqrt(1 - thisJJ.D * (sin(thisJJ.phi0 / 2)*sin(thisJJ.phi0 / 2))))
+			thisJJ.iS = -((M_PI * thisJJ.Del) / (2 * EV * thisJJ.rNCalc)) * (sin(thisJJ.phi0)/sqrt(1 - thisJJ.D * (sin(thisJJ.phi0 / 2)*sin(thisJJ.phi0 / 2))))
 								* tanh((thisJJ.Del)/(2*BOLTZMANN*thisJJ.T) * sqrt(1-thisJJ.D * (sin(thisJJ.phi0 / 2)*sin(thisJJ.phi0 / 2))))
 								+ (((2 * thisJJ.C) / iFile.tsim.prstep)*thisJJ.vn1) + (thisJJ.C * thisJJ.dVn1) - thisJJ.It;
 			iFile.phaseJJ.at(j.first) = thisJJ;

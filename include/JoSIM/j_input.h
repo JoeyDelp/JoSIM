@@ -82,7 +82,7 @@ class jj_volt : public device {
 			iT = iS = gLarge = 0.0;
 			T = 4.2;
 			tC = 9.1;
-			D = 0;
+			D = 0.0;
 		}
 };
 

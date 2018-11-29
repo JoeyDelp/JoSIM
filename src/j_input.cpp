@@ -110,8 +110,14 @@ InputFile::circuit_to_segments() {
 	std::string subcktName, varName;
 	iFile.subCircuitCount = 0;
 	std::vector<std::string> parameterTokens, tokens, v;
-	for (const auto& i : iFile.lines) {
-		tokens = Misc::tokenize_space(i);
+	for (int i = 0; i < iFile.lines.size(); i++) {
+		if(i != iFile.lines.size() - 1) {
+			if(iFile.lines.at(i + 1)[0] == '+') {
+				iFile.lines.at(i) += iFile.lines.at(i+1).substr(1, iFile.lines.at(i+1).size() - 1);
+				iFile.lines.erase(iFile.lines.begin() + i + 1);
+			}
+		}
+		tokens = Misc::tokenize_space(iFile.lines.at(i));
 		if (tokens[0] == ".SUBCKT") {
 			subcktName = tokens[1];
 			iFile.subcircuitSegments[subcktName].name = subcktName;
@@ -121,7 +127,7 @@ InputFile::circuit_to_segments() {
 		}
 		else if (startCkt) {
 			if (tokens[0][0] != '.') {
-				iFile.subcircuitSegments[subcktName].lines.push_back(i);
+				iFile.subcircuitSegments[subcktName].lines.push_back(iFile.lines.at(i));
 				if (tokens[0][0] != 'X') iFile.subcircuitSegments[subcktName].componentCount++;
 				if (tokens[0][0] == 'B') iFile.subcircuitSegments[subcktName].jjCount++;
 				if (tokens[0][0] == 'X') {
@@ -131,23 +137,23 @@ InputFile::circuit_to_segments() {
 				}
 			}
 			else if (tokens[0] == ".PARAM") {
-				parameterTokens = Misc::tokenize_delimeter(i, " =");
+				parameterTokens = Misc::tokenize_delimeter(iFile.lines.at(i), " =");
 				varName = parameterTokens[1];
-				parameterTokens = Misc::tokenize_delimeter(i, "=");
+				parameterTokens = Misc::tokenize_delimeter(iFile.lines.at(i), "=");
 				iFile.paramValues.insertUParam(varName,
 					parameterTokens[1], subcktName);
 				// Parser::parse_expression(varName,
 				// 	parameterTokens[1], subcktName);
 			}
 			else if (tokens[0] == ".MODEL") {
-				check_model(i, subcktName);
+				check_model(iFile.lines.at(i), subcktName);
 			}
 			else if (tokens[0] == ".ENDS") {
 				startCkt = false;
 			}
 		}
 		else if (tokens[0][0] != '.' && !controlSection) {
-			iFile.maincircuitSegment.push_back(i);
+			iFile.maincircuitSegment.push_back(iFile.lines.at(i));
 			if (tokens[0][0] != 'X') iFile.mainComponents++;
 			if (tokens[0][0] == 'B') iFile.mainJJs++;
 			if (tokens[0][0] == 'X') {
@@ -160,35 +166,35 @@ InputFile::circuit_to_segments() {
 		}
 		else if (!controlSection) {
 			if (tokens[0] == ".MODEL") {
-				check_model(i);
+				check_model(iFile.lines.at(i));
 			}
 			else if (tokens[0] == ".PARAM") {
-				parameterTokens = Misc::tokenize_delimeter(i, " =");
+				parameterTokens = Misc::tokenize_delimeter(iFile.lines.at(i), " =");
 				varName = parameterTokens[1];
-				parameterTokens = Misc::tokenize_delimeter(i, "=");
+				parameterTokens = Misc::tokenize_delimeter(iFile.lines.at(i), "=");
 				iFile.paramValues.insertUParam(varName,
 					parameterTokens[1]);
 				// Parser::parse_expression(varName, parameterTokens[1]);
 			}
 			else if (tokens[0] == ".ENDC")
 				controlSection = false;
-			else iFile.controlPart.push_back(i);
+			else iFile.controlPart.push_back(iFile.lines.at(i));
 		}
 		else if (controlSection) {
 			if (tokens[0] == "MODEL") {
-				check_model(i);
+				check_model(iFile.lines.at(i));
 			}
 			else if (tokens[0] == "PARAM") {
-				parameterTokens = Misc::tokenize_delimeter(i, " =");
+				parameterTokens = Misc::tokenize_delimeter(iFile.lines.at(i), " =");
 				varName = parameterTokens[1];
-				parameterTokens = Misc::tokenize_delimeter(i, "=");
+				parameterTokens = Misc::tokenize_delimeter(iFile.lines.at(i), "=");
 				iFile.paramValues.insertUParam(varName,
 					parameterTokens[1]);
 				// Parser::parse_expression(varName, parameterTokens[1]);
 			}
 			else if (tokens[0] == "ENDC")
 				controlSection = false;
-			else iFile.controlPart.push_back(i);
+			else iFile.controlPart.push_back(iFile.lines.at(i));
 		}
 	}
 	for (auto i : iFile.paramValues.unparsedMap) {

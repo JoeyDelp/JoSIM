@@ -744,6 +744,20 @@ Plot::traces_to_plot(InputFile& iFile,
 						Errors::plotting_errors(NO_SUCH_DEVICE_FOUND, nodesToPlot);
 					}
 				}
+				else if (tokens[k].find('.') != std::string::npos) {
+					if (tokens[k].find("#BRANCH") != std::string::npos) {
+						nodesToPlot = tokens[k].substr(0, tokens[k].find("#BRANCH"));
+						std::replace(nodesToPlot.begin(), nodesToPlot.end(), '.', '|');
+						if(nodesToPlot[0] == 'L') {
+							if(iFile.voltInd.count(nodesToPlot) != 0) {
+								label = "BRANCH CURRENT " + nodesToPlot;
+								traceLabel.push_back(label);
+								traceData.push_back(iFile.xVect.at(iFile.voltInd.at(nodesToPlot).curNRow));
+							}
+						}
+
+					}
+				}
 			}
 		}
 		/****************************************************/
@@ -1789,6 +1803,20 @@ void Plot::phase_traces_to_plot(InputFile& iFile, std::vector<std::string> contr
 							Errors::plotting_errors(NO_SUCH_DEVICE_FOUND, nodesToPlot);
 							break;
 					}	
+				}
+				else if (tokens[k].find('.') != std::string::npos) {
+					if (tokens[k].find("#BRANCH") != std::string::npos) {
+						nodesToPlot = tokens[k].substr(0, tokens[k].find("#BRANCH"));
+						std::replace(nodesToPlot.begin(), nodesToPlot.end(), '.', '|');
+						if(nodesToPlot[0] == 'L') {
+							if(iFile.phaseInd.count(nodesToPlot) != 0) {
+								label = "BRANCH CURRENT " + nodesToPlot;
+								traceLabel.push_back(label);
+								traceData.push_back(iFile.xVect.at(iFile.phaseInd.at(nodesToPlot).curNRow));
+							}
+						}
+
+					}
 				}
 			}
 		}
