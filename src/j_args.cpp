@@ -5,15 +5,36 @@
 void Args::parse_arguments(int argc, char* argv[]) {
     if (argc <= 1) Errors::error_handling(TOO_FEW_ARGUMENTS);
 
-    if (argv[argc - 1][0] != '-' && argv[argc - 1][1] != 'h') inName = argv[argc - 1];
-    else if (argv[argc - 1][0] == '-' && argv[argc - 1][1] == 'h') display_help();
+    if (argv[argc - 1][0] == '-') {
+        if(argv[argc - 1][1] == 'h'){
+            display_help();
+            exit(0);
+        }
+        else if (argv[argc - 1][1] == 'v'){
+            version_info();
+            exit(0);
+        }
+        else if (argv[argc - 1][1] == '-') {
+            if(argv[argc - 1][2] == 'h') {
+                display_help();
+                exit(0);
+            }
+            else if (argv[argc - 1][2] == 'v') {
+                version_info();
+                exit(0);
+            }
+            else Errors::error_handling(FINAL_ARG_SWITCH);
+        }
+        else Errors::error_handling(FINAL_ARG_SWITCH);
+    }
+    else if (argv[argc - 1][0] != '-' && argv[argc - 1][1] != 'h') inName = argv[argc - 1];
     else Errors::error_handling(FINAL_ARG_SWITCH);
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch(argv[i][1]) {
             case 'a':
-                if ((i + 1) == argc) Errors::error_handling(TOO_FEW_ARGUMENTS);
+                if ((i + 1) == (argc - 1)) Errors::error_handling(TOO_FEW_ARGUMENTS);
                 else if (argv[i + 1][0] == '-') Errors::error_handling(TOO_FEW_ARGUMENTS);
                 else{
                     try {
@@ -26,7 +47,7 @@ void Args::parse_arguments(int argc, char* argv[]) {
                 }
                 break;
             case 'c':
-                if ((i + 1) == argc) Errors::error_handling(TOO_FEW_ARGUMENTS);
+                if ((i + 1) == (argc - 1)) Errors::error_handling(TOO_FEW_ARGUMENTS);
                 else if (argv[i + 1][0] == '-') Errors::error_handling(TOO_FEW_ARGUMENTS);
                 else{
                     try {
@@ -66,7 +87,7 @@ void Args::parse_arguments(int argc, char* argv[]) {
                 break;
             case 'o':
                 saveRes = true;
-                if (((i + 1) == argc) || (argv[i + 1][0] == '-')) {
+                if (((i + 1) == (argc - 1)) || (argv[i + 1][0] == '-')) {
                     outName = inName;
                     outName = outName.substr(0, outName.find_last_of('.')) + ".csv";
                     saveType = CSV;

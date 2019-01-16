@@ -1869,7 +1869,7 @@ int Plot::plot_all_traces(InputFile& iFile) {
 			counter++;
 		}
 		win->resizable(scroll);
-		win->label(INPUT_FILE.c_str());
+		win->label(cArg.inName.c_str());
 		win->show();
 		return(Fl::run());
 	#elif USING_MATPLOTLIB
@@ -1929,8 +1929,8 @@ int Plot::plot_traces(InputFile& iFile) {
 	#ifdef USING_FLTK
 		std::vector<std::string> traceLabel;
 		std::vector<std::vector<double>> traceData;
-		if(analysis == VANALYSIS) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
-		else if(analysis == PANALYSIS) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+		if(cArg.analysisT == VANALYSIS) traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
+		else if(cArg.analysisT == PANALYSIS) phase_traces_to_plot(iFile, iFile.controlPart, traceLabel, traceData);
 		Fl_Window * win = new Fl_Window(1240, 768);
 		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
 		std::vector<Fl_Chart *> Charts;
@@ -1967,7 +1967,7 @@ int Plot::plot_traces(InputFile& iFile) {
 			}
 		}
 		win->resizable(win);
-		win->label(INPUT_FILE.c_str());
+		win->label(cArg.inName.c_str());
 		win->show();
 		return(Fl::run());
 	#elif USING_MATPLOTLIB

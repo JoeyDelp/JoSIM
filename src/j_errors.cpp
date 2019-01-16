@@ -13,22 +13,30 @@ Errors::error_handling(int errorCode) {
 		std::cout << "E: Specifier should be: -d=<path to file> or "
 			"--definition=<path to file>"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case DEF_FILE_ERROR:
 		std::cout << "E: Invalid definitions file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .txt"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case LOG_ERROR:
 		std::cout << "E: Invalid log file specifier." << std::endl;
 		std::cout
 			<< "E: Specifier should be: -l=<path to file> or --log=<path to file>"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case LOG_FILE_ERROR:
 		std::cout << "E: Invalid log file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .txt"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case OUTPUT_ERROR:
 		std::cout << "E: Invalid output file specifier." << std::endl;
@@ -40,25 +48,35 @@ Errors::error_handling(int errorCode) {
 		std::cout << "E: Invalid output file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .csv"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case OUTPUT_LEGACY_ERROR:
 		std::cout << "E: Invalid output file specifier." << std::endl;
 		std::cout << "E: Specifier should be: -m=<path to file>" << std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case OUTPUT_LEGACY_FILE_ERROR:
 		std::cout << "E: Invalid output file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .dat"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case INPUT_ERROR:
 		std::cout << "E: Missing input file." << std::endl;
 		std::cout << "E: Final argument should be: <path to input file>"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case INPUT_FILE_ERROR:
 		std::cout << "E: Invalid input file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .cir or .js"
 			<< std::endl;
+		std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case UNKNOWN_SWITCH:
 		std::cout << "W: Unknown option specified. Please refer to the help menu."
@@ -69,12 +87,14 @@ Errors::error_handling(int errorCode) {
 			<< " cannot be found or opened." << std::endl;
 		std::cout << "E: Please ensure that the file exists and can be opened."
 			<< std::endl;
+				std::cout << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case TOO_FEW_ARGUMENTS:
 		std::cout << "E: Missing input arguments" << std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
-		std::cout << "E: For further help use the -h switch" << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case NO_PLOT_COMPILE:
 		std::cout << "W: No plotting interface defined upon compilation time."
@@ -90,21 +110,21 @@ Errors::error_handling(int errorCode) {
 			<< std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
-		std::cout << "E: For further help use the -h switch" << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case INVALID_ANALYSIS:
 		std::cout << "E: Invalid analysis type specified. 0 - Voltage, 1 - Phase."
 			<< std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
-		std::cout << "E: For further help use the -h switch" << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	case INVALID_CONVENTION:
 		std::cout << "E: Invalid subcircuit convention specified. 0 - JSIM, 1 - WRspice."
 			<< std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
-		std::cout << "E: For further help use the -h switch" << std::endl;
+		std::cout << "I: For further help use the -h switch" << std::endl;
 		exit(0);
 	default:
 		std::cout << "E: Unknown handling error." << std::endl;

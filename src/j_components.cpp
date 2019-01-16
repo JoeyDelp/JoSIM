@@ -7,7 +7,7 @@ Component::jj_comp(std::string modName, std::string area, std::string jjLabel, s
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
 	jj_volt jj = iFile.voltJJ.at(jjLabel);
-	double value;
+	double value = 0.0;
 	if (modName != "") { 
 		params = iFile.models.at(modName);
 		params = params.substr(params.find_first_of("("), params.size());
@@ -58,7 +58,7 @@ Component::jj_comp_phase(std::string modName, std::string area, std::string jjLa
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
 	jj_phase jj = iFile.phaseJJ.at(jjLabel);
-	double value;
+	double value = 0.0;
 	if (modName != "") { 
 		params = iFile.models.at(modName);
 		params = params.substr(params.find_first_of("("), params.size());

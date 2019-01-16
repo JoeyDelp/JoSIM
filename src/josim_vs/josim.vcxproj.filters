@@ -45,6 +45,9 @@
     <ClCompile Include="..\j_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\j_args.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\JoSIM\j_components.hpp">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\JoSIM\j_parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\JoSIM\j_args.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

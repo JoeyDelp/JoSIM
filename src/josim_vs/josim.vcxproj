@@ -613,6 +613,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\j_args.cpp" />
     <ClCompile Include="..\j_components.cpp" />
     <ClCompile Include="..\j_errors.cpp" />
     <ClCompile Include="..\j_input.cpp" />
@@ -625,6 +626,7 @@
     <ClCompile Include="..\j_simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\JoSIM\j_args.h" />
     <ClInclude Include="..\..\include\JoSIM\j_components.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_errors.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_globals.hpp" />
