@@ -174,14 +174,19 @@ Parser::parse_return_expression(std::string expr, std::string subckt) {
 	double result = 0.0;
 	while (!expToEval.empty()) {
 		opLoc = expToEval.find_first_of("/*-+(){}[]^");
-		if (expToEval[opLoc] == '-')
-			if (opLoc != 0)
-				if (expToEval[opLoc - 1] == 'E')
-					opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-		if (opLoc == 0)
-			partToEval = expToEval.substr(0, opLoc + 1);
-		else
-			partToEval = expToEval.substr(0, opLoc);
+		if(opLoc == -1) {
+			partToEval = expToEval;
+		}
+		else {
+			if (expToEval.at(opLoc) == '-')
+				if (opLoc != 0)
+					if (expToEval[opLoc - 1] == 'E')
+						opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
+			if (opLoc == 0)
+				partToEval = expToEval.substr(0, opLoc + 1);
+			else
+				partToEval = expToEval.substr(0, opLoc);
+		}
 		if (isdigit(partToEval[0])) {
 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
 			qType.push_back('V');

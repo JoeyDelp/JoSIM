@@ -1,39 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_None|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_Matplotlib|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_FLTK|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_Matplotlib|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_None|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_SPECIAL|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_NO_PRINT|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_FLTK|Win32'">
-    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_None|x64'">
     <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_NO_PRINT|x64'">
+    <LocalDebuggerCommandArguments>$(SolutionDir)..\..\test\basic_jtl.cir</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEBUG_Matplotlib|x64'">
@@ -49,10 +21,6 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_None|x64'">
-    <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RELEASE_SPECIAL|x64'">
     <LocalDebuggerCommandArguments>-g $(SolutionDir)..\..\..\..\C3_Workspace\js\mitll_ptltx_to_ptlrx.js</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
