@@ -71,16 +71,17 @@
 // Linear algebra include
 #include "klu.h"
 
+struct pair_hash
+{
+    template <class T1, class T2>
+    std::size_t operator()(const std::pair<T1,T2> &p) const noexcept
+    {
+        std::size_t h1 = std::hash<T1>{}(p.first);
+        std::size_t h2 = std::hash<T2>{}(p.second);
+        return h1 ^ (h2 << 1);
+    }
+};
+
 #include "j_globals.h"
-#include "j_args.h"
-#include "j_input.h"
-#include "j_errors.h"
-#include "j_misc.h"
-#include "j_parser.h"
-#include "j_components.h"
-#include "j_matrix.h"
-#include "j_simulation.h"
-#include "j_plot.h"
-#include "j_output.h"
 
 #endif

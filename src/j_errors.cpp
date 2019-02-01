@@ -6,7 +6,7 @@
   Function that manages different error codes. This function will be huge.
 */
 void
-Errors::error_handling(int errorCode) {
+Errors::error_handling(int errorCode, std::string whatPart) {
 	switch (errorCode) {
 	case DEF_ERROR:
 		std::cout << "E: Invalid definitions file specifier." << std::endl;
@@ -83,7 +83,7 @@ Errors::error_handling(int errorCode) {
 			<< std::endl;
 		break;
 	case CANNOT_OPEN_FILE:
-		std::cout << "E: Input file " << cArg.inName
+		std::cout << "E: Input file " << whatPart
 			<< " cannot be found or opened." << std::endl;
 		std::cout << "E: Please ensure that the file exists and can be opened."
 			<< std::endl;

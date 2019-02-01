@@ -3,7 +3,9 @@
 #ifndef J_MISC_H_
 #define J_MISC_H_
 #include "j_std_include.h"
-class InputFile;
+#include "j_input.h"
+
+class Input;
 
 class Misc {
   public:
@@ -29,9 +31,9 @@ class Misc {
     /*
       Display circuit stats, VERBOSE makes full 1, else minimal
     */
-    static
-    void
-    circuit_stats(int full, InputFile& iFile);
+    // static
+    // void
+    // circuit_stats(int full, InputFile& iFile);
     /*
       Returns a vector of tokens for a given string
     */
@@ -50,12 +52,10 @@ class Misc {
     static
     int
     map_value_count(std::unordered_map<std::string, int> map, int value);
-    /*
-      Returns the double value of a given string with the correct modifier
-    */
+
     static
     double
-    modifier(std::string value, std::string subckt = "");
+    modifier(std::string value);
     /*
       Unique vector push. Only pushes if item being pushed is unique
     */
@@ -84,9 +84,13 @@ class Misc {
     Function parser. Turns a string of pwl, pulse, sin, cos into a vector of values
     for the duration of the simulation.
     */
+    // static
+    // std::vector<double>
+    // function_parse(std::string str, InputFile& iFile, std::string subckt = "");
+    
     static
     std::vector<double>
-    function_parse(std::string str, InputFile& iFile, std::string subckt = "");
+    parse_function(std::string &str, Input &iObj, std::string subckt = "");
     /*
     Helper function for finding the depth of subcircuits in the design
     */
@@ -96,12 +100,12 @@ class Misc {
     /*
     Function that finds the depth of the subcircuits in the design
     */
-    static
-    int
-    subCircuitDepth(std::vector<std::string> segment,
-      InputFile& iFile,
-      int& thisDepth,
-      int& overallDepth);
+    // static
+    // int
+    // subCircuitDepth(std::vector<std::string> segment,
+    //   InputFile& iFile,
+    //   int& thisDepth,
+    //   int& overallDepth);
     /*
     Template function that swaps the key and value of a pair
     */

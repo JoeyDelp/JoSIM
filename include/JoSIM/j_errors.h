@@ -132,7 +132,7 @@ class Errors {
 		/*
 			Function that manages different error codes. This function will be huge.
 		*/
-		static void error_handling(int errorCode);
+		static void error_handling(int errorCode, std::string whatPart = "");
 		/*
 			Invalid component declaration error function
 		*/

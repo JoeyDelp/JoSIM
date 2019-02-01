@@ -1,6 +1,7 @@
 #ifndef J_ARGS_H_
 #define J_ARGS_H_
 #include "j_std_include.h"
+#include "j_errors.h"
 
 class Args {
     public:

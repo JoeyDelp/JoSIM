@@ -14,159 +14,294 @@ std::vector<std::string> funcs(funcsArray,
 	funcsArray +
 	sizeof(funcsArray) / sizeof(std::string));
 
-void
-Parser::parse_expression(std::string expName, std::string expr, std::string subckt) {
-	if (iFile.paramValues.paramMap.count("expName") != 0)
-		Errors::parsing_errors(EXPRESSION_ARLEADY_DEFINED, expName);
-	std::string expToEval = expr;
-	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
-	std::vector<char> qType, qTypeCopy;
-	std::string partToEval;
-	int opLoc, popCount = 0;
-	double result = 0.0;
-	std::string stringSuffix = "";
-	if(subckt != "") stringSuffix = "|" + subckt;
-	while (!expToEval.empty()) {
-		opLoc = expToEval.find_first_of("/*-+(){}[]^");
-		if (expToEval[opLoc] == '-')
-			if (opLoc != 0)
-				if (expToEval[opLoc - 1] == 'E')
-					opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-		if (opLoc == 0)
-			partToEval = expToEval.substr(0, opLoc + 1);
-		else
-			partToEval = expToEval.substr(0, opLoc);
-		if (isdigit(partToEval[0])) {
-			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
-			qType.push_back('V');
-		}
-		else if ((iFile.paramValues.paramMap.count(partToEval) != 0) ||
-			(iFile.paramValues.paramMap.count(partToEval + stringSuffix) != 0)) {
-			if (subckt != "") {
-				rpnQueue.push_back(
-					Misc::precise_to_string(iFile.paramValues.paramMap.at(
-						partToEval + stringSuffix)));
-				qType.push_back('V');
-			}
-			else {
-				rpnQueue.push_back(Misc::precise_to_string(
-					iFile.paramValues.paramMap.at(partToEval)));
-				qType.push_back('V');
-			}
-		}
-		else if ((iFile.paramValues.unparsedMap.count(partToEval) != 0) ||
-			(iFile.paramValues.unparsedMap.count(partToEval + stringSuffix) != 0)) {
-			if (subckt != "") {
-				Parser::parse_expression(partToEval,
-					iFile.paramValues.unparsedMap.at(partToEval + stringSuffix), subckt);
-				rpnQueue.push_back(
-					Misc::precise_to_string(iFile.paramValues.paramMap.at(
-						partToEval + stringSuffix)));
-				qType.push_back('V');
-			}
-			else {
-				Parser::parse_expression(partToEval,
-					iFile.paramValues.unparsedMap.at(partToEval), subckt);
-				rpnQueue.push_back(Misc::precise_to_string(
-					iFile.paramValues.paramMap.at(partToEval)));
-				qType.push_back('V');
-			}
-		}
-		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
-			opStack.push_back(partToEval);
-		else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
-			while ((!opStack.empty()) &&
-				(((prec_lvl(opStack.back()) == 4) ||
-				(prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
-					(opStack.back().find_first_of("([{") == std::string::npos) &&
-					(partToEval != "^"))) {
-				rpnQueue.push_back(opStack.back());
-				qType.push_back('O');
-				opStack.pop_back();
-			}
-			opStack.push_back(partToEval);
-		}
-		else if (partToEval.find_first_of("([{") != std::string::npos)
-			opStack.push_back(partToEval);
-		else if (partToEval.find_first_of(")]}") != std::string::npos) {
-			while ((!opStack.empty()) &&
-				(opStack.back().find_first_of("([{") == std::string::npos)) {
-				rpnQueue.push_back(opStack.back());
-				qType.push_back('O');
-				opStack.pop_back();
-			}
-			if ((!opStack.empty()) &&
-				(opStack.back().find_first_of("([{") != std::string::npos))
-				opStack.pop_back();
-			else
-				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
-		}
-		else
-			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
-		if (opLoc == 0)
-			expToEval = expToEval.substr(opLoc + 1);
-		if (opLoc == -1)
-			expToEval = "";
-		else
-			expToEval = expToEval.substr(opLoc);
-	}
-	if (expToEval.empty())
-		while (!opStack.empty()) {
-			if (opStack.back().find_first_of("([{") != std::string::npos)
-				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
-			else {
-				rpnQueue.push_back(opStack.back());
-				qType.push_back('O');
-				opStack.pop_back();
-			}
-		}
-	while (rpnQueue.size() > 1) {
-		rpnQueueCopy.clear();
-		qTypeCopy.clear();
-		for (int i = 0; i < qType.size(); i++) {
-			if (qType[i] == 'V') {
-				rpnQueueCopy.push_back(rpnQueue[i]);
-				qTypeCopy.push_back('V');
-			}
-			else if (qType[i] == 'O') {
-				if (i == 0)
-					Errors::parsing_errors(INVALID_RPN, expr);
-				else if (i < 2) {
-					rpnQueueCopy.pop_back();
-					rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
-						rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
-				}
-				else {
-					result = parse_operator(rpnQueue[i],
-						Misc::modifier(rpnQueue[i - 2]),
-						Misc::modifier(rpnQueue[i - 1]),
-						popCount);
-					for (int k = 0; k < popCount; k++)
-						rpnQueueCopy.pop_back();
-					if (popCount == 2)
-						qTypeCopy.pop_back();
-					rpnQueueCopy.push_back(Misc::precise_to_string(result));
-				}
-				if (rpnQueue.size() >= i) {
-					rpnQueueCopy.insert(
-						rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
-					qTypeCopy.insert(qTypeCopy.end(), qType.begin() + i + 1, qType.end());
-				}
-				break;
-			}
-		}
-		rpnQueue = rpnQueueCopy;
-		qType = qTypeCopy;
-	}
-	if(expName.find("|" + subckt) != std::string::npos)
-		iFile.paramValues.insertParam(expName, Misc::modifier(rpnQueue.back()));
-	else 
-		iFile.paramValues.insertParam(expName, Misc::modifier(rpnQueue.back()), subckt);
-}
+// void
+// Parser::parse_expression(std::string expName, std::string expr, std::string subckt) {
+// 	if (iFile.paramValues.paramMap.count("expName") != 0)
+// 		Errors::parsing_errors(EXPRESSION_ARLEADY_DEFINED, expName);
+// 	std::string expToEval = expr;
+// 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
+// 	std::vector<char> qType, qTypeCopy;
+// 	std::string partToEval;
+// 	int opLoc, popCount = 0;
+// 	double result = 0.0;
+// 	std::string stringSuffix = "";
+// 	if(subckt != "") stringSuffix = "|" + subckt;
+// 	while (!expToEval.empty()) {
+// 		opLoc = expToEval.find_first_of("/*-+(){}[]^");
+// 		if (expToEval[opLoc] == '-')
+// 			if (opLoc != 0)
+// 				if (expToEval[opLoc - 1] == 'E')
+// 					opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
+// 		if (opLoc == 0)
+// 			partToEval = expToEval.substr(0, opLoc + 1);
+// 		else
+// 			partToEval = expToEval.substr(0, opLoc);
+// 		if (isdigit(partToEval[0])) {
+// 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
+// 			qType.push_back('V');
+// 		}
+// 		else if ((iFile.paramValues.paramMap.count(partToEval) != 0) ||
+// 			(iFile.paramValues.paramMap.count(partToEval + stringSuffix) != 0)) {
+// 			if (subckt != "") {
+// 				rpnQueue.push_back(
+// 					Misc::precise_to_string(iFile.paramValues.paramMap.at(
+// 						partToEval + stringSuffix)));
+// 				qType.push_back('V');
+// 			}
+// 			else {
+// 				rpnQueue.push_back(Misc::precise_to_string(
+// 					iFile.paramValues.paramMap.at(partToEval)));
+// 				qType.push_back('V');
+// 			}
+// 		}
+// 		else if ((iFile.paramValues.unparsedMap.count(partToEval) != 0) ||
+// 			(iFile.paramValues.unparsedMap.count(partToEval + stringSuffix) != 0)) {
+// 			if (subckt != "") {
+// 				Parser::parse_expression(partToEval,
+// 					iFile.paramValues.unparsedMap.at(partToEval + stringSuffix), subckt);
+// 				rpnQueue.push_back(
+// 					Misc::precise_to_string(iFile.paramValues.paramMap.at(
+// 						partToEval + stringSuffix)));
+// 				qType.push_back('V');
+// 			}
+// 			else {
+// 				Parser::parse_expression(partToEval,
+// 					iFile.paramValues.unparsedMap.at(partToEval), subckt);
+// 				rpnQueue.push_back(Misc::precise_to_string(
+// 					iFile.paramValues.paramMap.at(partToEval)));
+// 				qType.push_back('V');
+// 			}
+// 		}
+// 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
+// 			opStack.push_back(partToEval);
+// 		else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
+// 			while ((!opStack.empty()) &&
+// 				(((prec_lvl(opStack.back()) == 4) ||
+// 				(prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
+// 					(opStack.back().find_first_of("([{") == std::string::npos) &&
+// 					(partToEval != "^"))) {
+// 				rpnQueue.push_back(opStack.back());
+// 				qType.push_back('O');
+// 				opStack.pop_back();
+// 			}
+// 			opStack.push_back(partToEval);
+// 		}
+// 		else if (partToEval.find_first_of("([{") != std::string::npos)
+// 			opStack.push_back(partToEval);
+// 		else if (partToEval.find_first_of(")]}") != std::string::npos) {
+// 			while ((!opStack.empty()) &&
+// 				(opStack.back().find_first_of("([{") == std::string::npos)) {
+// 				rpnQueue.push_back(opStack.back());
+// 				qType.push_back('O');
+// 				opStack.pop_back();
+// 			}
+// 			if ((!opStack.empty()) &&
+// 				(opStack.back().find_first_of("([{") != std::string::npos))
+// 				opStack.pop_back();
+// 			else
+// 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
+// 		}
+// 		else
+// 			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
+// 		if (opLoc == 0)
+// 			expToEval = expToEval.substr(opLoc + 1);
+// 		if (opLoc == -1)
+// 			expToEval = "";
+// 		else
+// 			expToEval = expToEval.substr(opLoc);
+// 	}
+// 	if (expToEval.empty())
+// 		while (!opStack.empty()) {
+// 			if (opStack.back().find_first_of("([{") != std::string::npos)
+// 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
+// 			else {
+// 				rpnQueue.push_back(opStack.back());
+// 				qType.push_back('O');
+// 				opStack.pop_back();
+// 			}
+// 		}
+// 	while (rpnQueue.size() > 1) {
+// 		rpnQueueCopy.clear();
+// 		qTypeCopy.clear();
+// 		for (int i = 0; i < qType.size(); i++) {
+// 			if (qType[i] == 'V') {
+// 				rpnQueueCopy.push_back(rpnQueue[i]);
+// 				qTypeCopy.push_back('V');
+// 			}
+// 			else if (qType[i] == 'O') {
+// 				if (i == 0)
+// 					Errors::parsing_errors(INVALID_RPN, expr);
+// 				else if (i < 2) {
+// 					rpnQueueCopy.pop_back();
+// 					rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
+// 						rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
+// 				}
+// 				else {
+// 					result = parse_operator(rpnQueue[i],
+// 						Misc::modifier(rpnQueue[i - 2]),
+// 						Misc::modifier(rpnQueue[i - 1]),
+// 						popCount);
+// 					for (int k = 0; k < popCount; k++)
+// 						rpnQueueCopy.pop_back();
+// 					if (popCount == 2)
+// 						qTypeCopy.pop_back();
+// 					rpnQueueCopy.push_back(Misc::precise_to_string(result));
+// 				}
+// 				if (rpnQueue.size() >= i) {
+// 					rpnQueueCopy.insert(
+// 						rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
+// 					qTypeCopy.insert(qTypeCopy.end(), qType.begin() + i + 1, qType.end());
+// 				}
+// 				break;
+// 			}
+// 		}
+// 		rpnQueue = rpnQueueCopy;
+// 		qType = qTypeCopy;
+// 	}
+// 	if(expName.find("|" + subckt) != std::string::npos)
+// 		iFile.paramValues.insertParam(expName, Misc::modifier(rpnQueue.back()));
+// 	else 
+// 		iFile.paramValues.insertParam(expName, Misc::modifier(rpnQueue.back()), subckt);
+// }
+
+// double
+// Parser::parse_return_expression(std::string expr, std::string subckt) {
+// 	std::string expToEval = expr;
+// 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
+// 	std::vector<char> qType, qTypeCopy;
+// 	std::string partToEval;
+// 	int opLoc, popCount = 0;
+// 	double result = 0.0;
+// 	while (!expToEval.empty()) {
+// 		opLoc = expToEval.find_first_of("/*-+(){}[]^");
+// 		if(opLoc == -1) {
+// 			partToEval = expToEval;
+// 		}
+// 		else {
+// 			if (expToEval.at(opLoc) == '-')
+// 				if (opLoc != 0)
+// 					if (expToEval[opLoc - 1] == 'E')
+// 						opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
+// 			if (opLoc == 0)
+// 				partToEval = expToEval.substr(0, opLoc + 1);
+// 			else
+// 				partToEval = expToEval.substr(0, opLoc);
+// 		}
+// 		if (isdigit(partToEval[0])) {
+// 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
+// 			qType.push_back('V');
+// 		}
+// 		else if (iFile.paramValues.paramMap.count(partToEval) != 0) {
+// 			rpnQueue.push_back(Misc::precise_to_string(
+// 				iFile.paramValues.paramMap.at(partToEval)));
+// 			qType.push_back('V');
+// 		}
+// 		else if (subckt != "") {
+// 			if (iFile.paramValues.paramMap.count(partToEval + "|" + subckt) != 0) {
+// 				rpnQueue.push_back(Misc::precise_to_string(
+// 					iFile.paramValues.paramMap.at(partToEval + "|" + subckt)));
+// 				qType.push_back('V');
+// 			}
+// 		}
+// 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
+// 			opStack.push_back(partToEval);
+// 		else if (consts.count(partToEval) != 0){
+// 			rpnQueue.push_back(Misc::precise_to_string(consts[partToEval]));
+// 			qType.push_back('V');
+// 		}
+// 		else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
+// 			while ((!opStack.empty()) &&
+// 				(((prec_lvl(opStack.back()) == 4) ||
+// 				(prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
+// 					(opStack.back().find_first_of("([{") == std::string::npos) &&
+// 					(partToEval != "^"))) {
+// 				rpnQueue.push_back(opStack.back());
+// 				qType.push_back('O');
+// 				opStack.pop_back();
+// 			}
+// 			opStack.push_back(partToEval);
+// 		}
+// 		else if (partToEval.find_first_of("([{") != std::string::npos)
+// 			opStack.push_back(partToEval);
+// 		else if (partToEval.find_first_of(")]}") != std::string::npos) {
+// 			while ((!opStack.empty()) &&
+// 				(opStack.back().find_first_of("([{") == std::string::npos)) {
+// 				rpnQueue.push_back(opStack.back());
+// 				qType.push_back('O');
+// 				opStack.pop_back();
+// 			}
+// 			if ((!opStack.empty()) &&
+// 				(opStack.back().find_first_of("([{") != std::string::npos))
+// 				opStack.pop_back();
+// 			else
+// 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
+// 		}
+// 		else
+// 			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
+// 		if (opLoc == 0)
+// 			expToEval = expToEval.substr(opLoc + 1);
+// 		if (opLoc == -1)
+// 			expToEval = "";
+// 		else
+// 			expToEval = expToEval.substr(opLoc);
+// 	}
+// 	if (expToEval.empty())
+// 		while (!opStack.empty()) {
+// 			if (opStack.back().find_first_of("([{") != std::string::npos)
+// 				Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
+// 			else {
+// 				rpnQueue.push_back(opStack.back());
+// 				qType.push_back('O');
+// 				opStack.pop_back();
+// 			}
+// 		}
+// 	while (rpnQueue.size() > 1) {
+// 		rpnQueueCopy.clear();
+// 		qTypeCopy.clear();
+// 		for (int i = 0; i < qType.size(); i++) {
+// 			if (qType[i] == 'V') {
+// 				rpnQueueCopy.push_back(rpnQueue[i]);
+// 				qTypeCopy.push_back('V');
+// 			}
+// 			else if (qType[i] == 'O') {
+// 				if (i == 0)
+// 					Errors::parsing_errors(INVALID_RPN, expr);
+// 				else if (i < 2) {
+// 					rpnQueueCopy.pop_back();
+// 					rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
+// 						rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
+// 				}
+// 				else {
+// 					result = parse_operator(rpnQueue[i],
+// 						Misc::modifier(rpnQueue[i - 2]),
+// 						Misc::modifier(rpnQueue[i - 1]),
+// 						popCount);
+// 					for (int k = 0; k < popCount; k++)
+// 						rpnQueueCopy.pop_back();
+// 					if (popCount == 2)
+// 						qTypeCopy.pop_back();
+// 					rpnQueueCopy.push_back(Misc::precise_to_string(result));
+// 				}
+// 				if (rpnQueue.size() >= i) {
+// 					rpnQueueCopy.insert(
+// 						rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
+// 					qTypeCopy.insert(qTypeCopy.end(), qType.begin() + i + 1, qType.end());
+// 				}
+// 				break;
+// 			}
+// 		}
+// 		rpnQueue = rpnQueueCopy;
+// 		qType = qTypeCopy;
+// 	}
+// 	return Misc::modifier(rpnQueue.back());
+// }
 
 double
-Parser::parse_return_expression(std::string expr, std::string subckt) {
+Parser::parse_param(std::string expr, std::unordered_map<std::pair<std::string, 
+				std::string>, double, pair_hash> parsedParams, 
+				std::string subckt) {
 	std::string expToEval = expr;
+	expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
 	std::vector<char> qType, qTypeCopy;
 	std::string partToEval;
@@ -191,17 +326,10 @@ Parser::parse_return_expression(std::string expr, std::string subckt) {
 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
 			qType.push_back('V');
 		}
-		else if (iFile.paramValues.paramMap.count(partToEval) != 0) {
+		else if (parsedParams.count(std::make_pair(partToEval, subckt)) != 0) {
 			rpnQueue.push_back(Misc::precise_to_string(
-				iFile.paramValues.paramMap.at(partToEval)));
+				parsedParams.at(std::make_pair(partToEval, ""))));
 			qType.push_back('V');
-		}
-		else if (subckt != "") {
-			if (iFile.paramValues.paramMap.count(partToEval + "|" + subckt) != 0) {
-				rpnQueue.push_back(Misc::precise_to_string(
-					iFile.paramValues.paramMap.at(partToEval + "|" + subckt)));
-				qType.push_back('V');
-			}
 		}
 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
 			opStack.push_back(partToEval);
@@ -372,4 +500,41 @@ Parser::parse_operator(std::string op, double val1, double val2, int& popCount)
 		}
 	}
 	return 0.0;
+}
+
+void
+Parser::parse_parameters(std::vector<std::pair<std::string, std::string>> unparsedParams,
+						std::unordered_map<std::pair<std::string, std::string>, 
+						double, pair_hash> &parsedParams) {
+	std::vector<std::string> tokens, paramTokens;
+	std::string paramName, paramExp;
+	double value;
+	for (auto i : unparsedParams) {
+		tokens = Misc::tokenize_space(i.second);
+		if(tokens.size() > 1) {
+			if(tokens.size() >= 2) {
+				if(tokens.size() > 2) paramName = tokens.at(1);
+				else paramName = tokens.at(1).substr(0, tokens.at(1).find_first_of("="));
+				paramExp = i.second.substr(i.second.find_first_of("=") + 1);
+				if(i.first == "") {
+					value = parse_param(paramExp, parsedParams);
+					parsedParams[std::make_pair(paramName, "")] = value;
+				}
+				else {
+					value = parse_param(paramExp, parsedParams, i.first);
+					parsedParams[std::make_pair(paramName, i.first)] = value;
+				}
+			}
+			else {
+				std::cout << "W: Missing parameter declaration in " << i.second << "." << std::endl;
+				std::cout << "W: Please ensure that a valid .PARAM definition is declared." << std::endl;
+				std::cout << "W: This line will be ignored." << std::endl;
+			}
+		}
+		else {
+			std::cout << "W: Missing parameter declaration in " << i.second << "." << std::endl;
+			std::cout << "W: Please ensure that a valid .PARAM definition is declared." << std::endl;
+			std::cout << "W: This line will be ignored." << std::endl;
+		}
+	}
 }

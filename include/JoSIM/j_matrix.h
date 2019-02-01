@@ -2,33 +2,62 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_MATRIX_H_
 #define J_MATRIX_H_
-#include "j_std_include.h"
+#include "j_components.h"
+#include "j_input.h"
+#include "j_errors.h"
+
+class matrix_element {
+    public:
+      std::string label;
+      int rowIndex;
+      int colIndex;
+      double value;
+      matrix_element() {
+          label = "NOTHING";
+          rowIndex = -1;
+          colIndex = -1;
+          value = 0.0;
+      }
+};
 
 class Matrix {
-  public:
-    /*
-      Systematically create A matrix
-    */
-    static
-    void
-    matrix_A(InputFile& iFile);
-    /*
-    Identify each non zero matrix element in voltage form
-    */
-    static
-    void
-    create_A_matrix_volt(InputFile& iFile);
-    /*
-    Identify each non zero matrix element in phase form
-    */
-    static
-    void
-    create_A_matrix_phase(InputFile& iFile);
-    /*
-      Create A matrix in CSR format
-    */
-    static
-    void 
-    csr_A_matrix(InputFile& iFile);
+    public:
+      Components components;
+      std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
+      std::vector<matrix_element> mElements;
+      std::unordered_map<std::string, std::vector<double>> sources;
+      std::vector<std::string> rowNames, columnNames;
+      std::vector<double> nzval;
+	    std::vector<int> colind, rowptr;
+      int Nsize, Msize;
+
+      Matrix() {};
+      void
+      create_matrix(Input &iObj);
+
+      void
+      create_A_volt(Input &iObj);
+
+      void
+      create_A_phase(Input &iObj);
+
+      void
+      create_CSR();
+
+      // static
+      // void
+      // matrix_A(InputFile& iFile);
+
+      // static
+      // void
+      // create_A_matrix_volt(InputFile& iFile);
+
+      // static
+      // void
+      // create_A_matrix_phase(InputFile& iFile);
+
+      // static
+      // void 
+      // csr_A_matrix(InputFile& iFile);
 };
 #endif
