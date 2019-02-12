@@ -1,9 +1,5 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-/*
-  Contains all the global variables used in this program and where they are
-  instantiated
-*/
 #ifndef J_GLOBALS_H_
 #define J_GLOBALS_H_
 #include "j_std_include.h"

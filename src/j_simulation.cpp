@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_simulation.h"
 
@@ -14,32 +14,34 @@ Simulation::identify_simulation(std::vector<std::string> controls,
 		if (i.find("TRAN") != std::string::npos) {
 			transFound = true;
 			simtokens = Misc::tokenize_delimeter(i, " ,");
-			if (simtokens.size() < 2) {
-				Errors::control_errors(TRANS_ERROR, "Too few parameters: " + i);
-				maxtstep = 1E-12;
-				tstop = 1E-9;
-				tstart = 0;
-			}
-			else {
-				prstep = Misc::modifier(simtokens[1]);
-				if (simtokens.size() > 2) {
-					tstop = Misc::modifier(simtokens[2]);
-					if (simtokens.size() > 3) {
-						tstart = Misc::modifier(simtokens[3]);
-						if (simtokens.size() > 4) {
-							maxtstep = Misc::modifier(simtokens[4]);
+			if (simtokens.at(0).find("TRAN") != std::string::npos) {
+				if (simtokens.size() < 2) {
+					Errors::control_errors(TRANS_ERROR, "Too few parameters: " + i);
+					maxtstep = 1E-12;
+					tstop = 1E-9;
+					tstart = 0;
+				}
+				else {
+					prstep = Misc::modifier(simtokens[1]);
+					if (simtokens.size() > 2) {
+						tstop = Misc::modifier(simtokens[2]);
+						if (simtokens.size() > 3) {
+							tstart = Misc::modifier(simtokens[3]);
+							if (simtokens.size() > 4) {
+								maxtstep = Misc::modifier(simtokens[4]);
+							}
+							else maxtstep = 1E-12;
 						}
-						else maxtstep = 1E-12;
+						else {
+							tstart = 0;
+							maxtstep = 1E-12;
+						}
 					}
 					else {
+						tstop = 1E-9;
 						tstart = 0;
 						maxtstep = 1E-12;
 					}
-				}
-				else {
-					tstop = 1E-9;
-					tstart = 0;
-					maxtstep = 1E-12;
 				}
 			}
 		}
@@ -431,6 +433,10 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 					RHSvalue = mObj.components.phaseVs[currentLabel].pn1 + ((iObj.transSim.prstep * M_PI) / PHI_ZERO) * (mObj.sources[currentLabel][i] + mObj.sources[currentLabel][i-1]);
 				else if (i == 0)
 					RHSvalue = mObj.components.phaseVs[currentLabel].pn1 + ((iObj.transSim.prstep  * M_PI) / PHI_ZERO) * mObj.sources[currentLabel][i];
+			}
+			else if (j[2] == 'P') {
+				currentLabel = j.substr(2);
+				RHSvalue = mObj.sources.at(currentLabel).at(i);
 			}
 			else if (j[2] == 'T') {
 				currentLabel = j.substr(2);

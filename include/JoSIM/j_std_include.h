@@ -1,10 +1,10 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_STD_INCLUDE
 #define J_STD_INCLUDE
 
 // Version info
-#define VERSION 2.1
+#define VERSION 2.2
 
 // Executable info
 #ifndef WIN32

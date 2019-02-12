@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_COMPONENTS_H
 #define J_COMPONENTS_H
@@ -205,6 +205,16 @@ class vs_phase : public device {
 		}
 };
 
+class ps_phase : public device {
+	public:
+		std::string curNodeR, curNodeC;
+		int curNRow, curNCol;
+		ps_phase() {
+			curNodeR = curNodeC = "NONE";
+			curNRow = curNCol = -1;
+		}
+};
+
 class tx_phase : public tx_line {
 	public: 
 		double p1n1, p1n2, p1nk, p1nk1, dP1n1, dP1n2, dP1nk, dP1nk1,
@@ -222,6 +232,7 @@ class Components {
 		std::unordered_map<std::string, cap_phase> phaseCap;
 		std::unordered_map<std::string, jj_phase> phaseJJ;
 		std::unordered_map<std::string, vs_phase> phaseVs;
+		std::unordered_map<std::string, ps_phase> phasePs;
 
 		std::unordered_map<std::string, res_volt> voltRes;
 		std::unordered_map<std::string, ind_volt> voltInd;
@@ -242,15 +253,4 @@ class Components {
 		void
 		jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, std::string subckt = "");
 };
-
-// class Component {
-// 	public:
-// 		static
-// 		void
-// 		jj_comp(std::string modName, std::string area, std::string jjLabel, std::string subckt = "");
-
-// 		static
-// 		void
-// 		jj_comp_phase(std::string modName, std::string area, std::string jjLabel, std::string subckt = "");
-// };
 #endif

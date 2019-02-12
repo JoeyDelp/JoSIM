@@ -1,11 +1,9 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_ERRORS_H_
 #define J_ERRORS_H_
 #include "j_std_include.h"
-/*
-  General error codes
-*/
+
 #define DEF_ERROR 0
 #define DEF_FILE_ERROR 1
 #define LOG_ERROR 2
@@ -23,9 +21,7 @@
 #define FINAL_ARG_SWITCH 14
 #define INVALID_ANALYSIS 15
 #define INVALID_CONVENTION 16
-/*
-  Component error codes
-*/
+
 #define CAP_ERROR 0
 #define IND_ERROR 1
 #define RES_ERROR 2
@@ -49,9 +45,7 @@
 #define INVALID_EXPR 20
 #define INVALID_TX_DEFINED 21
 #define MISSING_INDUCTOR 22
-/*
-  Control error codes
-*/
+
 #define TRANS_ERROR 0
 #define PRINT_ERROR 1
 #define PLOT_ERROR 2
@@ -60,23 +54,15 @@
 #define AC_ERROR 5
 #define PHASE_ERROR 6
 #define NO_SIM 7
-/*
-  Model error codes
-*/
+
 #define PARAM_TYPE_ERROR 0
 #define UNKNOWN_MODEL_TYPE 1
 #define BAD_MODEL_DEFINITION 2
-/*
-  Matrix error codes
-*/
+
 #define NON_SQUARE 0
-/*
-  Misc error codes
-*/
+
 #define STOD_ERROR 0
-/*
-	Function error codes
-*/
+
 #define INITIAL_VALUES 0
 #define TOO_FEW_TIMESTEPS 1
 #define TOO_FEW_VALUES 2
@@ -94,17 +80,13 @@
 #define CUS_TOO_MANY_ARGUMENTS 14
 #define CUS_SF_ZERO 15
 #define CUS_WF_NOT_FOUND 16
-/*
-	Simulation error codes
-*/
+
 #define JJCAP_NOT_FOUND 0
 #define JJICRIT_NOT_FOUND 1
 #define JJPHASE_NODE_NOT_FOUND 2
 #define INDUCTOR_CURRENT_NOT_FOUND 3
 #define MATRIX_SINGULAR 4
-/*
-	Plotting error codes
-*/
+
 #define NO_SUCH_PLOT_TYPE 0
 #define NO_SUCH_DEVICE_FOUND 1
 #define CURRENT_THROUGH_VOLTAGE_SOURCE 2
@@ -112,16 +94,12 @@
 #define TOO_MANY_NODES 4
 #define BOTH_ZERO 5
 #define VOLTAGE_IN_PHASE 6
-/*
-	Parsing error codes
-*/
+
 #define EXPRESSION_ARLEADY_DEFINED 0
 #define UNIDENTIFIED_PART 1
 #define MISMATCHED_PARENTHESIS 2
 #define INVALID_RPN 3
-/*
-	IV error codes
-*/
+
 #define NO_TRANSIENT_ANALYSIS 0
 #define NO_INPUT_SWEEP 1
 #define SOURCE_NOT_IDENTIFIED 2
@@ -129,49 +107,49 @@
 
 class Errors {
 	public:
-		/*
-			Function that manages different error codes. This function will be huge.
-		*/
-		static void error_handling(int errorCode, std::string whatPart = "");
-		/*
-			Invalid component declaration error function
-		*/
-		static void invalid_component_errors(int errorCode, std::string componentLabel);
-		/*
-			Missing simulation and incorrect control parameters specified
-		*/
-		static void control_errors(int errorCode, std::string whatPart);
-		/*
-			Model declaration error function
-		*/
-		[[noreturn]] static void model_errors(int errorCode, std::string whatPart);
-		/*
-			Matrix creation error function
-		*/
-		static void matrix_errors(int errorCode, std::string whatPart);
-		/*
-			Misc error function
-		*/
-		[[noreturn]] static void misc_errors(int errorCode, std::string whatPart);
-		/*
-			Function parser error function
-		*/
-		static void function_errors(int errorCode, std::string whatPart);
-		/*
-			Simulation error function
-		*/
-		[[noreturn]] static void simulation_errors(int errorCode, std::string whatPart);
-		/*
-			Plotting error function
-		*/
-		static void plotting_errors(int errorCode, std::string whatPart);
-		/*
-			Parsing error function
-		*/
-		static void parsing_errors(int errorCode, std::string whatPart);
-		/*
-			IV curve generation errors
-		*/
-		static void iv_errors(int errorCode, std::string whatPart);
+
+		static 
+		void 
+		error_handling(int errorCode, std::string whatPart = "");
+
+		static 
+		void 
+		invalid_component_errors(int errorCode, std::string componentLabel);
+
+		static 
+		void 
+		control_errors(int errorCode, std::string whatPart);
+
+		[[noreturn]] static 
+		void 
+		model_errors(int errorCode, std::string whatPart);
+
+		static 
+		void 
+		matrix_errors(int errorCode, std::string whatPart);
+
+		[[noreturn]] static 
+		void 
+		misc_errors(int errorCode, std::string whatPart);
+
+		static 
+		void 
+		function_errors(int errorCode, std::string whatPart);
+
+		[[noreturn]] static 
+		void 
+		simulation_errors(int errorCode, std::string whatPart);
+
+		static 
+		void 
+		plotting_errors(int errorCode, std::string whatPart);
+
+		static 
+		void 
+		parsing_errors(int errorCode, std::string whatPart);
+
+		static 
+		void 
+		iv_errors(int errorCode, std::string whatPart);
 };
 #endif

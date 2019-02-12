@@ -1,10 +1,7 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_errors.h"
 
-/*
-  Function that manages different error codes. This function will be huge.
-*/
 void
 Errors::error_handling(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -133,9 +130,7 @@ Errors::error_handling(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/*
-  Invalid component declaration error function
-*/
+
 void
 Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -240,9 +235,7 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/*
-  Missing simulation and incorrect control parameters specified
-*/
+
 void
 Errors::control_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -276,9 +269,7 @@ Errors::control_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/*
-Model declaration error function
-*/
+
 [[noreturn]] void
 Errors::model_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -300,9 +291,7 @@ Errors::model_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/*
-  Matrix creation error function
-*/
+
 void
 Errors::matrix_errors(int errorCode, std::string whatPart)
 {
@@ -320,9 +309,7 @@ Errors::matrix_errors(int errorCode, std::string whatPart)
 		std::cout << std::endl;
 	}
 }
-/*
-  Misc error function
-*/
+
 [[noreturn]] void
 Errors::misc_errors(int errorCode, std::string whatPart)
 {
@@ -338,9 +325,7 @@ Errors::misc_errors(int errorCode, std::string whatPart)
 		exit(0);
 	}
 }
-/*
-Function parser error function
-*/
+
 void
 Errors::function_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -389,12 +374,6 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 		std::cout << "W: Program will continue but PULSE command is redundant."
 			<< std::endl;
 		break;
-		// case PULSE_RISE_TIME_ZERO:
-		//	std::cout << "E: PULSE rise time cannot be zero." << whatPart <<
-		//std::endl; 	std::cout << "E: " << std::endl; 	std::cout << std::endl; case
-		// PULSE_FALL_TIME_ZERO: 	std::cout << "E: " << whatPart << std::endl;
-		//	std::cout << "E: " << std::endl;
-		//	std::cout << std::endl;
 	case PULSE_WIDTH_ZERO:
 		std::cout << "W: PULSE width is 0.0, this renders the function redundant."
 			<< std::endl;
@@ -464,9 +443,7 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/*
-Simulation error function
-*/
+
 [[noreturn]] void
 Errors::simulation_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -512,7 +489,7 @@ Errors::simulation_errors(int errorCode, std::string whatPart) {
 	}
 }
 /*
-Plotting error function
+
 */
 void
 Errors::plotting_errors(int errorCode, std::string whatPart) {
@@ -572,7 +549,7 @@ Errors::plotting_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/* Parsing errors */
+
 void
 Errors::parsing_errors(int errorCode, std::string whatPart) {
 	switch (errorCode) {
@@ -612,7 +589,7 @@ Errors::parsing_errors(int errorCode, std::string whatPart) {
 		exit(0);
 	}
 }
-/* IV curve generation errors */
+
 void
 Errors::iv_errors(int errorCode, std::string whatPart) {
 	switch(errorCode) {

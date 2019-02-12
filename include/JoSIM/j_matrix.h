@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_MATRIX_H_
 #define J_MATRIX_H_
@@ -43,21 +43,5 @@ class Matrix {
 
       void
       create_CSR();
-
-      // static
-      // void
-      // matrix_A(InputFile& iFile);
-
-      // static
-      // void
-      // create_A_matrix_volt(InputFile& iFile);
-
-      // static
-      // void
-      // create_A_matrix_phase(InputFile& iFile);
-
-      // static
-      // void 
-      // csr_A_matrix(InputFile& iFile);
 };
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Johannes Delport
+// Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_SIMULATION_H_
 #define J_SIMULATION_H_
