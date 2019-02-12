@@ -82,7 +82,7 @@ Input::parse_arguments(int argc,
                         argPlot = true;
                     #endif
                 #else
-                    plotRes = true;
+                    argPlot = true;
                 #endif
                 break;
             case 'h':

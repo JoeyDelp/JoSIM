@@ -8,7 +8,9 @@
 #include "j_matrix.h"
 #include "j_misc.h"
 
+#ifdef USING_MATPLOTLIB
 namespace plt = matplotlibcpp;
+#endif
 
 class Trace {
     public:

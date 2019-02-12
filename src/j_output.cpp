@@ -2236,7 +2236,7 @@ Output::plot_traces(std::string &filename) {
 			Charts[i]->type(FL_LINE_CHART);
 			if(traces.at(0).pointer)
 				for (int j = 0; j < traces.at(i).traceData->size(); j++)
-					Charts[i]->add(traceData.at(i).traceData->at(j));
+					Charts[i]->add(traces.at(i).traceData->at(j));
 			else 
 				for (int j = 0; j < traces.at(i).calcData.size(); j++)
 					Charts[i]->add(traces.at(i).calcData.at(j));
@@ -2245,7 +2245,7 @@ Output::plot_traces(std::string &filename) {
 			Charts[i]->copy_label(traces.at(i).name.c_str());
 		}
 		win->resizable(win);
-		win->label(filename);
+		//win->label(filename);
 		win->show();
 		return(Fl::run());
 	#elif USING_MATPLOTLIB
@@ -2294,6 +2294,7 @@ Output::plot_traces(std::string &filename) {
 			plt::show();
 			return 0;
 		}
+		#endif
 	}
 	else {
 		std::cout << "W: Nothing specified to output."
@@ -2301,7 +2302,7 @@ Output::plot_traces(std::string &filename) {
 		std::cout << std::endl;
 		return 0;
 	}
-	#endif
+	return 0;
 }
 
 int
@@ -2313,14 +2314,14 @@ Output::plot_all(std::string &filename, Matrix &mObj, Simulation &sObj) {
 		for (int i = 0; i < mObj.columnNames.size(); i++) {
 			Charts.push_back(new Fl_Chart(20, 20 + (i * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
 			Charts[i]->type(FL_LINE_CHART);
-			for (int j = 0; j < sObj.results.xVect.size(); j++)
-				Charts[i]->add(sObj.results.xVect.at(j));
+			for (int j = 0; j < sObj.results.xVect.at(i).size(); j++)
+				Charts[i]->add(sObj.results.xVect.at(i).at(j));
 			Charts[i]->color(FL_WHITE);
 			Charts[i]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
 			Charts[i]->copy_label(mObj.columnNames.at(i).c_str());
 		}
 		win->resizable(win);
-		win->label(filename);
+		//win->label(filename);
 		win->show();
 		return(Fl::run());
 	#elif USING_MATPLOTLIB
@@ -2358,4 +2359,5 @@ Output::plot_all(std::string &filename, Matrix &mObj, Simulation &sObj) {
 			return 0;
 		}
 	#endif
+	return 0;
 }
