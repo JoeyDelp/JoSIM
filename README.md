@@ -36,6 +36,14 @@ https://github.com/JoeyDelp/JoSIM/releases
 - Libraries: sudo pip install numpy matplotlib
 
 ## CHANGELOG
+### v2.2 - 12/02/2019
+- Major rewrite of most of JoSIM code to accommodate library creation for use in C++ and Python
+- Implementation of a phase source for use in phase-mode simulation
+
+### v2.1 - 16/01/2019
+- Inclusion of the Haberkorn junction current which allows for user switching between ballistic and normal electron tunneling
+- Various bug fixes
+
 ### v2.0 - 10/10/2018
 - New analysis method that allows Modified Nodal Phase Analysis (see ReadMe)
 - Major memory improvement by not creating intermediate A matrix
