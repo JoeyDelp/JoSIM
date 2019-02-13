@@ -12,14 +12,14 @@ Errors::error_handling(int errorCode, std::string whatPart) {
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case DEF_FILE_ERROR:
 		std::cout << "E: Invalid definitions file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .txt"
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case LOG_ERROR:
 		std::cout << "E: Invalid log file specifier." << std::endl;
 		std::cout
@@ -27,54 +27,54 @@ Errors::error_handling(int errorCode, std::string whatPart) {
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case LOG_FILE_ERROR:
 		std::cout << "E: Invalid log file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .txt"
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case OUTPUT_ERROR:
 		std::cout << "E: Invalid output file specifier." << std::endl;
 		std::cout << "E: Specifier should be: -o=<path to file> or "
 			"--output=<path to file>"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case OUTPUT_FILE_ERROR:
 		std::cout << "E: Invalid output file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .csv"
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case OUTPUT_LEGACY_ERROR:
 		std::cout << "E: Invalid output file specifier." << std::endl;
 		std::cout << "E: Specifier should be: -m=<path to file>" << std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case OUTPUT_LEGACY_FILE_ERROR:
 		std::cout << "E: Invalid output file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .dat"
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case INPUT_ERROR:
 		std::cout << "E: Missing input file." << std::endl;
 		std::cout << "E: Final argument should be: <path to input file>"
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case INPUT_FILE_ERROR:
 		std::cout << "E: Invalid input file specified." << std::endl;
 		std::cout << "E: Specified file needs to be of extension .cir or .js"
 			<< std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case UNKNOWN_SWITCH:
 		std::cout << "W: Unknown option specified. Please refer to the help menu."
 			<< std::endl;
@@ -86,13 +86,13 @@ Errors::error_handling(int errorCode, std::string whatPart) {
 			<< std::endl;
 				std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case TOO_FEW_ARGUMENTS:
 		std::cout << "E: Missing input arguments" << std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case NO_PLOT_COMPILE:
 		std::cout << "W: No plotting interface defined upon compilation time."
 			<< std::endl;
@@ -108,26 +108,26 @@ Errors::error_handling(int errorCode, std::string whatPart) {
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case INVALID_ANALYSIS:
 		std::cout << "E: Invalid analysis type specified. 0 - Voltage, 1 - Phase."
 			<< std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	case INVALID_CONVENTION:
 		std::cout << "E: Invalid subcircuit convention specified. 0 - JSIM, 1 - WRspice."
 			<< std::endl;
 		std::cout << "E: Usage: josim [options] input_netlist" << std::endl;
 		std::cout << std::endl;
 		std::cout << "I: For further help use the -h switch" << std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown handling error." << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -137,41 +137,41 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 	case RES_ERROR:
 		std::cout << "E: Resistor value error" << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case CAP_ERROR:
 		std::cout << "E: Capacitor value error" << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case IND_ERROR:
 		std::cout << "E: Inductor value error" << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case LABEL_ERROR:
 		std::cout << "Invalid component label: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case MISSING_LABEL:
 		std::cout << "E: No component label. This should not happen."
 			<< std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer as this is possibly a bug."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case MISSING_PNODE:
 		std::cout << "E: No positive node. This should not happen." << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer as this is possibly a bug."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case MISSING_NNODE:
 		std::cout << "E: No negative node. This should not happen." << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer as this is possibly a bug."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case MISSING_JJMODEL:
 		std::cout << "E: No junction model is specified for junction " << whatPart
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case MODEL_NOT_DEFINED:
 		std::cout << "W: The specified model " << whatPart << " is not defined"
 			<< std::endl;
@@ -189,7 +189,7 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 		std::cout
 			<< "E: The program will now terminate. Please recheck the netlist."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case INVALID_SUBCIRCUIT_NODES:
 		std::cout << "E: The nodes for label " << whatPart
 			<< " does not match the required nodes of the subcicuit."
@@ -197,42 +197,42 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please recheck the nodes required by the subcircuit and "
 			"try again."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case TIME_ERROR:
 		std::cout << "E: Time delay value error" << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case MISSING_SUBCIRCUIT_NAME:
 		std::cout << "E: The subcircuit for " << whatPart
 			<< " does not match any of the subcircuits found in the file."
 			<< std::endl;
 		std::cout << "E: Please recheck the subcircuit name and try again."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case MUT_ERROR:
 		std::cout << "E: Missing mutual coupling factor. " << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case INVALID_EXPR:
 		std::cout << "E: Invalid expression statement found. " << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case INVALID_TX_DEFINED:
 		std::cout << "E: Invalid definition for transmission line found. " 
 			<< std::endl; 
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	case MISSING_INDUCTOR:
 		std::cout << "E: Invalid mutual coupling defined. Missing inductor "
 			<< whatPart << std::endl;
 		std::cout << "E: Please ensure that " << whatPart << " exists."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown invalid component error." << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -247,26 +247,26 @@ Errors::control_errors(int errorCode, std::string whatPart) {
 		std::cout << std::endl;
 		break;
 	case PRINT_ERROR:
-		exit(0);
+		exit(-1);
 	case PLOT_ERROR:
-		exit(0);
+		exit(-1);
 	case INV_CONTROL:
-		exit(0);
+		exit(-1);
 	case DC_ERROR:
-		exit(0);
+		exit(-1);
 	case AC_ERROR:
-		exit(0);
+		exit(-1);
 	case PHASE_ERROR:
-		exit(0);
+		exit(-1);
 	case NO_SIM:
 		std::cout << "E: No simulation type specified. Nothing will be simulated."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown control error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -276,19 +276,19 @@ Errors::model_errors(int errorCode, std::string whatPart) {
 	case PARAM_TYPE_ERROR:
 		std::cout << "E: Unknown model parameter " << whatPart << " specified."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case UNKNOWN_MODEL_TYPE:
 		std::cout << "E: Unknown model type " << whatPart << " specified." << std::endl;
-		exit(0);
+		exit(-1);
 	case BAD_MODEL_DEFINITION:
 		std::cout << "E: Bad model definition found." << std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown model error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -302,7 +302,7 @@ Errors::matrix_errors(int errorCode, std::string whatPart)
 		std::cout
 			<< "E: Please contact the developer as this is potentially a bug."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown matrix error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
@@ -317,12 +317,12 @@ Errors::misc_errors(int errorCode, std::string whatPart)
 	case STOD_ERROR:
 		std::cout << "E: Cannot convert string to double: " << whatPart
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown misc error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -335,7 +335,7 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 "
 			"... Tn Vn)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case TOO_FEW_TIMESTEPS:
 		std::cout
 			<< "E: Total timesteps specified do not match the values specified."
@@ -343,7 +343,7 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 "
 			"... Tn Vn)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case TOO_FEW_VALUES:
 		std::cout
 			<< "E: Total values specified do not match the timesteps specified."
@@ -351,14 +351,14 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 "
 			"... Tn Vn)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case INITIAL_PULSE_VALUE:
 		std::cout << "E: Invalid PULSE definition found. The value of "
 			<< whatPart << " is expected to be 0" << std::endl;
 		std::cout << "E: Please refer to the PULSE definition: PULSE(0 V2 TD TR "
 			"TF PW PER)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case PULSE_TOO_FEW_ARGUMENTS:
 		std::cout
 			<< "E: Total arguments specified do not match the required for PULSE. "
@@ -366,7 +366,7 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please refer to the PULSE definition: PULSE(0 V2 TD TR "
 			"TF PW PER)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case PULSE_VPEAK_ZERO:
 		std::cout
 			<< "W: PULSE peak voltage is 0.0, this renders the function redundant."
@@ -393,14 +393,14 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 			<< whatPart << " specified." << std::endl;
 		std::cout << "E: Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case SIN_TOO_MANY_ARGUMENTS:
 		std::cout
 			<< "E: Total arguments specified do not match the required for SIN. "
 			<< whatPart << " specified." << std::endl;
 		std::cout << "E: Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)"
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case SIN_VA_ZERO:
 		std::cout
 			<< "W: SIN amplitude is 0.0, this renders the function redundant."
@@ -435,12 +435,12 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 			<< whatPart << " specified." << std::endl;
 		std::cout << "W: Program will terminate."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown function error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -453,39 +453,39 @@ Errors::simulation_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: This is a bug and the developer should be contacted. "
 			"The program will abort."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case JJICRIT_NOT_FOUND:
 		std::cout << "E: Critical current value for " << whatPart
 			<< " could not be found." << std::endl;
 		std::cout << "E: This is a bug and the developer should be contacted. "
 			"The program will abort."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case JJPHASE_NODE_NOT_FOUND:
 		std::cout << "E: Junction phase node not found for " << whatPart << "."
 			<< std::endl;
 		std::cout << "E: This is a bug and the developer should be contacted. "
 			"The program will abort."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case INDUCTOR_CURRENT_NOT_FOUND:
 		std::cout << "E: Inductor current not defined for " << whatPart
 			<< ". Matrix will have no solution." << std::endl;
 		std::cout << "E: This is a bug and the developer should be contacted. "
 			"The program will abort."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	case MATRIX_SINGULAR:
 		std::cout << "E: Matrix is singular. Matrix will have no solution." << std::endl;
 		std::cout << "E: Please check the components in the netlist. "
 			"The program will abort."
 			<< std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown simulation error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 /*
@@ -546,7 +546,7 @@ Errors::plotting_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Unknown plotting error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -574,19 +574,19 @@ Errors::parsing_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please correct the expression before trying again."
 			<< std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	case INVALID_RPN:
 		std::cout << "E: Invalid RPN detected. This might be an algorithm fault "
 			"or an incorrect expression parse."
 			<< std::endl;
 		std::cout << "E: The expression in question: " << whatPart << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	default:
 		std::cout << "E: Unknown parsing error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -599,19 +599,19 @@ Errors::iv_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Please include a transient analysis. See manual for more details."
 		<< std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	case NO_INPUT_SWEEP:
 		std::cout << "E: No input sweep specified. IV curve generation cannot continue."
 		<< std::endl;
 		std::cout << "E: Please specify a sweep. See manual for more details."
 		<< std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	case SOURCE_NOT_IDENTIFIED:
 		std::cout << "E: Invalid source specified to sweep. Please ensure correct sweep label."
 		<< std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	case SWEEP_NOT_PWL:
 		std::cout << "W: Sweep not PWL. For IV curve please sweep PWL."
 		<< std::endl;
@@ -623,6 +623,6 @@ Errors::iv_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Unknown IV curve error: " << whatPart << std::endl;
 		std::cout << "E: Please contact the developer." << std::endl;
 		std::cout << std::endl;
-		exit(0);
+		exit(-1);
 	}
 }

@@ -234,7 +234,7 @@ Input::read_input_file(std::string &fileName,
 	}
 	else {
 		Errors::error_handling(CANNOT_OPEN_FILE, fileName);
-		exit(0);
+		exit(-1);
 	}
 }
 
@@ -387,7 +387,7 @@ Input::expand_subcircuits() {
 					else {
 						std::cout << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
 						std::cout << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
-						exit(0);
+						exit(-1);
 					}
 				}
 			}
@@ -438,7 +438,7 @@ Input::expand_maindesign() {
 			else {
 				std::cout << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
 				std::cout << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
-				exit(0);
+				exit(-1);
 			}
 		}
 		else {

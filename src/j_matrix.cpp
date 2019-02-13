@@ -998,7 +998,7 @@ Matrix::create_A_volt(Input &iObj) {
 			std::cout << "E: Infringing line: " << i.first << std::endl;
 			std::cout << "E: Simulation will now terminate." << std::endl;
 			std::cout << std::endl;
-			exit(0);
+			exit(-1);
 		}
 		/*********************/
 		/** MUTUAL COUPLING **/
