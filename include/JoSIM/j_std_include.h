@@ -34,7 +34,7 @@
 #include <cctype>
 #include <exception>
 #include <ctime>
-#ifdef USING_OPENMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 

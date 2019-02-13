@@ -110,7 +110,7 @@ Input::parse_arguments(int argc,
                 } 
                 break;
             case 'p':
-                #ifdef USING_OPENMP
+                #ifdef _OPENMP
                     std::cout << "Parallelization is ENABLED" << std::endl;
                 #else
                     std::cout << "Parallelization is DISABLED" << std::endl;
