@@ -28,11 +28,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 # See if OpenMP was specified
 OPTION(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
 IF(USING_OPENMP)
-    SET(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
-    SET(OpenMP_CXX_LIB_NAMES "omp")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    SET(OpenMP_omp_LIBRARY "/usr/local/lib/libomp.a")
-    ADD_DEFINITIONS(-DUSING_OPENMP)
+  FIND_PACKAGE(OpenMP REQUIRED)
 ENDIF()
 
 # SuiteSparse
@@ -176,7 +172,7 @@ ELSE()
     # Add the source to the executable for compilation
     ADD_EXECUTABLE(JoSIM ${JOSIM_SRC})
     IF(USING_OPENMP)
-        TARGET_LINK_LIBRARIES(JoSIM ${OpenMP_omp_LIBRARY})
+      TARGET_LINK_LIBRARIES(JoSIM PUBLIC OpenMP::OpenMP_CXX)
         MESSAGE("Parellization is ENABLED")
     ELSE()
         MESSAGE("Parellization is DISABLED")
