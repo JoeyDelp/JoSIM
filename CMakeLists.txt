@@ -260,4 +260,7 @@ ELSE()
     MESSAGE("=====================================================")
     MESSAGE("Configuration done.")
     MESSAGE("Now run make")
+
+    enable_testing()
+    ADD_SUBDIRECTORY(test)
 ENDIF()
