@@ -92,7 +92,7 @@ class Input {
 			argOutname = "";
         };
 
-		void parse_arguments(int argc, char* argv[]);
+		void parse_arguments(int argc, char const * const argv[]);
         void display_help();
         void version_info();
 		void read_input_file(std::string &fileName, 

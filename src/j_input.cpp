@@ -4,7 +4,7 @@
 
 void 
 Input::parse_arguments(int argc, 
-							char* argv[]) {
+							char const *const argv[]) {
     if (argc <= 1) Errors::error_handling(TOO_FEW_ARGUMENTS);
 
     if (argv[argc - 1][0] == '-') {
