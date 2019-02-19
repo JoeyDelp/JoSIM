@@ -4,7 +4,8 @@
 function(linux_suitesparse_lib name lib)
   if(${${name}_FOUND})
     add_library(suitesparse::${lib} INTERFACE IMPORTED)
-    target_include_directories(suitesparse::${lib} INTERFACE ${${name}_INCLUDE_DIR})
+    target_include_directories(suitesparse::${lib}
+                               INTERFACE ${${name}_INCLUDE_DIR})
     target_link_libraries(suitesparse::${lib} INTERFACE ${${name}_LIBRARY})
 
     target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
@@ -17,8 +18,10 @@ endfunction()
 # MAC: Function adds suitesparse lib target and add it to all
 function(mac_suitesparse_lib name lib)
   add_library(suitesparse::${lib} INTERFACE IMPORTED)
-  target_include_directories(suitesparse::${lib} INTERFACE ${CMAKE_SOURCE_DIR}/include/suitesparse)
-  target_link_libraries(suitesparse::${lib} INTERFACE ${CMAKE_SOURCE_DIR}/lib/mac/lib${name}.a)
+  target_include_directories(suitesparse::${lib}
+                             INTERFACE ${CMAKE_SOURCE_DIR}/include/suitesparse)
+  target_link_libraries(suitesparse::${lib}
+                        INTERFACE ${CMAKE_SOURCE_DIR}/lib/mac/lib${name}.a)
   target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
 endfunction()
 
@@ -26,7 +29,8 @@ endfunction()
 add_library(suitesparse::all INTERFACE IMPORTED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows") # Windows
-  messages(SEND_ERROR "Suitesparse cmake integration not yet implemented for windows!")
+  messages(SEND_ERROR
+           "Suitesparse cmake integration not yet implemented for windows!")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # OSX
   mac_suitesparse_lib(amd amd)
   mac_suitesparse_lib(btf btf)
@@ -40,11 +44,11 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # OSX
   mac_suitesparse_lib(umfpack umfpack)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux") # Linux
-  include (lib/linux/FindSuiteSparse.cmake)
+  include(lib/linux/FindSuiteSparse.cmake)
 
   if(NOT ${SUITESPARSE_FOUND})
     message(SEND_ERROR "Failed finding suitesparse!")
-  endif(NOT ${SUITESPARSE_FOUND})
+  endif()
 
   linux_suitesparse_lib("AMD" amd)
   linux_suitesparse_lib("BTF" btf)
