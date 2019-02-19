@@ -12,16 +12,12 @@ MESSAGE("Please wait while we SET a few configuration options.")
 MESSAGE("=====================================================")
 # Identify the platform type
 MESSAGE("Platform: ${CMAKE_SYSTEM_NAME}")
-# IdentIFy the build type
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG 
-    OR CMAKE_BUILD_TYPE MATCHES Debug
-    OR CMAKE_BUILD_TYPE MATCHES debug)
-    MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
-ELSE()
-    # Default build type is release. Change to debug for debugging
-    SET(CMAKE_BUILD_TYPE RELEASE)
-    MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
-ENDIF()
+
+# Default to release
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # Ensure C++14
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
