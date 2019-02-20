@@ -17,17 +17,19 @@ class Trace {
         std::string name;
         char type;
         bool pointer;
-        std::vector<double> *traceData = new std::vector<double>;
+        std::vector<double> *traceData = nullptr;
         std::vector<double> calcData;
         Trace() {
             pointer = true;
+        };
+        ~Trace() {
         };
 };
 
 class Output {
     public:
         std::vector<Trace> traces;
-        std::vector<double> *timesteps = new std::vector<double>;
+        std::vector<double> *timesteps = nullptr;
         Output() {};
 
         void
