@@ -2,8 +2,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_input.h"
 
-void 
-Input::parse_arguments(int argc, 
+void
+Input::parse_arguments(int argc,
 							char const *const argv[]) {
     if (argc <= 1) Errors::error_handling(TOO_FEW_ARGUMENTS);
 
@@ -107,7 +107,7 @@ Input::parse_arguments(int argc,
                         else argExt = WR;
                     }
                     else argExt = WR;
-                } 
+                }
                 break;
             case 'p':
                 #ifdef _OPENMP
@@ -127,7 +127,7 @@ Input::parse_arguments(int argc,
     }
 }
 
-void 
+void
 Input::display_help() {
     std::cout << "JoSIM help interface\n";
     std::cout << "====================\n";
@@ -136,7 +136,7 @@ Input::display_help() {
         << "Specifies the analysis type." << std::endl;
     std::cout << std::setw(13) << std::left << "  " << std::setw(3)
         << std::left << "|"
-        << "0 for Voltage analysis (Default)." << std::endl;	
+        << "0 for Voltage analysis (Default)." << std::endl;
     std::cout << std::setw(13) << std::left << "  " << std::setw(3)
         << std::left << "|"
         << "1 for Phase analysis." << std::endl;
@@ -204,7 +204,7 @@ Input::display_help() {
     exit(0);
 }
 
-void 
+void
 Input::version_info() {
     std::cout << std::endl;
 	std::cout
@@ -218,7 +218,7 @@ Input::version_info() {
 }
 
 void
-Input::read_input_file(std::string &fileName, 
+Input::read_input_file(std::string &fileName,
 					std::vector<std::string> &fileLines) {
 	std::string line;
 	std::fstream ifile(fileName);
@@ -239,9 +239,9 @@ Input::read_input_file(std::string &fileName,
 }
 
 void
-Input::split_netlist(std::vector<std::string> &fileLines, 
-						std::vector<std::string> &controls, 
-						Parameter &parameters, 
+Input::split_netlist(std::vector<std::string> &fileLines,
+						std::vector<std::string> &controls,
+						Parameter &parameters,
 						Netlist &netlist) {
 	bool subckt = false;
 	bool control = false;
@@ -319,7 +319,7 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 		else {
 			if (subckt)
 				netlist.subcircuits[subcktName].lines.push_back(std::make_pair(fileLines.at(i), subcktName));
-			else 
+			else
 				netlist.maindesign.push_back(fileLines.at(i));
 		}
 	}
@@ -329,7 +329,7 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 	}
 }
 
-void 
+void
 Input::expand_subcircuits() {
 	std::vector<std::string> tokens, io;
 	std::vector<std::pair<std::string, std::string>> moddedLines;
@@ -348,11 +348,11 @@ Input::expand_subcircuits() {
 				if(netlist.subcircuits.at(i.first).lines.at(j).first[0] == 'X') {
 					tokens = Misc::tokenize_space(netlist.subcircuits.at(i.first).lines.at(j).first);
 					label = tokens.at(0);
-					if(argConv == LEFT) { 
+					if(argConv == LEFT) {
 						subcktName = tokens.at(1);
 						io.assign(tokens.begin() + 2, tokens.end());
 					}
-					else if (argConv == RIGHT) { 
+					else if (argConv == RIGHT) {
 						subcktName = tokens.back();
 						io.assign(tokens.begin() + 1, tokens.end() - 1);
 					}
@@ -404,11 +404,11 @@ Input::expand_maindesign() {
 		if(netlist.maindesign.at(i)[0] == 'X') {
 			tokens = Misc::tokenize_space(netlist.maindesign.at(i));
 			label = tokens.at(0);
-			if(argConv == LEFT) { 
+			if(argConv == LEFT) {
 				subcktName = tokens.at(1);
 				io.assign(tokens.begin() + 2, tokens.end());
 			}
-			else if (argConv == RIGHT) { 
+			else if (argConv == RIGHT) {
 				subcktName = tokens.back();
 				io.assign(tokens.begin() + 1, tokens.end() - 1);
 			}

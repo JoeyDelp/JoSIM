@@ -16,8 +16,8 @@ std::vector<std::string> funcs(funcsArray,
 
 
 double
-Parser::parse_param(const std::string& expr, const std::unordered_map<std::pair<std::string, 
-				std::string>, double, pair_hash> &parsedParams, 
+Parser::parse_param(const std::string& expr, const std::unordered_map<std::pair<std::string,
+				std::string>, double, pair_hash> &parsedParams,
 				std::string subckt) {
 	std::string expToEval = expr;
 	expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
@@ -223,7 +223,7 @@ Parser::parse_operator(std::string op, double val1, double val2, int& popCount)
 
 void
 Parser::parse_parameters(const std::vector<std::pair<std::string, std::string>> &unparsedParams,
-						std::unordered_map<std::pair<std::string, std::string>, 
+						std::unordered_map<std::pair<std::string, std::string>,
 						double, pair_hash> &parsedParams) {
 	std::vector<std::string> tokens, paramTokens;
 	std::string paramName, paramExp;

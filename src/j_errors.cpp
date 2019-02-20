@@ -218,8 +218,8 @@ Errors::invalid_component_errors(int errorCode, const std::string& whatPart) {
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		exit(-1);
 	case INVALID_TX_DEFINED:
-		std::cout << "E: Invalid definition for transmission line found. " 
-			<< std::endl; 
+		std::cout << "E: Invalid definition for transmission line found. "
+			<< std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		exit(-1);
 	case MISSING_INDUCTOR:

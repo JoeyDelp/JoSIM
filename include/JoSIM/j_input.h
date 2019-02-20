@@ -31,8 +31,8 @@ class Transient {
 			prstep = 1E-12;
 			maxtstep = 1E-12;
 		};
-		double simsize() { 
-			return (tstop - tstart) / prstep; 
+		double simsize() {
+			return (tstop - tstart) / prstep;
 		};
 };
 
@@ -82,7 +82,7 @@ class Input {
 
 		Input(){
 			fileName = "";
-            argAnal = VANALYSIS; 
+            argAnal = VANALYSIS;
             argExt = CSV;
             argConv = LEFT;
             argPlot = false;
@@ -95,11 +95,11 @@ class Input {
 		void parse_arguments(int argc, char const * const argv[]);
         void display_help();
         void version_info();
-		void read_input_file(std::string &fileName, 
+		void read_input_file(std::string &fileName,
 							std::vector<std::string> &fileLines);
-		void split_netlist(std::vector<std::string> &fileLines, 
-						std::vector<std::string> &controls, 
-						Parameter &parameters, 
+		void split_netlist(std::vector<std::string> &fileLines,
+						std::vector<std::string> &controls,
+						Parameter &parameters,
 						Netlist &netlist);
 		void expand_subcircuits();
 		void expand_maindesign();

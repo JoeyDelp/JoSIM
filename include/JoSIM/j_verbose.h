@@ -7,7 +7,7 @@
 class Verbose {
     public:
         static
-        void 
+        void
         print_expanded_netlist(std::vector<std::pair<std::string, std::string>> expNetlist);
 
 };

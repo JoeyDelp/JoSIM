@@ -54,7 +54,7 @@ class Misc {
     static
     std::string
     substring_before(std::string str, const std::string& whatpart);
-    
+
     static
     std::vector<double>
     parse_function(std::string &str, Input &iObj, std::string subckt = "");
@@ -93,7 +93,7 @@ class Misc {
     }
 
     static
-    std::string 
+    std::string
     stringSubtract(const std::string& src, const std::string& comp);
 
     static

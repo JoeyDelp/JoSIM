@@ -33,16 +33,16 @@ class Output {
         void
         relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj);
 
-        void 
+        void
         write_data(std::string &outname);
 
-        void 
+        void
         write_legacy_data(std::string &outname);
 
-        void 
+        void
         write_wr_data(std::string &outname);
 
-        void 
+        void
         write_cout(Matrix &mObj, Simulation &sObj);
 
 		int

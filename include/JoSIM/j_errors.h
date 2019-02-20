@@ -108,48 +108,48 @@
 class Errors {
 	public:
 
-		static 
-		void 
+		static
+		void
 		error_handling(int errorCode, const std::string& whatPart = "");
 
-		static 
-		void 
+		static
+		void
 		invalid_component_errors(int errorCode, const std::string& componentLabel);
 
-		static 
-		void 
+		static
+		void
 		control_errors(int errorCode, const std::string& whatPart);
 
-		[[noreturn]] static 
-		void 
+		[[noreturn]] static
+		void
 		model_errors(int errorCode, const std::string& whatPart);
 
-		static 
-		void 
+		static
+		void
 		matrix_errors(int errorCode, const std::string& whatPart);
 
-		[[noreturn]] static 
-		void 
+		[[noreturn]] static
+		void
 		misc_errors(int errorCode, const std::string& whatPart);
 
-		static 
-		void 
+		static
+		void
 		function_errors(int errorCode, const std::string& whatPart);
 
-		[[noreturn]] static 
-		void 
+		[[noreturn]] static
+		void
 		simulation_errors(int errorCode, const std::string& whatPart);
 
-		static 
-		void 
+		static
+		void
 		plotting_errors(int errorCode, const std::string& whatPart);
 
-		static 
-		void 
+		static
+		void
 		parsing_errors(int errorCode, const std::string& whatPart);
 
-		static 
-		void 
+		static
+		void
 		iv_errors(int errorCode, const std::string& whatPart);
 };
 #endif

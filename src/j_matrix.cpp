@@ -208,7 +208,7 @@ Matrix::create_A_volt(Input &iObj) {
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				components.voltCap[C].posNodeC = cNameP; 
+				components.voltCap[C].posNodeC = cNameP;
 				components.voltCap[C].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
@@ -739,9 +739,9 @@ Matrix::create_A_volt(Input &iObj) {
 			components.voltJJ[jj].transCond = components.voltJJ.at(jj).gLarge + ((2*components.voltJJ.at(jj).C) / iObj.transSim.prstep);
 			components.voltJJ[jj].normalCond = 1 / components.voltJJ.at(jj).rN + ((2*components.voltJJ.at(jj).C) / iObj.transSim.prstep);
 			components.voltJJ[jj].Del0 = 1.76 * BOLTZMANN * components.voltJJ.at(jj).tC;
-			components.voltJJ[jj].Del = components.voltJJ.at(jj).Del0 * sqrt(cos((M_PI/2) * 
+			components.voltJJ[jj].Del = components.voltJJ.at(jj).Del0 * sqrt(cos((M_PI/2) *
 				(components.voltJJ.at(jj).T/components.voltJJ.at(jj).tC) * (components.voltJJ.at(jj).T/components.voltJJ.at(jj).tC)));
-			components.voltJJ[jj].rNCalc = ((M_PI * components.voltJJ.at(jj).Del) / (2 * EV * components.voltJJ.at(jj).iC)) * 
+			components.voltJJ[jj].rNCalc = ((M_PI * components.voltJJ.at(jj).Del) / (2 * EV * components.voltJJ.at(jj).iC)) *
 				tanh(components.voltJJ.at(jj).Del / (2 * BOLTZMANN * components.voltJJ.at(jj).T));
 			components.voltJJ[jj].iS = -components.voltJJ.at(jj).iC * sin(components.voltJJ.at(jj).phi0);
 		}
@@ -749,7 +749,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** TRANSMISSION LINE **/
 		/***********************/
 		else if (i.first[0] == 'T') {
-			std::string Tx = label, cName2, rName2, cNameP2, rNameP2, cNameN2, 
+			std::string Tx = label, cName2, rName2, cNameP2, rNameP2, cNameN2,
 				rNameN2, nodeP2, nodeN2;
 			bool pGND2, nGND2;
 			matrix_element e;
@@ -1666,13 +1666,13 @@ Matrix::create_A_phase(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap[cVolt];
 				e.rowIndex = rowMap[rNameN];
-				components.phaseJJ[jj].negNRow = e.rowIndex;				
+				components.phaseJJ[jj].negNRow = e.rowIndex;
 				e.value = -1 / components.phaseJJ[jj].r0 - ((2*components.phaseJJ[jj].C) / iObj.transSim.prstep);
 				components.phaseJJ[jj].nPtr = mElements.size();
 				mElements.push_back(e);
 				e.label = label;
 				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rVolt];	
+				e.rowIndex = rowMap[rVolt];
 				components.phaseJJ[jj].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
@@ -1882,7 +1882,7 @@ Matrix::create_A_phase(Input &iObj) {
 			e.colIndex = columnMap[cName2];
 			e.rowIndex = rowMap[rName2];
 			components.txPhase[tl].curN2Col = e.colIndex;
-			components.txPhase[tl].curN2Row = e.rowIndex;			
+			components.txPhase[tl].curN2Row = e.rowIndex;
 			e.value = -(M_PI * iObj.transSim.prstep * components.txPhase[tl].value) / (PHI_ZERO);
 			mElements.push_back(e);
 		}

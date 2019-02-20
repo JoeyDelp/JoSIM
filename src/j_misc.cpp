@@ -329,7 +329,7 @@ Misc::parse_function(std::string &str, Input &iObj, std::string subckt) {
 			}
 		}
 	}
-	/* SIN(VO VA <FREQ <TD <THETA>>>) */	
+	/* SIN(VO VA <FREQ <TD <THETA>>>) */
 	else if (str.find("SIN") != std::string::npos) {
 		if (tokens.size() < 2)
 			Errors::function_errors(SIN_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));

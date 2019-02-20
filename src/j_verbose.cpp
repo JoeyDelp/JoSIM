@@ -2,7 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "j_verbose.h"
 
-void 
+void
 Verbose::print_expanded_netlist(
     std::vector<std::pair<std::string, std::string>> expNetlist){
         std::cout << "Printing expanded netlist:" << std::endl;

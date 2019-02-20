@@ -10,8 +10,8 @@ class Parser {
 
 		static
 		double
-		parse_param(const std::string& expr, const std::unordered_map<std::pair<std::string, 
-				std::string>, double, pair_hash> &parsedParams, 
+		parse_param(const std::string& expr, const std::unordered_map<std::pair<std::string,
+				std::string>, double, pair_hash> &parsedParams,
 				std::string subckt = "");
 
 		static

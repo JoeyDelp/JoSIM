@@ -27,7 +27,7 @@ class Simulation {
 	public:
 		Results results;
 
-		void 
+		void
 		identify_simulation(std::vector<std::string> controls,
 							double &prstep,
 							double &tstop,
