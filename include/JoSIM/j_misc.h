@@ -13,7 +13,7 @@ class Misc {
 
     static
     std::string
-    file_from_path(std::string path);
+    file_from_path(const std::string& path);
 
     static
     bool
@@ -25,11 +25,11 @@ class Misc {
 
     static
     std::vector<std::string>
-    tokenize_space(std::string c);
+    tokenize_space(const std::string& c);
 
     static
     std::vector<std::string>
-    tokenize_delimeter(std::string c, std::string d);
+    tokenize_delimeter(const std::string& c, const std::string& d);
 
     static
     int
@@ -37,23 +37,23 @@ class Misc {
 
     static
     double
-    modifier(std::string value);
+    modifier(const std::string& value);
 
     static
     void
-    unique_push(std::vector<std::string>& vector, std::string string);
+    unique_push(std::vector<std::string>& vector, const std::string& string);
 
     static
     int
-    index_of(std::vector<std::string> vector, std::string value);
+    index_of(std::vector<std::string> vector, const std::string& value);
 
     static
     std::string
-    substring_after(std::string str, std::string whatpart);
+    substring_after(const std::string& str, const std::string& whatpart);
 
     static
     std::string
-    substring_before(std::string str, std::string whatpart);
+    substring_before(std::string str, const std::string& whatpart);
     
     static
     std::vector<double>
@@ -94,7 +94,7 @@ class Misc {
 
     static
     std::string 
-    stringSubtract(std::string src, std::string comp);
+    stringSubtract(const std::string& src, const std::string& comp);
 
     static
     int numDigits(int number);

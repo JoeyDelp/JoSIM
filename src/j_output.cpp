@@ -8,7 +8,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 	std::vector<std::string> tokens, tokens2;
 	std::string label, label2;
 	int index1, index2;
-	for (auto i : iObj.controls) {
+	for (const auto& i : iObj.controls) {
 		if(i.find("PRINT") != std::string::npos) {
 			Trace thisTrace;
 			tokens = Misc::tokenize_space(i);
@@ -20,12 +20,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::cout << std::endl;
 				}
 				label = tokens.at(2);
-				if(label.find("_") != std::string::npos) {
+				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
-					for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 				}
-				else if(label.find(".") != std::string::npos) {
+				else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -160,12 +160,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::cout << std::endl;
 				}
 				label = tokens.at(2);
-				if(label.find("_") != std::string::npos) {
+				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
-					for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 				}
-				else if(label.find(".") != std::string::npos) {
+				else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -413,12 +413,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				}
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -447,20 +447,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
-					if(label2.find("_") != std::string::npos) {
+					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
 					}
-					else if(label2.find(".") != std::string::npos) {
+					else if(label2.find('.') != std::string::npos) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
@@ -590,12 +590,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				}
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
@@ -624,20 +624,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
-					if(label2.find("_") != std::string::npos) {
+					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
 					}
-					else if(label2.find(".") != std::string::npos) {
+					else if(label2.find('.') != std::string::npos) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
@@ -765,12 +765,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::cout << std::endl;
 				}
 				label = tokens.at(2);
-				if(label.find("_") != std::string::npos) {
+				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
-					for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 				}
-				else if(label.find(".") != std::string::npos) {
+				else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -950,12 +950,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "V() ,");
 					if(tokens2.size() == 1) {
 						label = tokens2.at(0);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -1220,20 +1220,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					else {
 						label = tokens2.at(0);
 						label2 = tokens2.at(1);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
-						if(label2.find("_") != std::string::npos) {
+						if(label2.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label2, "_");
 							label2 = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
 						}
-						else if(label2.find(".") != std::string::npos) {
+						else if(label2.find('.') != std::string::npos) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
@@ -1352,12 +1352,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "C() ,");
 					if(tokens2.size() == 1) {
 						label = tokens2.at(0);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -1494,12 +1494,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					thisTrace.type = 'C';
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), " #");
 					label = tokens2.at(0);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens2 = Misc::tokenize_delimeter(label, "_");
 						label = tokens2.back();
-						for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+						for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					thisTrace.name = label;
@@ -1631,12 +1631,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
 					if(tokens2.size() == 1) {
 						label = tokens2.at(0);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -1820,20 +1820,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					else {
 						label = tokens2.at(0);
 						label2 = tokens2.at(1);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
-						if(label2.find("_") != std::string::npos) {
+						if(label2.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label2, "_");
 							label2 = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
 						}
-						else if(label2.find(".") != std::string::npos) {
+						else if(label2.find('.') != std::string::npos) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
@@ -1964,15 +1964,15 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 			Trace thisTrace;
 			tokens = Misc::tokenize_space(i);
 			for (int k = 1; k < tokens.size(); k++) {
-				index1 = tokens.at(k).find("@");
+				index1 = tokens.at(k).find('@');
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1) + tokens.at(k).substr(index1 + 1);
 				index1 = tokens.at(k).find(".at(");
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1);
-				index1 = tokens.at(k).find(".");
+				index1 = tokens.at(k).find('.');
 				if (index1 != std::string::npos) {
 					tokens.at(k) = tokens.at(k).substr(0, index1) + "|" + tokens.at(k).substr(index1 + 1);
 				}
-				index1 = tokens.at(k).find("[");
+				index1 = tokens.at(k).find('[');
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1);
 				/* If this is a current source */
 				if (mObj.sources.count(tokens.at(k)) != 0) {

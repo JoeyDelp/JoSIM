@@ -110,46 +110,46 @@ class Errors {
 
 		static 
 		void 
-		error_handling(int errorCode, std::string whatPart = "");
+		error_handling(int errorCode, const std::string& whatPart = "");
 
 		static 
 		void 
-		invalid_component_errors(int errorCode, std::string componentLabel);
+		invalid_component_errors(int errorCode, const std::string& componentLabel);
 
 		static 
 		void 
-		control_errors(int errorCode, std::string whatPart);
+		control_errors(int errorCode, const std::string& whatPart);
 
 		[[noreturn]] static 
 		void 
-		model_errors(int errorCode, std::string whatPart);
+		model_errors(int errorCode, const std::string& whatPart);
 
 		static 
 		void 
-		matrix_errors(int errorCode, std::string whatPart);
+		matrix_errors(int errorCode, const std::string& whatPart);
 
 		[[noreturn]] static 
 		void 
-		misc_errors(int errorCode, std::string whatPart);
+		misc_errors(int errorCode, const std::string& whatPart);
 
 		static 
 		void 
-		function_errors(int errorCode, std::string whatPart);
+		function_errors(int errorCode, const std::string& whatPart);
 
 		[[noreturn]] static 
 		void 
-		simulation_errors(int errorCode, std::string whatPart);
+		simulation_errors(int errorCode, const std::string& whatPart);
 
 		static 
 		void 
-		plotting_errors(int errorCode, std::string whatPart);
+		plotting_errors(int errorCode, const std::string& whatPart);
 
 		static 
 		void 
-		parsing_errors(int errorCode, std::string whatPart);
+		parsing_errors(int errorCode, const std::string& whatPart);
 
 		static 
 		void 
-		iv_errors(int errorCode, std::string whatPart);
+		iv_errors(int errorCode, const std::string& whatPart);
 };
 #endif

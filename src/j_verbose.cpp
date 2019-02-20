@@ -6,7 +6,7 @@ void
 Verbose::print_expanded_netlist(
     std::vector<std::pair<std::string, std::string>> expNetlist){
         std::cout << "Printing expanded netlist:" << std::endl;
-        for(auto i : expNetlist) {
+        for(const auto& i : expNetlist) {
             std::cout << i.first << std::endl;
         }
         std::cout << std::endl;

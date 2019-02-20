@@ -3,7 +3,7 @@
 #include "j_misc.h"
 
 std::string
-Misc::file_from_path(std::string path)
+Misc::file_from_path(const std::string& path)
 {
 	auto posLastSlash = path.find_last_of("/\\");
 	if (posLastSlash == std::string::npos) {
@@ -33,7 +33,7 @@ Misc::starts_with(std::string input, char test)
 }
 
 std::vector<std::string>
-Misc::tokenize_space(std::string c)
+Misc::tokenize_space(const std::string& c)
 {
 	std::string::size_type pos, lastPos = 0, length = c.length();
 	std::string delimiters = " \t";
@@ -61,7 +61,7 @@ Misc::tokenize_space(std::string c)
 }
 
 std::vector<std::string>
-Misc::tokenize_delimeter(std::string c, std::string d)
+Misc::tokenize_delimeter(const std::string& c, const std::string& d)
 {
 	std::vector<std::string> tokens;
 	std::stringstream stringStream(c);
@@ -83,7 +83,7 @@ int
 Misc::map_value_count(std::unordered_map<std::string, int> map, int value)
 {
 	int counter = 0;
-	for (auto i : map) {
+	for (const auto& i : map) {
 		if (i.second == value)
 			counter++;
 	}
@@ -91,7 +91,7 @@ Misc::map_value_count(std::unordered_map<std::string, int> map, int value)
 }
 
 double
-Misc::modifier(std::string value)
+Misc::modifier(const std::string& value)
 {
 	std::string::size_type sz;
 	double number;
@@ -148,7 +148,7 @@ Misc::modifier(std::string value)
 }
 
 void
-Misc::unique_push(std::vector<std::string>& vector, std::string string)
+Misc::unique_push(std::vector<std::string>& vector, const std::string& string)
 {
 	if (std::find(vector.begin(), vector.end(), string) == vector.end()) {
 		vector.push_back(string);
@@ -156,7 +156,7 @@ Misc::unique_push(std::vector<std::string>& vector, std::string string)
 }
 
 int
-Misc::index_of(std::vector<std::string> vector, std::string value)
+Misc::index_of(std::vector<std::string> vector, const std::string& value)
 {
 	int counter = 0;
 	for (const auto& i : vector) {
@@ -171,7 +171,7 @@ Misc::index_of(std::vector<std::string> vector, std::string value)
 }
 
 std::string
-Misc::substring_after(std::string str, std::string whatpart)
+Misc::substring_after(const std::string& str, const std::string& whatpart)
 {
 	std::size_t pos = 0;
 	std::string substring;
@@ -182,7 +182,7 @@ Misc::substring_after(std::string str, std::string whatpart)
 }
 
 std::string
-Misc::substring_before(std::string str, std::string whatpart)
+Misc::substring_before(std::string str, const std::string& whatpart)
 {
 	std::size_t pos = 0;
 	std::string substring;
@@ -443,7 +443,7 @@ Misc::findX(std::vector<std::string>& segment, std::string& theLine, int &linePo
 	return false;
 }
 
-std::string Misc::stringSubtract(std::string src, std::string comp)
+std::string Misc::stringSubtract(const std::string& src, const std::string& comp)
 {
 	int srcIt = src.size() - 1, compIt = comp.size() - 1;
 	std::string rslt = src;

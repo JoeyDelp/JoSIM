@@ -3,13 +3,13 @@
 #include "j_components.h"
 
 void
-Components::jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, std::string subckt) {
+Components::jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt) {
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
 	jj_volt jj = voltJJ.at(jjLabel);
 	double value = 0.0;
 	params = modelstring;
-	params = params.substr(params.find_first_of("("), params.size());
+	params = params.substr(params.find_first_of('('), params.size());
 	paramTokens = Misc::tokenize_delimeter(params, "(), ");
 	for(int i = 0; i < paramTokens.size(); i++) {
 		itemToken = Misc::tokenize_delimeter(paramTokens.at(i), "=");
@@ -47,13 +47,13 @@ Components::jj_model(std::string &modelstring, std::string &area, std::string &j
 }
 
 void
-Components::jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, std::string subckt) {
+Components::jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt) {
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
 	jj_phase jj = phaseJJ.at(jjLabel);
 	double value = 0.0;
 	params = modelstring;
-	params = params.substr(params.find_first_of("("), params.size());
+	params = params.substr(params.find_first_of('('), params.size());
 	paramTokens = Misc::tokenize_delimeter(params, "(), ");
 	for(int i = 0; i < paramTokens.size(); i++) {
 		itemToken = Misc::tokenize_delimeter(paramTokens.at(i), "=");

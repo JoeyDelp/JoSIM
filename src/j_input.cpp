@@ -334,7 +334,7 @@ Input::expand_subcircuits() {
 	std::vector<std::string> tokens, io;
 	std::vector<std::pair<std::string, std::string>> moddedLines;
 	std::string subcktName, label, line;
-	for(auto i : netlist.subcircuits) {
+	for(const auto& i : netlist.subcircuits) {
 		for (auto j : i.second.lines) {
 			if (j.first[0] == 'X') {
 				netlist.subcircuits.at(i.first).containsSubckt = true;
@@ -343,7 +343,7 @@ Input::expand_subcircuits() {
 		}
 	}
 	while(netlist.nestedSubcktCount != 0) {
-		for(auto i : netlist.subcircuits) {
+		for(const auto& i : netlist.subcircuits) {
 			for (int j = 0; j < netlist.subcircuits.at(i.first).lines.size(); j++) {
 				if(netlist.subcircuits.at(i.first).lines.at(j).first[0] == 'X') {
 					tokens = Misc::tokenize_space(netlist.subcircuits.at(i.first).lines.at(j).first);
@@ -374,7 +374,7 @@ Input::expand_subcircuits() {
 								}
 								else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
 								line = tokens[0];
-								for (int m = 1; m < tokens.size(); m++) line = line + " " + tokens.at(m);
+								for (int m = 1; m < tokens.size(); m++) line += " " + tokens.at(m);
 								moddedLines.push_back(std::make_pair(line, netlist.subcircuits.at(subcktName).lines.at(k).second));
 							}
 							netlist.subcircuits.at(i.first).lines.erase(netlist.subcircuits.at(i.first).lines.begin() + j);
@@ -429,7 +429,7 @@ Input::expand_maindesign() {
 					}
 					else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
 					line = tokens[0];
-					for (int m = 1; m < tokens.size(); m++) line = line + " " + tokens.at(m);
+					for (int m = 1; m < tokens.size(); m++) line += " " + tokens.at(m);
 					moddedLines.push_back(std::make_pair(line, netlist.subcircuits.at(subcktName).lines.at(k).second));
 				}
 				expNetlist.insert(expNetlist.end(), moddedLines.begin(), moddedLines.end());

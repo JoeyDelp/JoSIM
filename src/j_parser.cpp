@@ -16,8 +16,8 @@ std::vector<std::string> funcs(funcsArray,
 
 
 double
-Parser::parse_param(std::string expr, std::unordered_map<std::pair<std::string, 
-				std::string>, double, pair_hash> parsedParams, 
+Parser::parse_param(const std::string& expr, const std::unordered_map<std::pair<std::string, 
+				std::string>, double, pair_hash> &parsedParams, 
 				std::string subckt) {
 	std::string expToEval = expr;
 	expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
@@ -222,7 +222,7 @@ Parser::parse_operator(std::string op, double val1, double val2, int& popCount)
 }
 
 void
-Parser::parse_parameters(std::vector<std::pair<std::string, std::string>> unparsedParams,
+Parser::parse_parameters(const std::vector<std::pair<std::string, std::string>> &unparsedParams,
 						std::unordered_map<std::pair<std::string, std::string>, 
 						double, pair_hash> &parsedParams) {
 	std::vector<std::string> tokens, paramTokens;
@@ -233,7 +233,7 @@ Parser::parse_parameters(std::vector<std::pair<std::string, std::string>> unpars
 		if(tokens.size() > 1) {
 			if(tokens.size() >= 2) {
 				if(tokens.size() > 2) paramName = tokens.at(1);
-				else paramName = tokens.at(1).substr(0, tokens.at(1).find_first_of("="));
+				else paramName = tokens.at(1).substr(0, tokens.at(1).find_first_of('='));
 				paramExp = i.second.substr(i.second.find_first_of("=") + 1);
 				if(i.first == "") {
 					value = parse_param(paramExp, parsedParams);

@@ -80,7 +80,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** RESISTOR **/
 		/**************/
 		if (i.first[0] == 'R') {
-			std::string R = label;
+			const std::string& R = label;
 			matrix_element e;
 			try {
 				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
@@ -180,7 +180,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** CAPACITOR **/
 		/***************/
 		else if (i.first[0] == 'C') {
-			std::string C = label;
+			const std::string& C = label;
 			matrix_element e;
 			try {
 				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
@@ -302,7 +302,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** INDUCTOR **/
 		/**************/
 		else if (i.first[0] == 'L') {
-			std::string L = label;
+			const std::string& L = label;
 			matrix_element e;
 			try {
 				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
@@ -424,7 +424,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** VOLTAGE SOURCE **/
 		/********************/
 		else if (i.first[0] == 'V') {
-			std::string V = label;
+			const std::string& V = label;
 			matrix_element e;
 			sources[label] = Misc::parse_function(i.first, iObj, i.second);
 			cName = "C_" + devicetokens[0];
@@ -570,7 +570,7 @@ Matrix::create_A_volt(Input &iObj) {
 			matrix_element e;
 			std::string modelstring = "", area = "";
 			for (int t = devicetokens.size() - 1; t > 2; t--) {
-				if (devicetokens[t].find("=") == std::string::npos) {
+				if (devicetokens[t].find('=') == std::string::npos) {
 					if (iObj.netlist.models.count(std::make_pair(devicetokens[t], i.second)) != 0) {
 						modelstring = iObj.netlist.models.at(std::make_pair(devicetokens[t], i.second));
 						break;
@@ -1575,7 +1575,7 @@ Matrix::create_A_phase(Input &iObj) {
 			matrix_element e;
 			std::string modelstring = "", area = "";
 			for (int t = devicetokens.size() - 1; t > 2; t--) {
-				if (devicetokens[t].find("=") == std::string::npos) {
+				if (devicetokens[t].find('=') == std::string::npos) {
 					if (iObj.netlist.models.count(std::make_pair(devicetokens[t], i.second)) != 0) {
 						modelstring = iObj.netlist.models.at(std::make_pair(devicetokens[t], i.second));
 						break;
@@ -2041,10 +2041,10 @@ Matrix::create_CSR() {
 	nzval.clear();
 	rowptr.clear();
 	rowptr.push_back(0);
-	for (auto i : mElements){
+	for (const auto& i : mElements){
 		aMat[i.rowIndex][i.colIndex] += i.value;
 	}
-	for(auto i : aMat) {
+	for(const auto& i : aMat) {
 		for (auto j : i) {
 			nzval.push_back(j.second);
 			colind.push_back(j.first);

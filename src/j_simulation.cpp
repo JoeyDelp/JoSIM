@@ -129,7 +129,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 					lhsValues.at(mObj.components.voltInd.at(currentLabel).negNRow);
 				RHSvalue = (-2 * mObj.components.voltInd.at(currentLabel).value / iObj.transSim.prstep) * 
 					lhsValues.at(mObj.components.voltInd.at(currentLabel).curNRow) - VB;
-				for (auto m : mObj.components.voltInd.at(currentLabel).mut) {
+				for (const auto& m : mObj.components.voltInd.at(currentLabel).mut) {
 					RHSvalue = RHSvalue - ( m.second * lhsValues.at(mObj.components.voltInd.at(m.first).curNRow));
 				}
 			}
@@ -203,7 +203,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 		}
 
 		/* Guess next junction voltage */
-		for (auto j : mObj.components.voltJJ) {
+		for (const auto& j : mObj.components.voltJJ) {
 			jj_volt thisJunction = mObj.components.voltJJ.at(j.first);
 			if (thisJunction.posNRow == -1) thisJunction.vn1 = (-lhsValues.at(thisJunction.negNRow));
 			else if (thisJunction.negNRow == -1) thisJunction.vn1 = (lhsValues.at(thisJunction.posNRow));
@@ -478,7 +478,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 			results.xVect[m][i] = lhsValues[m];
 		}
 
-		for (auto j : mObj.components.phaseJJ) {
+		for (const auto& j : mObj.components.phaseJJ) {
 			jj_phase thisJJ = mObj.components.phaseJJ.at(j.first);
 			if (thisJJ.posNRow == -1)
 				thisJJ.pn1 = (-lhsValues.at(thisJJ.negNRow));
@@ -552,7 +552,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 			mObj.components.phaseJJ.at(j.first).jjCur.push_back(thisJJ.iS);
 		}
 		/* Calculate next Cap values */
-		for (auto j : mObj.components.phaseCap) {
+		for (const auto& j : mObj.components.phaseCap) {
 			cap_phase thisCap = mObj.components.phaseCap.at(j.first);
 			thisCap.pn2 = thisCap.pn1;
 			if (j.second.posNRow == -1)
@@ -567,7 +567,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 			mObj.components.phaseCap.at(j.first) = thisCap;
 		}
 		/* Calculate next TL values */
-		for (auto j : mObj.components.txPhase) {
+		for (const auto& j : mObj.components.txPhase) {
 			tx_phase thisTL = mObj.components.txPhase.at(j.first);
 			if (j.second.posNRow == -1) {
 				thisTL.p1n1 = (-lhsValues.at(j.second.negNRow));
