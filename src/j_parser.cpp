@@ -1,6 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_parser.h"
+#include "JoSIM/j_parser.h"
 
 // Possible functions that can be called
 std::string funcsArray[] = { "COS",  "SIN",  "TAN",   "ACOS",  "ASIN",  "ATAN",

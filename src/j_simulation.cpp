@@ -1,6 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_simulation.h"
+#include "JoSIM/j_simulation.h"
 
 void
 Simulation::identify_simulation(std::vector<std::string> controls,
@@ -204,7 +204,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 
 		/* Guess next junction voltage */
 		for (const auto& j : mObj.components.voltJJ) {
-			jj_volt thisJunction = mObj.components.voltJJ.at(j.first);
+			jj_volt &thisJunction = mObj.components.voltJJ.at(j.first);
 			if (thisJunction.posNRow == -1) thisJunction.vn1 = (-lhsValues.at(thisJunction.negNRow));
 			else if (thisJunction.negNRow == -1) thisJunction.vn1 = (lhsValues.at(thisJunction.posNRow));
 			else thisJunction.vn1 = (lhsValues.at(thisJunction.posNRow) - lhsValues.at(thisJunction.negNRow));
@@ -304,7 +304,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 			thisJunction.vn2 = thisJunction.vn1;
 			thisJunction.dVn2 = thisJunction.dVn1;
 			thisJunction.pn2 = thisJunction.pn1;
-			mObj.components.voltJJ.at(j.first) = thisJunction;
+			//mObj.components.voltJJ.at(j.first) = thisJunction;
 			mObj.components.voltJJ.at(j.first).jjCur.push_back(thisJunction.iS);
 		}
 		if(needsLU) {
@@ -479,7 +479,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 		}
 
 		for (const auto& j : mObj.components.phaseJJ) {
-			jj_phase thisJJ = mObj.components.phaseJJ.at(j.first);
+			jj_phase &thisJJ = mObj.components.phaseJJ.at(j.first);
 			if (thisJJ.posNRow == -1)
 				thisJJ.pn1 = (-lhsValues.at(thisJJ.negNRow));
 			else if (thisJJ.negNRow == -1)
@@ -548,7 +548,6 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 			thisJJ.iS = -((M_PI * thisJJ.Del) / (2 * EV * thisJJ.rNCalc)) * (sin(thisJJ.phi0)/sqrt(1 - thisJJ.D * (sin(thisJJ.phi0 / 2)*sin(thisJJ.phi0 / 2))))
 								* tanh((thisJJ.Del)/(2*BOLTZMANN*thisJJ.T) * sqrt(1-thisJJ.D * (sin(thisJJ.phi0 / 2)*sin(thisJJ.phi0 / 2))))
 								+ (((2 * thisJJ.C) / iObj.transSim.prstep)*thisJJ.vn1) + (thisJJ.C * thisJJ.dVn1) - thisJJ.It;
-			mObj.components.phaseJJ.at(j.first) = thisJJ;
 			mObj.components.phaseJJ.at(j.first).jjCur.push_back(thisJJ.iS);
 		}
 		/* Calculate next Cap values */

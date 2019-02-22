@@ -1,6 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_errors.h"
+#include "JoSIM/j_errors.h"
 
 void
 Errors::error_handling(int errorCode, const std::string& whatPart) {

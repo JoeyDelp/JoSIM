@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 
-#include "j_matrix.h"
+#include "JoSIM/j_matrix.h"
 
 namespace py = pybind11;
 

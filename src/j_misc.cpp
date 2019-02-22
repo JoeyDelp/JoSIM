@@ -1,6 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_misc.h"
+#include "JoSIM/j_misc.h"
 
 std::string
 Misc::file_from_path(const std::string& path)

@@ -1,6 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_components.h"
+#include "JoSIM/j_components.h"
 
 void
 Components::jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt) {

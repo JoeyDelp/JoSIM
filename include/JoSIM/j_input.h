@@ -2,9 +2,13 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_INPUT_H_
 #define J_INPUT_H_
+
 #include "j_std_include.h"
 #include "j_errors.h"
 #include "j_misc.h"
+
+#include "./AnalysisType.hpp"
+#include "./InputType.hpp"
 
 #define UTYPE -1
 #define RCSJ 0
@@ -73,28 +77,22 @@ class Input {
 		Netlist netlist;
 		Parameter parameters;
 		Transient transSim;
-		std::string fileName;
+		//std::string fileName;
 		std::vector<std::string> fileLines, controls;
 		std::vector<std::pair<std::string, std::string>> expNetlist;
-		int argAnal, argExt, argConv;
-		bool argPlot, argSave, argVerb, argDev;
-		std::string argOutname;
 
-		Input(){
-			fileName = "";
-            argAnal = VANALYSIS;
-            argExt = CSV;
-            argConv = LEFT;
-            argPlot = false;
-            argSave = false;
-            argVerb = false;
-            argDev = false;
-			argOutname = "";
-        };
+    Input(JoSIM::AnalysisType analysis_type, JoSIM::InputType input_type = JoSIM::InputType::Jsim,bool verbose = false) :
+      argAnal(analysis_type),
+      argConv(input_type),
+      argVerb(verbose)
+    {
+      // Empty
+    }
 
-		void parse_arguments(int argc, char const * const argv[]);
-        void display_help();
-        void version_info();
+    JoSIM::AnalysisType argAnal;
+    JoSIM::InputType argConv;
+    bool argVerb = false;
+
 		void read_input_file(std::string &fileName,
 							std::vector<std::string> &fileLines);
 		void split_netlist(std::vector<std::string> &fileLines,

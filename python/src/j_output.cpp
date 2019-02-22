@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
 
-#include "j_output.h"
+#include "JoSIM/j_output.h"
 
 namespace py = pybind11;
 

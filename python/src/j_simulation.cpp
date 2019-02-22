@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 
-#include "j_simulation.h"
+#include "JoSIM/j_simulation.h"
 
 namespace py = pybind11;
 

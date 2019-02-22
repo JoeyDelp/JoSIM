@@ -1,11 +1,13 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_matrix.h"
+#include "JoSIM/j_matrix.h"
+
+using namespace JoSIM;
 
 void
 Matrix::create_matrix(Input &iObj) {
-	if(iObj.argAnal == VANALYSIS) Matrix::create_A_volt(iObj);
-	else if (iObj.argAnal == PANALYSIS) Matrix::create_A_phase(iObj);
+	if(iObj.argAnal == AnalysisType::Voltage) Matrix::create_A_volt(iObj);
+	else if (iObj.argAnal == AnalysisType::Phase) Matrix::create_A_phase(iObj);
 	Matrix::create_CSR();
 }
 

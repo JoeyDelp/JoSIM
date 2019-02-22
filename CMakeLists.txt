@@ -57,6 +57,7 @@ endif()
 # Add JoSIM library
 add_library(josim
             STATIC
+            src/CliOptions.cpp
             src/j_simulation.cpp
             src/j_output.cpp
             src/j_misc.cpp
@@ -67,9 +68,11 @@ add_library(josim
             src/j_parser.cpp
             src/j_verbose.cpp)
 
-target_include_directories(josim PUBLIC ${PROJECT_SOURCE_DIR}/include/JoSIM)
+target_include_directories(josim PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(josim PUBLIC suitesparse::all)
-set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(josim
+                      PROPERTIES POSITION_INDEPENDENT_CODE
+                                 ON)
 
 if(USING_OPENMP)
   find_package(OpenMP REQUIRED)
@@ -88,12 +91,10 @@ target_add_warnings(josim-cli)
 # Create python bindings
 add_subdirectory(python)
 
-#set_target_properties(
-#  josim-cli
-#  PROPERTIES OUTPUT_NAME
-#             ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
-#set(EXECUTABLE_NAME
-#    ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
+# set_target_properties( josim-cli PROPERTIES OUTPUT_NAME
+# ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
+# set(EXECUTABLE_NAME
+# ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
 
 enable_testing()
 include(cmake/integration_test.cmake)
