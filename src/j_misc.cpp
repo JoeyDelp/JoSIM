@@ -196,7 +196,7 @@ Misc::substring_before(std::string str, const std::string& whatpart)
 }
 
 std::vector<double>
-Misc::parse_function(std::string &str, Input &iObj, std::string subckt) {
+Misc::parse_function(std::string &str, Input &iObj, const std::string& subckt) {
 	std::vector<double> functionOfT(iObj.transSim.simsize(), 0.0);
 	std::vector<std::string> tokens;
 	std::string posVarName; //subckt = "";

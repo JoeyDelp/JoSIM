@@ -17,7 +17,7 @@ std::vector<std::string> funcs(funcsArray,
 
 double
 Parser::parse_param(const std::string& expr, const std::unordered_map<JoSIM::ParameterName, double> &parsedParams,
-				std::string subckt) {
+				const std::string& subckt) {
 	std::string expToEval = expr;
 	expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
