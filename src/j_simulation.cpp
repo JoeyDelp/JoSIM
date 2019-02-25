@@ -62,7 +62,6 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 	}
 	std::vector<std::vector<std::string>> nodeConnectionVector(mObj.rowNames.size());
 	std::string currentLabel, txCurrent;
-	std::vector<std::string> tokens;
 	double VB, RHSvalue, inductance, z0voltage;
 	double hn_2_2e_hbar = (iObj.transSim.prstep / 2)*(2 * M_PI / PHI_ZERO);
 	int ok, rowCounter;
@@ -100,7 +99,6 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 		for (auto j : mObj.rowNames) {
 			RHSvalue = 0.0;
 			if (j[2] == 'N') {
-				tokens.clear();
 				for (auto k : nodeConnectionVector[rowCounter]) {
 					if (k[0] == 'B') {
 						if (j == mObj.components.voltJJ.at(k).posNodeR)
@@ -345,7 +343,6 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 	std::vector<double> RHS(mObj.columnNames.size(), 0.0), LHS_PRE;
 	std::vector<std::vector<std::string>> nodeConnectionVector(mObj.rowNames.size());
 	std::string currentLabel;
-	std::vector<std::string> tokens;
 	double RHSvalue;
 	double hn_2_2e_hbar = (iObj.transSim.prstep / 2)*(2 * M_PI / PHI_ZERO);
 	int ok, rowCounter;
@@ -382,7 +379,6 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 		for (auto j : mObj.rowNames) {
 			RHSvalue = 0.0;
 			if (j[2] == 'N') {
-				tokens.clear();
 				for (auto k : nodeConnectionVector[rowCounter]) {
 					if (k[0] == 'B') {
 						if (j == mObj.components.phaseJJ.at(k).posNodeR)

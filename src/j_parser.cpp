@@ -16,8 +16,7 @@ std::vector<std::string> funcs(funcsArray,
 
 
 double
-Parser::parse_param(const std::string& expr, const std::unordered_map<std::pair<std::string,
-				std::string>, double, pair_hash> &parsedParams,
+Parser::parse_param(const std::string& expr, const std::unordered_map<JoSIM::ParameterName, double> &parsedParams,
 				std::string subckt) {
 	std::string expToEval = expr;
 	expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
@@ -45,9 +44,9 @@ Parser::parse_param(const std::string& expr, const std::unordered_map<std::pair<
 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
 			qType.push_back('V');
 		}
-		else if (parsedParams.count(std::make_pair(partToEval, subckt)) != 0) {
+		else if (parsedParams.count(JoSIM::ParameterName(partToEval, subckt)) != 0) {
 			rpnQueue.push_back(Misc::precise_to_string(
-				parsedParams.at(std::make_pair(partToEval, subckt))));
+				parsedParams.at(JoSIM::ParameterName(partToEval, subckt))));
 			qType.push_back('V');
 		}
 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
@@ -222,13 +221,14 @@ Parser::parse_operator(std::string op, double val1, double val2, int& popCount)
 }
 
 void
-Parser::parse_parameters(const std::vector<std::pair<std::string, std::string>> &unparsedParams,
-						std::unordered_map<std::pair<std::string, std::string>,
-						double, pair_hash> &parsedParams) {
+Parser::parse_parameters(Parameters& parameters) {
+  auto& parsedParams = parameters.parsedParams;
+  auto& unparsedParams = parameters.unparsedParams;
+
 	std::vector<std::string> tokens, paramTokens;
 	std::string paramName, paramExp;
 	double value;
-	for (auto i : unparsedParams) {
+	for (const auto &i : unparsedParams) {
 		tokens = Misc::tokenize_space(i.second);
 		if(tokens.size() > 1) {
 			if(tokens.size() >= 2) {
@@ -237,11 +237,11 @@ Parser::parse_parameters(const std::vector<std::pair<std::string, std::string>> 
 				paramExp = i.second.substr(i.second.find_first_of("=") + 1);
 				if(i.first == "") {
 					value = parse_param(paramExp, parsedParams);
-					parsedParams[std::make_pair(paramName, "")] = value;
+					parsedParams[JoSIM::ParameterName(paramName, "")] = value;
 				}
 				else {
 					value = parse_param(paramExp, parsedParams, i.first);
-					parsedParams[std::make_pair(paramName, i.first)] = value;
+					parsedParams[JoSIM::ParameterName(paramName, i.first)] = value;
 				}
 			}
 			else {

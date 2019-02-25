@@ -213,8 +213,8 @@ Misc::parse_function(std::string &str, Input &iObj, std::string subckt) {
 				timesteps.push_back(modifier(tokens[i]));
 		}
 		for (int i = 1; i < tokens.size(); i = i + 2) {
-			if (iObj.parameters.parsedParams.count(std::make_pair(tokens[i], subckt)) != 0)
-					values.push_back(iObj.parameters.parsedParams.at(std::make_pair(tokens[i], subckt)));
+			if (iObj.parameters.parsedParams.count(JoSIM::ParameterName(tokens[i], subckt)) != 0)
+					values.push_back(iObj.parameters.parsedParams.at(JoSIM::ParameterName(tokens[i], subckt)));
 			else
 				// values.push_back(modifier(tokens[i]));
 				values.push_back(Parser::parse_param(tokens[i], iObj.parameters.parsedParams, subckt));

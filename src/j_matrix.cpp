@@ -85,8 +85,9 @@ Matrix::create_A_volt(Input &iObj) {
 			const std::string& R = label;
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -185,8 +186,9 @@ Matrix::create_A_volt(Input &iObj) {
 			const std::string& C = label;
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -307,8 +309,9 @@ Matrix::create_A_volt(Input &iObj) {
 			const std::string& L = label;
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1010,7 +1013,7 @@ Matrix::create_A_volt(Input &iObj) {
 		}
 	}
 	double mutualL = 0.0, cf = 0.0;
-	for (auto i : components.mutualInductanceLines) {
+	for (const auto &i : components.mutualInductanceLines) {
 		devicetokens = Misc::tokenize_space(i.first);
 		try {
 			label = devicetokens[0];
@@ -1019,8 +1022,9 @@ Matrix::create_A_volt(Input &iObj) {
 			Errors::invalid_component_errors(MISSING_LABEL, i.first);
 		}
 		try {
-			if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					cf = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+      auto parameter_name = ParameterName(devicetokens[3], i.second);
+			if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					cf = iObj.parameters.parsedParams.at(parameter_name);
 			else
 				cf = Misc::modifier(devicetokens[3]);
 		}
@@ -1142,8 +1146,9 @@ Matrix::create_A_phase(Input &iObj) {
 			std::string R = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1244,8 +1249,9 @@ Matrix::create_A_phase(Input &iObj) {
 			std::string C = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1346,8 +1352,9 @@ Matrix::create_A_phase(Input &iObj) {
 			std::string L = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1985,7 +1992,7 @@ Matrix::create_A_phase(Input &iObj) {
 		}
 	}
 	double mutualL = 0.0, cf = 0.0;
-	for (auto i : components.mutualInductanceLines) {
+	for (const auto &i : components.mutualInductanceLines) {
 		devicetokens = Misc::tokenize_space(i.first);
 		try {
 			label = devicetokens[0];
@@ -1994,8 +2001,9 @@ Matrix::create_A_phase(Input &iObj) {
 			Errors::invalid_component_errors(MISSING_LABEL, i.first);
 		}
 		try {
-			if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-				cf = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+      ParameterName parameter_name = ParameterName(devicetokens[3], i.second);
+			if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+				cf = iObj.parameters.parsedParams.at(parameter_name);
 			else
 				cf = Misc::modifier(devicetokens[3]);
 		}

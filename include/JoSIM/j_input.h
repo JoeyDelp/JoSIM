@@ -9,6 +9,7 @@
 
 #include "./AnalysisType.hpp"
 #include "./InputType.hpp"
+#include "./ParameterName.hpp"
 
 #define UTYPE -1
 #define RCSJ 0
@@ -16,11 +17,11 @@
 #define NTRON 2
 #define CSHE 3
 
-class Parameter {
+class Parameters {
 	public:
 		std::vector<std::pair<std::string, std::string>> unparsedParams;
-		std::unordered_map<std::pair<std::string, std::string>, double, pair_hash> parsedParams;
-		Parameter() { }
+		std::unordered_map<JoSIM::ParameterName, double> parsedParams;
+		Parameters() { }
 };
 
 class Transient {
@@ -75,7 +76,7 @@ class Netlist {
 class Input {
 	public:
 		Netlist netlist;
-		Parameter parameters;
+		Parameters parameters;
 		Transient transSim;
 		//std::string fileName;
 		std::vector<std::string> fileLines, controls;
@@ -97,7 +98,7 @@ class Input {
 							std::vector<std::string> &fileLines);
 		void split_netlist(std::vector<std::string> &fileLines,
 						std::vector<std::string> &controls,
-						Parameter &parameters,
+						Parameters &parameters,
 						Netlist &netlist);
 		void expand_subcircuits();
 		void expand_maindesign();

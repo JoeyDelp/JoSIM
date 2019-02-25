@@ -64,9 +64,9 @@ void input(py::module &m) {
       .def_readwrite("maxtstep", &Transient::maxtstep)
       .def("simize", &Transient::simsize);
 
-  py::class_<Parameter>(m, "Parameter")
+  py::class_<Parameters>(m, "Parameter")
       .def("has_unused_parameters",
-           [](Parameter &param) { return !param.unparsedParams.empty(); });
+           [](Parameters &param) { return !param.unparsedParams.empty(); });
 
   py::class_<Subcircuit>(m, "Subcircuit");
 
@@ -99,8 +99,7 @@ void input(py::module &m) {
       .def("parse_parameters",
            [](Input &input) {
              if (input.parameters.unparsedParams.size() > 0)
-               Parser::parse_parameters(input.parameters.unparsedParams,
-                                        input.parameters.parsedParams);
+               Parser::parse_parameters(input.parameters);
            })
       .def("expand_subcircuits", &Input::expand_subcircuits)
       .def("expand_maindesign", &Input::expand_maindesign)

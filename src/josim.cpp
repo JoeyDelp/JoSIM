@@ -24,7 +24,7 @@ main(int argc, const char** argv) {
 
 	iObj.read_input_file(cli_options.cir_file_name, iObj.fileLines);
 	iObj.split_netlist(iObj.fileLines, iObj.controls, iObj.parameters, iObj.netlist);
-	if(iObj.parameters.unparsedParams.size() > 0) Parser::parse_parameters(iObj.parameters.unparsedParams, iObj.parameters.parsedParams);
+	if(iObj.parameters.unparsedParams.size() > 0) Parser::parse_parameters(iObj.parameters);
 	iObj.expand_subcircuits();
 	iObj.expand_maindesign();
 	if(iObj.argVerb) Verbose::print_expanded_netlist(iObj.expNetlist);

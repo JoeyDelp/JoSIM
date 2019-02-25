@@ -6,131 +6,6 @@
 
 using namespace JoSIM;
 
-//void
-//Input::parse_arguments(int argc,
-//              char const *const argv[]) {
-//    if (argc <= 1) Errors::error_handling(TOO_FEW_ARGUMENTS);
-
-//    if (argv[argc - 1][0] == '-') {
-//        if(argv[argc - 1][1] == 'h'){
-//            display_help();
-//            exit(0);
-//        }
-//        else if (argv[argc - 1][1] == 'v'){
-//            version_info();
-//            exit(0);
-//        }
-//        else if (argv[argc - 1][1] == '-') {
-//            if(argv[argc - 1][2] == 'h') {
-//                display_help();
-//                exit(0);
-//            }
-//            else if (argv[argc - 1][2] == 'v') {
-//                version_info();
-//                exit(0);
-//            }
-//            else Errors::error_handling(FINAL_ARG_SWITCH);
-//        }
-//        else Errors::error_handling(FINAL_ARG_SWITCH);
-//    }
-//    else if (argv[argc - 1][0] != '-' && argv[argc - 1][1] != 'h') fileName = argv[argc - 1];
-//    else Errors::error_handling(FINAL_ARG_SWITCH);
-
-//  version_info();
-//    for (int i = 1; i < argc; i++) {
-//        if (argv[i][0] == '-') {
-//            switch(argv[i][1]) {
-//            case 'a':
-//                if ((i + 1) == (argc - 1)) Errors::error_handling(TOO_FEW_ARGUMENTS);
-//                else if (argv[i + 1][0] == '-') Errors::error_handling(TOO_FEW_ARGUMENTS);
-//                else{
-//                    try {
-//                        argAnal = std::stoi(argv[i + 1]);
-//                        if (argAnal > 1) Errors::error_handling(INVALID_ANALYSIS);
-//                    }
-//                    catch (std::exception& e) {
-//                        Errors::error_handling(INVALID_ANALYSIS);
-//                    }
-//                }
-//                break;
-//            case 'c':
-//                if ((i + 1) == (argc - 1)) Errors::error_handling(TOO_FEW_ARGUMENTS);
-//                else if (argv[i + 1][0] == '-') Errors::error_handling(TOO_FEW_ARGUMENTS);
-//                else{
-//                    try {
-//                        argConv = std::stoi(argv[i + 1]);
-//                        if (argConv > 1) Errors::error_handling(INVALID_CONVENTION);
-//                    }
-//                    catch (std::exception& e) {
-//                        Errors::error_handling(INVALID_CONVENTION);
-//                    }
-//                }
-//                break;
-//            case 'g':
-//                std::cout << "Plotting engine: " <<
-//                #ifdef USING_FLTK
-//                        "FTLK"
-//                #elif USING_MATPLOTLIB
-//                        "MATPLOTLIB"
-//                #else
-//                        "NONE"
-//                #endif
-//                        << std::endl;
-//                #ifndef USING_FLTK
-//                    #ifndef USING_MATPLOTLIB
-//                        std::cout << "Plotting requested with no plotting engine."
-//                        << std::endl;
-//                        std::cout << "Request to plot will be ignored."
-//                        << std::endl;
-//                    #else
-//                        argPlot = true;
-//                    #endif
-//                #else
-//                    argPlot = true;
-//                #endif
-//                break;
-//            case 'h':
-//                display_help();
-//                break;
-//            case 'o':
-//                argSave = true;
-//                if (((i + 1) == (argc - 1)) || (argv[i + 1][0] == '-')) {
-//                    argOutname = fileName;
-//                    argOutname = argOutname.substr(0, argOutname.find_last_of('.')) + ".csv";
-//                    argExt = CSV;
-//                }
-//                else {
-//                    argOutname = argv[i + 1];
-//                    if(argOutname.find('.') != std::string::npos) {
-//                        std::string outExt = argOutname.substr(argOutname.find_last_of('.'),
-//                         argOutname.size() - 1);
-//                        std::transform(outExt.begin(), outExt.end(),
-//                         outExt.begin(), toupper);
-//                        if (outExt == ".CSV") argExt = CSV;
-//                        else if (outExt == ".DAT") argExt = DAT;
-//                        else argExt = WR;
-//                    }
-//                    else argExt = WR;
-//                }
-//                break;
-//            case 'p':
-//                #ifdef _OPENMP
-//                    std::cout << "Parallelization is ENABLED" << std::endl;
-//                #else
-//                    std::cout << "Parallelization is DISABLED" << std::endl;
-//                #endif
-//                break;
-//            case 'V':
-//                argVerb = true;
-//                break;
-//            case 'v':
-//                version_info();
-//                exit(0);
-//            }
-//        }
-//    }
-//}
-
 void
 Input::read_input_file(std::string &fileName,
 					std::vector<std::string> &fileLines) {
@@ -155,7 +30,7 @@ Input::read_input_file(std::string &fileName,
 void
 Input::split_netlist(std::vector<std::string> &fileLines,
 						std::vector<std::string> &controls,
-						Parameter &parameters,
+						Parameters &parameters,
 						Netlist &netlist) {
 	bool subckt = false;
 	bool control = false;
