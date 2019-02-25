@@ -19,8 +19,6 @@ class Results {
 		std::vector<double> timeAxis;
 		std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 
-		Results() {};
-
 };
 
 class Simulation {
@@ -33,8 +31,6 @@ class Simulation {
 							double &tstop,
 							double &tstart,
 							double &maxtstep);
-
-		Simulation() {};
 
 		void
 		transient_voltage_simulation(Input &iObj, Matrix &mObj);

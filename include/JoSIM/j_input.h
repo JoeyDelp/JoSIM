@@ -21,7 +21,6 @@ class Parameters {
 	public:
 		std::vector<std::pair<std::string, std::string>> unparsedParams;
 		std::unordered_map<JoSIM::ParameterName, double> parsedParams;
-		Parameters() { }
 };
 
 class Transient {
@@ -78,7 +77,6 @@ class Input {
 		Netlist netlist;
 		Parameters parameters;
 		Transient transSim;
-		//std::string fileName;
 		std::vector<std::string> fileLines, controls;
 		std::vector<std::pair<std::string, std::string>> expNetlist;
 

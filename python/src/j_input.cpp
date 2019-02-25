@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -66,7 +67,40 @@ void input(py::module &m) {
 
   py::class_<Parameters>(m, "Parameter")
       .def("has_unused_parameters",
-           [](Parameters &param) { return !param.unparsedParams.empty(); });
+           [](Parameters &param) { return !param.unparsedParams.empty(); })
+      .def("replace_unparsed_param",
+           [](Parameters &parameters, std::string name, double value) {
+             for (auto &unparsed_param : parameters.unparsedParams) {
+               // Subcircuit must be global
+               if (unparsed_param.first != "")
+                 continue;
+
+               // std::regex machinary
+               constexpr auto match_name_regex_string =
+                   R"(\s*\.PARAM\s*([^=]*)\s*=.*)";
+               auto match_name_regex = std::regex(match_name_regex_string, "i");
+               std::smatch match_name_result;
+
+               // If the regex matched then replace and return other continue
+               if (std::regex_match(unparsed_param.second, match_name_result,
+                                    match_name_regex)) {
+                 unparsed_param.second = ".PARAM ";
+                 unparsed_param.second.append(name);
+                 unparsed_param.second.append("=");
+                 unparsed_param.second.append(std::to_string(value));
+                 return;
+               }
+             }
+
+             throw std::runtime_error("Failed replacing unparsed param!");
+           })
+      .def("print_unparsed_params", [](Parameters &parameters) {
+        py::scoped_ostream_redirect cout;
+        py::scoped_estream_redirect cerr;
+        for (auto &unparsed_param : parameters.unparsedParams)
+          std::cout << unparsed_param.second << "(" << unparsed_param.first
+                    << ")" << std::endl;
+      });
 
   py::class_<Subcircuit>(m, "Subcircuit");
 

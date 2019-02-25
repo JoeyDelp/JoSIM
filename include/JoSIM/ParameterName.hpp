@@ -16,14 +16,13 @@ public:
     // Empty
   }
 
-  ParameterName(const ParameterName &other)
-      : name_(other.name()), subcircuit_(other.subcircuit()) {
-    // Empty
-  }
-
+  /// Get parameter name
   const std::string &name() const noexcept { return name_; }
+
+  /// Get subcircuit name of parameter, "" if it is in global scope
   const std::string &subcircuit() const noexcept { return subcircuit_; }
 
+  /// Equality comparison
   bool operator==(const ParameterName &other) const noexcept {
     return (name_ == other.name_ && subcircuit_ == other.subcircuit_);
   }
@@ -33,6 +32,7 @@ public:
 
 namespace std {
 
+// Hash function for JoSIM::ParameterName
 template <> struct hash<JoSIM::ParameterName> {
   std::size_t operator()(const JoSIM::ParameterName &parameter_name) const {
     using std::hash;
