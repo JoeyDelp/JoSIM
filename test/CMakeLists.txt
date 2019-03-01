@@ -29,6 +29,13 @@ add_integration_test(
   WRSPICE
 )
 
+add_integration_test(
+  NAME modified_netlist
+  CIR modified_netlist.cir
+  OUT modified_netlist.csv
+  WRSPICE
+)
+
 #add_integration_test(
 #  NAME test_mitll_xort
 #  CIR TEST_MITLL_XORT.cir

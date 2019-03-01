@@ -56,7 +56,6 @@ endif()
 
 # Add JoSIM library
 add_library(josim
-            STATIC
             src/CliOptions.cpp
             src/j_simulation.cpp
             src/j_output.cpp

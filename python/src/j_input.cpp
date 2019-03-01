@@ -11,6 +11,8 @@
 
 #include "JoSIM/CliOptions.hpp"
 
+#include <cctype>
+
 namespace py = pybind11;
 
 namespace pyjosim {
@@ -70,6 +72,10 @@ void input(py::module &m) {
            [](Parameters &param) { return !param.unparsedParams.empty(); })
       .def("replace_unparsed_param",
            [](Parameters &parameters, std::string name, double value) {
+             // Make input upercase
+             std::for_each(name.begin(), name.end(),
+                           [](auto &c) { c = std::toupper(c); });
+
              for (auto &unparsed_param : parameters.unparsedParams) {
                // Subcircuit must be global
                if (unparsed_param.first != "")
@@ -77,15 +83,22 @@ void input(py::module &m) {
 
                // std::regex machinary
                constexpr auto match_name_regex_string =
-                   R"(\s*\.PARAM\s*([^=]*)\s*=.*)";
+                   R"(\s*\.PARAM\s*([^=\s]*)\s*=\s*.*\s*)";
+
                auto match_name_regex = std::regex(match_name_regex_string, "i");
                std::smatch match_name_result;
 
-               // If the regex matched then replace and return other continue
-               if (std::regex_match(unparsed_param.second, match_name_result,
-                                    match_name_regex)) {
+               // If the regex failed PARAM is invalid
+               if (!std::regex_match(unparsed_param.second, match_name_result,
+                                     match_name_regex))
+                 throw std::runtime_error(
+                     "Failed determining parameter name of unparsed parameter");
+
+               auto param_name = std::string(match_name_result[1]);
+
+               if (param_name == name) {
                  unparsed_param.second = ".PARAM ";
-                 unparsed_param.second.append(name);
+                 unparsed_param.second.append(param_name);
                  unparsed_param.second.append("=");
                  unparsed_param.second.append(std::to_string(value));
                  return;
@@ -97,9 +110,14 @@ void input(py::module &m) {
       .def("print_unparsed_params", [](Parameters &parameters) {
         py::scoped_ostream_redirect cout;
         py::scoped_estream_redirect cerr;
-        for (auto &unparsed_param : parameters.unparsedParams)
-          std::cout << unparsed_param.second << "(" << unparsed_param.first
-                    << ")" << std::endl;
+        for (auto &unparsed_param : parameters.unparsedParams) {
+          std::cout << unparsed_param.second;
+          if (unparsed_param.first != "")
+            std::cout << "(From Subcircuit " << unparsed_param.first << ")\n";
+          else
+            std::cout << "\n";
+        }
+        std::cout << std::endl;
       });
 
   py::class_<Subcircuit>(m, "Subcircuit");
