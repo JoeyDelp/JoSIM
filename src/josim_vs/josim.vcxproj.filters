@@ -36,16 +36,13 @@
     <ClCompile Include="..\j_simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\j_plot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\j_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\j_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\j_args.cpp">
+    <ClCompile Include="..\j_verbose.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,9 +68,6 @@
     <ClInclude Include="..\..\include\JoSIM\j_output.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\JoSIM\j_plot.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\JoSIM\j_simulation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -83,7 +77,7 @@
     <ClInclude Include="..\..\include\JoSIM\j_parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\JoSIM\j_args.h">
+    <ClInclude Include="..\..\include\JoSIM\j_verbose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

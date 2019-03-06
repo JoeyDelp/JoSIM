@@ -38,7 +38,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{4281744E-7082-4653-ACCD-D7A6463DEE83}</ProjectGuid>
     <RootNamespace>josim</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectName>JoSIM</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -322,7 +322,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\j_args.cpp" />
     <ClCompile Include="..\j_components.cpp" />
     <ClCompile Include="..\j_errors.cpp" />
     <ClCompile Include="..\j_input.cpp" />
@@ -331,11 +330,10 @@
     <ClCompile Include="..\j_misc.cpp" />
     <ClCompile Include="..\j_output.cpp" />
     <ClCompile Include="..\j_parser.cpp" />
-    <ClCompile Include="..\j_plot.cpp" />
     <ClCompile Include="..\j_simulation.cpp" />
+    <ClCompile Include="..\j_verbose.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\JoSIM\j_args.h" />
     <ClInclude Include="..\..\include\JoSIM\j_components.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_errors.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_globals.hpp" />
@@ -344,9 +342,9 @@
     <ClInclude Include="..\..\include\JoSIM\j_misc.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_output.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_parser.hpp" />
-    <ClInclude Include="..\..\include\JoSIM\j_plot.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_simulation.hpp" />
     <ClInclude Include="..\..\include\JoSIM\j_std_include.hpp" />
+    <ClInclude Include="..\..\include\JoSIM\j_verbose.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

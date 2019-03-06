@@ -208,7 +208,8 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 			if (thisJunction.posNRow == -1) thisJunction.vn1 = (-lhsValues.at(thisJunction.negNRow));
 			else if (thisJunction.negNRow == -1) thisJunction.vn1 = (lhsValues.at(thisJunction.posNRow));
 			else thisJunction.vn1 = (lhsValues.at(thisJunction.posNRow) - lhsValues.at(thisJunction.negNRow));
-			thisJunction.dVn1 = (2 / iObj.transSim.prstep) * (thisJunction.vn1 - thisJunction.vn2) - thisJunction.dVn2;
+			if (i <= 3 ) thisJunction.dVn1 = 0;
+			else thisJunction.dVn1 = (2 / iObj.transSim.prstep) * (thisJunction.vn1 - thisJunction.vn2) - thisJunction.dVn2;
 			thisJunction.v0 = thisJunction.vn1 + iObj.transSim.prstep * thisJunction.dVn1;
 			if (thisJunction.rType == 1) {
 				if(fabs(thisJunction.v0) < thisJunction.lowerB) {
@@ -297,7 +298,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 			}
 			thisJunction.pn1 = lhsValues.at(thisJunction.phaseNRow);
 			thisJunction.phi0 = thisJunction.pn1 + (hn_2_2e_hbar)*(thisJunction.vn1 + thisJunction.v0);
-			// thisJunction.iS = -thisJunction.iC * sin(thisJunction.phi0) + (((2 * thisJunction.C) / iFile.tsim.prstep)*thisJunction.vn1) + (thisJunction.C * thisJunction.dVn1) - thisJunction.iT;
+			//thisJunction.iS = -thisJunction.iC * sin(thisJunction.phi0) + (((2 * thisJunction.C) / iObj.transSim.prstep)*thisJunction.vn1) + (thisJunction.C * thisJunction.dVn1) - thisJunction.iT;
 			thisJunction.iS = -((M_PI * thisJunction.Del) / (2 * EV * thisJunction.rNCalc)) * (sin(thisJunction.phi0)/sqrt(1 - thisJunction.D * (sin(thisJunction.phi0 / 2)*sin(thisJunction.phi0 / 2))))
 								* tanh((thisJunction.Del)/(2*BOLTZMANN*thisJunction.T) * sqrt(1-thisJunction.D * (sin(thisJunction.phi0 / 2)*sin(thisJunction.phi0 / 2))))
 								+ (((2 * thisJunction.C) / iObj.transSim.prstep)*thisJunction.vn1) + (thisJunction.C * thisJunction.dVn1) - thisJunction.iT;

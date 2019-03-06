@@ -1,0 +1,25 @@
+* JTL for equation checking purposes
+*
+* Coenrad Fourie - November 2018
+***************************************************
+* Execute for phase with:
+* josim -a 1 -o x.csv jtl_eq.cir 
+***************************************************
+
+L1   1  2  1p
+B1   1  0  jj1
+I1   0  1 pwl(0 0 5p 100u)
+
+.MODEL jj1 JJ(rtype=1, vg=2.8mV, cap=0.175pF, r0=64, rn=6.4, icrit=0.25mA)
+*.MODEL jj2 JJ(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rn=16, icrit=0.1mA)
+
+.PRINT PHASE B1
+.print devv B1
+*.PRINT PHASE B2
+
+*.print NODEP 1 0
+*.print NODEP 2 0
+
+.tran 0.25p 200p 0 0.25p UIC
+
+.END
