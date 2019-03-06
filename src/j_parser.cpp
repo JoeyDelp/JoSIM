@@ -84,9 +84,9 @@ Parser::parse_param(const std::string& expr, const std::unordered_map<JoSIM::Par
 		}
 		else
 			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
-		if (opLoc == 0)
-			expToEval = expToEval.substr(opLoc + 1);
-		if (opLoc == -1)
+    if (opLoc == 0)
+      expToEval = expToEval.substr(opLoc + 1);
+		else if (opLoc == -1)
 			expToEval = "";
 		else
 			expToEval = expToEval.substr(opLoc);

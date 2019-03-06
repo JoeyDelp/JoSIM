@@ -2,6 +2,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_simulation.h"
 
+#include <cassert>
+
 void
 Simulation::identify_simulation(std::vector<std::string> controls,
 						double &prstep,
@@ -73,7 +75,10 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 	Symbolic = klu_analyze(mObj.Nsize, &mObj.rowptr.front(), &mObj.colind.front(), &Common);
 	Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(), &mObj.nzval.front(), Symbolic, &Common);
 	rowCounter = 0;
-	for (auto j : mObj.rowNames) {
+	for (const auto &j : mObj.rowNames) {
+
+    assert(j.size() >= 3);
+
 		if (j[2] == 'N') {
 			nodeConnectionVector[rowCounter] = mObj.nodeConnections[j];
 		}
