@@ -32,7 +32,8 @@ void output(py::module &m) {
 
   py::class_<Output>(m, "Output")
       .def(py::init<>())
-      .def("relevant_traces", &Output::relevant_traces)
+      .def("relevant_traces", &Output::relevant_traces, py::keep_alive<1, 2>(),
+           py::keep_alive<1, 3>(), py::keep_alive<1, 4>())
       .def("write_csv", &Output::write_data)
       .def("write_dat", &Output::write_legacy_data)
       .def("write_wr", &Output::write_wr_data)
@@ -47,13 +48,13 @@ void output(py::module &m) {
              double *data = output.timesteps->data();
              size_t size = output.timesteps->size();
              return py::array_t<double>(size, data);
-           })
-      .def("get_traces", [](Output &output) {
-        // Trace* data = output.traces.data();
-        // size_t size = output.traces.size();
-        // return TraceBuffer{data, size};
-        return output.traces;
-      });
+           },
+           py::keep_alive<0, 1>())
+      .def("get_traces",
+           [](Output &output) {
+             return output.traces;
+           },
+           py::return_value_policy::reference_internal);
 }
 
 } // namespace pyjosim

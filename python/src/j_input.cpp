@@ -159,7 +159,10 @@ void input(py::module &m) {
       .def_readonly("transient_simulation", &Input::transSim)
       .def_readonly("netlist", &Input::netlist)
       .def_readonly("cli_verbose", &Input::argVerb)
-      .def_readonly("cli_analysis", &Input::argAnal);
+      .def_readonly("cli_analysis", &Input::argAnal)
+      .def("clone", [](const Input &input) -> Input {
+          return input;
+      });
 }
 
 } // namespace pyjosim

@@ -22,7 +22,7 @@ struct CliOptions {
   FileOutputType output_file_type;
 
   // Deprecated
-  bool plot;
+  bool plot = false;
 
   // helper functions
   static CliOptions parse(int argc, const char ** argv);

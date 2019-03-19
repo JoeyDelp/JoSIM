@@ -4,6 +4,9 @@
 
 void
 Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
+  // Clear Traces so that we don't repopulate it through the interface
+  traces.clear();
+
 	timesteps = &sObj.results.timeAxis;
 	std::vector<std::string> tokens, tokens2;
 	std::string label, label2;
