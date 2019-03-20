@@ -296,6 +296,9 @@ test/MITLL_DFFT.cir
 release_build
 build
 
+# Internal testing directories
+testint
+
 doc/src
 *.dat
 *.json
