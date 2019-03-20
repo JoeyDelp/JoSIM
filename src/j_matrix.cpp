@@ -57,8 +57,14 @@ Matrix::create_A_volt(Input &iObj) {
 		try {
 			label = devicetokens[0];
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
-				componentLabels.end())
-				componentLabels.push_back(label);
+				componentLabels.end()) {
+					if(label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) {
+						std::cout << "W: The use of special characters in label names is not advised." << std::endl;
+						std::cout << "W: This might produce unexpected results." << std::endl;
+						std::cout << "W: Continuing operation." << std::endl;
+					}
+					componentLabels.push_back(label);
+				}
 			else {
 				Errors::invalid_component_errors(DUPLICATE_LABEL, label);
 			}
@@ -1100,8 +1106,14 @@ Matrix::create_A_phase(Input &iObj) {
 		try {
 			label = devicetokens[0];
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
-				componentLabels.end())
-				componentLabels.push_back(label);
+				componentLabels.end()){
+					if(label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) {
+						std::cout << "W: The use of special characters in label names is not advised." << std::endl;
+						std::cout << "W: This might produce unexpected results." << std::endl;
+						std::cout << "W: Continuing operation." << std::endl;
+					}
+					componentLabels.push_back(label);
+				}
 			else {
 				Errors::invalid_component_errors(DUPLICATE_LABEL, label);
 			}

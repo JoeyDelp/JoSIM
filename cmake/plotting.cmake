@@ -7,6 +7,7 @@ function(enable_fltk_plot)
 endfunction()
 
 function(enable_matplotlib_plot)
+add_definitions(-DUSING_MATPLOTLIB)
 
 endfunction()
 
