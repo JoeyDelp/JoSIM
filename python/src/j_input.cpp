@@ -56,8 +56,7 @@ void input(py::module &m) {
       .def_readonly("input_type", &JoSIM::CliOptions::input_type)
       .def_readonly("analysis_type", &JoSIM::CliOptions::analysis_type)
       .def_readonly("analysis_plot", &JoSIM::CliOptions::parallel)
-      .def_readonly("verbose", &JoSIM::CliOptions::verbose)
-      .def_readonly("plot", &JoSIM::CliOptions::plot);
+      .def_readonly("verbose", &JoSIM::CliOptions::verbose);
 
   py::class_<Transient>(m, "Transient")
       .def(py::init<>())

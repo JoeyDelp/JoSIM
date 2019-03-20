@@ -21,9 +21,6 @@ struct CliOptions {
   std::string output_file_name;
   FileOutputType output_file_type;
 
-  // Deprecated
-  bool plot = false;
-
   // helper functions
   static CliOptions parse(int argc, const char ** argv);
   static void display_help();

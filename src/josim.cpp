@@ -40,10 +40,6 @@ main(int argc, const char** argv) {
 		else if(cli_options.output_file_type == FileOutputType::Dat) oObj.write_legacy_data(cli_options.output_file_name);
 		else if(cli_options.output_file_type == FileOutputType::WrSpice) oObj.write_wr_data(cli_options.output_file_name);
 	}
-	if(cli_options.plot) {
-		if(!oObj.traces.empty()) oObj.plot_traces(cli_options.cir_file_name);
-		else oObj.plot_all(cli_options.cir_file_name, mObj, sObj);
-	}
-	if(!cli_options.plot && !cli_options.output_to_file) oObj.write_cout(mObj, sObj);
+	if(!cli_options.output_to_file) oObj.write_cout(mObj, sObj);
 	return 0;
 }

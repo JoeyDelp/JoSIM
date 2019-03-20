@@ -22,28 +22,6 @@ option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
 # CMake utils
 include(cmake/suitesparse.cmake)
 
-# Set which graphical interface to use USING_[FLTL|MATPLOTLIB|NONE]
-option(USING_FLTK "Using FLTK basic graphical interface" OFF)
-option(USING_MATPLOTLIB "Using Python based matplotlib graphical interface" OFF)
-option(USING_NONE "Using no plotting engine" ON)
-
-include(cmake/plotting.cmake)
-
-if(USING_FLTK)
-  enable_fltk_plot()
-  set(PLOTTING_ENGINE "FLTK")
-endif()
-
-if(USING_MATPLOTLIB)
-  enable_matplotlib_plot()
-  set(PLOTTING_ENGINE "MATPLOTLIB")
-endif()
-
-if(USING_NONE)
-  enable_none_plot()
-  set(PLOTTING_ENGINE "NONE")
-endif()
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(PLATFORM "win")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

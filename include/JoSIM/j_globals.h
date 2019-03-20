@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef J_GLOBALS_H_
 #define J_GLOBALS_H_
+
 #include "j_std_include.h"
 
 #define PHI_ZERO 2.067833831170082E-15

@@ -38,36 +38,6 @@
 #include <omp.h>
 #endif
 
-// Graph plotting includes
-#ifdef USING_FLTK
-#ifdef WIN32
-#include "../Fl/Fl.H"
-#include "../Fl/Fl_Box.H"
-#include "../Fl/Fl_Button.H"
-#include "../Fl/Fl_Chart.H"
-#include "../Fl/Fl_Double_Window.H"
-#include "../Fl/Fl_Group.H"
-#include "../Fl/Fl_Scroll.H"
-#include "../Fl/Fl_Scrollbar.H"
-#include "../Fl/Fl_Window.H"
-#include "../Fl/fl_draw.H"
-
-#else
-#include <Fl/Fl.H>
-#include <Fl/Fl_Box.H>
-#include <Fl/Fl_Button.H>
-#include <Fl/Fl_Chart.H>
-#include <Fl/Fl_Double_Window.H>
-#include <Fl/Fl_Group.H>
-#include <Fl/Fl_Scroll.H>
-#include <Fl/Fl_Scrollbar.H>
-#include <Fl/Fl_Window.H>
-
-#endif
-#elif USING_MATPLOTLIB
-#include "matplotlibcpp.h"
-#endif
-
 // Linear algebra include
 #include "klu.h"
 

@@ -46,12 +46,6 @@ class Output {
 
         void
         write_cout(Matrix &mObj, Simulation &sObj);
-
-		int
-		plot_traces(std::string &filename);
-
-        int
-        plot_all(std::string &filename, Matrix &mObj, Simulation &sObj);
 };
 
 #endif

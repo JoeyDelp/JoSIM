@@ -141,16 +141,6 @@ void CliOptions::display_help() {
             << "|"
             << "Eg. X01 SUBCKT 1 2 3     vs.     X01 1 2 3 SUBCKT" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-g(raph)" << std::setw(3)
-            << std::left << "|"
-            << "Plot the requested results using a plotting library."
-            << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
-            << "|"
-            << "If this is enabled with verbose mode all traces "
-               "are plotted."
-            << std::endl;
-
   std::cout << std::setw(13) << std::left << "-h(elp)" << std::setw(3)
             << std::left << "|"
             << "Displays this help menu" << std::endl;
@@ -185,7 +175,7 @@ void CliOptions::display_help() {
             << "Displays the JoSIM version info only." << std::endl;
 
   std::cout << std::endl;
-  std::cout << "Example command: josim -g -o ./output.csv test.cir"
+  std::cout << "Example command: josim -o ./output.csv test.cir"
             << std::endl;
   std::cout << std::endl;
   exit(0);
