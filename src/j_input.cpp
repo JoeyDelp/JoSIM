@@ -207,13 +207,19 @@ Input::expand_maindesign() {
 					tokens[0] = tokens[0] + "|" + label;
 					if(std::count(netlist.subcircuits.at(subcktName).io.begin(), netlist.subcircuits.at(subcktName).io.end(), tokens[1]) != 0) {
 						for(int l = 0; l < netlist.subcircuits.at(subcktName).io.size(); l++) {
-							if(tokens[1] == netlist.subcircuits.at(subcktName).io.at(l)) tokens[1] = io.at(l);
+							if(tokens[1] == netlist.subcircuits.at(subcktName).io.at(l)) {
+								tokens[1] = io.at(l);
+								break;
+							} 
 						}
 					}
 					else if (tokens[1] != "0" && tokens[1] != "GND") tokens[1] = tokens[1] + "|" + label;
 					if(std::count(netlist.subcircuits.at(subcktName).io.begin(), netlist.subcircuits.at(subcktName).io.end(), tokens[2]) != 0) {
 						for(int l = 0; l < netlist.subcircuits.at(subcktName).io.size(); l++) {
-							if(tokens[2] == netlist.subcircuits.at(subcktName).io.at(l)) tokens[2] = io.at(l);
+							if(tokens[2] == netlist.subcircuits.at(subcktName).io.at(l)) {
+								tokens[2] = io.at(l);
+								break;
+							}
 						}
 					}
 					else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
