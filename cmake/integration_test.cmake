@@ -8,7 +8,7 @@ function(add_integration_test)
                         "${multi_args}"
                         ${ARGN})
 
-  set(TEST_BUILD_DIR "${CMAKE_BINARY_DIR}/tests/integration/${TEST_NAME}")
+  set(TEST_BUILD_DIR "${PROJECT_BINARY_DIR}/tests/integration/${TEST_NAME}")
 
   set(JOSIM_COMMAND josim-cli)
 
@@ -21,7 +21,7 @@ function(add_integration_test)
   endif()
 
   if(DEFINED TEST_CIR)
-    configure_file("${CMAKE_SOURCE_DIR}/test/${TEST_CIR}"
+    configure_file("${PROJECT_SOURCE_DIR}/test/${TEST_CIR}"
                    "${TEST_BUILD_DIR}/${TEST_CIR}")
     set(JOSIM_COMMAND ${JOSIM_COMMAND} "${TEST_CIR}")
   endif()

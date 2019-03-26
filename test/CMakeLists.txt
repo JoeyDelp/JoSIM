@@ -1,5 +1,3 @@
-include(${CMAKE_SOURCE_DIR}/cmake/integration_test.cmake)
-
 # Commad line options
 
 #add_integration_test(

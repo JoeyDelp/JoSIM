@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
 
 # CMake utils
-include(cmake/suitesparse.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/suitesparse.cmake)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(PLATFORM "win")
@@ -61,7 +61,7 @@ add_executable(josim-cli src/josim.cpp)
 target_link_libraries(josim-cli PRIVATE josim)
 
 # add compiler warnings
-include(cmake/warnings.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 target_add_warnings(josim)
 target_add_warnings(josim-cli)
 
@@ -74,5 +74,5 @@ add_subdirectory(python)
 # ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
 
 enable_testing()
-include(cmake/integration_test.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/integration_test.cmake)
 add_subdirectory(test)
