@@ -1,0 +1,37 @@
+name: "Linux"
+
+strategy:
+  matrix:
+    gcc8:
+      Container: pleroux0/devel-gcc8:latest
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+container: $[ variables['Container'] ]
+
+steps:
+- script: mkdir -p build
+  displayName: 'Make build folder'
+
+- script: sudo apt-get -y install libsuitesparse-dev pybind11-dev python3-pybind11
+  displayName: 'Install dependencies'
+
+- script: cmake ..
+  workingDirectory: build
+  displayName: 'Configure'
+
+- script: cmake --build .
+  workingDirectory: build
+  displayName: 'Build'
+
+- script: ctest --output-on-failure
+  workingDirectory: build
+  displayName: 'Test'
+
