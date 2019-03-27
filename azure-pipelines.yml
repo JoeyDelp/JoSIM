@@ -4,8 +4,12 @@ strategy:
   matrix:
     gcc8:
       Container: pleroux0/devel-gcc8:latest
-    clang7:
+    clang7-libstdc++:
       Container: pleroux0/devel-clang7:latest
+      CXXFLAGS: -stdlib=libstdc++
+    clang7-libc++:
+      Container: pleroux0/devel-clang7:latest
+      CXXFLAGS: -stdlib=libc++
 
 trigger:
   batch: true
