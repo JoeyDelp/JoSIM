@@ -4,6 +4,8 @@ strategy:
   matrix:
     gcc8:
       Container: pleroux0/devel-gcc8:latest
+    clang7:
+      Container: pleroux0/devel-clang7:latest
 
 trigger:
   batch: true
