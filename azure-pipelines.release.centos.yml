@@ -1,0 +1,31 @@
+name: "CentOS 7 release"
+
+trigger: none
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+container: pleroux0/release-centos7:latest
+
+steps:
+- script: mkdir -p build
+  displayName: 'Make build folder'
+
+- script: sudo yum -y install suitesparse-devel suitesparse-static python36-devel
+  displayName: 'Install YUM dependencies'
+
+- script: conan install ..
+  displayName: 'Install Conan dependencies'
+  workingDirectory: build
+
+- script: cmake ..
+  workingDirectory: build
+  displayName: 'Configure'
+
+- script: cmake --build .
+  workingDirectory: build
+  displayName: 'Build'
+
+- script: ctest --output-on-failure
+  workingDirectory: build
+  displayName: 'Test'
