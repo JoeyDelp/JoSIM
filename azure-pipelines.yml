@@ -20,8 +20,12 @@ steps:
 - script: mkdir -p build
   displayName: 'Make build folder'
 
-- script: sudo apt-get -y install libsuitesparse-dev pybind11-dev python3-pybind11
-  displayName: 'Install dependencies'
+- script: sudo apt-get -y install libsuitesparse-dev
+  displayName: 'Install APT dependencies'
+
+- script: conan install ..
+  displayName: 'Install Conan dependencies'
+  workingDirectory: build
 
 - script: cmake ..
   workingDirectory: build
@@ -34,4 +38,3 @@ steps:
 - script: ctest --output-on-failure
   workingDirectory: build
   displayName: 'Test'
-

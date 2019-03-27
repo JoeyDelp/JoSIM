@@ -7,6 +7,8 @@ set(JoSIM_VERSION "2.2")
 # Project name
 project(JoSIM VERSION ${JoSIM_VERSION})
 
+include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
+
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
