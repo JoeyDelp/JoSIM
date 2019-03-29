@@ -8,6 +8,7 @@ set(JoSIM_VERSION "2.2")
 project(JoSIM VERSION ${JoSIM_VERSION})
 
 include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
@@ -48,10 +49,11 @@ add_library(josim
             src/j_verbose.cpp)
 
 target_include_directories(josim PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(josim PUBLIC suitesparse::all)
+target_link_libraries(josim PUBLIC suitesparse::klu)
 set_target_properties(josim
                       PROPERTIES POSITION_INDEPENDENT_CODE
                                  ON)
+make_target_static(josim)
 
 if(USING_OPENMP)
   find_package(OpenMP REQUIRED)
@@ -61,6 +63,7 @@ endif()
 # Add JoSIM executable
 add_executable(josim-cli src/josim.cpp)
 target_link_libraries(josim-cli PRIVATE josim)
+make_target_static(josim-cli)
 
 # add compiler warnings
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
