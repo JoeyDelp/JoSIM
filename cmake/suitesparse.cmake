@@ -64,3 +64,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux") # Linux
 else()
   messages(SEND_ERROR "Unsupported platform!")
 endif()
+
+# Handle dependencies between libraries
+target_link_libraries(suitesparse::klu
+                      INTERFACE suitesparse::btf suitesparse::amd
+                                suitesparse::colamd)
