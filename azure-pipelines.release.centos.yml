@@ -18,7 +18,7 @@ steps:
   displayName: 'Install Conan dependencies'
   workingDirectory: build
 
-- script: source scl_source enable devtoolset-8 && cmake ..
+- script: source scl_source enable devtoolset-8 && cmake .. -DCMAKE_BUILD_TYPE=Release
   workingDirectory: build
   displayName: 'Configure'
 
@@ -29,3 +29,8 @@ steps:
 - script: ctest --output-on-failure
   workingDirectory: build
   displayName: 'Test'
+
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'josim-build'
+    targetPath: 'build/josim-cli'
