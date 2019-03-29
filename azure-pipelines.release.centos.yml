@@ -21,7 +21,6 @@ steps:
 - script: source scl_source enable devtoolset-8 && cmake ..
     -DCMAKE_BUILD_TYPE=Release
     -DBUILD_SHARED_LIBS=Off
-    -DCMAKE_FIND_LIBRARY_SUFFIXES=.a
   workingDirectory: build
   displayName: 'Configure'
 
