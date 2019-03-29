@@ -6,7 +6,8 @@ function(linux_suitesparse_lib name lib)
     add_library(suitesparse::${lib} INTERFACE IMPORTED)
     target_include_directories(suitesparse::${lib}
                                INTERFACE ${${name}_INCLUDE_DIR})
-    target_link_libraries(suitesparse::${lib} INTERFACE ${${name}_LIBRARY})
+    target_link_libraries(suitesparse::${lib}
+                          INTERFACE ${${name}_LIBRARY} suitesparse::config)
 
     target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
 
@@ -21,7 +22,8 @@ function(mac_suitesparse_lib name lib)
   target_include_directories(suitesparse::${lib}
                              INTERFACE ${CMAKE_SOURCE_DIR}/include/suitesparse)
   target_link_libraries(suitesparse::${lib}
-                        INTERFACE ${CMAKE_SOURCE_DIR}/lib/mac/lib${name}.a)
+                        INTERFACE ${CMAKE_SOURCE_DIR}/lib/mac/lib${name}.a
+                                  suitesparse::config)
   target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
 endfunction()
 
