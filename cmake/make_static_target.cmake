@@ -1,4 +1,8 @@
 function(make_target_static target)
+  if (NOT MAKING_STATIC_BUILD)
+    return()
+  endif()
+
   if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # TODO OSX is special handle later
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

@@ -20,7 +20,7 @@ steps:
 
 - script: source scl_source enable devtoolset-8 && cmake ..
     -DCMAKE_BUILD_TYPE=Release
-    -DBUILD_SHARED_LIBS=Off
+    -DMAKING_STATIC_BUILD=ON
   workingDirectory: build
   displayName: 'Configure'
 

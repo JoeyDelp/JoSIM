@@ -21,6 +21,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # See if OpenMP was specified
 option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
+option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
+
+if(MAKING_STATIC_BUILD)
+  set(CMAKE_BUILD_SHARED OFF)
+endif()
 
 # CMake utils
 include(${PROJECT_SOURCE_DIR}/cmake/suitesparse.cmake)
