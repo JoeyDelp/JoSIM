@@ -52,11 +52,13 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 					else {
 						std::cout << "E: Missing subcircuit io." << std::endl;
 						std::cout << "E: Please recheck the netlist and try again." <<std::endl;
+						exit(-1);
 					}
 				}
 				else {
 					std::cout << "E: Missing subcircuit name." << std::endl;
 					std::cout << "E: Please recheck the netlist and try again." <<std::endl;
+					exit(-1);
 				}
 			}
 			else if(fileLines.at(i).find(".PARAM") != std::string::npos) {
@@ -115,6 +117,7 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 	if(netlist.maindesign.empty()) {
 		std::cout << "E: Missing main design in netlist." << std::endl;
 		std::cout << "E: This design will not simulate without a main design." << std::endl;
+		exit(-1);
 	}
 }
 
