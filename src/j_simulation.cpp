@@ -312,6 +312,9 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 		}
 		if(needsLU) {
 				mObj.create_CSR();
+
+        // TODO: Maybe use refactor
+        klu_free_numeric(&Numeric, &Common);
 				Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(), &mObj.nzval.front(), Symbolic, &Common);
 				needsLU  = false;
 		}
@@ -335,6 +338,9 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 	#else
 	std::cout << " done" << std::endl;
 	#endif
+
+  klu_free_symbolic(&Symbolic, &Common);
+  klu_free_numeric(&Numeric, &Common);
 }
 
 void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
@@ -623,6 +629,8 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 		}
 		if(needsLU) {
 				mObj.create_CSR();
+        // TODO: Maybe use refactor
+        klu_free_numeric(&Numeric, &Common);
 				Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(), &mObj.nzval.front(), Symbolic, &Common);
 				needsLU = false;
 		}
@@ -647,4 +655,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 	#else
 	std::cout << " done" << std::endl;
 	#endif
+
+  klu_free_symbolic(&Symbolic, &Common);
+  klu_free_numeric(&Numeric, &Common);
 }
