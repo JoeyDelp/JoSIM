@@ -1,3 +1,5 @@
+#include <regex>
+
 #include <pybind11/iostream.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -71,40 +73,48 @@ void input(py::module &m) {
            [](Parameters &param) { return !param.unparsedParams.empty(); })
       .def("replace_unparsed_param",
            [](Parameters &parameters, std::string name, double value) {
-             // Make input upercase
-             std::for_each(name.begin(), name.end(),
-                           [](auto &c) { c = std::toupper(c); });
-
-             for (auto &unparsed_param : parameters.unparsedParams) {
-               // Subcircuit must be global
-               if (unparsed_param.first != "")
-                 continue;
+             try {
+               // Make input upercase
+               std::for_each(name.begin(), name.end(),
+                             [](auto &c) { c = std::toupper(c); });
 
                // std::regex machinary
                constexpr auto match_name_regex_string =
                    R"(\s*\.PARAM\s*([^=\s]*)\s*=\s*.*\s*)";
 
-               auto match_name_regex = std::regex(match_name_regex_string, "i");
+               auto match_name_regex = std::regex(match_name_regex_string, std::regex::icase | std::regex::optimize);
                std::smatch match_name_result;
 
-               // If the regex failed PARAM is invalid
-               if (!std::regex_match(unparsed_param.second, match_name_result,
-                                     match_name_regex))
-                 throw std::runtime_error(
-                     "Failed determining parameter name of unparsed parameter");
+               for (auto &unparsed_param : parameters.unparsedParams) {
+                 // Subcircuit must be global
+                 if (unparsed_param.first != "")
+                   continue;
 
-               auto param_name = std::string(match_name_result[1]);
+                 // If the regex failed PARAM is invalid
+                 if (!std::regex_match(unparsed_param.second, match_name_result,
+                                       match_name_regex))
+                   throw std::runtime_error("Failed determining parameter name "
+                                            "of unparsed parameter");
 
-               if (param_name == name) {
-                 unparsed_param.second = ".PARAM ";
-                 unparsed_param.second.append(param_name);
-                 unparsed_param.second.append("=");
-                 unparsed_param.second.append(std::to_string(value));
-                 return;
+                 auto param_name = std::string(match_name_result[1]);
+
+                 if (param_name == name) {
+                   unparsed_param.second = ".PARAM ";
+                   unparsed_param.second.append(param_name);
+                   unparsed_param.second.append("=");
+                   unparsed_param.second.append(std::to_string(value));
+                   return;
+                 }
                }
-             }
 
-             throw std::runtime_error("Failed replacing unparsed param!");
+               throw std::runtime_error("Failed replacing unparsed param!");
+
+             } catch (std::regex_error &re) {
+               std::puts("PYJOSIM INTERNAL ERROR:");
+               std::puts(re.what());
+               std::cout << re.code() << std::endl;
+               std::abort();
+             }
            })
       .def("print_unparsed_params", [](Parameters &parameters) {
         py::scoped_ostream_redirect cout;
@@ -159,9 +169,7 @@ void input(py::module &m) {
       .def_readonly("netlist", &Input::netlist)
       .def_readonly("cli_verbose", &Input::argVerb)
       .def_readonly("cli_analysis", &Input::argAnal)
-      .def("clone", [](const Input &input) -> Input {
-          return input;
-      });
+      .def("clone", [](const Input &input) -> Input { return input; });
 }
 
 } // namespace pyjosim
