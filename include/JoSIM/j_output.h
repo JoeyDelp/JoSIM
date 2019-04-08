@@ -17,39 +17,35 @@ class Trace {
         std::string name;
         char type;
         bool pointer;
-        std::vector<double> *traceData = new std::vector<double>;
+        std::vector<double> *traceData = nullptr;
         std::vector<double> calcData;
         Trace() {
             pointer = true;
+        };
+        ~Trace() {
         };
 };
 
 class Output {
     public:
         std::vector<Trace> traces;
-        std::vector<double> *timesteps = new std::vector<double>;
+        std::vector<double> *timesteps = nullptr;
         Output() {};
 
         void
         relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj);
 
-        void 
+        void
         write_data(std::string &outname);
 
-        void 
+        void
         write_legacy_data(std::string &outname);
 
-        void 
+        void
         write_wr_data(std::string &outname);
 
-        void 
+        void
         write_cout(Matrix &mObj, Simulation &sObj);
-
-		int
-		plot_traces(std::string &filename);
-
-        int
-        plot_all(std::string &filename, Matrix &mObj, Simulation &sObj);
 };
 
 #endif

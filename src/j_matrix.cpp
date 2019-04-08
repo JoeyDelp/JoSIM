@@ -1,11 +1,13 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_matrix.h"
+#include "JoSIM/j_matrix.h"
+
+using namespace JoSIM;
 
 void
 Matrix::create_matrix(Input &iObj) {
-	if(iObj.argAnal == VANALYSIS) Matrix::create_A_volt(iObj);
-	else if (iObj.argAnal == PANALYSIS) Matrix::create_A_phase(iObj);
+	if(iObj.argAnal == AnalysisType::Voltage) Matrix::create_A_volt(iObj);
+	else if (iObj.argAnal == AnalysisType::Phase) Matrix::create_A_phase(iObj);
 	Matrix::create_CSR();
 }
 
@@ -55,8 +57,14 @@ Matrix::create_A_volt(Input &iObj) {
 		try {
 			label = devicetokens[0];
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
-				componentLabels.end())
-				componentLabels.push_back(label);
+				componentLabels.end()) {
+					if(label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) {
+						std::cout << "W: The use of special characters in label names is not advised." << std::endl;
+						std::cout << "W: This might produce unexpected results." << std::endl;
+						std::cout << "W: Continuing operation." << std::endl;
+					}
+					componentLabels.push_back(label);
+				}
 			else {
 				Errors::invalid_component_errors(DUPLICATE_LABEL, label);
 			}
@@ -80,11 +88,12 @@ Matrix::create_A_volt(Input &iObj) {
 		/** RESISTOR **/
 		/**************/
 		if (i.first[0] == 'R') {
-			std::string R = label;
+			const std::string& R = label;
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -131,35 +140,35 @@ Matrix::create_A_volt(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rNameP];
-				components.voltRes[R].posNRow = rowMap[rNameP];
-				components.voltRes[R].posNCol = columnMap[cNameP];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rNameP);
+				components.voltRes[R].posNRow = rowMap.at(rNameP);
+				components.voltRes[R].posNCol = columnMap.at(cNameP);
 				e.value = 1 / value;
 				components.voltRes[R].ppPtr = mElements.size();
 				mElements.push_back(e);
 				if (!nGND) {
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rNameP];
-					components.voltRes[R].posNRow = rowMap[rNameP];
-					components.voltRes[R].negNCol = columnMap[cNameN];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rNameP);
+					components.voltRes[R].posNRow = rowMap.at(rNameP);
+					components.voltRes[R].negNCol = columnMap.at(cNameN);
 					e.value = -1 / value;
 					components.voltRes[R].pnPtr = mElements.size();
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameP];
-					e.rowIndex = rowMap[rNameN];
-					components.voltRes[R].negNRow = rowMap[rNameN];
-					components.voltRes[R].posNCol = columnMap[cNameP];
+					e.colIndex = columnMap.at(cNameP);
+					e.rowIndex = rowMap.at(rNameN);
+					components.voltRes[R].negNRow = rowMap.at(rNameN);
+					components.voltRes[R].posNCol = columnMap.at(cNameP);
 					e.value = -1 / value;
 					components.voltRes[R].npPtr = mElements.size();
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rNameN];
-					components.voltRes[R].negNRow = rowMap[rNameN];
-					components.voltRes[R].negNCol = columnMap[cNameN];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rNameN);
+					components.voltRes[R].negNRow = rowMap.at(rNameN);
+					components.voltRes[R].negNCol = columnMap.at(cNameN);
 					e.value = 1 / value;
 					components.voltRes[R].nnPtr = mElements.size();
 					mElements.push_back(e);
@@ -167,10 +176,10 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rNameN];
-				components.voltRes[R].negNRow = rowMap[rNameN];
-				components.voltRes[R].negNCol = columnMap[cNameN];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rNameN);
+				components.voltRes[R].negNRow = rowMap.at(rNameN);
+				components.voltRes[R].negNCol = columnMap.at(cNameN);
 				e.value = 1 / value;
 				components.voltRes[R].nnPtr = mElements.size();
 				mElements.push_back(e);
@@ -180,11 +189,12 @@ Matrix::create_A_volt(Input &iObj) {
 		/** CAPACITOR **/
 		/***************/
 		else if (i.first[0] == 'C') {
-			std::string C = label;
+			const std::string& C = label;
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -208,7 +218,7 @@ Matrix::create_A_volt(Input &iObj) {
 			if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
 				cNameP = "C_NV" + nodeP;
 				rNameP = "R_N" + nodeP;
-				components.voltCap[C].posNodeC = cNameP; 
+				components.voltCap[C].posNodeC = cNameP;
 				components.voltCap[C].posNodeR = rNameP;
 				if (rowMap.count(rNameP) == 0) {
 					rowMap[rNameP] = rowCounter;
@@ -243,30 +253,30 @@ Matrix::create_A_volt(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.voltCap[C].posNCol = e.colIndex;
 				components.voltCap[C].curNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.voltCap[C].curNCol = e.colIndex;
 				components.voltCap[C].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				if (!nGND) {
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rName];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rName);
 					components.voltCap[C].negNCol = e.colIndex;
 					components.voltCap[C].curNRow = e.rowIndex;
 					e.value = -1;
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cName];
-					e.rowIndex = rowMap[rNameN];
+					e.colIndex = columnMap.at(cName);
+					e.rowIndex = rowMap.at(rNameN);
 					components.voltCap[C].curNCol = e.colIndex;
 					components.voltCap[C].negNRow = e.rowIndex;
 					e.value = -1;
@@ -275,23 +285,23 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.voltCap[C].negNCol = e.colIndex;
 				components.voltCap[C].curNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.voltCap[C].curNCol = e.colIndex;
 				components.voltCap[C].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.voltCap[C].curNCol = e.colIndex;
 			components.voltCap[C].curNRow = e.rowIndex;
 			e.value = iObj.transSim.prstep / (2 * value);
@@ -302,11 +312,12 @@ Matrix::create_A_volt(Input &iObj) {
 		/** INDUCTOR **/
 		/**************/
 		else if (i.first[0] == 'L') {
-			std::string L = label;
+			const std::string& L = label;
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -365,30 +376,30 @@ Matrix::create_A_volt(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.voltInd[L].curNCol = e.colIndex;
 				components.voltInd[L].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.voltInd[L].posNCol = e.colIndex;
 				components.voltInd[L].curNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				if (!nGND) {
 					e.label = label;
-					e.colIndex = columnMap[cName];
-					e.rowIndex = rowMap[rNameN];
+					e.colIndex = columnMap.at(cName);
+					e.rowIndex = rowMap.at(rNameN);
 					components.voltInd[L].curNCol = e.colIndex;
 					components.voltInd[L].negNRow = e.rowIndex;
 					e.value = -1;
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rName];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rName);
 					components.voltInd[L].negNCol = e.colIndex;
 					components.voltInd[L].curNRow = e.rowIndex;
 					e.value = -1;
@@ -397,23 +408,23 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.voltInd[L].curNCol = e.colIndex;
 				components.voltInd[L].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.voltInd[L].negNCol = e.colIndex;
 				components.voltInd[L].curNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.voltInd[L].curNCol = e.colIndex;
 			components.voltInd[L].curNRow = e.rowIndex;
 			e.value = (-2 * value) / iObj.transSim.prstep;
@@ -424,7 +435,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** VOLTAGE SOURCE **/
 		/********************/
 		else if (i.first[0] == 'V') {
-			std::string V = label;
+			const std::string& V = label;
 			matrix_element e;
 			sources[label] = Misc::parse_function(i.first, iObj, i.second);
 			cName = "C_" + devicetokens[0];
@@ -477,30 +488,30 @@ Matrix::create_A_volt(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.voltVs[V].curNCol = e.colIndex;
 				components.voltVs[V].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.voltVs[V].posNCol = e.colIndex;
 				components.voltVs[V].curNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				if (!nGND) {
 					e.label = label;
-					e.colIndex = columnMap[cName];
-					e.rowIndex = rowMap[rNameN];
+					e.colIndex = columnMap.at(cName);
+					e.rowIndex = rowMap.at(rNameN);
 					components.voltVs[V].curNCol = e.colIndex;
 					components.voltVs[V].negNRow = e.rowIndex;
 					e.value = -1;
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rName];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rName);
 					components.voltVs[V].negNCol = e.colIndex;
 					components.voltVs[V].curNRow = e.rowIndex;
 					e.value = -1;
@@ -509,15 +520,15 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.voltVs[V].curNCol = e.colIndex;
 				components.voltVs[V].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.voltVs[V].negNCol = e.colIndex;
 				components.voltVs[V].curNRow = e.rowIndex;
 				e.value = -1;
@@ -570,7 +581,7 @@ Matrix::create_A_volt(Input &iObj) {
 			matrix_element e;
 			std::string modelstring = "", area = "";
 			for (int t = devicetokens.size() - 1; t > 2; t--) {
-				if (devicetokens[t].find("=") == std::string::npos) {
+				if (devicetokens[t].find('=') == std::string::npos) {
 					if (iObj.netlist.models.count(std::make_pair(devicetokens[t], i.second)) != 0) {
 						modelstring = iObj.netlist.models.at(std::make_pair(devicetokens[t], i.second));
 						break;
@@ -644,48 +655,48 @@ Matrix::create_A_volt(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rNameP);
 				components.voltJJ[jj].posNCol = e.colIndex;
 				components.voltJJ[jj].posNRow = e.rowIndex;
 				e.value = ((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0);
 				components.voltJJ[jj].ppPtr = mElements.size();
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.voltJJ[jj].posNCol = e.colIndex;
 				components.voltJJ[jj].phaseNRow = e.rowIndex;
 				e.value = (-iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
 				mElements.push_back(e);
 				if (!nGND) {
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rNameP];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rNameP);
 					components.voltJJ[jj].negNCol = e.colIndex;
 					components.voltJJ[jj].posNRow = e.rowIndex;
 					e.value = -(((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0));
 					components.voltJJ[jj].npPtr = mElements.size();
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameP];
-					e.rowIndex = rowMap[rNameN];
+					e.colIndex = columnMap.at(cNameP);
+					e.rowIndex = rowMap.at(rNameN);
 					components.voltJJ[jj].posNCol = e.colIndex;
 					components.voltJJ[jj].negNRow = e.rowIndex;
 					e.value = -(((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0));
 					components.voltJJ[jj].pnPtr = mElements.size();
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rNameN];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rNameN);
 					components.voltJJ[jj].negNCol = e.colIndex;
 					components.voltJJ[jj].negNRow = e.rowIndex;
 					e.value = ((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0);
 					components.voltJJ[jj].nnPtr = mElements.size();
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rName];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rName);
 					components.voltJJ[jj].negNCol = e.colIndex;
 					components.voltJJ[jj].phaseNRow = e.rowIndex;
 					e.value = (iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
@@ -694,40 +705,24 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rNameP];
-				components.voltJJ[jj].negNCol = e.colIndex;
-				components.voltJJ[jj].posNRow = e.rowIndex;
-				e.value = -(((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0));
-				components.voltJJ[jj].npPtr = mElements.size();
-				mElements.push_back(e);
-				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rNameN];
-				components.voltJJ[jj].posNCol = e.colIndex;
-				components.voltJJ[jj].negNRow = e.rowIndex;
-				e.value = -(((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0));
-				components.voltJJ[jj].pnPtr = mElements.size();
-				mElements.push_back(e);
-				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rNameN);
 				components.voltJJ[jj].negNCol = e.colIndex;
 				components.voltJJ[jj].negNRow = e.rowIndex;
 				e.value = ((2 * components.voltJJ.at(jj).C) / iObj.transSim.prstep) + (1 / components.voltJJ.at(jj).r0);
 				components.voltJJ[jj].nnPtr = mElements.size();
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.voltJJ[jj].negNCol = e.colIndex;
 				components.voltJJ[jj].phaseNRow = e.rowIndex;
 				e.value = (iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.voltJJ[jj].phaseNCol = e.colIndex;
 			components.voltJJ[jj].phaseNRow = e.rowIndex;
 			e.value = 1;
@@ -739,9 +734,9 @@ Matrix::create_A_volt(Input &iObj) {
 			components.voltJJ[jj].transCond = components.voltJJ.at(jj).gLarge + ((2*components.voltJJ.at(jj).C) / iObj.transSim.prstep);
 			components.voltJJ[jj].normalCond = 1 / components.voltJJ.at(jj).rN + ((2*components.voltJJ.at(jj).C) / iObj.transSim.prstep);
 			components.voltJJ[jj].Del0 = 1.76 * BOLTZMANN * components.voltJJ.at(jj).tC;
-			components.voltJJ[jj].Del = components.voltJJ.at(jj).Del0 * sqrt(cos((M_PI/2) * 
+			components.voltJJ[jj].Del = components.voltJJ.at(jj).Del0 * sqrt(cos((M_PI/2) *
 				(components.voltJJ.at(jj).T/components.voltJJ.at(jj).tC) * (components.voltJJ.at(jj).T/components.voltJJ.at(jj).tC)));
-			components.voltJJ[jj].rNCalc = ((M_PI * components.voltJJ.at(jj).Del) / (2 * EV * components.voltJJ.at(jj).iC)) * 
+			components.voltJJ[jj].rNCalc = ((M_PI * components.voltJJ.at(jj).Del) / (2 * EV * components.voltJJ.at(jj).iC)) *
 				tanh(components.voltJJ.at(jj).Del / (2 * BOLTZMANN * components.voltJJ.at(jj).T));
 			components.voltJJ[jj].iS = -components.voltJJ.at(jj).iC * sin(components.voltJJ.at(jj).phi0);
 		}
@@ -749,7 +744,7 @@ Matrix::create_A_volt(Input &iObj) {
 		/** TRANSMISSION LINE **/
 		/***********************/
 		else if (i.first[0] == 'T') {
-			std::string Tx = label, cName2, rName2, cNameP2, rNameP2, cNameN2, 
+			std::string Tx = label, cName2, rName2, cNameP2, rNameP2, cNameN2,
 				rNameN2, nodeP2, nodeN2;
 			bool pGND2, nGND2;
 			matrix_element e;
@@ -881,30 +876,30 @@ Matrix::create_A_volt(Input &iObj) {
 				nGND2 = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.txLine[Tx].curN1Col = e.colIndex;
 				components.txLine[Tx].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.txLine[Tx].posNCol = e.colIndex;
 				components.txLine[Tx].curN1Row = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				if (!nGND) {
 					e.label = label;
-					e.colIndex = columnMap[cName];
-					e.rowIndex = rowMap[rNameN];
+					e.colIndex = columnMap.at(cName);
+					e.rowIndex = rowMap.at(rNameN);
 					components.txLine[Tx].curN1Col = e.colIndex;
 					components.txLine[Tx].negNRow = e.rowIndex;
 					e.value = -1;
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN];
-					e.rowIndex = rowMap[rName];
+					e.colIndex = columnMap.at(cNameN);
+					e.rowIndex = rowMap.at(rName);
 					components.txLine[Tx].negNCol = e.colIndex;
 					components.txLine[Tx].curN1Row = e.rowIndex;
 					e.value = -1;
@@ -913,53 +908,53 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.txLine[Tx].curN1Col = e.colIndex;
 				components.txLine[Tx].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.txLine[Tx].negNCol = e.colIndex;
 				components.txLine[Tx].curN1Row = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.txLine[Tx].curN1Col = e.colIndex;
 			components.txLine[Tx].curN1Row = e.rowIndex;
 			e.value = -z0;
 			mElements.push_back(e);
 			if (!pGND2) {
 				e.label = label;
-				e.colIndex = columnMap[cName2];
-				e.rowIndex = rowMap[rNameP2];
+				e.colIndex = columnMap.at(cName2);
+				e.rowIndex = rowMap.at(rNameP2);
 				components.txLine[Tx].curN2Col = e.colIndex;
 				components.txLine[Tx].posN2Row = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP2];
-				e.rowIndex = rowMap[rName2];
+				e.colIndex = columnMap.at(cNameP2);
+				e.rowIndex = rowMap.at(rName2);
 				components.txLine[Tx].posN2Col = e.colIndex;
 				components.txLine[Tx].curN2Row = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				if (!nGND2) {
 					e.label = label;
-					e.colIndex = columnMap[cName2];
-					e.rowIndex = rowMap[rNameN2];
+					e.colIndex = columnMap.at(cName2);
+					e.rowIndex = rowMap.at(rNameN2);
 					components.txLine[Tx].curN2Col = e.colIndex;
 					components.txLine[Tx].negN2Row = e.rowIndex;
 					e.value = -1;
 					mElements.push_back(e);
 					e.label = label;
-					e.colIndex = columnMap[cNameN2];
-					e.rowIndex = rowMap[rName2];
+					e.colIndex = columnMap.at(cNameN2);
+					e.rowIndex = rowMap.at(rName2);
 					components.txLine[Tx].negN2Col = e.colIndex;
 					components.txLine[Tx].curN2Row = e.rowIndex;
 					e.value = -1;
@@ -968,23 +963,23 @@ Matrix::create_A_volt(Input &iObj) {
 			}
 			else if (!nGND2) {
 				e.label = label;
-				e.colIndex = columnMap[cName2];
-				e.rowIndex = rowMap[rNameN2];
+				e.colIndex = columnMap.at(cName2);
+				e.rowIndex = rowMap.at(rNameN2);
 				components.txLine[Tx].curN2Col = e.colIndex;
 				components.txLine[Tx].negN2Row = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN2];
-				e.rowIndex = rowMap[rName2];
+				e.colIndex = columnMap.at(cNameN2);
+				e.rowIndex = rowMap.at(rName2);
 				components.txLine[Tx].negN2Col = e.colIndex;
 				components.txLine[Tx].curN2Row = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName2];
-			e.rowIndex = rowMap[rName2];
+			e.colIndex = columnMap.at(cName2);
+			e.rowIndex = rowMap.at(rName2);
 			components.txLine[Tx].curN2Col = e.colIndex;
 			components.txLine[Tx].curN2Row = e.rowIndex;
 			e.value = -z0;
@@ -1008,7 +1003,7 @@ Matrix::create_A_volt(Input &iObj) {
 		}
 	}
 	double mutualL = 0.0, cf = 0.0;
-	for (auto i : components.mutualInductanceLines) {
+	for (const auto &i : components.mutualInductanceLines) {
 		devicetokens = Misc::tokenize_space(i.first);
 		try {
 			label = devicetokens[0];
@@ -1017,8 +1012,9 @@ Matrix::create_A_volt(Input &iObj) {
 			Errors::invalid_component_errors(MISSING_LABEL, i.first);
 		}
 		try {
-			if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					cf = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+      auto parameter_name = ParameterName(devicetokens[3], i.second);
+			if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					cf = iObj.parameters.parsedParams.at(parameter_name);
 			else
 				cf = Misc::modifier(devicetokens[3]);
 		}
@@ -1110,8 +1106,14 @@ Matrix::create_A_phase(Input &iObj) {
 		try {
 			label = devicetokens[0];
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
-				componentLabels.end())
-				componentLabels.push_back(label);
+				componentLabels.end()){
+					if(label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) {
+						std::cout << "W: The use of special characters in label names is not advised." << std::endl;
+						std::cout << "W: This might produce unexpected results." << std::endl;
+						std::cout << "W: Continuing operation." << std::endl;
+					}
+					componentLabels.push_back(label);
+				}
 			else {
 				Errors::invalid_component_errors(DUPLICATE_LABEL, label);
 			}
@@ -1140,8 +1142,9 @@ Matrix::create_A_phase(Input &iObj) {
 			std::string R = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1200,35 +1203,35 @@ Matrix::create_A_phase(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.phaseRes[R].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseRes[R].posNCol = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
 			}
 			if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.phaseRes[R].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseRes[R].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.phaseRes[R].curNCol = e.colIndex;
 			components.phaseRes[R].curNRow = e.rowIndex;
 			e.value = -(M_PI * components.phaseRes[R].value * iObj.transSim.prstep) / PHI_ZERO;
@@ -1242,8 +1245,9 @@ Matrix::create_A_phase(Input &iObj) {
 			std::string C = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1302,35 +1306,35 @@ Matrix::create_A_phase(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.phaseCap[C].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseCap[C].posNCol = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
 			}
 			if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.phaseCap[C].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseCap[C].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.phaseCap[C].curNCol = e.colIndex;
 			components.phaseCap[C].curNRow = e.rowIndex;
 			e.value = (-2 * M_PI * iObj.transSim.prstep * iObj.transSim.prstep) / (PHI_ZERO * 4 * components.phaseCap[C].value);
@@ -1344,8 +1348,9 @@ Matrix::create_A_phase(Input &iObj) {
 			std::string L = devicetokens[0];
 			matrix_element e;
 			try {
-				if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-					value = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+        auto parameter_name = ParameterName(devicetokens[3], i.second);
+				if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+					value = iObj.parameters.parsedParams.at(parameter_name);
 				else
 					value = Misc::modifier(devicetokens[3]);
 			}
@@ -1404,35 +1409,35 @@ Matrix::create_A_phase(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.phaseInd[L].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseInd[L].posNCol = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
 			}
 			if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.phaseInd[L].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseInd[L].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName];
-			e.rowIndex = rowMap[rName];
+			e.colIndex = columnMap.at(cName);
+			e.rowIndex = rowMap.at(rName);
 			components.phaseInd[L].curNCol = e.colIndex;
 			components.phaseInd[L].curNRow = e.rowIndex;
 			e.value = -(components.phaseInd[L].value * 2 * M_PI) / PHI_ZERO;
@@ -1497,15 +1502,15 @@ Matrix::create_A_phase(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.phaseVs[VS].curNCol = e.colIndex;
 				components.phaseVs[VS].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseVs[VS].posNCol = e.colIndex;
 				components.phaseVs[VS].curNRow = e.rowIndex;
 				e.value = 1;
@@ -1513,15 +1518,15 @@ Matrix::create_A_phase(Input &iObj) {
 			}
 			if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.phaseVs[VS].curNCol = e.colIndex;
 				components.phaseVs[VS].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.phaseVs[VS].negNCol = e.colIndex;
 				components.phaseVs[VS].curNRow = e.rowIndex;
 				e.value = -1;
@@ -1575,7 +1580,7 @@ Matrix::create_A_phase(Input &iObj) {
 			matrix_element e;
 			std::string modelstring = "", area = "";
 			for (int t = devicetokens.size() - 1; t > 2; t--) {
-				if (devicetokens[t].find("=") == std::string::npos) {
+				if (devicetokens[t].find('=') == std::string::npos) {
 					if (iObj.netlist.models.count(std::make_pair(devicetokens[t], i.second)) != 0) {
 						modelstring = iObj.netlist.models.at(std::make_pair(devicetokens[t], i.second));
 						break;
@@ -1649,37 +1654,37 @@ Matrix::create_A_phase(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cVolt];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cVolt);
+				e.rowIndex = rowMap.at(rNameP);
 				components.phaseJJ[jj].posNRow = e.rowIndex;;
 				e.value = 1 / components.phaseJJ[jj].r0 + ((2*components.phaseJJ[jj].C) / iObj.transSim.prstep);
 				components.phaseJJ[jj].pPtr = mElements.size();
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rVolt];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rVolt);
 				components.phaseJJ[jj].posNCol = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
 			}
 			if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cVolt];
-				e.rowIndex = rowMap[rNameN];
-				components.phaseJJ[jj].negNRow = e.rowIndex;				
+				e.colIndex = columnMap.at(cVolt);
+				e.rowIndex = rowMap.at(rNameN);
+				components.phaseJJ[jj].negNRow = e.rowIndex;
 				e.value = -1 / components.phaseJJ[jj].r0 - ((2*components.phaseJJ[jj].C) / iObj.transSim.prstep);
 				components.phaseJJ[jj].nPtr = mElements.size();
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rVolt];	
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rVolt);
 				components.phaseJJ[jj].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cVolt];
-			e.rowIndex = rowMap[rVolt];
+			e.colIndex = columnMap.at(cVolt);
+			e.rowIndex = rowMap.at(rVolt);
 			components.phaseJJ[jj].voltNCol = e.colIndex;
 			components.phaseJJ[jj].voltNRow = e.rowIndex;
 			e.value = -(iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
@@ -1824,65 +1829,65 @@ Matrix::create_A_phase(Input &iObj) {
 			else
 				n2GND = true;
 			if (!pGND) {
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName1];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName1);
 				components.txPhase[tl].posNCol = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
-				e.colIndex = columnMap[cName1];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName1);
+				e.rowIndex = rowMap.at(rNameP);
 				components.txPhase[tl].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 			}
 			if(!nGND) {
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName1];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName1);
 				components.txPhase[tl].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
-				e.colIndex = columnMap[cName1];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName1);
+				e.rowIndex = rowMap.at(rNameN);
 				components.txPhase[tl].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			if (!p2GND) {
-				e.colIndex = columnMap[cNameP2];
-				e.rowIndex = rowMap[rName2];
+				e.colIndex = columnMap.at(cNameP2);
+				e.rowIndex = rowMap.at(rName2);
 				components.txPhase[tl].posN2Col = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
-				e.colIndex = columnMap[cName2];
-				e.rowIndex = rowMap[rNameP2];
+				e.colIndex = columnMap.at(cName2);
+				e.rowIndex = rowMap.at(rNameP2);
 				components.txPhase[tl].posN2Row = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 			}
 			if(!n2GND) {
-				e.colIndex = columnMap[cNameN2];
+				e.colIndex = columnMap.at(cNameN2);
 				components.txPhase[tl].negN2Col = e.colIndex;
-				e.rowIndex = rowMap[rName2];
+				e.rowIndex = rowMap.at(rName2);
 				e.value = -1;
 				mElements.push_back(e);
-				e.colIndex = columnMap[cName2];
-				e.rowIndex = rowMap[rNameN2];
+				e.colIndex = columnMap.at(cName2);
+				e.rowIndex = rowMap.at(rNameN2);
 				components.txPhase[tl].negN2Row = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 			}
 			e.label = label;
-			e.colIndex = columnMap[cName1];
-			e.rowIndex = rowMap[rName1];
+			e.colIndex = columnMap.at(cName1);
+			e.rowIndex = rowMap.at(rName1);
 			components.txPhase[tl].curN1Col = e.colIndex;
 			components.txPhase[tl].curN1Row = e.rowIndex;
 			e.value = -(M_PI * iObj.transSim.prstep * components.txPhase[tl].value) / (PHI_ZERO);
 			mElements.push_back(e);
 			e.label = label;
-			e.colIndex = columnMap[cName2];
-			e.rowIndex = rowMap[rName2];
+			e.colIndex = columnMap.at(cName2);
+			e.rowIndex = rowMap.at(rName2);
 			components.txPhase[tl].curN2Col = e.colIndex;
-			components.txPhase[tl].curN2Row = e.rowIndex;			
+			components.txPhase[tl].curN2Row = e.rowIndex;
 			e.value = -(M_PI * iObj.transSim.prstep * components.txPhase[tl].value) / (PHI_ZERO);
 			mElements.push_back(e);
 		}
@@ -1944,15 +1949,15 @@ Matrix::create_A_phase(Input &iObj) {
 				nGND = true;
 			if (!pGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameP];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameP);
 				components.phasePs[PS].curNCol = e.colIndex;
 				components.phasePs[PS].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameP];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameP);
+				e.rowIndex = rowMap.at(rName);
 				components.phasePs[PS].posNCol = e.colIndex;
 				components.phasePs[PS].curNRow = e.rowIndex;
 				e.value = 1;
@@ -1960,15 +1965,15 @@ Matrix::create_A_phase(Input &iObj) {
 			}
 			if (!nGND) {
 				e.label = label;
-				e.colIndex = columnMap[cName];
-				e.rowIndex = rowMap[rNameN];
+				e.colIndex = columnMap.at(cName);
+				e.rowIndex = rowMap.at(rNameN);
 				components.phasePs[PS].curNCol = e.colIndex;
 				components.phasePs[PS].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.label = label;
-				e.colIndex = columnMap[cNameN];
-				e.rowIndex = rowMap[rName];
+				e.colIndex = columnMap.at(cNameN);
+				e.rowIndex = rowMap.at(rName);
 				components.phasePs[PS].negNCol = e.colIndex;
 				components.phasePs[PS].curNRow = e.rowIndex;
 				e.value = -1;
@@ -1983,7 +1988,7 @@ Matrix::create_A_phase(Input &iObj) {
 		}
 	}
 	double mutualL = 0.0, cf = 0.0;
-	for (auto i : components.mutualInductanceLines) {
+	for (const auto &i : components.mutualInductanceLines) {
 		devicetokens = Misc::tokenize_space(i.first);
 		try {
 			label = devicetokens[0];
@@ -1992,8 +1997,9 @@ Matrix::create_A_phase(Input &iObj) {
 			Errors::invalid_component_errors(MISSING_LABEL, i.first);
 		}
 		try {
-			if (iObj.parameters.parsedParams.count(std::make_pair(devicetokens[3], i.second)) != 0)
-				cf = iObj.parameters.parsedParams.at(std::make_pair(devicetokens[3], i.second));
+      ParameterName parameter_name = ParameterName(devicetokens[3], i.second);
+			if (iObj.parameters.parsedParams.count(parameter_name) != 0)
+				cf = iObj.parameters.parsedParams.at(parameter_name);
 			else
 				cf = Misc::modifier(devicetokens[3]);
 		}
@@ -2041,10 +2047,10 @@ Matrix::create_CSR() {
 	nzval.clear();
 	rowptr.clear();
 	rowptr.push_back(0);
-	for (auto i : mElements){
+	for (const auto& i : mElements){
 		aMat[i.rowIndex][i.colIndex] += i.value;
 	}
-	for(auto i : aMat) {
+	for(const auto& i : aMat) {
 		for (auto j : i) {
 			nzval.push_back(j.second);
 			colind.push_back(j.first);

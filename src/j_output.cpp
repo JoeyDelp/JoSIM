@@ -1,14 +1,17 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_output.h"
+#include "JoSIM/j_output.h"
 
 void
 Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
+  // Clear Traces so that we don't repopulate it through the interface
+  traces.clear();
+
 	timesteps = &sObj.results.timeAxis;
 	std::vector<std::string> tokens, tokens2;
 	std::string label, label2;
 	int index1, index2;
-	for (auto i : iObj.controls) {
+	for (const auto& i : iObj.controls) {
 		if(i.find("PRINT") != std::string::npos) {
 			Trace thisTrace;
 			tokens = Misc::tokenize_space(i);
@@ -20,12 +23,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::cout << std::endl;
 				}
 				label = tokens.at(2);
-				if(label.find("_") != std::string::npos) {
+				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
-					for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 				}
-				else if(label.find(".") != std::string::npos) {
+				else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -35,35 +38,35 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						if(mObj.components.voltRes.count(label) != 0) {
 							if(mObj.components.voltRes.at(label).posNCol == -1) {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(), 
-									std::back_inserter(thisTrace.calcData), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(),
+									std::back_inserter(thisTrace.calcData),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										(1 / mObj.components.voltRes.at(label).value)));
 							}
 							else if(mObj.components.voltRes.at(label).negNCol == -1) {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-									std::back_inserter(thisTrace.calcData), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+									std::back_inserter(thisTrace.calcData),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										(1 / mObj.components.voltRes.at(label).value)));
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								std::transform(
-									thisTrace.calcData.begin(), 
-									thisTrace.calcData.end(), 
-									thisTrace.calcData.begin(), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									thisTrace.calcData.begin(),
+									thisTrace.calcData.end(),
+									thisTrace.calcData.begin(),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										(1 / mObj.components.voltRes.at(label).value)));
 							}
 							thisTrace.pointer = false;
@@ -160,12 +163,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::cout << std::endl;
 				}
 				label = tokens.at(2);
-				if(label.find("_") != std::string::npos) {
+				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
-					for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 				}
-				else if(label.find(".") != std::string::npos) {
+				else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -183,12 +186,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
-								thisTrace.pointer = false;	
+								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
 						}
@@ -207,12 +210,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
-								thisTrace.pointer = false;	
+								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
 						}
@@ -236,10 +239,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -260,12 +263,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
-								thisTrace.pointer = false;	
+								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
 						}
@@ -289,10 +292,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -313,12 +316,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
-								thisTrace.pointer = false;	
+								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
 						}
@@ -342,10 +345,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -366,12 +369,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
-								thisTrace.pointer = false;	
+								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
 						}
@@ -413,18 +416,18 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				}
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 						thisTrace.name = "NV_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1); 
+						thisTrace.traceData = &sObj.results.xVect.at(index1);
 						traces.push_back(thisTrace);
 					}
 					else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
@@ -435,7 +438,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						thisTrace.type = 'P';
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 						thisTrace.name = "NP_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1); 
+						thisTrace.traceData = &sObj.results.xVect.at(index1);
 						traces.push_back(thisTrace);
 					}
 					else {
@@ -447,20 +450,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
-					if(label2.find("_") != std::string::npos) {
+					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
 					}
-					else if(label2.find(".") != std::string::npos) {
+					else if(label2.find('.') != std::string::npos) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
@@ -468,11 +471,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									std::back_inserter(thisTrace.calcData), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									std::back_inserter(thisTrace.calcData),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -486,11 +489,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									std::back_inserter(thisTrace.calcData), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									std::back_inserter(thisTrace.calcData),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -505,7 +508,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							thisTrace.name = "NV_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1); 
+							thisTrace.traceData = &sObj.results.xVect.at(index1);
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
@@ -516,7 +519,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							thisTrace.name = "NP_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1); 
+							thisTrace.traceData = &sObj.results.xVect.at(index1);
 							traces.push_back(thisTrace);
 						}
 						else {
@@ -545,10 +548,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									sObj.results.xVect.at(index2).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(index2).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -563,10 +566,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									sObj.results.xVect.at(index2).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(index2).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -590,18 +593,18 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				}
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 						thisTrace.name = "NP_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1); 
+						thisTrace.traceData = &sObj.results.xVect.at(index1);
 						traces.push_back(thisTrace);
 					}
 					else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -612,7 +615,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						thisTrace.type = 'V';
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 						thisTrace.name = "NV_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1); 
+						thisTrace.traceData = &sObj.results.xVect.at(index1);
 						traces.push_back(thisTrace);
 					}
 					else {
@@ -624,20 +627,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
-						for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
-					if(label2.find("_") != std::string::npos) {
+					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
 					}
-					else if(label2.find(".") != std::string::npos) {
+					else if(label2.find('.') != std::string::npos) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
@@ -645,11 +648,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									std::back_inserter(thisTrace.calcData), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									std::back_inserter(thisTrace.calcData),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -663,11 +666,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									std::back_inserter(thisTrace.calcData), 
-									std::bind(std::multiplies<double>(), 
-										std::placeholders::_1, 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									std::back_inserter(thisTrace.calcData),
+									std::bind(std::multiplies<double>(),
+										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -682,7 +685,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							thisTrace.name = "NP_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1); 
+							thisTrace.traceData = &sObj.results.xVect.at(index1);
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -693,7 +696,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							thisTrace.name = "NV_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1); 
+							thisTrace.traceData = &sObj.results.xVect.at(index1);
 							traces.push_back(thisTrace);
 						}
 						else {
@@ -727,10 +730,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									sObj.results.xVect.at(index2).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(index2).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -740,10 +743,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(), 
-									sObj.results.xVect.at(index1).end(), 
-									sObj.results.xVect.at(index2).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(index1).begin(),
+									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(index2).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
@@ -765,12 +768,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::cout << std::endl;
 				}
 				label = tokens.at(2);
-				if(label.find("_") != std::string::npos) {
+				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
-					for(int j = 0; j < tokens.size() - 1; j++) label = label + "|" + tokens.at(j);
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 				}
-				else if(label.find(".") != std::string::npos) {
+				else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -794,10 +797,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -829,10 +832,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -864,10 +867,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -897,10 +900,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(), 
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(), 
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(), 
-									std::back_inserter(thisTrace.calcData), 
+									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
+									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
+									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -950,12 +953,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "V() ,");
 					if(tokens2.size() == 1) {
 						label = tokens2.at(0);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -973,12 +976,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
-										thisTrace.pointer = false;	
+										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
 								}
@@ -997,12 +1000,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
-										thisTrace.pointer = false;	
+										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
 								}
@@ -1026,10 +1029,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1050,12 +1053,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
-										thisTrace.pointer = false;	
+										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
 								}
@@ -1079,10 +1082,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1103,12 +1106,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
-										thisTrace.pointer = false;	
+										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
 								}
@@ -1132,10 +1135,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1156,12 +1159,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
-										thisTrace.pointer = false;	
+										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
 								}
@@ -1195,7 +1198,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 									thisTrace.name = "NV_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1); 
+									thisTrace.traceData = &sObj.results.xVect.at(index1);
 									traces.push_back(thisTrace);
 								}
 								else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
@@ -1206,7 +1209,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									thisTrace.type = 'P';
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 									thisTrace.name = "NP_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1); 
+									thisTrace.traceData = &sObj.results.xVect.at(index1);
 									traces.push_back(thisTrace);
 								}
 								else {
@@ -1220,20 +1223,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					else {
 						label = tokens2.at(0);
 						label2 = tokens2.at(1);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
-						if(label2.find("_") != std::string::npos) {
+						if(label2.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label2, "_");
 							label2 = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
 						}
-						else if(label2.find(".") != std::string::npos) {
+						else if(label2.find('.') != std::string::npos) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
@@ -1241,11 +1244,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										std::back_inserter(thisTrace.calcData), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										std::back_inserter(thisTrace.calcData),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1259,11 +1262,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										std::back_inserter(thisTrace.calcData), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										std::back_inserter(thisTrace.calcData),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1278,7 +1281,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								thisTrace.name = "NV_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1); 
+								thisTrace.traceData = &sObj.results.xVect.at(index1);
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
@@ -1289,7 +1292,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								thisTrace.name = "NP_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1); 
+								thisTrace.traceData = &sObj.results.xVect.at(index1);
 								traces.push_back(thisTrace);
 							}
 							else {
@@ -1318,10 +1321,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										sObj.results.xVect.at(index2).begin(), 
-										std::back_inserter(thisTrace.calcData), 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(index2).begin(),
+										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1336,10 +1339,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										sObj.results.xVect.at(index2).begin(), 
-										std::back_inserter(thisTrace.calcData), 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(index2).begin(),
+										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1352,12 +1355,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "C() ,");
 					if(tokens2.size() == 1) {
 						label = tokens2.at(0);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -1367,35 +1370,35 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								if(mObj.components.voltRes.count(label) != 0) {
 									if(mObj.components.voltRes.at(label).posNCol == -1) {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(), 
-											std::back_inserter(thisTrace.calcData), 
-											std::bind(std::multiplies<double>(), 
-												std::placeholders::_1, 
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(),
+											std::back_inserter(thisTrace.calcData),
+											std::bind(std::multiplies<double>(),
+												std::placeholders::_1,
 												(1 / mObj.components.voltRes.at(label).value)));
 									}
 									else if(mObj.components.voltRes.at(label).negNCol == -1) {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-											std::back_inserter(thisTrace.calcData), 
-											std::bind(std::multiplies<double>(), 
-												std::placeholders::_1, 
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+											std::back_inserter(thisTrace.calcData),
+											std::bind(std::multiplies<double>(),
+												std::placeholders::_1,
 												(1 / mObj.components.voltRes.at(label).value)));
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										std::transform(
-											thisTrace.calcData.begin(), 
-											thisTrace.calcData.end(), 
-											thisTrace.calcData.begin(), 
-											std::bind(std::multiplies<double>(), 
-												std::placeholders::_1, 
+											thisTrace.calcData.begin(),
+											thisTrace.calcData.end(),
+											thisTrace.calcData.begin(),
+											std::bind(std::multiplies<double>(),
+												std::placeholders::_1,
 												(1 / mObj.components.voltRes.at(label).value)));
 									}
 									thisTrace.pointer = false;
@@ -1494,12 +1497,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					thisTrace.type = 'C';
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), " #");
 					label = tokens2.at(0);
-					if(label.find("_") != std::string::npos) {
+					if(label.find('_') != std::string::npos) {
 						tokens2 = Misc::tokenize_delimeter(label, "_");
 						label = tokens2.back();
-						for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+						for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 					}
-					else if(label.find(".") != std::string::npos) {
+					else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					thisTrace.name = label;
@@ -1509,35 +1512,35 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							if(mObj.components.voltRes.count(label) != 0) {
 								if(mObj.components.voltRes.at(label).posNCol == -1) {
 									std::transform(
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(), 
-										std::back_inserter(thisTrace.calcData), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(),
+										std::back_inserter(thisTrace.calcData),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											(1 / mObj.components.voltRes.at(label).value)));
 								}
 								else if(mObj.components.voltRes.at(label).negNCol == -1) {
 									std::transform(
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-										std::back_inserter(thisTrace.calcData), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+										std::back_inserter(thisTrace.calcData),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											(1 / mObj.components.voltRes.at(label).value)));
 								}
 								else {
 									std::transform(
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(), 
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(), 
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(), 
-										std::back_inserter(thisTrace.calcData), 
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 									std::transform(
-										thisTrace.calcData.begin(), 
-										thisTrace.calcData.end(), 
-										thisTrace.calcData.begin(), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										thisTrace.calcData.begin(),
+										thisTrace.calcData.end(),
+										thisTrace.calcData.begin(),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											(1 / mObj.components.voltRes.at(label).value)));
 								}
 								thisTrace.pointer = false;
@@ -1631,12 +1634,12 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
 					if(tokens2.size() == 1) {
 						label = tokens2.at(0);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -1660,10 +1663,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1695,10 +1698,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1730,10 +1733,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1763,10 +1766,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(), 
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(), 
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(), 
-											std::back_inserter(thisTrace.calcData), 
+											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
+											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
+											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
@@ -1795,7 +1798,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 									thisTrace.name = "NP_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1); 
+									thisTrace.traceData = &sObj.results.xVect.at(index1);
 									traces.push_back(thisTrace);
 								}
 								else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -1806,7 +1809,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									thisTrace.type = 'V';
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 									thisTrace.name = "NV_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1); 
+									thisTrace.traceData = &sObj.results.xVect.at(index1);
 									traces.push_back(thisTrace);
 								}
 								else {
@@ -1820,20 +1823,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					else {
 						label = tokens2.at(0);
 						label2 = tokens2.at(1);
-						if(label.find("_") != std::string::npos) {
+						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
-							for(int k = 0; k < tokens2.size() - 1; k++) label = label + "|" + tokens2.at(k);
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
 						}
-						else if(label.find(".") != std::string::npos) {
+						else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
-						if(label2.find("_") != std::string::npos) {
+						if(label2.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label2, "_");
 							label2 = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
 						}
-						else if(label2.find(".") != std::string::npos) {
+						else if(label2.find('.') != std::string::npos) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
@@ -1841,11 +1844,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										std::back_inserter(thisTrace.calcData), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										std::back_inserter(thisTrace.calcData),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1859,11 +1862,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										std::back_inserter(thisTrace.calcData), 
-										std::bind(std::multiplies<double>(), 
-											std::placeholders::_1, 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										std::back_inserter(thisTrace.calcData),
+										std::bind(std::multiplies<double>(),
+											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1878,7 +1881,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								thisTrace.name = "NP_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1); 
+								thisTrace.traceData = &sObj.results.xVect.at(index1);
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -1889,7 +1892,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								thisTrace.name = "NV_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1); 
+								thisTrace.traceData = &sObj.results.xVect.at(index1);
 								traces.push_back(thisTrace);
 							}
 							else {
@@ -1923,10 +1926,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										sObj.results.xVect.at(index2).begin(), 
-										std::back_inserter(thisTrace.calcData), 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(index2).begin(),
+										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1936,10 +1939,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(), 
-										sObj.results.xVect.at(index1).end(), 
-										sObj.results.xVect.at(index2).begin(), 
-										std::back_inserter(thisTrace.calcData), 
+										sObj.results.xVect.at(index1).begin(),
+										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(index2).begin(),
+										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
@@ -1964,15 +1967,15 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 			Trace thisTrace;
 			tokens = Misc::tokenize_space(i);
 			for (int k = 1; k < tokens.size(); k++) {
-				index1 = tokens.at(k).find("@");
+				index1 = tokens.at(k).find('@');
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1) + tokens.at(k).substr(index1 + 1);
 				index1 = tokens.at(k).find(".at(");
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1);
-				index1 = tokens.at(k).find(".");
+				index1 = tokens.at(k).find('.');
 				if (index1 != std::string::npos) {
 					tokens.at(k) = tokens.at(k).substr(0, index1) + "|" + tokens.at(k).substr(index1 + 1);
 				}
-				index1 = tokens.at(k).find("[");
+				index1 = tokens.at(k).find('[');
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1);
 				/* If this is a current source */
 				if (mObj.sources.count(tokens.at(k)) != 0) {
@@ -1995,7 +1998,7 @@ Output::write_data(std::string &outname) {
 		if (!traces.empty()) {
 			if(traces.at(0).pointer)
 				loopsize = traces.at(0).traceData->size();
-			else 
+			else
 				loopsize = traces.at(0).calcData.size();
 			outfile << "time"
 				<< ",";
@@ -2010,7 +2013,7 @@ Output::write_data(std::string &outname) {
 					if(traces.at(j).pointer)
 						outfile << std::fixed << std::scientific << std::setprecision(16)
 							<< traces.at(j).traceData->at(i) << ",";
-					else 
+					else
 						outfile << std::fixed << std::scientific << std::setprecision(16)
 							<< traces.at(j).calcData.at(i) << ",";
 				}
@@ -2045,7 +2048,7 @@ Output::write_legacy_data(std::string &outname) {
 		if(!traces.empty()) {
 			if(traces.at(0).pointer)
 				loopsize = traces.at(0).traceData->size();
-			else 
+			else
 				loopsize = traces.at(0).calcData.size();
 			outfile << "time"
 				<< " ";
@@ -2060,7 +2063,7 @@ Output::write_legacy_data(std::string &outname) {
 					if(traces.at(j).pointer)
 						outfile << std::fixed << std::scientific << std::setprecision(16)
 							<< traces.at(j).traceData->at(i) << " ";
-					else 
+					else
 						outfile << std::fixed << std::scientific << std::setprecision(16)
 							<< traces.at(j).calcData.at(i) << " ";
 				}
@@ -2087,7 +2090,7 @@ Output::write_legacy_data(std::string &outname) {
 	}
 }
 
-void 
+void
 Output::write_wr_data(std::string &outname) {
 	std::string label;
 	std::vector<std::string> tokens;
@@ -2113,7 +2116,7 @@ Output::write_wr_data(std::string &outname) {
 				if(traces.at(i).type == 'V') {
 					if(traces.at(i).name.substr(0, 2) == "NV") {
 						tokens = Misc::tokenize_delimeter(traces.at(i).name, "_");
-						if (tokens.size() > 2) outfile << " " 
+						if (tokens.size() > 2) outfile << " "
 							<< i+1 << " v(" << tokens[1] << "," << tokens[2] <<") V\n";
 						else outfile << " " << i+1 << " v(" << tokens[1] <<") V\n";
 					}
@@ -2122,7 +2125,7 @@ Output::write_wr_data(std::string &outname) {
 				else if(traces.at(i).type == 'P') {
 					if(traces.at(i).name.substr(0, 2) == "NP") {
 						tokens = Misc::tokenize_delimeter(traces.at(i).name, "_");
-						if (tokens.size() > 2) outfile << " " 
+						if (tokens.size() > 2) outfile << " "
 							<< i+1 << " p(" << tokens[1] << "," << tokens[2] <<") P\n";
 						else outfile << " " << i+1 << " p(" << tokens[1] <<") P\n";
 					}
@@ -2131,21 +2134,21 @@ Output::write_wr_data(std::string &outname) {
 				else if(traces.at(i).type == 'C') {
 					label = traces.at(i).name;
 					std::replace(label.begin(), label.end(), '|', '.');
-					outfile << " " << i+1 << " " << "@" << label << "[c] C\n"; 
+					outfile << " " << i+1 << " " << "@" << label << "[c] C\n";
 				}
 			}
 			outfile << "Values:\n";
 			for (int i = 0; i < loopsize; i++) {
-				outfile << " " << i << " " 
+				outfile << " " << i << " "
 					<< std::fixed << std::scientific << std::setprecision(16)
 					<< timesteps->at(i) << "\n";
 				for (int j = 0; j < traces.size(); j++) {
 					if(traces.at(j).pointer)
-						outfile << " " << std::string( Misc::numDigits(i), ' ' ) 
+						outfile << " " << std::string( Misc::numDigits(i), ' ' )
 							<< " " << std::fixed << std::scientific << std::setprecision(16)
 							<< traces.at(j).traceData->at(i) << "\n";
 					else
-						outfile << " " << std::string( Misc::numDigits(i), ' ' ) 
+						outfile << " " << std::string( Misc::numDigits(i), ' ' )
 							<< " " << std::fixed << std::scientific << std::setprecision(16)
 							<< traces.at(j).calcData.at(i) << "\n";
 				}
@@ -2172,7 +2175,7 @@ Output::write_cout(Matrix &mObj, Simulation &sObj) {
 	if(!traces.empty()) {
 		if(traces.at(0).pointer)
 			loopsize = traces.at(0).traceData->size();
-		else 
+		else
 			loopsize = traces.at(0).calcData.size();
 		std::cout << "time"
 			<< " ";
@@ -2187,7 +2190,7 @@ Output::write_cout(Matrix &mObj, Simulation &sObj) {
 				if(traces.at(j).pointer)
 					std::cout << std::fixed << std::scientific << std::setprecision(16)
 						<< traces.at(j).traceData->at(i) << " ";
-				else 
+				else
 					std::cout << std::fixed << std::scientific << std::setprecision(16)
 						<< traces.at(j).calcData.at(i) << " ";
 			}
@@ -2222,142 +2225,4 @@ Output::write_cout(Matrix &mObj, Simulation &sObj) {
 				<< sObj.results.xVect.at(sObj.results.xVect.size() - 1).at(i) << "\n";
 		}
 	}
-}
-
-int
-Output::plot_traces(std::string &filename) {
-	if (traces.size() > 0) {
-	#ifdef USING_FLTK
-		Fl_Window * win = new Fl_Window(1240, 768);
-		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
-		std::vector<Fl_Chart *> Charts;
-		for (int i = 0; i < traces.size(); i++) {
-			Charts.push_back(new Fl_Chart(20, 20 + (i * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
-			Charts[i]->type(FL_LINE_CHART);
-			if(traces.at(0).pointer)
-				for (int j = 0; j < traces.at(i).traceData->size(); j++)
-					Charts[i]->add(traces.at(i).traceData->at(j));
-			else 
-				for (int j = 0; j < traces.at(i).calcData.size(); j++)
-					Charts[i]->add(traces.at(i).calcData.at(j));
-			Charts[i]->color(FL_WHITE);
-			Charts[i]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
-			Charts[i]->copy_label(traces.at(i).name.c_str());
-		}
-		win->resizable(win);
-		//win->label(filename);
-		win->show();
-		return(Fl::run());
-	#elif USING_MATPLOTLIB
-		if (traces.size() <= 4) {
-			//plt::figure_size(800, 600);
-			plt::figure();
-			for (int i = 0; i < traces.size(); i++) {
-				plt::subplot(traces.size(), 1, i + 1);
-				plt::grid(true);
-				if(traces.at(i).pointer)
-					plt::plot(*timesteps, *traces.at(i).traceData);
-				else 
-					plt::plot(*timesteps, traces.at(i).calcData);
-				plt::title(traces.at(i).name.c_str());
-				if (traces.at(i).type == 'V') plt::ylabel("Voltage (V)");
-				else if (traces.at(i).type == 'C') plt::ylabel("Current (A)");
-				else if (traces.at(i).type == 'P') plt::ylabel("Phase (rads)");
-			}
-			plt::xlabel("Time (s)");
-			plt::tight_layout();
-			plt::show();
-			return 0;
-		}
-		else {
-			for (int j = 0; j < traces.size(); j = j + 4) {
-				int  i = j;
-				//plt::figure_size(800, 600);
-				plt::figure();
-				while ((i < traces.size()) && (i < j + 4)) {
-					plt::subplot(4, 1, (i - j) + 1);
-					plt::grid(true);
-					if(traces.at(i).pointer)
-						plt::plot(*timesteps, *traces.at(i).traceData);
-					else 
-						plt::plot(*timesteps, traces.at(i).calcData);
-					plt::title(traces.at(i).name.c_str());
-					if (traces.at(i).type == 'V') plt::ylabel("Voltage (V)");
-					else if (traces.at(i).type == 'C') plt::ylabel("Current (A)");
-					else if (traces.at(i).type == 'P') plt::ylabel("Phase (rads)");
-					i++;
-				}
-				plt::xlabel("Time (s)");
-				plt::tight_layout();
-				plt::show(false);
-			}
-			plt::show();
-			return 0;
-		}
-		#endif
-	}
-	else {
-		std::cout << "W: Nothing specified to output."
-			<< std::endl;
-		std::cout << std::endl;
-		return 0;
-	}
-	return 0;
-}
-
-int
-Output::plot_all(std::string &filename, Matrix &mObj, Simulation &sObj) {
-	#ifdef USING_FLTK
-		Fl_Window * win = new Fl_Window(1240, 768);
-		Fl_Scroll * scroll = new Fl_Scroll(0, 0, win->w(), win->h());
-		std::vector<Fl_Chart *> Charts;
-		for (int i = 0; i < mObj.columnNames.size(); i++) {
-			Charts.push_back(new Fl_Chart(20, 20 + (i * (scroll->h() / 3)), scroll->w() - 40, (scroll->h() / 3 - 20)));
-			Charts[i]->type(FL_LINE_CHART);
-			for (int j = 0; j < sObj.results.xVect.at(i).size(); j++)
-				Charts[i]->add(sObj.results.xVect.at(i).at(j));
-			Charts[i]->color(FL_WHITE);
-			Charts[i]->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_TOP);
-			Charts[i]->copy_label(mObj.columnNames.at(i).c_str());
-		}
-		win->resizable(win);
-		//win->label(filename);
-		win->show();
-		return(Fl::run());
-	#elif USING_MATPLOTLIB
-		if (mObj.columnNames.size() <= 4) {
-			//plt::figure_size(800, 600);
-			plt::figure();
-			for (int i = 0; i < mObj.columnNames.size(); i++) {
-				plt::subplot(mObj.columnNames.size(), 1, i + 1);
-				plt::grid(true);
-				plt::plot(*timesteps, sObj.results.xVect.at(i));
-				plt::title(mObj.columnNames.at(i).c_str());
-			}
-			plt::xlabel("Time (s)");
-			plt::tight_layout();
-			plt::show();
-			return 0;
-		}
-		else {
-			for (int j = 0; j < mObj.columnNames.size(); j = j + 4) {
-				int  i = j;
-				//plt::figure_size(800, 600);
-				plt::figure();
-				while ((i < mObj.columnNames.size()) && (i < j + 4)) {
-					plt::subplot(4, 1, (i - j) + 1);
-					plt::grid(true);
-					plt::plot(*timesteps, sObj.results.xVect.at(i));
-					plt::title(mObj.columnNames.at(i).c_str());
-					i++;
-				}
-				plt::xlabel("Time (s)");
-				plt::tight_layout();
-				plt::show(false);
-			}
-			plt::show();
-			return 0;
-		}
-	#endif
-	return 0;
 }

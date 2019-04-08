@@ -19,22 +19,18 @@ class Results {
 		std::vector<double> timeAxis;
 		std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 
-		Results() {};
-
 };
 
 class Simulation {
 	public:
 		Results results;
 
-		void 
+		void
 		identify_simulation(std::vector<std::string> controls,
 							double &prstep,
 							double &tstop,
 							double &tstart,
 							double &maxtstep);
-
-		Simulation() {};
 
 		void
 		transient_voltage_simulation(Input &iObj, Matrix &mObj);

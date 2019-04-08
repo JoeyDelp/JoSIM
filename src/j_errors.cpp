@@ -1,9 +1,9 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_errors.h"
+#include "JoSIM/j_errors.h"
 
 void
-Errors::error_handling(int errorCode, std::string whatPart) {
+Errors::error_handling(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case DEF_ERROR:
 		std::cout << "E: Invalid definitions file specifier." << std::endl;
@@ -132,7 +132,7 @@ Errors::error_handling(int errorCode, std::string whatPart) {
 }
 
 void
-Errors::invalid_component_errors(int errorCode, std::string whatPart) {
+Errors::invalid_component_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case RES_ERROR:
 		std::cout << "E: Resistor value error" << std::endl;
@@ -218,8 +218,8 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		exit(-1);
 	case INVALID_TX_DEFINED:
-		std::cout << "E: Invalid definition for transmission line found. " 
-			<< std::endl; 
+		std::cout << "E: Invalid definition for transmission line found. "
+			<< std::endl;
 		std::cout << "E: Infringing line: " << whatPart << std::endl;
 		exit(-1);
 	case MISSING_INDUCTOR:
@@ -237,7 +237,7 @@ Errors::invalid_component_errors(int errorCode, std::string whatPart) {
 }
 
 void
-Errors::control_errors(int errorCode, std::string whatPart) {
+Errors::control_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case TRANS_ERROR:
 		std::cout << "W: Invalid transient analysis specified. " << whatPart
@@ -271,7 +271,7 @@ Errors::control_errors(int errorCode, std::string whatPart) {
 }
 
 [[noreturn]] void
-Errors::model_errors(int errorCode, std::string whatPart) {
+Errors::model_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case PARAM_TYPE_ERROR:
 		std::cout << "E: Unknown model parameter " << whatPart << " specified."
@@ -293,7 +293,7 @@ Errors::model_errors(int errorCode, std::string whatPart) {
 }
 
 void
-Errors::matrix_errors(int errorCode, std::string whatPart)
+Errors::matrix_errors(int errorCode, const std::string& whatPart)
 {
 	switch (errorCode) {
 	case NON_SQUARE:
@@ -311,7 +311,7 @@ Errors::matrix_errors(int errorCode, std::string whatPart)
 }
 
 [[noreturn]] void
-Errors::misc_errors(int errorCode, std::string whatPart)
+Errors::misc_errors(int errorCode, const std::string& whatPart)
 {
 	switch (errorCode) {
 	case STOD_ERROR:
@@ -327,7 +327,7 @@ Errors::misc_errors(int errorCode, std::string whatPart)
 }
 
 void
-Errors::function_errors(int errorCode, std::string whatPart) {
+Errors::function_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case INITIAL_VALUES:
 		std::cout << "E: Invalid PWL definition found. The value of " << whatPart
@@ -445,7 +445,7 @@ Errors::function_errors(int errorCode, std::string whatPart) {
 }
 
 [[noreturn]] void
-Errors::simulation_errors(int errorCode, std::string whatPart) {
+Errors::simulation_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case JJCAP_NOT_FOUND:
 		std::cout << "E: Capacitor value for " << whatPart
@@ -492,7 +492,7 @@ Errors::simulation_errors(int errorCode, std::string whatPart) {
 
 */
 void
-Errors::plotting_errors(int errorCode, std::string whatPart) {
+Errors::plotting_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case NO_SUCH_PLOT_TYPE:
 		std::cout << "W: Unknown plot type defined. " << whatPart
@@ -551,7 +551,7 @@ Errors::plotting_errors(int errorCode, std::string whatPart) {
 }
 
 void
-Errors::parsing_errors(int errorCode, std::string whatPart) {
+Errors::parsing_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case EXPRESSION_ARLEADY_DEFINED:
 		std::cout << "W: Expression for " << whatPart
@@ -591,7 +591,7 @@ Errors::parsing_errors(int errorCode, std::string whatPart) {
 }
 
 void
-Errors::iv_errors(int errorCode, std::string whatPart) {
+Errors::iv_errors(int errorCode, const std::string& whatPart) {
 	switch(errorCode) {
 	case NO_TRANSIENT_ANALYSIS:
 		std::cout << "E: No transient analysis specified. IV curve generation cannot continue."

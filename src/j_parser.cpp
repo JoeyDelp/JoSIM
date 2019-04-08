@@ -1,6 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_parser.h"
+#include "JoSIM/j_parser.h"
 
 // Possible functions that can be called
 std::string funcsArray[] = { "COS",  "SIN",  "TAN",   "ACOS",  "ASIN",  "ATAN",
@@ -16,9 +16,8 @@ std::vector<std::string> funcs(funcsArray,
 
 
 double
-Parser::parse_param(std::string expr, std::unordered_map<std::pair<std::string, 
-				std::string>, double, pair_hash> parsedParams, 
-				std::string subckt) {
+Parser::parse_param(const std::string& expr, const std::unordered_map<JoSIM::ParameterName, double> &parsedParams,
+				const std::string& subckt) {
 	std::string expToEval = expr;
 	expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
 	std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
@@ -45,9 +44,9 @@ Parser::parse_param(std::string expr, std::unordered_map<std::pair<std::string,
 			rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
 			qType.push_back('V');
 		}
-		else if (parsedParams.count(std::make_pair(partToEval, subckt)) != 0) {
+		else if (parsedParams.count(JoSIM::ParameterName(partToEval, subckt)) != 0) {
 			rpnQueue.push_back(Misc::precise_to_string(
-				parsedParams.at(std::make_pair(partToEval, subckt))));
+				parsedParams.at(JoSIM::ParameterName(partToEval, subckt))));
 			qType.push_back('V');
 		}
 		else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
@@ -85,9 +84,9 @@ Parser::parse_param(std::string expr, std::unordered_map<std::pair<std::string,
 		}
 		else
 			Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
-		if (opLoc == 0)
-			expToEval = expToEval.substr(opLoc + 1);
-		if (opLoc == -1)
+    if (opLoc == 0)
+      expToEval = expToEval.substr(opLoc + 1);
+		else if (opLoc == -1)
 			expToEval = "";
 		else
 			expToEval = expToEval.substr(opLoc);
@@ -222,26 +221,27 @@ Parser::parse_operator(std::string op, double val1, double val2, int& popCount)
 }
 
 void
-Parser::parse_parameters(std::vector<std::pair<std::string, std::string>> unparsedParams,
-						std::unordered_map<std::pair<std::string, std::string>, 
-						double, pair_hash> &parsedParams) {
+Parser::parse_parameters(Parameters& parameters) {
+  auto& parsedParams = parameters.parsedParams;
+  auto& unparsedParams = parameters.unparsedParams;
+
 	std::vector<std::string> tokens, paramTokens;
 	std::string paramName, paramExp;
 	double value;
-	for (auto i : unparsedParams) {
+	for (const auto &i : unparsedParams) {
 		tokens = Misc::tokenize_space(i.second);
 		if(tokens.size() > 1) {
 			if(tokens.size() >= 2) {
 				if(tokens.size() > 2) paramName = tokens.at(1);
-				else paramName = tokens.at(1).substr(0, tokens.at(1).find_first_of("="));
+				else paramName = tokens.at(1).substr(0, tokens.at(1).find_first_of('='));
 				paramExp = i.second.substr(i.second.find_first_of("=") + 1);
 				if(i.first == "") {
 					value = parse_param(paramExp, parsedParams);
-					parsedParams[std::make_pair(paramName, "")] = value;
+					parsedParams[JoSIM::ParameterName(paramName, "")] = value;
 				}
 				else {
 					value = parse_param(paramExp, parsedParams, i.first);
-					parsedParams[std::make_pair(paramName, i.first)] = value;
+					parsedParams[JoSIM::ParameterName(paramName, i.first)] = value;
 				}
 			}
 			else {

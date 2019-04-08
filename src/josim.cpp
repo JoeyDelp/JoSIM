@@ -1,41 +1,45 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "j_std_include.h"
-#include "j_input.h"
-#include "j_parser.h"
-#include "j_simulation.h"
-#include "j_matrix.h"
-#include "j_output.h"
-#include "j_verbose.h"
+#include "JoSIM/j_std_include.h"
+#include "JoSIM/j_input.h"
+#include "JoSIM/j_parser.h"
+#include "JoSIM/j_simulation.h"
+#include "JoSIM/j_matrix.h"
+#include "JoSIM/j_output.h"
+#include "JoSIM/j_verbose.h"
+
+#include "JoSIM/CliOptions.hpp"
+
+using namespace JoSIM;
 
 int
-main(int argc, char* argv[]) {
+main(int argc, const char** argv) {
 
-	Input iObj;
+  auto cli_options = CliOptions::parse(argc, argv);
+
+	Input iObj(cli_options.analysis_type, cli_options.input_type, cli_options.verbose);
 	Matrix mObj;
 	Simulation sObj;
 	Output oObj;
-	iObj.parse_arguments(argc, argv);
-	iObj.read_input_file(iObj.fileName, iObj.fileLines);
+
+	iObj.read_input_file(cli_options.cir_file_name, iObj.fileLines);
 	iObj.split_netlist(iObj.fileLines, iObj.controls, iObj.parameters, iObj.netlist);
-	if(iObj.parameters.unparsedParams.size() > 0) Parser::parse_parameters(iObj.parameters.unparsedParams, iObj.parameters.parsedParams);
+	if(iObj.parameters.unparsedParams.size() > 0) Parser::parse_parameters(iObj.parameters);
 	iObj.expand_subcircuits();
 	iObj.expand_maindesign();
 	if(iObj.argVerb) Verbose::print_expanded_netlist(iObj.expNetlist);
 	sObj.identify_simulation(iObj.controls, iObj.transSim.prstep, iObj.transSim.tstop, iObj.transSim.tstart, iObj.transSim.maxtstep);
 	mObj.create_matrix(iObj);
-	if(iObj.argAnal == VANALYSIS) sObj.transient_voltage_simulation(iObj, mObj);
-	else if (iObj.argAnal == PANALYSIS) sObj.transient_phase_simulation(iObj, mObj);
+
+	if(cli_options.analysis_type == AnalysisType::Voltage) sObj.transient_voltage_simulation(iObj, mObj);
+	else if (cli_options.analysis_type == AnalysisType::Phase) sObj.transient_phase_simulation(iObj, mObj);
 	oObj.relevant_traces(iObj, mObj, sObj);
-	if(iObj.argSave) {
-		if(iObj.argExt == CSV) oObj.write_data(iObj.argOutname);
-		else if(iObj.argExt == DAT) oObj.write_legacy_data(iObj.argOutname);
-		else if(iObj.argExt == WR) oObj.write_wr_data(iObj.argOutname);
+
+	if(cli_options.output_to_file) {
+		if(cli_options.output_file_type == FileOutputType::Csv) oObj.write_data(cli_options.output_file_name);
+		else if(cli_options.output_file_type == FileOutputType::Dat) oObj.write_legacy_data(cli_options.output_file_name);
+		else if(cli_options.output_file_type == FileOutputType::WrSpice) oObj.write_wr_data(cli_options.output_file_name);
 	}
-	if(iObj.argPlot) {
-		if(!oObj.traces.empty()) oObj.plot_traces(iObj.fileName);
-		else oObj.plot_all(iObj.fileName, mObj, sObj);
-	}
-	if(!iObj.argPlot && !iObj.argSave) oObj.write_cout(mObj, sObj);
+	if(!cli_options.output_to_file) oObj.write_cout(mObj, sObj);
 	return 0;
 }

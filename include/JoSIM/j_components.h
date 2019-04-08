@@ -62,7 +62,7 @@ class jj_volt : public device {
 		std::string phaseNodeR, phaseNodeC;
 		int phaseNRow, phaseNCol;
 		double phi0, pn1, pn2, dPn1, dPn2, v0, vn1, vn2, dVn1, dVn2;
-		double r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB, 
+		double r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB,
 		   upperB, subCond, transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
 		int rType;
 		std::vector<double> jjCur;
@@ -121,7 +121,7 @@ class vs_volt : public device {
 };
 
 class res_phase : public device {
-	public: 
+	public:
 		std::string curNodeR, curNodeC;
 		int curNRow, curNCol;
 		int resPtr;
@@ -167,8 +167,8 @@ class jj_phase : public device {
 		int pPtr, nPtr;
 		double phi0, Phi0n1, pn1, pn2, dPn1, dPn2, v0, vn1, vn2, dVn1, dVn2;
 		int rType;
-		double r0, rN, C, iC, iCFact, delV, vG, iS, It, gLarge, 
-			lower, upper, subCond, transCond, normalCond, 
+		double r0, rN, C, iC, iCFact, delV, vG, iS, It, gLarge,
+			lower, upper, subCond, transCond, normalCond,
 			T, tC, Del0, Del, D, rNCalc;
 		std::vector<double> jjCur;
 		jj_phase() {
@@ -216,7 +216,7 @@ class ps_phase : public device {
 };
 
 class tx_phase : public tx_line {
-	public: 
+	public:
 		double p1n1, p1n2, p1nk, p1nk1, dP1n1, dP1n2, dP1nk, dP1nk1,
 			p2n1, p2n2, p2nk, p2nk1, dP2n1, dP2n2, dP2nk, dP2nk1;
 		tx_phase() {
@@ -248,9 +248,9 @@ class Components {
 		Components() {};
 
 		void
-		jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, std::string subckt = "");
+		jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt = "");
 
 		void
-		jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, std::string subckt = "");
+		jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt = "");
 };
 #endif

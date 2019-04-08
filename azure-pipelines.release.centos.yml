@@ -1,0 +1,39 @@
+name: "CentOS 7 release"
+
+trigger: none
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+container: pleroux0/release-centos7:latest
+
+steps:
+- script: mkdir -p build
+  displayName: 'Make build folder'
+
+- script: sudo yum -y install suitesparse-devel suitesparse-static python36-devel
+  displayName: 'Install YUM dependencies'
+
+- script: source scl_source enable devtoolset-8 && conan install ..
+  displayName: 'Install Conan dependencies'
+  workingDirectory: build
+
+- script: source scl_source enable devtoolset-8 && cmake ..
+    -DCMAKE_BUILD_TYPE=Release
+    -DMAKING_STATIC_BUILD=ON
+  workingDirectory: build
+  displayName: 'Configure'
+
+- script: source scl_source enable devtoolset-8 && cmake --build .
+  workingDirectory: build
+  displayName: 'Build'
+
+- script: ctest --output-on-failure
+  workingDirectory: build
+  displayName: 'Test'
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish'
+  inputs:
+    artifactName: 'josim-build'
+    targetPath: 'build/josim-cli'
