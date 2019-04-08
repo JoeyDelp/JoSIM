@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 # The version number.
-set(JoSIM_VERSION "2.2")
+set(JoSIM_VERSION "2.3")
 
 # Project name
 project(JoSIM VERSION ${JoSIM_VERSION})

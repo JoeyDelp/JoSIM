@@ -8,11 +8,14 @@ using namespace JoSIM;
 CliOptions CliOptions::parse(int argc, const char **argv) {
   CliOptions out;
 
-  if (argc <= 1)
+  if (argc <= 1) {
+    version_info();
     Errors::error_handling(TOO_FEW_ARGUMENTS);
+  }
 
   if (argv[argc - 1][0] == '-') {
     if (argv[argc - 1][1] == 'h') {
+      version_info();
       display_help();
       exit(0);
     } else if (argv[argc - 1][1] == 'v') {
@@ -20,19 +23,27 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
       exit(0);
     } else if (argv[argc - 1][1] == '-') {
       if (argv[argc - 1][2] == 'h') {
+        version_info();
         display_help();
         exit(0);
       } else if (argv[argc - 1][2] == 'v') {
         version_info();
         exit(0);
-      } else
+      } else {
+        version_info();
         Errors::error_handling(FINAL_ARG_SWITCH);
-    } else
+      }
+    } 
+    else {
+      version_info();
       Errors::error_handling(FINAL_ARG_SWITCH);
+    }
   } else if (argv[argc - 1][0] != '-' && argv[argc - 1][1] != 'h')
     out.cir_file_name = argv[argc - 1];
-  else
+  else {
+    version_info();
     Errors::error_handling(FINAL_ARG_SWITCH);
+  }
 
   version_info();
   for (int i = 1; i < argc; i++) {

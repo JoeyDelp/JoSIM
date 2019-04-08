@@ -1,0 +1,551 @@
+*=====================================================================================*
+* A design for superconducting partial product generator for an eight bits multiplier *
+* Desined by Maguu Muchuka based on Stellenbosch cell library developed by R. Bakolo  *
+* and FLUXONIC cell library.                                                          *
+*=====================================================================================*
+*  JTL2c  JeSEF Technology 
+*  27.05.2004 Thomas Ortlepp
+*  01.07.2004 resistor shift
+*  25.05.2005 bias level 0.7
+* (c) RSFQ design group TU Ilmenau
+*=========================================
+.SUBCKT JTL  0  1  2
+
+L1         1          4          2.080pH   
+L2         4          8          2.059pH   
+L3         8          5          2.059pH   
+L4         5          2          2.080pH   
+
+B1         4          6          jjtl1     
+RB1        4          9          1.0       
+Lp1        9          6          1.0pH     
+L6         6          0          0.214pH   
+
+B2         5          7          jjtl2     
+RB2        5          10         1.0       
+Lp2        10         7          1.0pH     
+L7         7          0          0.214pH   
+
+rvb1       100        101        7.14      
+lvb1       101        8          10pH      
+vb1        100        0          pwl        (0 0 5p 2.5mV 100ns 2.5mV)
+
+.MODEL jjtl1 JJ(RTYPE=0, ICRIT= 250uA CAP=1.32PF rN=90)
+.MODEL jjtl2 JJ(RTYPE=0, ICRIT= 250uA CAP=1.32PF rN=90)
+.ENDS
+*========================================
+
+*=========================================
+*  Splitter  JeSEF Technology 
+*  25.05.2004 Thomas Ortlepp new
+*  05.07.2004 final version
+*  14.11.2005 check for Rev-O: final version Thomas Ortlepp
+* (c) RSFQ design group TU Ilmenau
+*=========================================
+.SUBCKT SPLITTER  0   88   1    7 
+*               GND IN1  Out1  Out2
+X1         JTL        0          88         11
+L1         77         2          2.003pH   
+L2         2          4          1.898pH   
+L3         4          8          0.364pH   
+L4         8          10         1.958pH   
+L5         11         10         1.387pH   
+L6         4          5          1.874pH   
+L7         99         5          2.003pH   
+
+B1         10         12         jspl1     
+Lp1        10         110        0.923pH   
+RB1        110        12         0.788     
+L10        12         0          0.222pH   
+
+B2         2          3          jspl2     
+Lp2        2          31         1.0pH     
+RB2        31         3          1.024     
+L8         3          0          0.222pH   
+
+B3         5          6          jspl3     
+Lp3        5          61         1.0pH     
+RB3        61         6          1.024     
+L9         6          0          0.211pH   
+
+rvb1       300        301        4.4       
+lvb1       301        8          10pH      
+vb1        300        0          pwl        (0 0 5p 2.5mV 100ns 2.5mV)
+X2         JTL        0          99         7
+X3         JTL        0          77         1
+.MODEL jspl1 JJ(RTYPE=0, ICRIT= 325.000uA CAP= 1.634PF rN=90)
+.MODEL jspl2 JJ(RTYPE=0, ICRIT= 250.000uA CAP= 1.257PF rN=90)
+.MODEL jspl3 JJ(RTYPE=0, ICRIT= 250.000uA CAP= 1.257PF rN=90)
+.ENDS
+*=========================================
+
+
+
+*******************************
+* Begin .SUBCKT model         *
+* spice-sdb ver 4.28.2007     *
+*******************************
+.SUBCKT DCSFQ 1 6 
+*==============  Begin SPICE netlist of main design ============
+.model JJ1 jj(icrit=1m, cap=5p, rN=90, rtype=0)
+I2         0          5          pwl(0      0 5p 175u)
+I1         0          3          pwl(0      0 5p 275u)
+L5         5          7          2.119p    
+RB3        0          5          1.02      
+B3         0          5          JJ1        area=0.25
+L4         4          5          4.41p     
+RB2        0          4          1.13      
+B2         0          4          JJ1        area=0.225
+L3         3          4          1.09p     
+L2         2          3          507f      
+L1         1          0          3.335p    
+RB1        1          2          1.13      
+B1         1          2          JJ1        area=0.225
+X1         JTL        0          7          6
+.ends DCSFQ
+*******************************
+
+.SUBCKT AND_GATE 24 27 22 9
+********NetList***************
+.model model10 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model11 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model12 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model13 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model9 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model7 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model8 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model5 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model6 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model3 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model4 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model1 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model2 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+.model model0 JJ( icrit=1m cap=5p rN=90 rtype=0 )
+X1         JTL        0          22         202
+X2         JTL        0          24         204
+X3         JTL        0          27         207
+LP3        0          29         180f      
+LP2        31         0          300f      
+LP1        28         0          180f      
+LP0        30         0          300f      
+**R17 10 0 2
+R18        20         15         18        
+L10        207        17         1.996p    
+R15        15         35         850m      
+R16        6          16         14.85     
+R13        17         16         1.27      
+R14        25         18         1.69      
+R11        21         30         1.02      
+L13        25         15         1.8p      
+R12        16         28         1.02      
+L12        15         90         2.29p     
+L11        21         18         2.67p     
+R10        14         21         1.02      
+R8         12         33         1.02      
+R9         13         34         1.02      
+R6         8          32         790m      
+R7         6          11         4.5       
+R4         3          25         1.69      
+R5         4          6          14.85     
+R2         1          4          1.27      
+R3         2          5          1.02      
+LP6        0          34         300f      
+LP7        35         0          600f      
+LP4        0          32         300f      
+LP5        33         0          300f      
+B5         8          32         model7     AREA=325m
+B4         3          25         model1     AREA=150m
+V4         20         0          pwl(0      0 5p 2.6m)
+B3         5          2          model5     AREA=175m
+B2         2          31         model3     AREA=225m
+B9         21         30         model10    AREA=225m
+B8         14         21         model9     AREA=175m
+v0         6          0          pwl(0      0 5p 2.6m)
+B7         13         34         model8     AREA=250m
+B6         12         33         model13    AREA=250m
+*V1 26 0 pwl(0 0 5p 2.6m)
+R1         31         2          1.02      
+r0         29         4          1.02      
+B0         1          4          model6     AREA=225m
+B1         4          29         model4     AREA=250m
+B11        16         28         model11    AREA=250m
+B12        18         25         model2     AREA=150m
+B10        17         16         model12    AREA=225m
+B13        15         35         model0     AREA=300m
+L0         4          2          8.33p     
+L1         2          3          3.3p      
+L2         204        1          2.13p     
+L3         202        8          500f      
+L8         13         14         3.5p      
+L9         16         21         8.12p     
+L4         8          11         500f      
+L5         11         12         2.25p     
+L6         5          12         3.5p      
+L7         11         13         2.25p     
+X4         JTL        0          90         9
+.ENDS AND_GATE
+
+*******************************
+.SUBCKT ONETOEIGHT 2 18 19 20 21 22 23 24 25 
+
+X2         JTL        0          2          3
+X3         SPLITTER   0          3          4 5
+X301       JTL        0          4          104
+X302       JTL        0          5          105
+X4         SPLITTER   0          104        6 7
+X5         SPLITTER   0          105        8 9
+X401       JTL        0          6          106
+X402       JTL        0          7          107
+X403       JTL        0          8          108
+X404       JTL        0          9          109
+X6         SPLITTER   0          106        14 15
+X7         SPLITTER   0          107        16 17
+X8         SPLITTER   0          108        12 13
+X9         SPLITTER   0          109        10 11
+X10        JTL        0          10         18
+X11        JTL        0          11         19
+X12        JTL        0          12         20
+X13        JTL        0          13         21
+X14        JTL        0          14         22
+X15        JTL        0          15         23
+X16        JTL        0          16         24
+X17        JTL        0          17         25
+.ends ONETOEIGHT
+******************************
+
+*input A (8 bits)
+IA0        0          100        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IA1        0          101        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IA2        0          201        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IA3        0          301        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IA4        0          401        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IA5        0          501        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 0u 220p 0 300p 0 310p 0u 320p 0)
+IA6        0          601        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IA7        0          701        pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+
+*input B (8 bits)
+IB0        0          1000       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB1        0          1001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB2        0          2001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB3        0          3001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB4        0          4001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB5        0          5001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB6        0          6001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IB7        0          7001       pwl        (0 0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+
+*clocks
+IC1        0          1          pwl(0      0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IC2        0          11         pwl(0      0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IC3        0          111        pwl(0      0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+IC4        0          1111       pwl(0      0 100p 0 110p 0u 120p 0 200p 0 210p 600u 220p 0 300p 0 310p 0u 320p 0)
+X1         DCSFQ      1          2         
+X2         DCSFQ      11         22        
+X3         DCSFQ      111        222       
+X4         DCSFQ      1111       2222      
+
+*clock splitter level 1
+X5         SPLITTER   0          2          3 4
+X6         SPLITTER   0          22         33 44
+X7         SPLITTER   0          222        333 444
+X8         SPLITTER   0          2222       3333 4444
+
+*clock splitter level 1 (clock ports)
+X9         ONETOEIGHT 3          5          6 7 8 9 10 12 13
+X10        ONETOEIGHT 4          14         15 16 17 18 19 20 21
+X11        ONETOEIGHT 33         23         24 25 26 27 28 29 30
+X12        ONETOEIGHT 44         31         32 34 35 36 37 38 39
+X13        ONETOEIGHT 333        40         41 42 43 45 46 47 48
+X14        ONETOEIGHT 444        49         50 51 52 53 54 55 56
+X15        ONETOEIGHT 3333       57         58 59 60 61 62 63 64
+X16        ONETOEIGHT 4444       65         66 67 68 69 70 71 72
+
+* As_SFQ
+X17        DCSFQ      100        140       
+X18        DCSFQ      101        141       
+X19        DCSFQ      201        142       
+X20        DCSFQ      301        143       
+X21        DCSFQ      401        144       
+X22        DCSFQ      501        145       
+X23        DCSFQ      601        146       
+X24        DCSFQ      701        147       
+* Bs_SFQ
+X25        DCSFQ      1000       148       
+X26        DCSFQ      1001       149       
+X27        DCSFQ      2001       150       
+X28        DCSFQ      3001       151       
+X29        DCSFQ      4001       152       
+X30        DCSFQ      5001       153       
+X31        DCSFQ      6001       154       
+X32        DCSFQ      7001       155       
+*split As  
+X33        ONETOEIGHT 140        73         74 75 76 77 78 79 80
+X34        ONETOEIGHT 141        81         82 83 84 85 86 87 88
+X35        ONETOEIGHT 142        89         90 91 92 93 94 95 96
+X36        ONETOEIGHT 143        97         98 99 102 103 104 105 106
+X37        ONETOEIGHT 144        107        108 109 110 112 113 114 115
+X38        ONETOEIGHT 145        116        117 118 119 120 121 122 123
+X39        ONETOEIGHT 146        124        125 126 127 128 129 130 131
+X40        ONETOEIGHT 147        132        133 134 135 136 137 138 139
+*split Bs
+X41        ONETOEIGHT 148        156        157 158 159 160 161 162 163
+X42        ONETOEIGHT 149        164        165 166 167 168 169 170 171
+X43        ONETOEIGHT 150        172        173 174 175 176 177 178 179
+X44        ONETOEIGHT 151        180        181 182 183 184 185 186 187
+X45        ONETOEIGHT 152        188        189 190 191 192 193 194 195
+X46        ONETOEIGHT 153        196        197 198 199 200 202 203 204
+X47        ONETOEIGHT 154        205        206 207 208 209 210 211 212
+X48        ONETOEIGHT 155        213        214 215 216 217 218 219 220
+
+*generate partial product PP0 
+*          in1        in2        clk        out
+* B0 Ai
+X49        AND_GATE   156        73         5 221
+X50        AND_GATE   157        81         6 223
+X51        AND_GATE   158        89         7 224
+X52        AND_GATE   159        97         8 225
+X53        AND_GATE   160        107        9 226
+X54        AND_GATE   161        116        10 227
+X55        AND_GATE   162        124        12 228
+X56        AND_GATE   163        132        13 229
+*generate partial product PP1 
+*          in1        in2        clk        out
+* B1 Ai
+X57        AND_GATE   164        74         14 230
+X58        AND_GATE   165        82         15 231
+X59        AND_GATE   166        90         16 232
+X60        AND_GATE   167        98         17 233
+X61        AND_GATE   168        108        18 234
+X62        AND_GATE   169        117        19 235
+X63        AND_GATE   170        125        20 236
+X64        AND_GATE   171        133        21 237
+
+*generate partial product PP2 
+*          in1        in2        clk        out
+* B2 Ai
+X65        AND_GATE   172        75         23 238
+X66        AND_GATE   173        83         24 239
+X67        AND_GATE   174        91         25 240
+X68        AND_GATE   175        99         26 241
+X69        AND_GATE   176        109        27 242
+X70        AND_GATE   177        118        28 243
+X71        AND_GATE   178        126        29 244
+X72        AND_GATE   179        134        30 245
+
+*generate partial product PP3 
+*          in1        in2        clk        out
+* B3 Ai
+X73        AND_GATE   180        76         31 246
+X74        AND_GATE   181        84         32 247
+X75        AND_GATE   182        92         34 248
+X76        AND_GATE   183        102        35 249
+X77        AND_GATE   184        110        36 250
+X78        AND_GATE   185        119        37 251
+X79        AND_GATE   186        127        38 252
+X80        AND_GATE   187        135        39 253
+
+*generate partial product PP4 
+*          in1        in2        clk        out
+* B4 Ai
+X81        AND_GATE   188        77         40 254
+X82        AND_GATE   189        85         41 255
+X83        AND_GATE   190        93         42 256
+X84        AND_GATE   191        103        43 257
+X85        AND_GATE   192        112        45 258
+X86        AND_GATE   193        120        46 259
+X87        AND_GATE   194        128        47 260
+X88        AND_GATE   195        136        48 261
+
+*generate partial product PP5 
+*          in1        in2        clk        out
+* B5 Ai
+X89        AND_GATE   196        78         49 262
+X90        AND_GATE   197        86         50 263
+X91        AND_GATE   198        94         51 264
+X92        AND_GATE   199        104        52 265
+X93        AND_GATE   200        113        53 266
+X94        AND_GATE   202        121        54 267
+X95        AND_GATE   203        129        55 268
+X96        AND_GATE   204        137        56 269
+
+*generate partial product PP6 
+*          in1        in2        clk        out
+* B6 Ai
+X97        AND_GATE   205        79         57 270
+X98        AND_GATE   206        87         58 271
+X99        AND_GATE   207        95         59 272
+X100       AND_GATE   208        105        60 273
+X101       AND_GATE   209        114        61 274
+X102       AND_GATE   210        122        62 275
+X103       AND_GATE   211        130        63 276
+X104       AND_GATE   212        138        64 277
+
+*generate partial product PP7 
+*          in1        in2        clk        out
+* B7 Ai
+X105       AND_GATE   213        80         65 278
+X106       AND_GATE   214        88         66 279
+X107       AND_GATE   215        96         67 280
+X108       AND_GATE   216        106        68 281
+X109       AND_GATE   217        115        69 282
+X110       AND_GATE   218        123        70 283
+X111       AND_GATE   219        131        71 284
+X112       AND_GATE   220        139        72 285
+
+*Terminate outputs of pp0
+X113       JTL        0          221        295
+R113       295        0          2         
+X114       JTL        0          223        296
+R114       296        0          2         
+X115       JTL        0          224        297
+R115       297        0          2         
+X116       JTL        0          225        298
+R116       298        0          2         
+X117       JTL        0          226        299
+R117       299        0          2         
+X118       JTL        0          227        300
+R118       300        0          2         
+X119       JTL        0          228        302
+R119       302        0          2         
+X120       JTL        0          229        303
+R120       303        0          2         
+
+*Terminate outputs of pp1
+X121       JTL        0          230        304
+R121       304        0          2         
+X122       JTL        0          231        305
+R122       305        0          2         
+X123       JTL        0          232        306
+R123       306        0          2         
+X124       JTL        0          233        307
+R124       307        0          2         
+X125       JTL        0          234        308
+R125       308        0          2         
+X126       JTL        0          235        309
+R126       309        0          2         
+X127       JTL        0          236        310
+R127       310        0          2         
+X128       JTL        0          237        311
+R128       311        0          2         
+
+*Terminate outputs of pp2
+X129       JTL        0          238        312
+R129       312        0          2         
+X130       JTL        0          239        313
+R130       313        0          2         
+X131       JTL        0          240        314
+R131       314        0          2         
+X132       JTL        0          241        315
+R132       315        0          2         
+X134       JTL        0          242        316
+R134       316        0          2         
+X135       JTL        0          243        317
+R135       317        0          2         
+X136       JTL        0          244        318
+R136       318        0          2         
+X137       JTL        0          245        319
+R137       319        0          2         
+
+*Terminate outputs    of         pp3       
+X177       JTL        0          246        320
+R177       320        0          2         
+X138       JTL        0          247        321
+R138       321        0          2         
+X139       JTL        0          248        322
+R139       322        0          2         
+X140       JTL        0          249        323
+R140       323        0          2         
+X141       JTL        0          250        324
+R141       324        0          2         
+X142       JTL        0          251        325
+R142       325        0          2         
+X143       JTL        0          252        326
+R143       326        0          2         
+X144       JTL        0          253        327
+R144       327        0          2         
+
+*Terminate outputs    of         pp4       
+X145       JTL        0          254        328
+R145       328        0          2         
+X146       JTL        0          255        329
+R146       329        0          2         
+X147       JTL        0          256        330
+R147       330        0          2         
+X148       JTL        0          257        331
+R148       331        0          2         
+X149       JTL        0          258        332
+R149       332        0          2         
+X150       JTL        0          259        334
+R150       334        0          2         
+X151       JTL        0          260        335
+R151       335        0          2         
+X152       JTL        0          261        336
+R152       336        0          2         
+
+*Terminate outputs    of         pp5       
+X153       JTL        0          262        337
+R153       337        0          2         
+X154       JTL        0          263        338
+R154       338        0          2         
+X155       JTL        0          264        339
+R155       339        0          2         
+X156       JTL        0          265        340
+R156       340        0          2         
+X157       JTL        0          266        341
+R157       341        0          2         
+X158       JTL        0          267        342
+R158       342        0          2         
+X159       JTL        0          268        343
+R159       343        0          2         
+X160       JTL        0          269        344
+R160       344        0          2         
+
+*Terminate outputs    of         pp6       
+X161       JTL        0          270        345
+R161       345        0          2         
+X162       JTL        0          271        346
+R162       346        0          2         
+X163       JTL        0          272        347
+R163       347        0          2         
+X164       JTL        0          273        348
+R164       348        0          2         
+X165       JTL        0          274        349
+R165       349        0          2         
+X166       JTL        0          275        350
+R166       350        0          2         
+X167       JTL        0          276        351
+R167       351        1          2         
+X168       JTL        0          277        352
+R168       352        0          2         
+
+*Terminate outputs    of         pp7       
+X169       JTL        0          278        353
+R169       353        0          2         
+X170       JTL        0          279        354
+R170       354        0          2         
+X171       JTL        0          280        355
+R171       355        0          2         
+X172       JTL        0          281        356
+R172       356        0          2         
+X173       JTL        0          282        357
+R173       357        0          2         
+X174       JTL        0          283        358
+R174       358        0          2         
+X175       JTL        0          284        359
+R175       359        0          2         
+X176       JTL        0          285        360
+R176       360        0          2         
+.tran 0.25p 1000p 0 0.25p
+.print NODEV 2         
+.print NODEV 22        
+.print NODEV 222       
+.print NODEV 2222  
+.print DEVV X1_L6
+.print DEVV R169
+.print DEVV R170
+.print DEVV R171
+.print DEVV R172
+.print DEVV R173
+.print DEVV R174
+.print DEVV R175
+.print DEVV R176
+.end

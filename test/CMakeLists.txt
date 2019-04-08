@@ -9,28 +9,28 @@
 
 # Tests
 add_integration_test(
-  NAME basic_jtl
-  CIR basic_jtl.cir
-  OUT basic_jtl.csv
+  NAME ex_jtl_basic
+  CIR ex_jtl_basic.cir
+  OUT ex_jtl_basic.csv
 )
 
 add_integration_test(
-  NAME dcsfq_jtl_sink
-  CIR dcsfq_jtl_sink.cir
-  OUT dcsfq_jtl_sink.csv
+  NAME ex_dcsfq_jtl_sink
+  CIR ex_dcsfq_jtl_sink.cir
+  OUT ex_dcsfq_jtl_sink.csv
 )
 
 add_integration_test(
-  NAME test_mitll_dfft
-  CIR TEST_MITLL_DFFT.cir
-  OUT test_mitll_dfft.csv
+  NAME ex_mitll_dff_wr
+  CIR ex_mitll_dff_wr.cir
+  OUT ex_mitll_dff_wr.csv
   WRSPICE
 )
 
 add_integration_test(
-  NAME modified_netlist
-  CIR modified_netlist.cir
-  OUT modified_netlist.csv
+  NAME ex_mitll_not_wr
+  CIR ex_mitll_not_wr.cir
+  OUT ex_mitll_not_wr.csv
   WRSPICE
 )
 
