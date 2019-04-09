@@ -15,6 +15,7 @@ using namespace JoSIM;
 int
 main(int argc, const char** argv) {
 
+	CliOptions::version_info();
   auto cli_options = CliOptions::parse(argc, argv);
 
 	Input iObj(cli_options.analysis_type, cli_options.input_type, cli_options.verbose);

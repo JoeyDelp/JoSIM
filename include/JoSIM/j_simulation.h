@@ -24,6 +24,7 @@ class Results {
 class Simulation {
 	public:
 		Results results;
+		bool sOutput = true;
 
 		void
 		identify_simulation(std::vector<std::string> controls,

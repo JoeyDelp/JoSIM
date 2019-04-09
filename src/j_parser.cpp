@@ -245,15 +245,15 @@ Parser::parse_parameters(Parameters& parameters) {
 				}
 			}
 			else {
-				std::cout << "W: Missing parameter declaration in " << i.second << "." << std::endl;
-				std::cout << "W: Please ensure that a valid .PARAM definition is declared." << std::endl;
-				std::cout << "W: This line will be ignored." << std::endl;
+				std::cerr << "W: Missing parameter declaration in " << i.second << "." << std::endl;
+				std::cerr << "W: Please ensure that a valid .PARAM definition is declared." << std::endl;
+				std::cerr << "W: This line will be ignored." << std::endl;
 			}
 		}
 		else {
-			std::cout << "W: Missing parameter declaration in " << i.second << "." << std::endl;
-			std::cout << "W: Please ensure that a valid .PARAM definition is declared." << std::endl;
-			std::cout << "W: This line will be ignored." << std::endl;
+			std::cerr << "W: Missing parameter declaration in " << i.second << "." << std::endl;
+			std::cerr << "W: Please ensure that a valid .PARAM definition is declared." << std::endl;
+			std::cerr << "W: This line will be ignored." << std::endl;
 		}
 	}
 }

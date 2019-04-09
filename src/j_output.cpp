@@ -17,10 +17,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 			tokens = Misc::tokenize_space(i);
 			if(tokens.at(1) == "DEVI") {
 				if(tokens.size() > 4) {
-					std::cout << "W: Print request for device current has too many arguments. " << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: Ignoring the extra argument." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Print request for device current has too many arguments. " << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: Ignoring the extra argument." << std::endl;
+					std::cerr << std::endl;
 				}
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
@@ -77,10 +77,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print current for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print current for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'L':
@@ -94,10 +94,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print current for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print current for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'C':
@@ -111,10 +111,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print current for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print current for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'B':
@@ -128,17 +128,17 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print current for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print current for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'V':
-						std::cout << "W: Requesting current through a voltage source." << std::endl;
-						std::cout << "W: Line: " << i << std::endl;
-						std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Requesting current through a voltage source." << std::endl;
+						std::cerr << "W: Line: " << i << std::endl;
+						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+						std::cerr << std::endl;
 						break;
 					case 'I':
 						thisTrace.type = 'C';
@@ -147,20 +147,20 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print current for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print current for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 				}
 			}
 			else if(tokens.at(1) == "DEVV") {
 				if(tokens.size() > 4) {
-					std::cout << "W: Print request for device voltage has too many arguments. " << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: Ignoring the extra argument." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Print request for device voltage has too many arguments. " << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: Ignoring the extra argument." << std::endl;
+					std::cerr << std::endl;
 				}
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
@@ -196,10 +196,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else if(mObj.components.phaseRes.count(label) != 0) {
-							std::cout << "W: Request to print voltage for device " << label << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing device phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print voltage for device " << label << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing device phase instead." << std::endl;
+							std::cerr << std::endl;
 							if(mObj.components.phaseRes.at(label).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol);
 								traces.push_back(thisTrace);
@@ -220,10 +220,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print voltage for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print voltage for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'L':
@@ -249,10 +249,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else if(mObj.components.phaseInd.count(label) != 0) {
-							std::cout << "W: Request to print voltage for device " << label << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing device phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print voltage for device " << label << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing device phase instead." << std::endl;
+							std::cerr << std::endl;
 							if(mObj.components.phaseInd.at(label).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol);
 								traces.push_back(thisTrace);
@@ -273,10 +273,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print voltage for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print voltage for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'C':
@@ -302,10 +302,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else if(mObj.components.phaseCap.count(label) != 0) {
-							std::cout << "W: Request to print voltage for device " << label << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing device phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print voltage for device " << label << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing device phase instead." << std::endl;
+							std::cerr << std::endl;
 							if(mObj.components.phaseCap.at(label).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol);
 								traces.push_back(thisTrace);
@@ -326,10 +326,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print voltage for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print voltage for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'B':
@@ -355,10 +355,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else if(mObj.components.phaseJJ.count(label) != 0) {
-							std::cout << "W: Request to print voltage for device " << label << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing device phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print voltage for device " << label << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing device phase instead." << std::endl;
+							std::cerr << std::endl;
 							if(mObj.components.phaseJJ.at(label).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol);
 								traces.push_back(thisTrace);
@@ -379,10 +379,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print voltage for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print voltage for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'V':
@@ -392,27 +392,27 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print voltage for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print voltage for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'I':
-						std::cout << "W: Requesting voltage across a current source." << std::endl;
-						std::cout << "W: Line: " << i << std::endl;
-						std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Requesting voltage across a current source." << std::endl;
+						std::cerr << "W: Line: " << i << std::endl;
+						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+						std::cerr << std::endl;
 						break;
 				}
 			}
 			else if(tokens.at(1) == "NODEV") {
 				thisTrace.type = 'V';
 				if (tokens.size() > 4) {
-					std::cout << "W: Print requested with too many arguments." << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: Excess arguments will be ignored." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Print requested with too many arguments." << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: Excess arguments will be ignored." << std::endl;
+					std::cerr << std::endl;
 				}
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
@@ -431,10 +431,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						traces.push_back(thisTrace);
 					}
 					else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-						std::cout << "W: Request to print nodal voltage for " << label << std::endl;
-						std::cout << "W: Phase mode simulation performed." << std::endl;
-						std::cout << "W: Printing nodal phase instead." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Request to print nodal voltage for " << label << std::endl;
+						std::cerr << "W: Phase mode simulation performed." << std::endl;
+						std::cerr << "W: Printing nodal phase instead." << std::endl;
+						std::cerr << std::endl;
 						thisTrace.type = 'P';
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 						thisTrace.name = "NP_" + label;
@@ -442,9 +442,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						traces.push_back(thisTrace);
 					}
 					else {
-						std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-						std::cout << "W: This request for print will be ignored." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+						std::cerr << "W: This request for print will be ignored." << std::endl;
+						std::cerr << std::endl;
 					}
 				}
 				else if (tokens.size() == 4) {
@@ -481,10 +481,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-							std::cout << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing nodal phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing nodal phase instead." << std::endl;
+							std::cerr << std::endl;
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
@@ -499,9 +499,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-							std::cout << "W: This request for print will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+							std::cerr << "W: This request for print will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 					}
 					else if (label2 == "0" || label2 == "GND") {
@@ -512,10 +512,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							std::cout << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing nodal phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing nodal phase instead." << std::endl;
+							std::cerr << std::endl;
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							thisTrace.name = "NP_" + label + "_" + label2;
@@ -523,24 +523,24 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-							std::cout << "W: This request for print will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+							std::cerr << "W: This request for print will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 					}
 					else {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-								std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-								std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -557,10 +557,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							std::cout << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-							std::cout << "W: Phase mode simulation performed." << std::endl;
-							std::cout << "W: Printing nodal phase instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
+							std::cerr << "W: Phase mode simulation performed." << std::endl;
+							std::cerr << "W: Printing nodal phase instead." << std::endl;
+							std::cerr << std::endl;
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
@@ -577,19 +577,19 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					}
 				}
 				else {
-					std::cout << "W: Invalid node voltage request found." << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: This request for print will be ignored." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Invalid node voltage request found." << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: This request for print will be ignored." << std::endl;
+					std::cerr << std::endl;
 				}
 			}
 			else if(tokens.at(1) == "NODEP") {
 				thisTrace.type = 'P';
 				if (tokens.size() > 4) {
-					std::cout << "W: Print requested with too many arguments." << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: Excess arguments will be ignored." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Print requested with too many arguments." << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: Excess arguments will be ignored." << std::endl;
+					std::cerr << std::endl;
 				}
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
@@ -608,10 +608,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						traces.push_back(thisTrace);
 					}
 					else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-						std::cout << "W: Request to print nodal phase for " << label << std::endl;
-						std::cout << "W: Voltage mode simulation performed." << std::endl;
-						std::cout << "W: Printing nodal voltage instead." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Request to print nodal phase for " << label << std::endl;
+						std::cerr << "W: Voltage mode simulation performed." << std::endl;
+						std::cerr << "W: Printing nodal voltage instead." << std::endl;
+						std::cerr << std::endl;
 						thisTrace.type = 'V';
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 						thisTrace.name = "NV_" + label;
@@ -619,9 +619,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						traces.push_back(thisTrace);
 					}
 					else {
-						std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-						std::cout << "W: This request for print will be ignored." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+						std::cerr << "W: This request for print will be ignored." << std::endl;
+						std::cerr << std::endl;
 					}
 				}
 				else if (tokens.size() == 4) {
@@ -658,10 +658,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-							std::cout << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-							std::cout << "W: Voltage mode simulation performed." << std::endl;
-							std::cout << "W: Printing nodal voltage instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
+							std::cerr << "W: Voltage mode simulation performed." << std::endl;
+							std::cerr << "W: Printing nodal voltage instead." << std::endl;
+							std::cerr << std::endl;
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
@@ -676,9 +676,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-							std::cout << "W: This request for print will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+							std::cerr << "W: This request for print will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 					}
 					else if (label2 == "0" || label2 == "GND") {
@@ -689,10 +689,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							std::cout << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-							std::cout << "W: Voltage mode simulation performed." << std::endl;
-							std::cout << "W: Printing nodal voltage instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
+							std::cerr << "W: Voltage mode simulation performed." << std::endl;
+							std::cerr << "W: Printing nodal voltage instead." << std::endl;
+							std::cerr << std::endl;
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							thisTrace.name = "NV_" + label + "_" + label2;
@@ -700,31 +700,31 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-							std::cout << "W: This request for print will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+							std::cerr << "W: This request for print will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 					}
 					else {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-								std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-								std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							std::cout << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-							std::cout << "W: Voltage mode simulation performed." << std::endl;
-							std::cout << "W: Printing nodal voltage instead." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
+							std::cerr << "W: Voltage mode simulation performed." << std::endl;
+							std::cerr << "W: Printing nodal voltage instead." << std::endl;
+							std::cerr << std::endl;
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
@@ -754,18 +754,18 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					}
 				}
 				else {
-					std::cout << "W: Invalid node voltage request found." << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: This request for print will be ignored." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Invalid node voltage request found." << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: This request for print will be ignored." << std::endl;
+					std::cerr << std::endl;
 				}
 			}
 			else if(tokens.at(1) == "PHASE") {
 				if(tokens.size() > 4) {
-					std::cout << "W: Print request for device current has too many arguments. " << std::endl;
-					std::cout << "W: Line: " << i << std::endl;
-					std::cout << "W: Ignoring the extra argument." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Print request for device current has too many arguments. " << std::endl;
+					std::cerr << "W: Line: " << i << std::endl;
+					std::cerr << "W: Ignoring the extra argument." << std::endl;
+					std::cerr << std::endl;
 				}
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
@@ -781,10 +781,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					case 'R':
 						thisTrace.type = 'P';
 						if(mObj.components.voltRes.count(label) != 0) {
-							std::cout << "W: Requesting phase in a voltage simulation." << std::endl;
-							std::cout << "W: Line: " << i << std::endl;
-							std::cout << "W: This request will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
+							std::cerr << "W: Line: " << i << std::endl;
+							std::cerr << "W: This request will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 						else if(mObj.components.phaseRes.count(label) != 0) {
 							if(mObj.components.phaseRes.at(label).posNCol == -1) {
@@ -807,19 +807,19 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print phase for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print phase for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'L':
 						thisTrace.type = 'P';
 						if(mObj.components.voltInd.count(label) != 0) {
-							std::cout << "W: Requesting phase in a voltage simulation." << std::endl;
-							std::cout << "W: Line: " << i << std::endl;
-							std::cout << "W: This request will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
+							std::cerr << "W: Line: " << i << std::endl;
+							std::cerr << "W: This request will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 						else if(mObj.components.phaseInd.count(label) != 0) {
 							if(mObj.components.phaseInd.at(label).posNCol == -1) {
@@ -842,19 +842,19 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print phase for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print phase for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'C':
 						thisTrace.type = 'P';
 						if(mObj.components.voltCap.count(label) != 0) {
-							std::cout << "W: Requesting phase in a voltage simulation." << std::endl;
-							std::cout << "W: Line: " << i << std::endl;
-							std::cout << "W: This request will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
+							std::cerr << "W: Line: " << i << std::endl;
+							std::cerr << "W: This request will be ignored." << std::endl;
+							std::cerr << std::endl;
 						}
 						else if(mObj.components.phaseCap.count(label) != 0) {
 							if(mObj.components.phaseCap.at(label).posNCol == -1) {
@@ -877,10 +877,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print phase for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print phase for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'B':
@@ -910,17 +910,17 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print phase for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print phase for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'V':
-						std::cout << "W: Requesting phase of a voltage source." << std::endl;
-						std::cout << "W: Line: " << i << std::endl;
-						std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Requesting phase of a voltage source." << std::endl;
+						std::cerr << "W: Line: " << i << std::endl;
+						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+						std::cerr << std::endl;
 						break;
 					case 'P':
 						thisTrace.type = 'P';
@@ -929,17 +929,17 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							traces.push_back(thisTrace);
 						}
 						else {
-							std::cout << "W: Unknown device " << label << std::endl;
-							std::cout << "W: Cannot print phase for this device." << std::endl;
-							std::cout << "W: Ignoring this print request." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Unknown device " << label << std::endl;
+							std::cerr << "W: Cannot print phase for this device." << std::endl;
+							std::cerr << "W: Ignoring this print request." << std::endl;
+							std::cerr << std::endl;
 						}
 						break;
 					case 'I':
-						std::cout << "W: Requesting phase of a current source." << std::endl;
-						std::cout << "W: Line: " << i << std::endl;
-						std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Requesting phase of a current source." << std::endl;
+						std::cerr << "W: Line: " << i << std::endl;
+						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+						std::cerr << std::endl;
 						break;
 				}
 			}
@@ -986,10 +986,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else if(mObj.components.phaseRes.count(label) != 0) {
-									std::cout << "W: Request to print voltage for device " << label << std::endl;
-									std::cout << "W: Phase mode simulation performed." << std::endl;
-									std::cout << "W: Printing device phase instead." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Request to print voltage for device " << label << std::endl;
+									std::cerr << "W: Phase mode simulation performed." << std::endl;
+									std::cerr << "W: Printing device phase instead." << std::endl;
+									std::cerr << std::endl;
 									if(mObj.components.phaseRes.at(label).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol);
 										traces.push_back(thisTrace);
@@ -1010,10 +1010,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print voltage for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print voltage for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'L':
@@ -1039,10 +1039,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else if(mObj.components.phaseInd.count(label) != 0) {
-									std::cout << "W: Request to print voltage for device " << label << std::endl;
-									std::cout << "W: Phase mode simulation performed." << std::endl;
-									std::cout << "W: Printing device phase instead." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Request to print voltage for device " << label << std::endl;
+									std::cerr << "W: Phase mode simulation performed." << std::endl;
+									std::cerr << "W: Printing device phase instead." << std::endl;
+									std::cerr << std::endl;
 									if(mObj.components.phaseInd.at(label).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol);
 										traces.push_back(thisTrace);
@@ -1063,10 +1063,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print voltage for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print voltage for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'C':
@@ -1092,10 +1092,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else if(mObj.components.phaseCap.count(label) != 0) {
-									std::cout << "W: Request to print voltage for device " << label << std::endl;
-									std::cout << "W: Phase mode simulation performed." << std::endl;
-									std::cout << "W: Printing device phase instead." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Request to print voltage for device " << label << std::endl;
+									std::cerr << "W: Phase mode simulation performed." << std::endl;
+									std::cerr << "W: Printing device phase instead." << std::endl;
+									std::cerr << std::endl;
 									if(mObj.components.phaseCap.at(label).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol);
 										traces.push_back(thisTrace);
@@ -1116,10 +1116,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print voltage for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print voltage for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'B':
@@ -1145,10 +1145,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else if(mObj.components.phaseJJ.count(label) != 0) {
-									std::cout << "W: Request to print voltage for device " << label << std::endl;
-									std::cout << "W: Phase mode simulation performed." << std::endl;
-									std::cout << "W: Printing device phase instead." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Request to print voltage for device " << label << std::endl;
+									std::cerr << "W: Phase mode simulation performed." << std::endl;
+									std::cerr << "W: Printing device phase instead." << std::endl;
+									std::cerr << std::endl;
 									if(mObj.components.phaseJJ.at(label).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol);
 										traces.push_back(thisTrace);
@@ -1169,10 +1169,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print voltage for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print voltage for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'V':
@@ -1182,17 +1182,17 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print voltage for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print voltage for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'I':
-								std::cout << "W: Requesting voltage across a current source." << std::endl;
-								std::cout << "W: Line: " << i << std::endl;
-								std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Requesting voltage across a current source." << std::endl;
+								std::cerr << "W: Line: " << i << std::endl;
+								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+								std::cerr << std::endl;
 								break;
 							default:
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -1202,10 +1202,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-									std::cout << "W: Request to print nodal voltage for " << label << std::endl;
-									std::cout << "W: Phase mode simulation performed." << std::endl;
-									std::cout << "W: Printing nodal phase instead." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Request to print nodal voltage for " << label << std::endl;
+									std::cerr << "W: Phase mode simulation performed." << std::endl;
+									std::cerr << "W: Printing nodal phase instead." << std::endl;
+									std::cerr << std::endl;
 									thisTrace.type = 'P';
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 									thisTrace.name = "NP_" + label;
@@ -1213,9 +1213,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cout << "W: This request for print will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+									std::cerr << "W: This request for print will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 						}
@@ -1254,10 +1254,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-								std::cout << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-								std::cout << "W: Phase mode simulation performed." << std::endl;
-								std::cout << "W: Printing nodal phase instead." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
+								std::cerr << "W: Phase mode simulation performed." << std::endl;
+								std::cerr << "W: Printing nodal phase instead." << std::endl;
+								std::cerr << std::endl;
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
@@ -1272,9 +1272,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else if (label2 == "0" || label2 == "GND") {
@@ -1285,10 +1285,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								std::cout << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-								std::cout << "W: Phase mode simulation performed." << std::endl;
-								std::cout << "W: Printing nodal phase instead." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
+								std::cerr << "W: Phase mode simulation performed." << std::endl;
+								std::cerr << "W: Printing nodal phase instead." << std::endl;
+								std::cerr << std::endl;
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								thisTrace.name = "NP_" + label + "_" + label2;
@@ -1296,24 +1296,24 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-									std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cout << "W: This request for print will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+									std::cerr << "W: This request for print will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-									std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-									std::cout << "W: This request for print will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+									std::cerr << "W: This request for print will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
@@ -1330,10 +1330,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								std::cout << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-								std::cout << "W: Phase mode simulation performed." << std::endl;
-								std::cout << "W: Printing nodal phase instead." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
+								std::cerr << "W: Phase mode simulation performed." << std::endl;
+								std::cerr << "W: Printing nodal phase instead." << std::endl;
+								std::cerr << std::endl;
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
@@ -1409,10 +1409,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print current for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print current for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'L':
@@ -1426,10 +1426,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print current for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print current for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'C':
@@ -1443,10 +1443,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print current for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print current for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'B':
@@ -1460,17 +1460,17 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print current for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print current for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'V':
-								std::cout << "W: Requesting current through a voltage source." << std::endl;
-								std::cout << "W: Line: " << i << std::endl;
-								std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Requesting current through a voltage source." << std::endl;
+								std::cerr << "W: Line: " << i << std::endl;
+								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+								std::cerr << std::endl;
 								break;
 							case 'I':
 								thisTrace.type = 'C';
@@ -1479,18 +1479,18 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print current for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print current for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 						}
 					}
 					else {
-						std::cout << "W: Invalid request to plot current." << std::endl;
-						std::cout << "W: Infringing line: " << i << std::endl;
-						std::cout << std::endl;
+						std::cerr << "W: Invalid request to plot current." << std::endl;
+						std::cerr << "W: Infringing line: " << i << std::endl;
+						std::cerr << std::endl;
 					}
 				}
 				else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
@@ -1551,10 +1551,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Unknown device " << label << std::endl;
-								std::cout << "W: Cannot print current for this device." << std::endl;
-								std::cout << "W: Ignoring this print request." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Unknown device " << label << std::endl;
+								std::cerr << "W: Cannot print current for this device." << std::endl;
+								std::cerr << "W: Ignoring this print request." << std::endl;
+								std::cerr << std::endl;
 							}
 							break;
 						case 'L':
@@ -1568,10 +1568,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Unknown device " << label << std::endl;
-								std::cout << "W: Cannot print current for this device." << std::endl;
-								std::cout << "W: Ignoring this print request." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Unknown device " << label << std::endl;
+								std::cerr << "W: Cannot print current for this device." << std::endl;
+								std::cerr << "W: Ignoring this print request." << std::endl;
+								std::cerr << std::endl;
 							}
 							break;
 						case 'C':
@@ -1585,10 +1585,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Unknown device " << label << std::endl;
-								std::cout << "W: Cannot print current for this device." << std::endl;
-								std::cout << "W: Ignoring this print request." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Unknown device " << label << std::endl;
+								std::cerr << "W: Cannot print current for this device." << std::endl;
+								std::cerr << "W: Ignoring this print request." << std::endl;
+								std::cerr << std::endl;
 							}
 							break;
 						case 'B':
@@ -1602,17 +1602,17 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Unknown device " << label << std::endl;
-								std::cout << "W: Cannot print current for this device." << std::endl;
-								std::cout << "W: Ignoring this print request." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Unknown device " << label << std::endl;
+								std::cerr << "W: Cannot print current for this device." << std::endl;
+								std::cerr << "W: Ignoring this print request." << std::endl;
+								std::cerr << std::endl;
 							}
 							break;
 						case 'V':
-							std::cout << "W: Requesting current through a voltage source." << std::endl;
-							std::cout << "W: Line: " << i << std::endl;
-							std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-							std::cout << std::endl;
+							std::cerr << "W: Requesting current through a voltage source." << std::endl;
+							std::cerr << "W: Line: " << i << std::endl;
+							std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+							std::cerr << std::endl;
 							break;
 						case 'I':
 							thisTrace.type = 'C';
@@ -1621,10 +1621,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Unknown device " << label << std::endl;
-								std::cout << "W: Cannot print current for this device." << std::endl;
-								std::cout << "W: Ignoring this print request." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Unknown device " << label << std::endl;
+								std::cerr << "W: Cannot print current for this device." << std::endl;
+								std::cerr << "W: Ignoring this print request." << std::endl;
+								std::cerr << std::endl;
 							}
 							break;
 					}
@@ -1647,10 +1647,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							case 'R':
 								thisTrace.type = 'P';
 								if(mObj.components.voltRes.count(label) != 0) {
-									std::cout << "W: Requesting phase in a voltage simulation." << std::endl;
-									std::cout << "W: Line: " << i << std::endl;
-									std::cout << "W: This request will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
+									std::cerr << "W: Line: " << i << std::endl;
+									std::cerr << "W: This request will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 								else if(mObj.components.phaseRes.count(label) != 0) {
 									if(mObj.components.phaseRes.at(label).posNCol == -1) {
@@ -1673,19 +1673,19 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print phase for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print phase for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'L':
 								thisTrace.type = 'P';
 								if(mObj.components.voltInd.count(label) != 0) {
-									std::cout << "W: Requesting phase in a voltage simulation." << std::endl;
-									std::cout << "W: Line: " << i << std::endl;
-									std::cout << "W: This request will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
+									std::cerr << "W: Line: " << i << std::endl;
+									std::cerr << "W: This request will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 								else if(mObj.components.phaseInd.count(label) != 0) {
 									if(mObj.components.phaseInd.at(label).posNCol == -1) {
@@ -1708,19 +1708,19 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print phase for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print phase for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'C':
 								thisTrace.type = 'P';
 								if(mObj.components.voltCap.count(label) != 0) {
-									std::cout << "W: Requesting phase in a voltage simulation." << std::endl;
-									std::cout << "W: Line: " << i << std::endl;
-									std::cout << "W: This request will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
+									std::cerr << "W: Line: " << i << std::endl;
+									std::cerr << "W: This request will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 								else if(mObj.components.phaseCap.count(label) != 0) {
 									if(mObj.components.phaseCap.at(label).posNCol == -1) {
@@ -1743,10 +1743,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print phase for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print phase for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'B':
@@ -1776,23 +1776,23 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 								}
 								else {
-									std::cout << "W: Unknown device " << label << std::endl;
-									std::cout << "W: Cannot print phase for this device." << std::endl;
-									std::cout << "W: Ignoring this print request." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Unknown device " << label << std::endl;
+									std::cerr << "W: Cannot print phase for this device." << std::endl;
+									std::cerr << "W: Ignoring this print request." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 							case 'V':
-								std::cout << "W: Requesting phase of a voltage source." << std::endl;
-								std::cout << "W: Line: " << i << std::endl;
-								std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Requesting phase of a voltage source." << std::endl;
+								std::cerr << "W: Line: " << i << std::endl;
+								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+								std::cerr << std::endl;
 								break;
 							case 'I':
-								std::cout << "W: Requesting phase of a current source." << std::endl;
-								std::cout << "W: Line: " << i << std::endl;
-								std::cout << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Requesting phase of a current source." << std::endl;
+								std::cerr << "W: Line: " << i << std::endl;
+								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
+								std::cerr << std::endl;
 								break;
 							default:
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
@@ -1802,10 +1802,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-									std::cout << "W: Request to print nodal phase for " << label << std::endl;
-									std::cout << "W: Voltage mode simulation performed." << std::endl;
-									std::cout << "W: Printing nodal voltage instead." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Request to print nodal phase for " << label << std::endl;
+									std::cerr << "W: Voltage mode simulation performed." << std::endl;
+									std::cerr << "W: Printing nodal voltage instead." << std::endl;
+									std::cerr << std::endl;
 									thisTrace.type = 'V';
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 									thisTrace.name = "NV_" + label;
@@ -1813,9 +1813,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									traces.push_back(thisTrace);
 								}
 								else {
-									std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cout << "W: This request for print will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+									std::cerr << "W: This request for print will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 								break;
 						}
@@ -1854,10 +1854,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-								std::cout << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-								std::cout << "W: Voltage mode simulation performed." << std::endl;
-								std::cout << "W: Printing nodal voltage instead." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
+								std::cerr << "W: Voltage mode simulation performed." << std::endl;
+								std::cerr << "W: Printing nodal voltage instead." << std::endl;
+								std::cerr << std::endl;
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
@@ -1872,9 +1872,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else if (label2 == "0" || label2 == "GND") {
@@ -1885,10 +1885,10 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								std::cout << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-								std::cout << "W: Voltage mode simulation performed." << std::endl;
-								std::cout << "W: Printing nodal voltage instead." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
+								std::cerr << "W: Voltage mode simulation performed." << std::endl;
+								std::cerr << "W: Printing nodal voltage instead." << std::endl;
+								std::cerr << std::endl;
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								thisTrace.name = "NV_" + label + "_" + label2;
@@ -1896,31 +1896,31 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								traces.push_back(thisTrace);
 							}
 							else {
-								std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cout << "W: This request for print will be ignored." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+								std::cerr << "W: This request for print will be ignored." << std::endl;
+								std::cerr << std::endl;
 							}
 						}
 						else {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-									std::cout << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cout << "W: This request for print will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
+									std::cerr << "W: This request for print will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-									std::cout << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-									std::cout << "W: This request for print will be ignored." << std::endl;
-									std::cout << std::endl;
+									std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
+									std::cerr << "W: This request for print will be ignored." << std::endl;
+									std::cerr << std::endl;
 								}
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								std::cout << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-								std::cout << "W: Voltage mode simulation performed." << std::endl;
-								std::cout << "W: Printing nodal voltage instead." << std::endl;
-								std::cout << std::endl;
+								std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
+								std::cerr << "W: Voltage mode simulation performed." << std::endl;
+								std::cerr << "W: Printing nodal voltage instead." << std::endl;
+								std::cerr << std::endl;
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
@@ -1952,14 +1952,14 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				}
 				else if (tokens.at(j).find("TRAN") != std::string::npos) {}
 				else if (tokens.at(j)[0] == '"') {
-					std::cout << "W: Mathematical operations on output vectors are not yet supported." << std::endl;
-					std::cout << "W: Ignoring plotting of " << tokens.at(j) << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Mathematical operations on output vectors are not yet supported." << std::endl;
+					std::cerr << "W: Ignoring plotting of " << tokens.at(j) << std::endl;
+					std::cerr << std::endl;
 				}
 				else {
-					std::cout << "W: Unknown plot type " << i << std::endl;
-					std::cout << "W: Ignoring request to plot." << std::endl;
-					std::cout << std::endl;
+					std::cerr << "W: Unknown plot type " << i << std::endl;
+					std::cerr << "W: Ignoring request to plot." << std::endl;
+					std::cerr << std::endl;
 				}
 			}
 		}
@@ -2027,16 +2027,16 @@ Output::write_data(std::string &outname) {
 			outfile.close();
 		}
 		else if (traces.empty()) {
-			std::cout << "W: Nothing specified to save."
+			std::cerr << "W: Nothing specified to save."
 				<< std::endl;
-			std::cout << std::endl;
+			std::cerr << std::endl;
 			outfile.close();
 		}
 	}
 	else {
-		std::cout << "E: " << outname << " could not be opened for saving."
+		std::cerr << "E: " << outname << " could not be opened for saving."
 				<< std::endl;
-		std::cout << std::endl;
+		std::cerr << std::endl;
 	}
 }
 
@@ -2077,16 +2077,16 @@ Output::write_legacy_data(std::string &outname) {
 			outfile.close();
 		}
 		else if (traces.empty()) {
-			std::cout << "W: Nothing specified to save."
+			std::cerr << "W: Nothing specified to save."
 				<< std::endl;
-			std::cout << std::endl;
+			std::cerr << std::endl;
 			outfile.close();
 		}
 	}
 	else {
-		std::cout << "E: " << outname << " could not be opened for saving."
+		std::cerr << "E: " << outname << " could not be opened for saving."
 				<< std::endl;
-			std::cout << std::endl;
+			std::cerr << std::endl;
 	}
 }
 
@@ -2156,16 +2156,16 @@ Output::write_wr_data(std::string &outname) {
 			outfile.close();
 		}
 		else if (traces.empty()) {
-			std::cout << "W: Nothing specified to save."
+			std::cerr << "W: Nothing specified to save."
 				<< std::endl;
-			std::cout << std::endl;
+			std::cerr << std::endl;
 			outfile.close();
 		}
 	}
 	else {
-		std::cout << "E: " << outname << " could not be opened for saving."
+		std::cerr << "E: " << outname << " could not be opened for saving."
 				<< std::endl;
-			std::cout << std::endl;
+			std::cerr << std::endl;
 	}
 }
 
@@ -2203,11 +2203,11 @@ Output::write_cout(Matrix &mObj, Simulation &sObj) {
 		}
 	}
 	else if (traces.empty()) {
-		std::cout << "W: Nothing specified to output."
+		std::cerr << "W: Nothing specified to output."
 			<< std::endl;
-		std::cout << "W: Printing all vectors."
+		std::cerr << "W: Printing all vectors."
 			<< std::endl;
-		std::cout << std::endl;
+		std::cerr << std::endl;
 		std::cout << "time"
 			<< " ";
 		for (int i = 0; i < mObj.columnNames.size() - 1; i++) {

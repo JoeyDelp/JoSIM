@@ -84,7 +84,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 		}
 		rowCounter++;
 	}
-	std::cout << "Simulating:" << std::endl;
+	if(sOutput) std::cout << "Simulating:" << std::endl;
 	double increments = 100 / (double)simSize;
 	double progress_increments = 30 / (double)simSize;
 	double incremental_progress = 0.0;
@@ -97,7 +97,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 	double CUR2 = 0.0;
 	for (int i = 0; i < simSize; i++) {
 	#ifndef NO_PRINT
-			std::cout << '\r';
+			if(sOutput) std::cout << '\r';
 	#endif
 		RHS.clear();
 		rowCounter = 0;
@@ -325,19 +325,19 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 		progress = (int)(incremental_progress);
 	#ifndef NO_PRINT
 		if (progress > old_progress) {
-			std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
+			if(sOutput) std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
 			pBar = "[";
 			for (int p = 0; p <= (int)(progress_increments * i); p++) {
 				pBar.append("=");
 			}
-			std::cout << std::setw(31) << std::left << pBar << "]";
+			if(sOutput) std::cout << std::setw(31) << std::left << pBar << "]";
 		}
 	#endif
 	}
 	#ifndef NO_PRINT
-	std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
+	if(sOutput) std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
 	#else
-	std::cout << " done" << std::endl;
+	if(sOutput) std::cout << " done" << std::endl;
 	#endif
 
   klu_free_symbolic(&Symbolic, &Common);
@@ -372,7 +372,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 		}
 		rowCounter++;
 	}
-	std::cout << "Simulating:" << std::endl;
+	if(sOutput) std::cout << "Simulating:" << std::endl;
 	double increments = 100 / (double)simSize;
 	double progress_increments = 30 / (double)simSize;
 	double incremental_progress = 0.0;
@@ -384,7 +384,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 	double CUR2 = 0.0;
 	for (int i = 0; i < simSize; i++) {
 	#ifndef NO_PRINT
-			std::cout << '\r';
+			if(sOutput) std::cout << '\r';
 	#endif
 		RHS.clear();
 		rowCounter = 0;
@@ -642,19 +642,19 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 		progress = (int)(incremental_progress);
 	#ifndef NO_PRINT
 		if (progress > old_progress) {
-			std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
+			if(sOutput) std::cout << std::setw(3) << std::right << std::fixed << std::setprecision(0) << progress << "%";
 			pBar = "[";
 			for (int p = 0; p <= (int)(progress_increments * i); p++) {
 				pBar.append("=");
 			}
-			std::cout << std::setw(31) << std::left << pBar << "]";
+			if(sOutput) std::cout << std::setw(31) << std::left << pBar << "]";
 		}
 	#endif
 	}
 	#ifndef NO_PRINT
-	std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
+	if(sOutput) std::cout << "\r" << std::setw(3) << std::right << std::fixed << std::setprecision(0) << 100 << "%" << std::setw(31) << std::left << pBar << "]\n";
 	#else
-	std::cout << " done" << std::endl;
+	if(sOutput) std::cout << " done" << std::endl;
 	#endif
 
   klu_free_symbolic(&Symbolic, &Common);

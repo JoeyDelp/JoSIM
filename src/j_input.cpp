@@ -22,7 +22,7 @@ Input::read_input_file(std::string &fileName,
 		}
 	}
 	else {
-		Errors::error_handling(CANNOT_OPEN_FILE, fileName);
+		Errors::cli_errors(CANNOT_OPEN_FILE, fileName);
 		exit(-1);
 	}
 }
@@ -50,14 +50,14 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 						}
 					}
 					else {
-						std::cout << "E: Missing subcircuit io." << std::endl;
-						std::cout << "E: Please recheck the netlist and try again." <<std::endl;
+						std::cerr << "E: Missing subcircuit io." << std::endl;
+						std::cerr << "E: Please recheck the netlist and try again." <<std::endl;
 						exit(-1);
 					}
 				}
 				else {
-					std::cout << "E: Missing subcircuit name." << std::endl;
-					std::cout << "E: Please recheck the netlist and try again." <<std::endl;
+					std::cerr << "E: Missing subcircuit name." << std::endl;
+					std::cerr << "E: Please recheck the netlist and try again." <<std::endl;
 					exit(-1);
 				}
 			}
@@ -82,9 +82,9 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 			else {
 				if(!subckt) controls.push_back(fileLines.at(i));
 				else {
-					std::cout << "I: Subcircuit " << subcktName << " contains controls." << std::endl;
-					std::cout << "I: Controls are reserved for the main design." << std::endl;
-					std::cout << "I: These controls will be ignored." << std::endl;
+					std::cerr << "I: Subcircuit " << subcktName << " contains controls." << std::endl;
+					std::cerr << "I: Controls are reserved for the main design." << std::endl;
+					std::cerr << "I: These controls will be ignored." << std::endl;
 				}
 			}
 		}
@@ -101,9 +101,9 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 			else {
 				if(!subckt) controls.push_back(fileLines.at(i));
 				else {
-					std::cout << "I: Subcircuit " << subcktName << " contains controls." << std::endl;
-					std::cout << "I: Controls are reserved for the main design." << std::endl;
-					std::cout << "I: These controls will be ignored." << std::endl;
+					std::cerr << "I: Subcircuit " << subcktName << " contains controls." << std::endl;
+					std::cerr << "I: Controls are reserved for the main design." << std::endl;
+					std::cerr << "I: These controls will be ignored." << std::endl;
 				}
 			}
 		}
@@ -115,8 +115,8 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 		}
 	}
 	if(netlist.maindesign.empty()) {
-		std::cout << "E: Missing main design in netlist." << std::endl;
-		std::cout << "E: This design will not simulate without a main design." << std::endl;
+		std::cerr << "E: Missing main design in netlist." << std::endl;
+		std::cerr << "E: This design will not simulate without a main design." << std::endl;
 		exit(-1);
 	}
 }
@@ -177,8 +177,8 @@ Input::expand_subcircuits() {
 						}
 					}
 					else {
-						std::cout << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
-						std::cout << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
+						std::cerr << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
+						std::cerr << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
 						exit(-1);
 					}
 				}
@@ -234,8 +234,8 @@ Input::expand_maindesign() {
 				moddedLines.clear();
 			}
 			else {
-				std::cout << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
-				std::cout << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
+				std::cerr << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
+				std::cerr << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
 				exit(-1);
 			}
 		}

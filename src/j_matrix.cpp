@@ -59,9 +59,9 @@ Matrix::create_A_volt(Input &iObj) {
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
 				componentLabels.end()) {
 					if(label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) {
-						std::cout << "W: The use of special characters in label names is not advised." << std::endl;
-						std::cout << "W: This might produce unexpected results." << std::endl;
-						std::cout << "W: Continuing operation." << std::endl;
+						std::cerr << "W: The use of special characters in label names is not advised." << std::endl;
+						std::cerr << "W: This might produce unexpected results." << std::endl;
+						std::cerr << "W: Continuing operation." << std::endl;
 					}
 					componentLabels.push_back(label);
 				}
@@ -989,10 +989,10 @@ Matrix::create_A_volt(Input &iObj) {
 		/** PHASE SOURCE **/
 		/******************/
 		else if (i.first[0] == 'P') {
-			std::cout << "E: Phase source not allowed in voltage analysis." << std::endl;
-			std::cout << "E: Infringing line: " << i.first << std::endl;
-			std::cout << "E: Simulation will now terminate." << std::endl;
-			std::cout << std::endl;
+			std::cerr << "E: Phase source not allowed in voltage analysis." << std::endl;
+			std::cerr << "E: Infringing line: " << i.first << std::endl;
+			std::cerr << "E: Simulation will now terminate." << std::endl;
+			std::cerr << std::endl;
 			exit(-1);
 		}
 		/*********************/
@@ -1108,9 +1108,9 @@ Matrix::create_A_phase(Input &iObj) {
 			if (std::find(componentLabels.begin(), componentLabels.end(), label) ==
 				componentLabels.end()){
 					if(label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) {
-						std::cout << "W: The use of special characters in label names is not advised." << std::endl;
-						std::cout << "W: This might produce unexpected results." << std::endl;
-						std::cout << "W: Continuing operation." << std::endl;
+						std::cerr << "W: The use of special characters in label names is not advised." << std::endl;
+						std::cerr << "W: This might produce unexpected results." << std::endl;
+						std::cerr << "W: Continuing operation." << std::endl;
 					}
 					componentLabels.push_back(label);
 				}

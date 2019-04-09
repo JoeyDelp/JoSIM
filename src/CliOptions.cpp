@@ -7,122 +7,181 @@ using namespace JoSIM;
 
 CliOptions CliOptions::parse(int argc, const char **argv) {
   CliOptions out;
-
+  char swChar;
+  bool specArg = false;
+  int pos = 0;
+  std::string argument;
+  // If zero arguments are specified: complain
   if (argc <= 1) {
-    version_info();
-    Errors::error_handling(TOO_FEW_ARGUMENTS);
-  }
-
-  if (argv[argc - 1][0] == '-') {
-    if (argv[argc - 1][1] == 'h') {
-      version_info();
-      display_help();
-      exit(0);
-    } else if (argv[argc - 1][1] == 'v') {
-      version_info();
-      exit(0);
-    } else if (argv[argc - 1][1] == '-') {
-      if (argv[argc - 1][2] == 'h') {
-        version_info();
-        display_help();
-        exit(0);
-      } else if (argv[argc - 1][2] == 'v') {
-        version_info();
-        exit(0);
+    Errors::cli_errors(TOO_FEW_ARGUMENTS);
+  // If arguments are specified
+  } else {
+    // Loop through the arguments
+    for (int i = 1; i < argc; i++) {
+      // If the argument is a switch
+      if(argv[i][0] == '-') {
+        // If specific argument set tested char to 3rd char
+        if(argv[i][1] == '-') {
+          swChar = argv[i][2];
+          specArg = true;
+        }
+        // If not set tested char to 2nd char
+        else {
+          swChar = argv[i][1];
+          specArg = false;
+        }
+        switch(swChar) {
+          // Analysis switch
+          case 'a':
+            if(specArg) { 
+              argument = argv[i];
+              argument = argument.substr(argument.find('=') + 1);
+              if(argument == "0") out.analysis_type = AnalysisType::Voltage;
+              else if(argument == "1") out.analysis_type = AnalysisType::Phase;
+              else Errors::cli_errors(INVALID_ANALYSIS);
+            } else {
+              if(i != argc - 1) {
+                if(argv[i + 1][0] != '-') {
+                  if(std::strcmp(argv[i + 1],"0") == 0) out.analysis_type = AnalysisType::Voltage;
+                  else if(std::strcmp(argv[i + 1],"1") == 0) out.analysis_type = AnalysisType::Phase;
+                  else Errors::cli_errors(INVALID_ANALYSIS);
+                  i++;
+                } else
+                    Errors::cli_errors(NO_ANALYSIS);
+              } else
+                  Errors::cli_errors(NO_ANALYSIS);
+            }
+            break;
+          // Convention switch
+          case 'c':
+            // If specific argument, extract argument
+            if(specArg) { 
+              argument = argv[i];
+              argument = argument.substr(argument.find('=') + 1);
+              if(argument == "0") out.input_type = InputType::Jsim;
+              else if(argument == "1") out.input_type = InputType::WrSpice;
+              else Errors::cli_errors(INVALID_CONVENTION);
+            } else {
+              if(i != argc - 1) {
+                if(argv[i + 1][0] != '-') {
+                  if(std::strcmp(argv[i + 1],"0") == 0) out.input_type = InputType::Jsim;
+                  else if(std::strcmp(argv[i + 1],"1") == 0) out.input_type = InputType::WrSpice;
+                  else Errors::cli_errors(INVALID_CONVENTION);
+                  i++;
+                } else
+                    Errors::cli_errors(NO_CONVENTION);
+              } else
+                  Errors::cli_errors(NO_CONVENTION);
+            }
+            break;
+          // Help switch
+          case 'h':
+            display_help();
+            exit(0);
+          // Output file switch
+          case 'o':
+            out.output_to_file = true;
+            if(specArg) {
+              argument = argv[i];
+              if(argument.find('=') != std::string::npos) {
+                argument = argument.substr(argument.find('=') + 1);
+                out.output_file_name = argument;
+                std::cout << "Output file: " << out.output_file_name << std::endl;
+                  std::cout << std::endl;
+              } else {
+                out.output_file_type = FileOutputType::Csv;
+                out.output_file_name = "output.csv";
+                std::cout << "Output file: " << out.output_file_name << std::endl;
+                  std::cout << std::endl;
+              }
+              if (out.output_file_name.find('.') != std::string::npos) {
+                std::string outExt = out.output_file_name.substr(
+                    out.output_file_name.find_last_of('.'),
+                    out.output_file_name.size() - 1);
+                std::transform(outExt.begin(), outExt.end(), outExt.begin(),
+                              toupper);
+                if (outExt == ".CSV")
+                  out.output_file_type = FileOutputType::Csv;
+                else if (outExt == ".DAT")
+                  out.output_file_type = FileOutputType::Dat;
+                else
+                  out.output_file_type = FileOutputType::WrSpice;
+              } else
+                out.output_file_type = FileOutputType::WrSpice;
+            } else {
+              if(i != argc - 1) {
+                if(argv[i + 1][0] != '-') {
+                  out.output_file_name = argv[i + 1];
+                  std::cout << "Output file: " << out.output_file_name << std::endl;
+                  std::cout << std::endl;
+                  if (out.output_file_name.find('.') != std::string::npos) {
+                    std::string outExt = out.output_file_name.substr(
+                        out.output_file_name.find_last_of('.'),
+                        out.output_file_name.size() - 1);
+                    std::transform(outExt.begin(), outExt.end(), outExt.begin(),
+                                  toupper);
+                    if (outExt == ".CSV")
+                      out.output_file_type = FileOutputType::Csv;
+                    else if (outExt == ".DAT")
+                      out.output_file_type = FileOutputType::Dat;
+                    else
+                      out.output_file_type = FileOutputType::WrSpice;
+                  } else
+                    out.output_file_type = FileOutputType::WrSpice;
+                  i++;
+                } else {
+                    out.output_file_type = FileOutputType::Csv;
+                    out.output_file_name = "output.csv";
+                    std::cout << "Output file: " << out.output_file_name << std::endl;
+                  std::cout << std::endl;
+                    Errors::cli_errors(NO_OUTPUT);
+                }
+              } else {
+                  out.output_file_type = FileOutputType::Csv;
+                  out.output_file_name = "output.csv";
+                  std::cout << "Output file: " << out.output_file_name << std::endl;
+                  std::cout << std::endl;
+                  Errors::cli_errors(NO_OUTPUT);
+              }
+            }
+            break;
+          // Parallelization switch
+          case 'p':
+            #ifdef _OPENMP
+              std::cout << "Parallelization is ENABLED" << std::endl;
+            #else
+              std::cout << "Parallelization is DISABLED" << std::endl;
+            #endif
+            break;
+          // Verbose switch
+          case 'V':
+            out.verbose = true;
+            break;
+          // Version switch
+          case 'v':
+            if(specArg) {
+              argument = argv[i];
+              if(argument.find("version") != std::string::npos) exit(0);
+              else if(argument.find("verbose") != std::string::npos) out.verbose = true;
+              else Errors::cli_errors(UNKNOWN_SWITCH, argument);
+              break;
+            }
+            else exit(0);
+          // Specific option specifier
+          case '-':
+            
+            break;
+        }
+      // If the argument is not a switch it is the input file
       } else {
-        version_info();
-        Errors::error_handling(FINAL_ARG_SWITCH);
+        out.cir_file_name = argv[i];
+        std::cout << "Input file: " << out.cir_file_name << std::endl;
+        std::cout << std::endl;
       }
-    } 
-    else {
-      version_info();
-      Errors::error_handling(FINAL_ARG_SWITCH);
     }
-  } else if (argv[argc - 1][0] != '-' && argv[argc - 1][1] != 'h')
-    out.cir_file_name = argv[argc - 1];
-  else {
-    version_info();
-    Errors::error_handling(FINAL_ARG_SWITCH);
   }
 
-  version_info();
-  for (int i = 1; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      switch (argv[i][1]) {
-      case 'a':
-        if ((i + 1) == (argc - 1))
-          Errors::error_handling(TOO_FEW_ARGUMENTS);
-        else if (argv[i + 1][0] == '-')
-          Errors::error_handling(TOO_FEW_ARGUMENTS);
-        else {
-          try {
-            int argAnal = std::stoi(argv[i + 1]);
-            out.analysis_type = analysis_type_from_int(argAnal);
-          } catch (std::exception &e) {
-            Errors::error_handling(INVALID_ANALYSIS);
-          }
-        }
-        break;
-      case 'c':
-        if ((i + 1) == (argc - 1))
-          Errors::error_handling(TOO_FEW_ARGUMENTS);
-        else if (argv[i + 1][0] == '-')
-          Errors::error_handling(TOO_FEW_ARGUMENTS);
-        else {
-          try {
-            int argConv = std::stoi(argv[i + 1]);
-            out.input_type = input_type_from_int(argConv);
-          } catch (std::exception &e) {
-            Errors::error_handling(INVALID_CONVENTION);
-          }
-        }
-        break;
-      case 'h':
-        display_help();
-        break;
-      case 'o':
-        out.output_to_file = true;
-        if (((i + 1) == (argc - 1)) || (argv[i + 1][0] == '-')) {
-          out.output_file_name = out.cir_file_name;
-          out.output_file_name =
-              out.output_file_name.substr(
-                  0, out.output_file_name.find_last_of('.')) +
-              ".csv";
-          out.output_file_type = FileOutputType::Csv;
-        } else {
-          out.output_file_name = argv[i + 1];
-          if (out.output_file_name.find('.') != std::string::npos) {
-            std::string outExt = out.output_file_name.substr(
-                out.output_file_name.find_last_of('.'),
-                out.output_file_name.size() - 1);
-            std::transform(outExt.begin(), outExt.end(), outExt.begin(),
-                           toupper);
-            if (outExt == ".CSV")
-              out.output_file_type = FileOutputType::Csv;
-            else if (outExt == ".DAT")
-              out.output_file_type = FileOutputType::Dat;
-            else
-              out.output_file_type = FileOutputType::WrSpice;
-          } else
-            out.output_file_type = FileOutputType::WrSpice;
-        }
-        break;
-      case 'p':
-#ifdef _OPENMP
-        std::cout << "Parallelization is ENABLED" << std::endl;
-#else
-        std::cout << "Parallelization is DISABLED" << std::endl;
-#endif
-        break;
-      case 'V':
-        out.verbose = true;
-        break;
-      case 'v':
-        version_info();
-        exit(0);
-      }
-    }
-  }
+  if(out.cir_file_name.empty()) Errors::cli_errors(NO_INPUT);
 
   return out;
 }

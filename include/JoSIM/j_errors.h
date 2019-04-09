@@ -4,21 +4,13 @@
 #define J_ERRORS_H_
 #include "j_std_include.h"
 
-#define DEF_ERROR 0
-#define DEF_FILE_ERROR 1
-#define LOG_ERROR 2
-#define LOG_FILE_ERROR 3
-#define OUTPUT_ERROR 4
-#define OUTPUT_FILE_ERROR 5
-#define INPUT_ERROR 6
-#define INPUT_FILE_ERROR 7
+#define NO_ANALYSIS 0
+#define NO_CONVENTION 1
+#define NO_OUTPUT 2
+#define NO_INPUT 3
 #define UNKNOWN_SWITCH 8
 #define CANNOT_OPEN_FILE 9
-#define OUTPUT_LEGACY_ERROR 10
-#define OUTPUT_LEGACY_FILE_ERROR 11
 #define TOO_FEW_ARGUMENTS 12
-#define NO_PLOT_COMPILE 13
-#define FINAL_ARG_SWITCH 14
 #define INVALID_ANALYSIS 15
 #define INVALID_CONVENTION 16
 
@@ -110,7 +102,7 @@ class Errors {
 
 		static
 		void
-		error_handling(int errorCode, const std::string& whatPart = "");
+		cli_errors(int errorCode, const std::string& whatPart = "");
 
 		static
 		void
