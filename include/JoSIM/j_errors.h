@@ -8,11 +8,17 @@
 #define NO_CONVENTION 1
 #define NO_OUTPUT 2
 #define NO_INPUT 3
-#define UNKNOWN_SWITCH 8
-#define CANNOT_OPEN_FILE 9
-#define TOO_FEW_ARGUMENTS 12
-#define INVALID_ANALYSIS 15
-#define INVALID_CONVENTION 16
+#define UNKNOWN_SWITCH 4
+#define TOO_FEW_ARGUMENTS 5
+#define INVALID_ANALYSIS 6
+#define INVALID_CONVENTION 7
+
+#define CANNOT_OPEN_FILE 0
+#define MISSING_SUBCKT_IO 1
+#define MISSING_SUBCKT_NAME 2
+#define SUBCKT_CONTROLS 3
+#define MISSING_MAIN 4
+#define UNKNOWN_SUBCKT 5
 
 #define CAP_ERROR 0
 #define IND_ERROR 1
@@ -79,23 +85,10 @@
 #define INDUCTOR_CURRENT_NOT_FOUND 3
 #define MATRIX_SINGULAR 4
 
-#define NO_SUCH_PLOT_TYPE 0
-#define NO_SUCH_DEVICE_FOUND 1
-#define CURRENT_THROUGH_VOLTAGE_SOURCE 2
-#define NO_SUCH_NODE_FOUND 3
-#define TOO_MANY_NODES 4
-#define BOTH_ZERO 5
-#define VOLTAGE_IN_PHASE 6
-
 #define EXPRESSION_ARLEADY_DEFINED 0
 #define UNIDENTIFIED_PART 1
 #define MISMATCHED_PARENTHESIS 2
 #define INVALID_RPN 3
-
-#define NO_TRANSIENT_ANALYSIS 0
-#define NO_INPUT_SWEEP 1
-#define SOURCE_NOT_IDENTIFIED 2
-#define SWEEP_NOT_PWL 3
 
 class Errors {
 	public:
@@ -103,6 +96,10 @@ class Errors {
 		static
 		void
 		cli_errors(int errorCode, const std::string& whatPart = "");
+
+		static
+		void
+		input_errors(int errorCode, const std::string& whatPart = "");
 
 		static
 		void
@@ -134,14 +131,6 @@ class Errors {
 
 		static
 		void
-		plotting_errors(int errorCode, const std::string& whatPart);
-
-		static
-		void
 		parsing_errors(int errorCode, const std::string& whatPart);
-
-		static
-		void
-		iv_errors(int errorCode, const std::string& whatPart);
 };
 #endif

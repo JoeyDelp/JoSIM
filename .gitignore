@@ -298,6 +298,7 @@ build
 
 # Internal testing directories
 testint
+buildint
 
 doc/src
 *.dat

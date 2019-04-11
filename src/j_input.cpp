@@ -20,11 +20,8 @@ Input::read_input_file(std::string &fileName,
 			if (!line.empty() && !Misc::starts_with(line, '*'))
 				fileLines.push_back(line);
 		}
-	}
-	else {
-		Errors::cli_errors(CANNOT_OPEN_FILE, fileName);
-		exit(-1);
-	}
+	} else
+		Errors::input_errors(CANNOT_OPEN_FILE, fileName);
 }
 
 void
@@ -37,6 +34,8 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 	std::string subcktName = "";
 	std::vector<std::string> tokens;
 	for (int i = 0; i < fileLines.size(); i++) {
+		// If line starts with '.' it is a control but could be the start or end
+		// of a subcircuit section.
 		if(fileLines.at(i)[0] == '.') {
 			if(fileLines.at(i).find(".SUBCKT") != std::string::npos) {
 				subckt = true;
@@ -48,77 +47,64 @@ Input::split_netlist(std::vector<std::string> &fileLines,
 						for (int j = 2; j < tokens.size(); j++) {
 							netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
 						}
-					}
-					else {
-						std::cerr << "E: Missing subcircuit io." << std::endl;
-						std::cerr << "E: Please recheck the netlist and try again." <<std::endl;
-						exit(-1);
-					}
-				}
-				else {
-					std::cerr << "E: Missing subcircuit name." << std::endl;
-					std::cerr << "E: Please recheck the netlist and try again." <<std::endl;
-					exit(-1);
-				}
-			}
-			else if(fileLines.at(i).find(".PARAM") != std::string::npos) {
+					} else
+						Errors::input_errors(MISSING_SUBCKT_IO);
+				} else
+					Errors::input_errors(MISSING_SUBCKT_NAME);
+			// If parameter, add to unparsed parameters list
+			} else if(fileLines.at(i).find(".PARAM") != std::string::npos) {
 				if(subckt) parameters.unparsedParams.push_back(std::make_pair(subcktName, fileLines.at(i)));
 				else parameters.unparsedParams.push_back(std::make_pair("", fileLines.at(i)));
-			}
-			else if(fileLines.at(i).find(".CONTROL") != std::string::npos) {
+			// If control, set flag as start of controls
+			} else if(fileLines.at(i).find(".CONTROL") != std::string::npos)
 				control = true;
-			}
-			else if(fileLines.at(i).find(".ENDS") != std::string::npos) {
+			// End subcircuit, set flag
+			else if(fileLines.at(i).find(".ENDS") != std::string::npos)
 				subckt = false;
-			}
-			else if(fileLines.at(i).find(".ENDC") != std::string::npos) {
+			// End control section, set flag
+			else if(fileLines.at(i).find(".ENDC") != std::string::npos)
 				control = false;
-			}
+			// If model, add model to models list
 			else if(fileLines.at(i).find(".MODEL") != std::string::npos) {
 				tokens = Misc::tokenize_space(fileLines.at(i));
 				if(subckt) netlist.models[std::make_pair(tokens[1], subcktName)] = fileLines.at(i);
 				else netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
-			}
-			else {
+			// If neither of these, normal control, add to controls list
+			} else {
 				if(!subckt) controls.push_back(fileLines.at(i));
-				else {
-					std::cerr << "I: Subcircuit " << subcktName << " contains controls." << std::endl;
-					std::cerr << "I: Controls are reserved for the main design." << std::endl;
-					std::cerr << "I: These controls will be ignored." << std::endl;
-				}
+				else
+					Errors::input_errors(SUBCKT_CONTROLS, subcktName);
 			}
-		}
-		else if (control) {
-			if(fileLines.at(i).find(".PARAM") != std::string::npos) {
+		// If control section flag set
+		} else if (control) {
+			// If parameter, add to unparsed parameter list
+			if(fileLines.at(i).find("PARAM") != std::string::npos) {
 				if(subckt) parameters.unparsedParams.push_back(std::make_pair(subcktName, fileLines.at(i)));
 				else parameters.unparsedParams.push_back(std::make_pair("", fileLines.at(i)));
-			}
-			else if(fileLines.at(i).find(".MODEL") != std::string::npos) {
+			// If model, add to models list
+			} else if(fileLines.at(i).find("MODEL") != std::string::npos) {
 				tokens = Misc::tokenize_space(fileLines.at(i));
 				if(subckt) netlist.models[std::make_pair(tokens[1], subcktName)] = fileLines.at(i);
 				else netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
-			}
-			else {
+			// If neither, add to controls list
+			} else {
 				if(!subckt) controls.push_back(fileLines.at(i));
-				else {
-					std::cerr << "I: Subcircuit " << subcktName << " contains controls." << std::endl;
-					std::cerr << "I: Controls are reserved for the main design." << std::endl;
-					std::cerr << "I: These controls will be ignored." << std::endl;
-				}
+				else
+					Errors::input_errors(SUBCKT_CONTROLS, subcktName);
 			}
-		}
-		else {
+		// If not a control, normal device line
+		} else {
+			// If subcircuit flag, add line to relevant subcircuit
 			if (subckt)
 				netlist.subcircuits[subcktName].lines.push_back(std::make_pair(fileLines.at(i), subcktName));
+			// If not, add line to main design
 			else
 				netlist.maindesign.push_back(fileLines.at(i));
 		}
 	}
-	if(netlist.maindesign.empty()) {
-		std::cerr << "E: Missing main design in netlist." << std::endl;
-		std::cerr << "E: This design will not simulate without a main design." << std::endl;
-		exit(-1);
-	}
+	// If main is empty, complain
+	if(netlist.maindesign.empty())
+		Errors::input_errors(MISSING_MAIN);
 }
 
 void
@@ -143,8 +129,7 @@ Input::expand_subcircuits() {
 					if(argConv == InputType::Jsim) /* LEFT */ {
 						subcktName = tokens.at(1);
 						io.assign(tokens.begin() + 2, tokens.end());
-					}
-					else if (argConv == InputType::WrSpice) /* RIGHT */ {
+					} else if (argConv == InputType::WrSpice) /* RIGHT */ {
 						subcktName = tokens.back();
 						io.assign(tokens.begin() + 1, tokens.end() - 1);
 					}
@@ -155,16 +140,20 @@ Input::expand_subcircuits() {
 								tokens[0] = tokens[0] + "|" + label;
 								if(std::count(netlist.subcircuits.at(subcktName).io.begin(), netlist.subcircuits.at(subcktName).io.end(), tokens[1]) != 0) {
 									for(int l = 0; l < netlist.subcircuits.at(subcktName).io.size(); l++) {
-										if(tokens[1] == netlist.subcircuits.at(subcktName).io.at(l)) tokens[1] = io.at(l);
+										if(tokens[1] == netlist.subcircuits.at(subcktName).io.at(l)) {
+											tokens[1] = io.at(l);
+											break;
+										}
 									}
-								}
-								else if (tokens[1] != "0" && tokens[1] != "GND") tokens[1] = tokens[1] + "|" + label;
+								} else if (tokens[1] != "0" && tokens[1] != "GND") tokens[1] = tokens[1] + "|" + label;
 								if(std::count(netlist.subcircuits.at(subcktName).io.begin(), netlist.subcircuits.at(subcktName).io.end(), tokens[2]) != 0) {
 									for(int l = 0; l < netlist.subcircuits.at(subcktName).io.size(); l++) {
-										if(tokens[2] == netlist.subcircuits.at(subcktName).io.at(l)) tokens[2] = io.at(l);
+										if(tokens[2] == netlist.subcircuits.at(subcktName).io.at(l)) {
+											tokens[2] = io.at(l);
+											break;
+										}
 									}
-								}
-								else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
+								} else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
 								line = tokens[0];
 								for (int m = 1; m < tokens.size(); m++) line += " " + tokens.at(m);
 								moddedLines.push_back(std::make_pair(line, netlist.subcircuits.at(subcktName).lines.at(k).second));
@@ -175,12 +164,8 @@ Input::expand_subcircuits() {
 							netlist.nestedSubcktCount--;
 							netlist.subcircuits.at(i.first).containsSubckt = false;
 						}
-					}
-					else {
-						std::cerr << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
-						std::cerr << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
-						exit(-1);
-					}
+					} else 
+						Errors::input_errors(UNKNOWN_SUBCKT, subcktName);
 				}
 			}
 		}
@@ -199,8 +184,7 @@ Input::expand_maindesign() {
 			if(argConv == InputType::Jsim) /* LEFT */ {
 				subcktName = tokens.at(1);
 				io.assign(tokens.begin() + 2, tokens.end());
-			}
-			else if (argConv == InputType::WrSpice) /* RIGHT */ {
+			} else if (argConv == InputType::WrSpice) /* RIGHT */ {
 				subcktName = tokens.back();
 				io.assign(tokens.begin() + 1, tokens.end() - 1);
 			}
@@ -215,8 +199,7 @@ Input::expand_maindesign() {
 								break;
 							} 
 						}
-					}
-					else if (tokens[1] != "0" && tokens[1] != "GND") tokens[1] = tokens[1] + "|" + label;
+					} else if (tokens[1] != "0" && tokens[1] != "GND") tokens[1] = tokens[1] + "|" + label;
 					if(std::count(netlist.subcircuits.at(subcktName).io.begin(), netlist.subcircuits.at(subcktName).io.end(), tokens[2]) != 0) {
 						for(int l = 0; l < netlist.subcircuits.at(subcktName).io.size(); l++) {
 							if(tokens[2] == netlist.subcircuits.at(subcktName).io.at(l)) {
@@ -224,23 +207,16 @@ Input::expand_maindesign() {
 								break;
 							}
 						}
-					}
-					else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
+					} else if (tokens[2] != "0" && tokens[2] != "GND") tokens[2] = tokens[2] + "|" + label;
 					line = tokens[0];
 					for (int m = 1; m < tokens.size(); m++) line += " " + tokens.at(m);
 					moddedLines.push_back(std::make_pair(line, netlist.subcircuits.at(subcktName).lines.at(k).second));
 				}
 				expNetlist.insert(expNetlist.end(), moddedLines.begin(), moddedLines.end());
 				moddedLines.clear();
-			}
-			else {
-				std::cerr << "E: The subcircuit named " << subcktName << " was not found in the netlist." << std::endl;
-				std::cerr << "E: Please ensure all subcircuits exist and are correctly named." << std::endl;
-				exit(-1);
-			}
-		}
-		else {
+			} else 
+				Errors::input_errors(UNKNOWN_SUBCKT, subcktName);
+		} else
 			expNetlist.push_back(std::make_pair(netlist.maindesign.at(i), ""));
-		}
 	}
 }

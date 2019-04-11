@@ -23,14 +23,6 @@ Errors::cli_errors(int errorCode, const std::string& whatPart) {
 		std::cerr << "W: Unknown option " << whatPart << " specified. Please refer to the help menu."
 			<< std::endl;
 		break;
-	case CANNOT_OPEN_FILE:
-		std::cerr << "E: Input file " << whatPart
-			<< " cannot be found or opened." << std::endl;
-		std::cerr << "E: Please ensure that the file exists and can be opened."
-			<< std::endl;
-				std::cerr << std::endl;
-		std::cerr << "I: For further help use the -h switch" << std::endl;
-		exit(-1);
 	case TOO_FEW_ARGUMENTS:
 		std::cerr << "E: Missing input arguments" << std::endl;
 		std::cerr << "E: Usage: josim [options] input_netlist" << std::endl;
@@ -69,6 +61,53 @@ Errors::cli_errors(int errorCode, const std::string& whatPart) {
 		std::cerr << "E: Unknown handling error." << std::endl;
 		std::cerr << "E: Please contact the developer." << std::endl;
 		std::cerr << std::endl;
+		exit(-1);
+	}
+}
+
+void
+Errors::input_errors(int errorCode, const std::string& whatPart) {
+	switch(errorCode) {
+	case CANNOT_OPEN_FILE:
+		std::cerr << "E: Input file " << whatPart
+			<< " cannot be found or opened." << std::endl;
+		std::cerr << "E: Please ensure that the file exists and can be opened."
+			<< std::endl;
+		std::cerr << std::endl;
+		std::cerr << "I: For further help use the -h switch" << std::endl;
+		exit(-1);
+	case MISSING_SUBCKT_IO:
+		std::cerr << "E: Missing subcircuit io." 
+			<< std::endl;
+		std::cerr << "E: Please recheck the netlist and try again." 
+			<<std::endl;
+		std::cerr << std::endl;
+		exit(-1);
+	case MISSING_SUBCKT_NAME:
+		std::cerr << "E: Missing subcircuit name." 
+			<< std::endl;
+		std::cerr << "E: Please recheck the netlist and try again." 
+			<<std::endl;
+		exit(-1);
+	case SUBCKT_CONTROLS:
+		std::cerr << "W: Subcircuit " << whatPart << " contains controls." 
+			<< std::endl;
+		std::cerr << "W: Controls are reserved for the main design." 
+			<< std::endl;
+		std::cerr << "W: These controls will be ignored." 
+			<< std::endl;
+		break;
+	case MISSING_MAIN:
+		std::cerr << "E: Missing main design in netlist." 
+			<< std::endl;
+		std::cerr << "E: This design will not simulate without a main design." 
+			<< std::endl;
+		exit(-1);
+	case UNKNOWN_SUBCKT:
+		std::cerr << "E: The subcircuit named " << whatPart 
+			<< " was not found in the netlist." << std::endl;
+		std::cerr << "E: Please ensure all subcircuits exist and are correctly named." 
+			<< std::endl;
 		exit(-1);
 	}
 }
@@ -235,8 +274,7 @@ Errors::model_errors(int errorCode, const std::string& whatPart) {
 }
 
 void
-Errors::matrix_errors(int errorCode, const std::string& whatPart)
-{
+Errors::matrix_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case NON_SQUARE:
 		std::cerr << "E: Matrix is not square. Dimensions are " << whatPart
@@ -253,8 +291,7 @@ Errors::matrix_errors(int errorCode, const std::string& whatPart)
 }
 
 [[noreturn]] void
-Errors::misc_errors(int errorCode, const std::string& whatPart)
-{
+Errors::misc_errors(int errorCode, const std::string& whatPart) {
 	switch (errorCode) {
 	case STOD_ERROR:
 		std::cerr << "E: Cannot convert string to double: " << whatPart
@@ -430,67 +467,6 @@ Errors::simulation_errors(int errorCode, const std::string& whatPart) {
 		exit(-1);
 	}
 }
-/*
-
-*/
-void
-Errors::plotting_errors(int errorCode, const std::string& whatPart) {
-	switch (errorCode) {
-	case NO_SUCH_PLOT_TYPE:
-		std::cerr << "W: Unknown plot type defined. " << whatPart
-			<< " is not a valid plot type." << std::endl;
-		std::cerr << "W: This request to print will be ignored." << std::endl;
-		std::cerr << std::endl;
-		break;
-	case NO_SUCH_DEVICE_FOUND:
-		std::cerr << "W: Device " << whatPart
-			<< " was not found in the device stack." << std::endl;
-		std::cerr << "W: This request to print will be ignored." << std::endl;
-		std::cerr << std::endl;
-		break;
-	case CURRENT_THROUGH_VOLTAGE_SOURCE:
-		std::cerr << "W: Attempting to find the current through " << whatPart
-			<< " which is a voltage source." << std::endl;
-		std::cerr << "W: This request to print will be ignored." << std::endl;
-		std::cerr << std::endl;
-		break;
-	case NO_SUCH_NODE_FOUND:
-		std::cerr << "W: Node " << whatPart
-			<< " was not found within this circuit." << std::endl;
-		std::cout
-			<< "W: Please check that the node exists. This request will be ignored."
-			<< std::endl;
-		std::cerr << std::endl;
-		break;
-	case TOO_MANY_NODES:
-		std::cerr << "W: Too many nodes specified to plot in line " << whatPart
-			<< "." << std::endl;
-		std::cout
-			<< "W: Please only specify 2 nodes. Anything more will be ignored."
-			<< std::endl;
-		std::cerr << std::endl;
-		break;
-	case BOTH_ZERO:
-		std::cerr << "W: Both nodes cannot be grounded. This command " << whatPart
-			<< " not plot anything." << std::endl;
-		std::cerr << "W: Please specify at least one non grounded node. This "
-			"command will be ignored."
-			<< std::endl;
-		std::cerr << std::endl;
-		break;
-	case VOLTAGE_IN_PHASE:
-		std::cerr << "W: Attempting to plot voltage in phase mode simulation with line: " << std::endl;
-		std::cerr << "W: " << whatPart << std::endl;
-		std::cerr << "W: Voltage was not solved in this simulation. Unable to plot voltage." << std::endl;
-		std::cerr << std::endl;
-		break;
-	default:
-		std::cerr << "E: Unknown plotting error: " << whatPart << std::endl;
-		std::cerr << "E: Please contact the developer." << std::endl;
-		std::cerr << std::endl;
-		exit(-1);
-	}
-}
 
 void
 Errors::parsing_errors(int errorCode, const std::string& whatPart) {
@@ -526,43 +502,6 @@ Errors::parsing_errors(int errorCode, const std::string& whatPart) {
 		exit(-1);
 	default:
 		std::cerr << "E: Unknown parsing error: " << whatPart << std::endl;
-		std::cerr << "E: Please contact the developer." << std::endl;
-		std::cerr << std::endl;
-		exit(-1);
-	}
-}
-
-void
-Errors::iv_errors(int errorCode, const std::string& whatPart) {
-	switch(errorCode) {
-	case NO_TRANSIENT_ANALYSIS:
-		std::cerr << "E: No transient analysis specified. IV curve generation cannot continue."
-		<< std::endl;
-		std::cerr << "E: Please include a transient analysis. See manual for more details."
-		<< std::endl;
-		std::cerr << std::endl;
-		exit(-1);
-	case NO_INPUT_SWEEP:
-		std::cerr << "E: No input sweep specified. IV curve generation cannot continue."
-		<< std::endl;
-		std::cerr << "E: Please specify a sweep. See manual for more details."
-		<< std::endl;
-		std::cerr << std::endl;
-		exit(-1);
-	case SOURCE_NOT_IDENTIFIED:
-		std::cerr << "E: Invalid source specified to sweep. Please ensure correct sweep label."
-		<< std::endl;
-		std::cerr << std::endl;
-		exit(-1);
-	case SWEEP_NOT_PWL:
-		std::cerr << "W: Sweep not PWL. For IV curve please sweep PWL."
-		<< std::endl;
-		std::cerr << "W: Infringing sweep: " << whatPart << std::endl;
-		std::cerr << "W: Ignoring sweep." << std::endl;
-		std::cerr << std::endl;
-		break;
-	default:
-		std::cerr << "E: Unknown IV curve error: " << whatPart << std::endl;
 		std::cerr << "E: Please contact the developer." << std::endl;
 		std::cerr << std::endl;
 		exit(-1);

@@ -189,60 +189,90 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
 void CliOptions::display_help() {
   std::cout << "JoSIM help interface\n";
   std::cout << "====================\n";
-  std::cout << std::setw(13) << std::left << "-a(nalysis)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-a" << std::setw(3)
             << std::left << "|"
             << "Specifies the analysis type." << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(13) << std::left << "--analysis=" << std::setw(3) << std::left
             << "|"
             << "0 for Voltage analysis (Default)." << std::endl;
   std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
             << "|"
             << "1 for Phase analysis." << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-c(onvention)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-c" << std::setw(3)
             << std::left << "|"
             << "Sets the subcircuit convention to left(0) or right(1)."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(13) << std::left << "--convention=" << std::setw(3) << std::left
             << "|"
             << "Default is left. WRSpice (normal SPICE) use right."
             << std::endl;
   std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
             << "|"
             << "Eg. X01 SUBCKT 1 2 3     vs.     X01 1 2 3 SUBCKT" << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-h(elp)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-h" << std::setw(3)
             << std::left << "|"
             << "Displays this help menu" << std::endl;
+  std::cout << std::setw(13) << std::left << "--help" << std::setw(3)
+            << std::left << "|"
+            << " " << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-o(utput)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-o" << std::setw(3)
             << std::left << "|"
             << "Specify output file for simulation results (.csv)."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(13) << std::left << "--output=" << std::setw(3) << std::left
             << "|"
             << "Default will be output.csv if no file is specified."
             << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-p(arallel)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-p" << std::setw(3)
             << std::left << "|"
             << "(EXPERIMENTAL) Enables parallelization of certain functions."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(13) << std::left << "--parallel" << std::setw(3) << std::left
             << "|"
             << "Requires compilation with OPENMP switch enabled." << std::endl;
   std::cout
       << std::setw(13) << std::left << "  " << std::setw(3) << std::left << "|"
       << "Threshold applies, overhead on small circuits negates performance."
       << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-V(erbose)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-V" << std::setw(3)
             << std::left << "|"
             << "Runs JoSIM in verbose mode." << std::endl;
+  std::cout << std::setw(13) << std::left << "--verbose" << std::setw(3)
+            << std::left << "|"
+            << " " << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-v(ersion)" << std::setw(3)
+  std::cout << std::setw(13) << std::left << "-v" << std::setw(3)
             << std::left << "|"
             << "Displays the JoSIM version info only." << std::endl;
+  std::cout << std::setw(13) << std::left << "--version" << std::setw(3)
+          << std::left << "|"
+          << " " << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3)
+            << std::left << "|"
+            << std::endl;
 
   std::cout << std::endl;
   std::cout << "Example command: josim -o ./output.csv test.cir"
