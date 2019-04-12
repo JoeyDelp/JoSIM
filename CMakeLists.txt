@@ -75,9 +75,6 @@ include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 target_add_warnings(josim)
 target_add_warnings(josim-cli)
 
-# Create python bindings
-add_subdirectory(python)
-
 # set_target_properties( josim-cli PROPERTIES OUTPUT_NAME
 # ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
 # set(EXECUTABLE_NAME
