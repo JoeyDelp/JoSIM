@@ -1,23 +1,15 @@
-# SpecIFy the minimum version for CMake
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-# The version number.
-set(JoSIM_VERSION "2.3")
-
-# Project name
-project(JoSIM VERSION ${JoSIM_VERSION})
+project(JoSIM VERSION 2.3)
 
 include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-
-# Ensure C++14
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # See if OpenMP was specified
 option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
@@ -30,17 +22,9 @@ endif()
 # CMake utils
 include(${PROJECT_SOURCE_DIR}/cmake/suitesparse.cmake)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  set(PLATFORM "win")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(PLATFORM "linux")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(PLATFORM "mac")
-else()
-  message(SEND_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
-endif()
+# JoSIM library
+# -------------
 
-# Add JoSIM library
 add_library(josim
             src/CliOptions.cpp
             src/j_simulation.cpp
@@ -53,33 +37,75 @@ add_library(josim
             src/j_parser.cpp
             src/j_verbose.cpp)
 
-target_include_directories(josim PUBLIC ${PROJECT_SOURCE_DIR}/include)
+# Include directories
+target_include_directories(josim PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+# Dependencies
 target_link_libraries(josim PUBLIC suitesparse::klu)
+
+# Properties
 set_target_properties(josim
                       PROPERTIES POSITION_INDEPENDENT_CODE
                                  ON)
 make_target_static(josim)
+target_add_warnings(josim)
+target_compile_features(josim PUBLIC cxx_std_14)
 
+# OpenMP usage
 if(USING_OPENMP)
   find_package(OpenMP REQUIRED)
   target_link_libraries(josim PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-# Add JoSIM executable
-add_executable(josim-cli src/josim.cpp)
-target_link_libraries(josim-cli PRIVATE josim)
-make_target_static(josim-cli)
+# JoSIM command line interface
+# ----------------------------
 
-# add compiler warnings
-include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
-target_add_warnings(josim)
+add_executable(josim-cli src/josim.cpp)
+
+# Dependencies
+target_link_libraries(josim-cli PRIVATE josim)
+
+# Properties
+make_target_static(josim-cli)
 target_add_warnings(josim-cli)
 
-# set_target_properties( josim-cli PROPERTIES OUTPUT_NAME
-# ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
-# set(EXECUTABLE_NAME
-# ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
+# Testing
+# -------
 
-enable_testing()
+# Neccesary includes
+include(CTest)
 include(${PROJECT_SOURCE_DIR}/cmake/integration_test.cmake)
+
+# Enable testing
+enable_testing()
+
+# Add tests
 add_subdirectory(test)
+
+# Install
+# -------
+
+# Get install locations
+include(GNUInstallDirs)
+
+# Install headers
+install(DIRECTORY include/JoSIM DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM")
+
+# Install targets
+install(TARGETS
+    josim
+    josim-cli
+  EXPORT josim-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
+
+install(EXPORT josim-targets
+  FILE josim-config.cmake
+  NAMESPACE josim::
+  DESTINATION share/josim/
+)
