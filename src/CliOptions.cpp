@@ -4,6 +4,8 @@
 #include "JoSIM/j_globals.h"
 #include <cstring>
 
+#include <cstring>
+
 using namespace JoSIM;
 
 CliOptions CliOptions::parse(int argc, const char **argv) {

@@ -42,7 +42,7 @@ class JoSIM(ConanFile):
         cmake.install()
 
     def build_requirements(self):
-        self.build_requires("pybind11/2.2.3@conan/stable")
+        pass
 
     def imports(self):
         self.copy("*.dll", "", src="bin")
