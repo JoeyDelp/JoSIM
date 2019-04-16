@@ -1,6 +1,8 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
+Testing: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Release?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=2&branchName=testing)
+
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120).
 
 JoSIM is a SPICE syntax circuit simulator specifically created to handle superconducting elements such as the Josephson junction. It reads in a standard SPICE deck, creates an A matrix and solves the linear algebra problem Ax=b. The linear algebra package KLU is used to solve the system of equations.
