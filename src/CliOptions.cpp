@@ -2,6 +2,7 @@
 
 #include "JoSIM/j_errors.h"
 #include "JoSIM/j_globals.h"
+#include <cstring>
 
 using namespace JoSIM;
 

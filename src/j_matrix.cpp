@@ -878,6 +878,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cName);
 				e.rowIndex = rowMap.at(rNameP);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].curN1Col = e.colIndex;
 				components.txLine[Tx].posNRow = e.rowIndex;
 				e.value = 1;
@@ -885,6 +886,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cNameP);
 				e.rowIndex = rowMap.at(rName);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].posNCol = e.colIndex;
 				components.txLine[Tx].curN1Row = e.rowIndex;
 				e.value = 1;
@@ -893,6 +895,7 @@ Matrix::create_A_volt(Input &iObj) {
 					e.label = label;
 					e.colIndex = columnMap.at(cName);
 					e.rowIndex = rowMap.at(rNameN);
+					if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 					components.txLine[Tx].curN1Col = e.colIndex;
 					components.txLine[Tx].negNRow = e.rowIndex;
 					e.value = -1;
@@ -900,6 +903,7 @@ Matrix::create_A_volt(Input &iObj) {
 					e.label = label;
 					e.colIndex = columnMap.at(cNameN);
 					e.rowIndex = rowMap.at(rName);
+					if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 					components.txLine[Tx].negNCol = e.colIndex;
 					components.txLine[Tx].curN1Row = e.rowIndex;
 					e.value = -1;
@@ -910,6 +914,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cName);
 				e.rowIndex = rowMap.at(rNameN);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].curN1Col = e.colIndex;
 				components.txLine[Tx].negNRow = e.rowIndex;
 				e.value = -1;
@@ -917,6 +922,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cNameN);
 				e.rowIndex = rowMap.at(rName);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].negNCol = e.colIndex;
 				components.txLine[Tx].curN1Row = e.rowIndex;
 				e.value = -1;
@@ -925,6 +931,7 @@ Matrix::create_A_volt(Input &iObj) {
 			e.label = label;
 			e.colIndex = columnMap.at(cName);
 			e.rowIndex = rowMap.at(rName);
+			if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 			components.txLine[Tx].curN1Col = e.colIndex;
 			components.txLine[Tx].curN1Row = e.rowIndex;
 			e.value = -z0;
@@ -933,6 +940,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cName2);
 				e.rowIndex = rowMap.at(rNameP2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].curN2Col = e.colIndex;
 				components.txLine[Tx].posN2Row = e.rowIndex;
 				e.value = 1;
@@ -940,6 +948,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cNameP2);
 				e.rowIndex = rowMap.at(rName2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].posN2Col = e.colIndex;
 				components.txLine[Tx].curN2Row = e.rowIndex;
 				e.value = 1;
@@ -948,6 +957,7 @@ Matrix::create_A_volt(Input &iObj) {
 					e.label = label;
 					e.colIndex = columnMap.at(cName2);
 					e.rowIndex = rowMap.at(rNameN2);
+					if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 					components.txLine[Tx].curN2Col = e.colIndex;
 					components.txLine[Tx].negN2Row = e.rowIndex;
 					e.value = -1;
@@ -955,6 +965,7 @@ Matrix::create_A_volt(Input &iObj) {
 					e.label = label;
 					e.colIndex = columnMap.at(cNameN2);
 					e.rowIndex = rowMap.at(rName2);
+					if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 					components.txLine[Tx].negN2Col = e.colIndex;
 					components.txLine[Tx].curN2Row = e.rowIndex;
 					e.value = -1;
@@ -965,6 +976,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cName2);
 				e.rowIndex = rowMap.at(rNameN2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].curN2Col = e.colIndex;
 				components.txLine[Tx].negN2Row = e.rowIndex;
 				e.value = -1;
@@ -972,6 +984,7 @@ Matrix::create_A_volt(Input &iObj) {
 				e.label = label;
 				e.colIndex = columnMap.at(cNameN2);
 				e.rowIndex = rowMap.at(rName2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txLine[Tx].negN2Col = e.colIndex;
 				components.txLine[Tx].curN2Row = e.rowIndex;
 				e.value = -1;
@@ -980,6 +993,7 @@ Matrix::create_A_volt(Input &iObj) {
 			e.label = label;
 			e.colIndex = columnMap.at(cName2);
 			e.rowIndex = rowMap.at(rName2);
+			if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 			components.txLine[Tx].curN2Col = e.colIndex;
 			components.txLine[Tx].curN2Row = e.rowIndex;
 			e.value = -z0;
@@ -1831,11 +1845,13 @@ Matrix::create_A_phase(Input &iObj) {
 			if (!pGND) {
 				e.colIndex = columnMap.at(cNameP);
 				e.rowIndex = rowMap.at(rName1);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].posNCol = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.colIndex = columnMap.at(cName1);
 				e.rowIndex = rowMap.at(rNameP);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].posNRow = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
@@ -1843,11 +1859,13 @@ Matrix::create_A_phase(Input &iObj) {
 			if(!nGND) {
 				e.colIndex = columnMap.at(cNameN);
 				e.rowIndex = rowMap.at(rName1);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].negNCol = e.colIndex;
 				e.value = -1;
 				mElements.push_back(e);
 				e.colIndex = columnMap.at(cName1);
 				e.rowIndex = rowMap.at(rNameN);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].negNRow = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
@@ -1855,11 +1873,13 @@ Matrix::create_A_phase(Input &iObj) {
 			if (!p2GND) {
 				e.colIndex = columnMap.at(cNameP2);
 				e.rowIndex = rowMap.at(rName2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].posN2Col = e.colIndex;
 				e.value = 1;
 				mElements.push_back(e);
 				e.colIndex = columnMap.at(cName2);
 				e.rowIndex = rowMap.at(rNameP2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].posN2Row = e.rowIndex;
 				e.value = 1;
 				mElements.push_back(e);
@@ -1868,10 +1888,12 @@ Matrix::create_A_phase(Input &iObj) {
 				e.colIndex = columnMap.at(cNameN2);
 				components.txPhase[tl].negN2Col = e.colIndex;
 				e.rowIndex = rowMap.at(rName2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				e.value = -1;
 				mElements.push_back(e);
 				e.colIndex = columnMap.at(cName2);
 				e.rowIndex = rowMap.at(rNameN2);
+				if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 				components.txPhase[tl].negN2Row = e.rowIndex;
 				e.value = -1;
 				mElements.push_back(e);
@@ -1879,6 +1901,7 @@ Matrix::create_A_phase(Input &iObj) {
 			e.label = label;
 			e.colIndex = columnMap.at(cName1);
 			e.rowIndex = rowMap.at(rName1);
+			if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 			components.txPhase[tl].curN1Col = e.colIndex;
 			components.txPhase[tl].curN1Row = e.rowIndex;
 			e.value = -(M_PI * iObj.transSim.prstep * components.txPhase[tl].value) / (PHI_ZERO);
@@ -1886,6 +1909,7 @@ Matrix::create_A_phase(Input &iObj) {
 			e.label = label;
 			e.colIndex = columnMap.at(cName2);
 			e.rowIndex = rowMap.at(rName2);
+			if(std::find(relXInd.begin(), relXInd.end(), e.rowIndex) == relXInd.end()) relXInd.push_back(e.rowIndex);
 			components.txPhase[tl].curN2Col = e.colIndex;
 			components.txPhase[tl].curN2Row = e.rowIndex;
 			e.value = -(M_PI * iObj.transSim.prstep * components.txPhase[tl].value) / (PHI_ZERO);
@@ -2056,5 +2080,942 @@ Matrix::create_CSR() {
 			colind.push_back(j.first);
 		}
 		rowptr.push_back(rowptr.back() + i.size());
+	}
+}
+
+void
+Matrix::find_relevant_x(Input &iObj) {
+	std::vector<std::string> tokens, tokens2;
+	std::string label, label2;
+	int index1, index2;
+	for (const auto& i : iObj.controls) {
+		if(i.find("PRINT") != std::string::npos) {
+			if(i.at(0) == '.') iObj.relevantX.push_back(i.substr(1));
+			else iObj.relevantX.push_back(i);
+		} else if(i.find("PLOT") != std::string::npos) {
+			if(i.at(0) == '.') iObj.relevantX.push_back(i.substr(1));
+			else iObj.relevantX.push_back(i);
+		} else if(i.find("SAVE") != std::string::npos) {
+			if(i.at(0) == '.') iObj.relevantX.push_back(i.substr(1));
+				else iObj.relevantX.push_back(i);
+		}
+	}
+	std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
+	auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
+	iObj.relevantX.erase(last, iObj.relevantX.end());
+	for (const auto& i : iObj.relevantX) {
+		if(i.find("PRINT") != std::string::npos) {
+			tokens = Misc::tokenize_space(i);
+			if(tokens.at(1) == "DEVI") {
+				label = tokens.at(2);
+				if(label.find('_') != std::string::npos) {
+					tokens = Misc::tokenize_delimeter(label, "_");
+					label = tokens.back();
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+				}
+				else if(label.find('.') != std::string::npos) {
+					std::replace(label.begin(), label.end(), '.', '|');
+				}
+				switch(label[0]) {
+					case 'R':
+						if(components.voltRes.count(label) != 0) {
+							if(components.voltRes.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).negNCol);}
+							} else if(components.voltRes.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).posNCol);}
+							} else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).negNCol);}
+							}
+						} else if(components.phaseRes.count(label) != 0)
+							if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).curNCol) == relXInd.end()){
+								relXInd.push_back(components.phaseRes.at(label).curNCol);}
+						break;
+					case 'L':
+						if(components.voltInd.count(label) != 0) {
+							if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).curNCol) == relXInd.end()){
+								relXInd.push_back(components.voltInd.at(label).curNCol);}
+						}
+						else if(components.phaseInd.count(label) != 0) {
+							if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).curNCol) == relXInd.end()){
+								relXInd.push_back(components.phaseInd.at(label).curNCol);}
+						}
+						break;
+					case 'C':
+						if(components.voltCap.count(label) != 0) {
+							if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).curNCol) == relXInd.end()){
+								relXInd.push_back(components.voltCap.at(label).curNCol);}
+						}
+						else if(components.phaseCap.count(label) != 0) {
+							if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).curNCol) == relXInd.end()){
+								relXInd.push_back(components.phaseCap.at(label).curNCol);}
+						}
+						break;
+				}
+			} else if(tokens.at(1) == "DEVV") {
+				label = tokens.at(2);
+				if(label.find('_') != std::string::npos) {
+					tokens = Misc::tokenize_delimeter(label, "_");
+					label = tokens.back();
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+				} else if(label.find('.') != std::string::npos)
+					std::replace(label.begin(), label.end(), '.', '|');
+				switch(label[0]) {
+					case 'R':
+						if(components.voltRes.count(label) != 0) {
+							if(components.voltRes.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).negNCol);}
+							}
+							else if(components.voltRes.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltRes.at(label).negNCol);}
+							}
+						}
+						else if(components.phaseRes.count(label) != 0) {
+							if(components.phaseRes.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).negNCol);}
+							}
+							else if(components.phaseRes.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).negNCol);}
+							}
+						}
+						break;
+					case 'L':
+						if(components.voltInd.count(label) != 0) {
+							if(components.voltInd.at(label).posNCol == -1) { 
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltInd.at(label).negNCol);}
+							}
+							else if(components.voltInd.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltInd.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltInd.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltInd.at(label).negNCol);}
+							}
+						}
+						else if(components.phaseInd.count(label) != 0) {
+							if(components.phaseInd.at(label).posNCol == -1) { 
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).negNCol);}
+							}
+							else if(components.phaseInd.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).negNCol);}
+							}
+						}
+						break;
+					case 'C':
+						if(components.voltCap.count(label) != 0) {
+							if(components.voltCap.at(label).posNCol == -1) { 
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltCap.at(label).negNCol);}
+							}
+							else if(components.voltCap.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltCap.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltCap.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltCap.at(label).negNCol);}
+							}
+						}
+						else if(components.phaseCap.count(label) != 0) {
+							if(components.phaseCap.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).negNCol);}
+							}
+							else if(components.phaseCap.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).negNCol);}
+							}
+						}
+						break;
+					case 'B':
+						if(components.voltJJ.count(label) != 0) {
+							if(components.voltJJ.at(label).posNCol == -1) { 
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltJJ.at(label).negNCol);}
+							}
+							else if(components.voltJJ.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltJJ.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.voltJJ.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.voltJJ.at(label).negNCol);}
+							}
+						}
+						else if(components.phaseJJ.count(label) != 0) {
+							if(components.phaseJJ.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+							}
+							else if(components.phaseJJ.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+							}
+						}
+						break;
+				}
+			} else if(tokens.at(1) == "NODEV") {
+				if (tokens.size() == 3) {
+					label = tokens.at(2);
+					if(label.find('_') != std::string::npos) {
+						tokens = Misc::tokenize_delimeter(label, "_");
+						label = tokens.back();
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+					} else if(label.find('.') != std::string::npos) {
+						std::replace(label.begin(), label.end(), '.', '|');
+					}
+					if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+						index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+						if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+							relXInd.push_back(index1);}
+					} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+						index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+						if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+							relXInd.push_back(index1);}
+					}
+				} else if (tokens.size() == 4) {
+					label = tokens.at(2);
+					label2 = tokens.at(3);
+					if(label.find('_') != std::string::npos) {
+						tokens = Misc::tokenize_delimeter(label, "_");
+						label = tokens.back();
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+					} else if(label.find('.') != std::string::npos) {
+						std::replace(label.begin(), label.end(), '.', '|');
+					}
+					if(label2.find('_') != std::string::npos) {
+						tokens = Misc::tokenize_delimeter(label2, "_");
+						label2 = tokens.back();
+						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
+					} else if(label2.find('.') != std::string::npos) {
+						std::replace(label2.begin(), label2.end(), '.', '|');
+					}
+					if(label == "0" || label == "GND") {
+						if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						}
+					} else if (label2 == "0" || label2 == "GND") {
+						if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						}
+					} else {
+						if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+							index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+							if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+								relXInd.push_back(index2);}
+						} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+							index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+							if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+								relXInd.push_back(index2);}
+						}
+					}
+				}
+			} else if(tokens.at(1) == "NODEP") {
+				if (tokens.size() == 3) {
+					label = tokens.at(2);
+					if(label.find('_') != std::string::npos) {
+						tokens = Misc::tokenize_delimeter(label, "_");
+						label = tokens.back();
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+					} else if(label.find('.') != std::string::npos) {
+						std::replace(label.begin(), label.end(), '.', '|');
+					}
+					if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+						index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+						if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+							relXInd.push_back(index1);}
+					} else if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+						index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+						if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+							relXInd.push_back(index1);}
+					}
+				} else if (tokens.size() == 4) {
+					label = tokens.at(2);
+					label2 = tokens.at(3);
+					if(label.find('_') != std::string::npos) {
+						tokens = Misc::tokenize_delimeter(label, "_");
+						label = tokens.back();
+						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+					} else if(label.find('.') != std::string::npos) {
+						std::replace(label.begin(), label.end(), '.', '|');
+					}
+					if(label2.find('_') != std::string::npos) {
+						tokens = Misc::tokenize_delimeter(label2, "_");
+						label2 = tokens.back();
+						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
+					} else if(label2.find('.') != std::string::npos) {
+						std::replace(label2.begin(), label2.end(), '.', '|');
+					}
+					if(label == "0" || label == "GND") {
+						if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						} else if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						}
+					} else if (label2 == "0" || label2 == "GND") {
+					 	if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						} else if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+						}
+					} else {
+						if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+							index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+							if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+								relXInd.push_back(index2);}
+						} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+							index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+							index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+							if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+								relXInd.push_back(index1);}
+							if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+								relXInd.push_back(index2);}
+						}
+					}
+				}
+			} else if(tokens.at(1) == "PHASE") {
+				label = tokens.at(2);
+				if(label.find('_') != std::string::npos) {
+					tokens = Misc::tokenize_delimeter(label, "_");
+					label = tokens.back();
+					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
+				} else if(label.find('.') != std::string::npos) {
+					std::replace(label.begin(), label.end(), '.', '|');
+				}
+				switch(label[0]) {
+					case 'R':
+						if(components.phaseRes.count(label) != 0) {
+							if(components.phaseRes.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).negNCol);}
+							}
+							else if(components.phaseRes.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).negNCol);}
+							}
+						}
+						break;
+					case 'L':
+						if(components.phaseInd.count(label) != 0) {
+							if(components.phaseInd.at(label).posNCol == -1){
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).negNCol);}
+							}
+							else if(components.phaseInd.at(label).negNCol == -1){
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).negNCol);}
+							}
+						}
+						break;
+					case 'C':
+						if(components.phaseCap.count(label) != 0) {
+							if(components.phaseCap.at(label).posNCol == -1){
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).negNCol);}
+							}
+							else if(components.phaseCap.at(label).negNCol == -1){
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).negNCol);}
+							}
+						}
+						break;
+					case 'B':
+						if(components.voltJJ.count(label) != 0) {
+							if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).phaseNCol) == relXInd.end()){
+								relXInd.push_back(components.voltJJ.at(label).phaseNCol);}
+						}
+						else if(components.phaseJJ.count(label) != 0) {
+							if(components.phaseJJ.at(label).posNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+							}
+							else if(components.phaseJJ.at(label).negNCol == -1) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+							}
+							else {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+							}
+						}
+						break;
+				}
+			}
+		} else if(i.find("PLOT") != std::string::npos) {
+			tokens = Misc::tokenize_space(i);
+			for (int j = 1; j < tokens.size(); j++) {
+				if (tokens.at(j)[0] == 'V') {
+					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "V() ,");
+					if(tokens2.size() == 1) {
+						label = tokens2.at(0);
+						if(label.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label, "_");
+							label = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
+						} else if(label.find('.') != std::string::npos) {
+							std::replace(label.begin(), label.end(), '.', '|');
+						}
+						switch(label[0]) {
+							case 'R':
+								if(components.voltRes.count(label) != 0) {
+									if(components.voltRes.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).negNCol);}
+									}
+									else if(components.voltRes.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).negNCol);}
+									}
+								} else if(components.phaseRes.count(label) != 0) {
+									if(components.phaseRes.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).negNCol);}
+									}
+									else if(components.phaseRes.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).negNCol);}
+									}
+								}
+								break;
+							case 'L':
+								if(components.voltInd.count(label) != 0) {
+									if(components.voltInd.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltInd.at(label).negNCol);}
+									}
+									else if(components.voltInd.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltInd.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltInd.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltInd.at(label).negNCol);}
+									}
+								} else if(components.phaseInd.count(label) != 0) {
+									if(components.phaseInd.at(label).posNCol == -1) { 
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).negNCol);}
+									}
+									else if(components.phaseInd.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).negNCol);}
+									}
+								}
+								break;
+							case 'C':
+								if(components.voltCap.count(label) != 0) {
+									if(components.voltCap.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltCap.at(label).negNCol);}
+									}
+									else if(components.voltCap.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltCap.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltCap.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltCap.at(label).negNCol);}
+									}
+								} else if(components.phaseCap.count(label) != 0) {
+									if(components.phaseCap.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).negNCol);}
+									}
+									else if(components.phaseCap.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).negNCol);}
+									}
+								}
+								break;
+							case 'B':
+								if(components.voltJJ.count(label) != 0) {
+									if(components.voltJJ.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltJJ.at(label).negNCol);}
+									}
+									else if(components.voltJJ.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltJJ.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltJJ.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltJJ.at(label).negNCol);}
+									}
+								} else if(components.phaseJJ.count(label) != 0) {
+									if(components.phaseJJ.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+									}
+									else if(components.phaseJJ.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+									}
+								}
+								break;
+							default:
+								if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+									index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+									if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+										relXInd.push_back(index1);}
+								} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+									index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+									if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+										relXInd.push_back(index1);}
+								}
+								break;
+						}
+					} else {
+						label = tokens2.at(0);
+						label2 = tokens2.at(1);
+						if(label.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label, "_");
+							label = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
+						} else if(label.find('.') != std::string::npos) {
+							std::replace(label.begin(), label.end(), '.', '|');
+						}
+						if(label2.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label2, "_");
+							label2 = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
+						} else if(label2.find('.') != std::string::npos) {
+							std::replace(label2.begin(), label2.end(), '.', '|');
+						}
+						if(label == "0" || label == "GND") {
+							if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							}
+						} else if (label2 == "0" || label2 == "GND") {
+							if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							}
+						} else {
+							if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+								index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+								if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+									relXInd.push_back(index2);}
+							} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+								index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+								if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+									relXInd.push_back(index2);}
+							}
+						}
+					}
+				} else if (tokens.at(j)[0] == 'C') {
+					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "C() ,");
+					if(tokens2.size() == 1) {
+						label = tokens2.at(0);
+						if(label.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label, "_");
+							label = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
+						} else if(label.find('.') != std::string::npos) {
+							std::replace(label.begin(), label.end(), '.', '|');
+						}
+						switch(label[0]) {
+							case 'R':
+								if(components.voltRes.count(label) != 0) {
+									if(components.voltRes.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).negNCol);}
+									}
+									else if(components.voltRes.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.voltRes.at(label).negNCol);}
+									}
+								} else if(components.phaseRes.count(label) != 0)
+									if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).curNCol) == relXInd.end()){
+										relXInd.push_back(components.phaseRes.at(label).curNCol);}
+								break;
+							case 'L':
+								if(components.voltInd.count(label) != 0) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).curNCol) == relXInd.end()){
+										relXInd.push_back(components.voltInd.at(label).curNCol);}
+								}
+								else if(components.phaseInd.count(label) != 0) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).curNCol) == relXInd.end()){
+										relXInd.push_back(components.phaseInd.at(label).curNCol);}
+								}
+								break;
+							case 'C':
+								if(components.voltCap.count(label) != 0) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).curNCol) == relXInd.end()){
+										relXInd.push_back(components.voltCap.at(label).curNCol);}
+								}
+								else if(components.phaseCap.count(label) != 0) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).curNCol) == relXInd.end()){
+										relXInd.push_back(components.phaseCap.at(label).curNCol);}
+								}
+								break;
+						}
+					}
+				} else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
+					tokens2 = Misc::tokenize_delimeter(tokens.at(j), " #");
+					label = tokens2.at(0);
+					if(label.find('_') != std::string::npos) {
+						tokens2 = Misc::tokenize_delimeter(label, "_");
+						label = tokens2.back();
+						for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
+					} else if(label.find('.') != std::string::npos) {
+						std::replace(label.begin(), label.end(), '.', '|');
+					}
+					switch(label[0]) {
+						case 'R':
+							if(components.voltRes.count(label) != 0) {
+								if(components.voltRes.at(label).posNCol == -1) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+										relXInd.push_back(components.voltRes.at(label).negNCol);}
+								}
+								else if(components.voltRes.at(label).negNCol == -1) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+										relXInd.push_back(components.voltRes.at(label).posNCol);}
+								}
+								else {
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).posNCol) == relXInd.end()){
+										relXInd.push_back(components.voltRes.at(label).posNCol);}
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltRes.at(label).negNCol) == relXInd.end()){
+										relXInd.push_back(components.voltRes.at(label).negNCol);}
+								}
+							} else if(components.phaseRes.count(label) != 0) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).curNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseRes.at(label).curNCol);}
+							}
+							break;
+						case 'L':
+							if(components.voltInd.count(label) != 0) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltInd.at(label).curNCol) == relXInd.end()){
+									relXInd.push_back(components.voltInd.at(label).curNCol);}
+							}
+							else if(components.phaseInd.count(label) != 0) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).curNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseInd.at(label).curNCol);}
+							}
+							break;
+						case 'C':
+							if(components.voltCap.count(label) != 0) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.voltCap.at(label).curNCol) == relXInd.end()){
+									relXInd.push_back(components.voltCap.at(label).curNCol);}
+							}
+							else if(components.phaseCap.count(label) != 0) {
+								if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).curNCol) == relXInd.end()){
+									relXInd.push_back(components.phaseCap.at(label).curNCol);}
+							}
+							break;
+					}
+				} else if (tokens.at(j)[0] == 'P') {
+					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
+					if(tokens2.size() == 1) {
+						label = tokens2.at(0);
+						if(label.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label, "_");
+							label = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
+						} else if(label.find('.') != std::string::npos) {
+							std::replace(label.begin(), label.end(), '.', '|');
+						}
+						switch(label[0]) {
+							case 'R':
+								if(components.phaseRes.count(label) != 0) {
+									if(components.phaseRes.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).negNCol);}
+									}
+									else if(components.phaseRes.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseRes.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseRes.at(label).negNCol);}
+									}
+								}
+								break;
+							case 'L':
+								if(components.phaseInd.count(label) != 0) {
+									if(components.phaseInd.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).negNCol);}
+									}
+									else if(components.phaseInd.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseInd.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseInd.at(label).negNCol);}
+									}
+								}
+								break;
+							case 'C':
+								if(components.phaseCap.count(label) != 0) {
+									if(components.phaseCap.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).negNCol);}
+									}
+									else if(components.phaseCap.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseCap.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseCap.at(label).negNCol);}
+									}
+								}
+								break;
+							case 'B':
+								if(components.voltJJ.count(label) != 0) {
+									if(std::find(relXInd.begin(), relXInd.end(), components.voltJJ.at(label).phaseNCol) == relXInd.end()){
+										relXInd.push_back(components.voltJJ.at(label).phaseNCol);}
+								}
+								else if(components.phaseJJ.count(label) != 0) {
+									if(components.phaseJJ.at(label).posNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+									}
+									else if(components.phaseJJ.at(label).negNCol == -1) {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+									}
+									else {
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).posNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).posNCol);}
+										if(std::find(relXInd.begin(), relXInd.end(), components.phaseJJ.at(label).negNCol) == relXInd.end()){
+											relXInd.push_back(components.phaseJJ.at(label).negNCol);}
+									}
+								}
+								break;
+							default:
+								if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+									index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+									if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+										relXInd.push_back(index1);}
+								} else if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+									index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+									if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+										relXInd.push_back(index1);}
+								}
+								break;
+						}
+					} else {
+						label = tokens2.at(0);
+						label2 = tokens2.at(1);
+						if(label.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label, "_");
+							label = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
+						} else if(label.find('.') != std::string::npos) {
+							std::replace(label.begin(), label.end(), '.', '|');
+						}
+						if(label2.find('_') != std::string::npos) {
+							tokens2 = Misc::tokenize_delimeter(label2, "_");
+							label2 = tokens2.back();
+							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
+						} else if(label2.find('.') != std::string::npos) {
+							std::replace(label2.begin(), label2.end(), '.', '|');
+						}
+						if(label == "0" || label == "GND") {
+							if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							} else if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							}
+						} else if (label2 == "0" || label2 == "GND") {
+							if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							} else if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+							}
+						} else {
+							if(std::find(columnNames.begin(), columnNames.end(), "C_NV" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label));
+								index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NV" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+								if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+									relXInd.push_back(index2);}
+							} else if(std::find(columnNames.begin(), columnNames.end(), "C_NP" + label) != columnNames.end()) {
+								index1 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label));
+								index2 = std::distance(columnNames.begin(), std::find(columnNames.begin(), columnNames.end(), "C_NP" + label2));
+								if(std::find(relXInd.begin(), relXInd.end(), index1) == relXInd.end()){
+									relXInd.push_back(index1);}
+								if(std::find(relXInd.begin(), relXInd.end(), index2) == relXInd.end()){
+									relXInd.push_back(index2);}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

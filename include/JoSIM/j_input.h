@@ -79,6 +79,7 @@ class Input {
 		Transient transSim;
 		std::vector<std::string> fileLines, controls;
 		std::vector<std::pair<std::string, std::string>> expNetlist;
+		std::vector<std::string> relevantX;
 
     Input(JoSIM::AnalysisType analysis_type, JoSIM::InputType input_type = JoSIM::InputType::Jsim,bool verbose = false) :
       argAnal(analysis_type),

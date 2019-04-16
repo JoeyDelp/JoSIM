@@ -223,8 +223,19 @@ Errors::control_errors(int errorCode, const std::string& whatPart) {
 	case TRANS_ERROR:
 		std::cerr << "W: Invalid transient analysis specified. " << whatPart
 			<< std::endl;
-		std::cerr << "W: Substituting default parameters. " << std::endl;
-		std::cerr << "W: Defaults: TSTEP=1PS TSTOP=1000PS TSTART=0PS MAXTSTEP=1PS" << std::endl;
+		std::cerr << "W: Substituting default parameters. " 
+			<< std::endl;
+		std::cerr << "W: Defaults: TSTEP=1PS TSTOP=1000PS TSTART=0PS MAXTSTEP=1PS" 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case PRINT_TOO_MANY_ARGS:
+		std::cerr << "W: Print request for device current has too many arguments."
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart 
+			<< std::endl;
+		std::cerr << "W: Ignoring the extra argument." 
+			<< std::endl;
 		std::cerr << std::endl;
 		break;
 	case PRINT_ERROR:
@@ -243,6 +254,131 @@ Errors::control_errors(int errorCode, const std::string& whatPart) {
 		std::cerr << "E: No simulation type specified. Nothing will be simulated."
 			<< std::endl;
 		exit(-1);
+	case UNKNOWN_DEVICE:
+		std::cerr << "W: Unknown device " << whatPart 
+			<< std::endl;
+		std::cerr << "W: Cannot print current for this device." 
+			<< std::endl;
+		std::cerr << "W: Ignoring this print request." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case CURRENT_THROUGH_VOLT:
+		std::cerr << "W: Requesting current through a voltage source." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart
+			<< std::endl;
+		std::cerr << "W: This is invalid and the request will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case VOLT_WHEN_PHASE:
+		std::cerr << "W: Request to print voltage for device " << whatPart 
+			<< std::endl;
+		std::cerr << "W: Phase mode simulation performed." 
+			<< std::endl;
+		std::cerr << "W: Printing device phase instead." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case VOLT_ACROSS_CURRENT:
+		std::cerr << "W: Requesting voltage across a current source." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart 
+			<< std::endl;
+		std::cerr << "W: This is invalid and the request will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;	
+	case NODEVOLT_WHEN_PHASE:
+		std::cerr << "W: Request to print nodal voltage for " << whatPart 
+			<< std::endl;
+		std::cerr << "W: Phase mode simulation performed." 
+			<< std::endl;
+		std::cerr << "W: Printing nodal phase instead." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case UNKNOWN_NODE:
+		std::cerr << "W: Node " << whatPart << " was not found in the circuit." 
+			<< std::endl;
+		std::cerr << "W: This request for print will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case NODEPHASE_WHEN_VOLT:
+		std::cerr << "W: Request to print nodal phase for " << whatPart 
+			<< std::endl;
+		std::cerr << "W: Voltage mode simulation performed." 
+			<< std::endl;
+		std::cerr << "W: Printing nodal voltage instead." 
+			<< std::endl;
+		std::cerr << std::endl;
+	case INVALID_NODEV:
+		std::cerr << "W: Invalid node voltage request found." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart
+			<< std::endl;
+		std::cerr << "W: This request for print will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case INVALID_NODEP:
+		std::cerr << "W: Invalid node phase request found." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart
+			<< std::endl;
+		std::cerr << "W: This request for print will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case PHASE_WHEN_VOLT:
+		std::cerr << "W: Requesting phase in a voltage simulation." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart 
+			<< std::endl;
+		std::cerr << "W: This request will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case PHASE_OF_VOLT:
+		std::cerr << "W: Requesting phase of a voltage source." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart 
+			<< std::endl;
+		std::cerr << "W: This is invalid and the request will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case PHASE_OF_CURRENT:
+		std::cerr << "W: Requesting phase of a current source." 
+			<< std::endl;
+		std::cerr << "W: Line: " << whatPart 
+			<< std::endl;
+		std::cerr << "W: This is invalid and the request will be ignored." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case INVALID_CURRENT:
+		std::cerr << "W: Invalid request to plot current." 
+			<< std::endl;
+		std::cerr << "W: Infringing line: " << whatPart 
+			<< std::endl;
+		std::cerr << std::endl;
+	case MATHOPS:
+		std::cerr << "W: Mathematical operations on output vectors are not yet supported." 
+			<< std::endl;
+		std::cerr << "W: Ignoring plotting of " << whatPart 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
+	case UNKNOWN_PLOT:
+		std::cerr << "W: Unknown plot type " << whatPart 
+			<< std::endl;
+		std::cerr << "W: Ignoring request to plot." 
+			<< std::endl;
+		std::cerr << std::endl;
+		break;
 	default:
 		std::cerr << "E: Unknown control error: " << whatPart << std::endl;
 		std::cerr << "E: Please contact the developer." << std::endl;

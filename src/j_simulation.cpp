@@ -59,7 +59,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 	std::vector<double> lhsValues(mObj.Nsize, 0.0),
 		RHS(mObj.columnNames.size(), 0.0), LHS_PRE;
 	int simSize = iObj.transSim.simsize();
-	for (int m = 0; m < mObj.Nsize; m++) {
+	for (int m = 0; m < mObj.relXInd.size(); m++) {
 		results.xVect.emplace_back(std::vector<double>(simSize, 0.0));
 	}
 	std::vector<std::vector<std::string>> nodeConnectionVector(mObj.rowNames.size());
@@ -151,41 +151,51 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 					if (txCurrent == "I1") {
 						if (mObj.components.txLine.at(currentLabel).posN2Row == -1)
 							VB = -results.xVect.at(
-								mObj.components.txLine.at(currentLabel).negN2Row).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).negN2Row))).at(
 									i - mObj.components.txLine.at(currentLabel).k);
 						else if (mObj.components.txLine.at(currentLabel).negN2Row == -1)
 							VB = results.xVect.at(
-								mObj.components.txLine.at(currentLabel).posN2Row).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).posN2Row))).at(
 									i - mObj.components.txLine.at(currentLabel).k);
 						else VB = results.xVect.at(
-							mObj.components.txLine.at(currentLabel).posN2Row).at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							mObj.components.txLine.at(currentLabel).posN2Row))).at(
 									i - mObj.components.txLine.at(currentLabel).k) -
 							results.xVect.at(
-								mObj.components.txLine.at(currentLabel).negN2Row).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).negN2Row))).at(
 									i - mObj.components.txLine.at(currentLabel).k);
 						RHSvalue = mObj.components.txLine.at(currentLabel).value *
 							results.xVect.at(
-								mObj.components.txLine.at(currentLabel).curN2Row).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).curN2Row))).at(
 									i - mObj.components.txLine.at(currentLabel).k) + VB;
 					}
 					else if (txCurrent == "I2") {
 						if (mObj.components.txLine.at(currentLabel).posNRow == -1)
 							VB = -results.xVect.at(
-								mObj.components.txLine.at(currentLabel).negNRow).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).negNRow))).at(
 									i - mObj.components.txLine.at(currentLabel).k);
 						else if (mObj.components.txLine.at(currentLabel).negNRow == -1)
 							VB = results.xVect.at(
-								mObj.components.txLine.at(currentLabel).posNRow).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).posNRow))).at(
 									i - mObj.components.txLine.at(currentLabel).k);
 						else VB = results.xVect.at(
-							mObj.components.txLine.at(currentLabel).posNRow).at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							mObj.components.txLine.at(currentLabel).posNRow))).at(
 								i - mObj.components.txLine.at(currentLabel).k) -
 							results.xVect.at(
-								mObj.components.txLine.at(currentLabel).negNRow).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).negNRow))).at(
 									i - mObj.components.txLine.at(currentLabel).k);
 						RHSvalue = mObj.components.txLine.at(currentLabel).value *
 							results.xVect.at(
-								mObj.components.txLine.at(currentLabel).curN1Row).at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txLine.at(currentLabel).curN1Row))).at(
 									i - mObj.components.txLine.at(currentLabel).k) + VB;
 					}
 				}
@@ -201,8 +211,8 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 		}
 
 		lhsValues = LHS_PRE;
-		for (int m = 0; m < lhsValues.size(); m++) {
-			results.xVect[m][i] = lhsValues[m];
+		for (int m = 0; m < mObj.relXInd.size(); m++) {
+			results.xVect[m][i] = lhsValues.at(mObj.relXInd.at(m));
 		}
 
 		/* Guess next junction voltage */
@@ -349,7 +359,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 	results.timeAxis.clear();
 	std::vector<double> lhsValues(mObj.Nsize, 0.0);
 	int simSize = iObj.transSim.simsize();
-	for (int m = 0; m < mObj.Nsize; m++) {
+	for (int m = 0; m < mObj.relXInd.size(); m++) {
 		results.xVect.emplace_back(std::vector<double>(simSize, 0.0));
 	}
 	std::vector<double> RHS(mObj.columnNames.size(), 0.0), LHS_PRE;
@@ -453,7 +463,9 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 					if(j.substr(j.size() - 3) == "-I1") {
 						RHSvalue = ((iObj.transSim.prstep * M_PI *
 							mObj.components.txPhase[currentLabel].value)/(PHI_ZERO)) *
-							results.xVect.at(mObj.components.txPhase[currentLabel].curN2Row).at(
+							results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txPhase[currentLabel].curN2Row))).at(
 								i - mObj.components.txPhase[currentLabel].k) +
 							mObj.components.txPhase[currentLabel].p1n1 +
 							(iObj.transSim.prstep / 2) *
@@ -463,7 +475,9 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 					else if(j.substr(j.size() - 3) == "-I2") {
 						RHSvalue = ((iObj.transSim.prstep * M_PI *
 							mObj.components.txPhase[currentLabel].value)/(PHI_ZERO)) *
-							results.xVect.at(mObj.components.txPhase[currentLabel].curN1Row).at(
+							results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.txPhase[currentLabel].curN1Row))).at(
 								i - mObj.components.txPhase[currentLabel].k) +
 							mObj.components.txPhase[currentLabel].p2n1 +
 							(iObj.transSim.prstep / 2) *
@@ -482,8 +496,8 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 		}
 
 		lhsValues = LHS_PRE;
-		for (int m = 0; m < lhsValues.size(); m++) {
-			results.xVect[m][i] = lhsValues[m];
+		for (int m = 0; m < mObj.relXInd.size(); m++) {
+			results.xVect[m][i] = lhsValues.at(mObj.relXInd.at(m));
 		}
 
 		for (const auto& j : mObj.components.phaseJJ) {
@@ -602,22 +616,40 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 			thisTL.dP2n2 = thisTL.dP2n1;
 			if(i >= thisTL.k) {
 				if (thisTL.posNRow == -1) {
-					thisTL.p1nk = -results.xVect[thisTL.negNRow][i-thisTL.k];
+					thisTL.p1nk = -results.xVect.at(
+						std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+						thisTL.negNRow))).at(i-thisTL.k);
 				}
 				else if (thisTL.negNRow == -1) {
-					thisTL.p1nk = results.xVect[thisTL.posNRow][i-thisTL.k];
+					thisTL.p1nk = results.xVect.at(
+						std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+						thisTL.posNRow))).at(i-thisTL.k);
 				}
 				else {
-					thisTL.p1nk = results.xVect[thisTL.posNRow][i-thisTL.k] - results.xVect[thisTL.negNRow][i-thisTL.k];
+					thisTL.p1nk = results.xVect.at(
+						std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+						thisTL.posNRow))).at(i-thisTL.k)
+						- results.xVect.at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							thisTL.negNRow))).at(i-thisTL.k);
 				}
 				if (thisTL.posN2Row == -1) {
-					thisTL.p2nk = -results.xVect[thisTL.negN2Row][i-thisTL.k];
+					thisTL.p2nk = -results.xVect.at(
+						std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+						thisTL.negN2Row))).at(i-thisTL.k);
 				}
 				else if (thisTL.negN2Row == -1) {
-					thisTL.p2nk = results.xVect[thisTL.posN2Row][i-thisTL.k];
+					thisTL.p2nk = results.xVect.at(
+						std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+						thisTL.posN2Row))).at(i-thisTL.k);
 				}
 				else {
-					thisTL.p2nk = results.xVect[thisTL.posN2Row][i-thisTL.k] - results.xVect[thisTL.negN2Row][i-thisTL.k];
+					thisTL.p2nk = results.xVect.at(
+						std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+						thisTL.posN2Row))).at(i-thisTL.k) 
+						- results.xVect.at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							thisTL.negN2Row))).at(i-thisTL.k);
 				}
 				thisTL.dP1nk = (2/iObj.transSim.prstep)*(thisTL.p1nk - thisTL.p1nk1) - thisTL.dP1nk1;
 				thisTL.p1nk1 = thisTL.p1nk;

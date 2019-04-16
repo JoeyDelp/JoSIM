@@ -29,6 +29,7 @@ class Matrix {
       std::vector<std::string> rowNames, columnNames;
       std::vector<double> nzval;
 	    std::vector<int> colind, rowptr;
+      std::vector<int> relXInd;
       int Nsize, Msize;
 
       Matrix() {};
@@ -43,5 +44,8 @@ class Matrix {
 
       void
       create_CSR();
+
+      void 
+      find_relevant_x(Input &iObj); 
 };
 #endif

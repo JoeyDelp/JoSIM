@@ -96,6 +96,8 @@ class tx_line : public device {
 		int curN2Row, curN2Col;
 		int k;
 		double tD;
+		double v1n1, v1n2, v1nk, v1nk1, dV1n1, dV1n2, dV1nk, dV1nk1,
+			v2n1, v2n2, v2nk, v2nk1, dV2n1, dV2n2, dV2nk, dV2nk1;
 		tx_line() {
 			posNode2R = posNode2C = "NONE";
 			negNode2R = negNode2C = "NONE";

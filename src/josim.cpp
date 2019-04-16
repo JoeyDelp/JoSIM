@@ -31,7 +31,7 @@ main(int argc, const char** argv) {
 	if(iObj.argVerb) Verbose::print_expanded_netlist(iObj.expNetlist);
 	sObj.identify_simulation(iObj.controls, iObj.transSim.prstep, iObj.transSim.tstop, iObj.transSim.tstart, iObj.transSim.maxtstep);
 	mObj.create_matrix(iObj);
-
+	mObj.find_relevant_x(iObj);
 	if(cli_options.analysis_type == AnalysisType::Voltage) sObj.transient_voltage_simulation(iObj, mObj);
 	else if (cli_options.analysis_type == AnalysisType::Phase) sObj.transient_phase_simulation(iObj, mObj);
 	oObj.relevant_traces(iObj, mObj, sObj);

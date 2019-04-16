@@ -16,19 +16,14 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 			Trace thisTrace;
 			tokens = Misc::tokenize_space(i);
 			if(tokens.at(1) == "DEVI") {
-				if(tokens.size() > 4) {
-					std::cerr << "W: Print request for device current has too many arguments. " << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: Ignoring the extra argument." << std::endl;
-					std::cerr << std::endl;
-				}
+				if(tokens.size() > 4) 
+					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
 					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
-				}
-				else if(label.find('.') != std::string::npos) {
+				} else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
@@ -38,27 +33,39 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						if(mObj.components.voltRes.count(label) != 0) {
 							if(mObj.components.voltRes.at(label).posNCol == -1) {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).negNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).negNCol))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
 										(1 / mObj.components.voltRes.at(label).value)));
-							}
-							else if(mObj.components.voltRes.at(label).negNCol == -1) {
+							} else if(mObj.components.voltRes.at(label).negNCol == -1) {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).posNCol))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
 										(1 / mObj.components.voltRes.at(label).value)));
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								std::transform(
@@ -71,97 +78,71 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else if(mObj.components.phaseRes.count(label) != 0) {
-							thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).curNCol);
+						} else if(mObj.components.phaseRes.count(label) != 0) {
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.phaseRes.at(label).curNCol)));
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print current for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'L':
 						thisTrace.type = 'C';
 						if(mObj.components.voltInd.count(label) != 0) {
-							thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).curNCol);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.voltInd.at(label).curNCol)));
 							traces.push_back(thisTrace);
-						}
-						else if(mObj.components.phaseInd.count(label) != 0) {
-							thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).curNCol);
+						} else if(mObj.components.phaseInd.count(label) != 0) {
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.phaseInd.at(label).curNCol)));
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print current for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'C':
 						thisTrace.type = 'C';
 						if(mObj.components.voltCap.count(label) != 0) {
-							thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).curNCol);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.voltCap.at(label).curNCol)));
 							traces.push_back(thisTrace);
-						}
-						else if(mObj.components.phaseCap.count(label) != 0) {
-							thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).curNCol);
+						} else if(mObj.components.phaseCap.count(label) != 0) {
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.phaseCap.at(label).curNCol)));
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print current for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'B':
 						thisTrace.type = 'C';
 						if(mObj.components.voltJJ.count(label) != 0) {
 							thisTrace.traceData = &mObj.components.voltJJ.at(label).jjCur;
 							traces.push_back(thisTrace);
-						}
-						else if(mObj.components.phaseJJ.count(label) != 0) {
+						} else if(mObj.components.phaseJJ.count(label) != 0) {
 							thisTrace.traceData = &mObj.components.phaseJJ.at(label).jjCur;
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print current for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'V':
-						std::cerr << "W: Requesting current through a voltage source." << std::endl;
-						std::cerr << "W: Line: " << i << std::endl;
-						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cerr << std::endl;
+						Errors::control_errors(CURRENT_THROUGH_VOLT, i);
 						break;
 					case 'I':
 						thisTrace.type = 'C';
 						if(mObj.sources.count(label) != 0) {
 							thisTrace.traceData = &mObj.sources.at(label);
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print current for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
+						} else {
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						}
 						break;
 				}
 			}
 			else if(tokens.at(1) == "DEVV") {
-				if(tokens.size() > 4) {
-					std::cerr << "W: Print request for device voltage has too many arguments. " << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: Ignoring the extra argument." << std::endl;
-					std::cerr << std::endl;
-				}
+				if(tokens.size() > 4) Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
@@ -177,293 +158,301 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						thisTrace.type = 'V';
 						if(mObj.components.voltRes.count(label) != 0) {
 							if(mObj.components.voltRes.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltRes.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.voltRes.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol);
+							} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltRes.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltRes.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else if(mObj.components.phaseRes.count(label) != 0) {
-							std::cerr << "W: Request to print voltage for device " << label << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing device phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(mObj.components.phaseRes.count(label) != 0) {
+							Errors::control_errors(VOLT_WHEN_PHASE, label);
 							if(mObj.components.phaseRes.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseRes.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseRes.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol);
+							} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseRes.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print voltage for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'L':
 						thisTrace.type = 'V';
 						if(mObj.components.voltInd.count(label) != 0) {
 							if(mObj.components.voltInd.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltInd.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.voltInd.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol);
+							} else if(mObj.components.voltInd.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltInd.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltInd.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltInd.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltInd.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else if(mObj.components.phaseInd.count(label) != 0) {
-							std::cerr << "W: Request to print voltage for device " << label << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing device phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(mObj.components.phaseInd.count(label) != 0) {
+							Errors::control_errors(VOLT_WHEN_PHASE, label);
 							if(mObj.components.phaseInd.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseInd.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseInd.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol);
+							} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseInd.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print voltage for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'C':
 						thisTrace.type = 'V';
 						if(mObj.components.voltCap.count(label) != 0) {
 							if(mObj.components.voltCap.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltCap.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.voltCap.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol);
+							} else if(mObj.components.voltCap.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltCap.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltCap.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltCap.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltCap.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else if(mObj.components.phaseCap.count(label) != 0) {
-							std::cerr << "W: Request to print voltage for device " << label << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing device phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(mObj.components.phaseCap.count(label) != 0) {
+							Errors::control_errors(VOLT_WHEN_PHASE, label);
 							if(mObj.components.phaseCap.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseCap.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseCap.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol);
+							} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseCap.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print voltage for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'B':
 						thisTrace.type = 'V';
 						if(mObj.components.voltJJ.count(label) != 0) {
 							if(mObj.components.voltJJ.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltJJ.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.voltJJ.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol);
+							} else if(mObj.components.voltJJ.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltJJ.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltJJ.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltJJ.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltJJ.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else if(mObj.components.phaseJJ.count(label) != 0) {
-							std::cerr << "W: Request to print voltage for device " << label << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing device phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(mObj.components.phaseJJ.count(label) != 0) {
+							Errors::control_errors(VOLT_WHEN_PHASE, label);
 							if(mObj.components.phaseJJ.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseJJ.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol);
+							} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseJJ.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseJJ.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseJJ.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseJJ.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print voltage for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'V':
 						thisTrace.type = 'V';
 						if(mObj.sources.count(label) != 0) {
 							thisTrace.traceData = &mObj.sources.at(label);
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print voltage for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'I':
-						std::cerr << "W: Requesting voltage across a current source." << std::endl;
-						std::cerr << "W: Line: " << i << std::endl;
-						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cerr << std::endl;
+						Errors::control_errors(VOLT_ACROSS_CURRENT, i);
 						break;
 				}
 			}
 			else if(tokens.at(1) == "NODEV") {
 				thisTrace.type = 'V';
 				if (tokens.size() > 4) {
-					std::cerr << "W: Print requested with too many arguments." << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: Excess arguments will be ignored." << std::endl;
-					std::cerr << std::endl;
-				}
-				else if (tokens.size() == 3) {
+					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
+				} else if (tokens.size() == 3) {
 					label = tokens.at(2);
 					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
-					}
-					else if(label.find('.') != std::string::npos) {
+					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 						thisTrace.name = "NV_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1);
+						thisTrace.traceData = &sObj.results.xVect.at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							index1)));
 						traces.push_back(thisTrace);
-					}
-					else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-						std::cerr << "W: Request to print nodal voltage for " << label << std::endl;
-						std::cerr << "W: Phase mode simulation performed." << std::endl;
-						std::cerr << "W: Printing nodal phase instead." << std::endl;
-						std::cerr << std::endl;
+					} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+						Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 						thisTrace.type = 'P';
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 						thisTrace.name = "NP_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1);
+						thisTrace.traceData = &sObj.results.xVect.at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							index1)));
 						traces.push_back(thisTrace);
-					}
-					else {
-						std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-						std::cerr << "W: This request for print will be ignored." << std::endl;
-						std::cerr << std::endl;
-					}
-				}
-				else if (tokens.size() == 4) {
+					} else 
+						Errors::control_errors(UNKNOWN_NODE, label);
+				} else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
 					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
-					}
-					else if(label.find('.') != std::string::npos) {
+					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
-					}
+					} 
 					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
-					}
-					else if(label2.find('.') != std::string::npos) {
+					} else if(label2.find('.') != std::string::npos) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
@@ -471,176 +460,155 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-							std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing nodal phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
+							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-							std::cerr << "W: This request for print will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
-					}
-					else if (label2 == "0" || label2 == "GND") {
+						} else 
+							Errors::control_errors(UNKNOWN_NODE, label2);
+					} else if (label2 == "0" || label2 == "GND") {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							thisTrace.name = "NV_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								index1)));
 							traces.push_back(thisTrace);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing nodal phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							thisTrace.name = "NP_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								index1)));
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-							std::cerr << "W: This request for print will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
-					}
-					else {
+						} else 
+							Errors::control_errors(UNKNOWN_NODE, label);
+					} else {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
+							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end())
+								Errors::control_errors(UNKNOWN_NODE, label);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
+							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end())
+								Errors::control_errors(UNKNOWN_NODE, label2);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
-									sObj.results.xVect.at(index2).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index2))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-							std::cerr << "W: Phase mode simulation performed." << std::endl;
-							std::cerr << "W: Printing nodal phase instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 							thisTrace.type = 'P';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
-									sObj.results.xVect.at(index2).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index2))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
 						}
 					}
-				}
-				else {
-					std::cerr << "W: Invalid node voltage request found." << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: This request for print will be ignored." << std::endl;
-					std::cerr << std::endl;
-				}
+				} else 
+					Errors::control_errors(INVALID_NODEV, i);
 			}
 			else if(tokens.at(1) == "NODEP") {
 				thisTrace.type = 'P';
-				if (tokens.size() > 4) {
-					std::cerr << "W: Print requested with too many arguments." << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: Excess arguments will be ignored." << std::endl;
-					std::cerr << std::endl;
-				}
+				if (tokens.size() > 4) 
+					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
 				else if (tokens.size() == 3) {
 					label = tokens.at(2);
 					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
-					}
-					else if(label.find('.') != std::string::npos) {
+					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 						thisTrace.name = "NP_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1);
+						thisTrace.traceData = &sObj.results.xVect.at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							index1)));
 						traces.push_back(thisTrace);
-					}
-					else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-						std::cerr << "W: Request to print nodal phase for " << label << std::endl;
-						std::cerr << "W: Voltage mode simulation performed." << std::endl;
-						std::cerr << "W: Printing nodal voltage instead." << std::endl;
-						std::cerr << std::endl;
+					} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
+						Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 						thisTrace.type = 'V';
 						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 						thisTrace.name = "NV_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(index1);
+						thisTrace.traceData = &sObj.results.xVect.at(
+							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+							index1)));
 						traces.push_back(thisTrace);
-					}
-					else {
-						std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-						std::cerr << "W: This request for print will be ignored." << std::endl;
-						std::cerr << std::endl;
-					}
-				}
-				else if (tokens.size() == 4) {
+					} else 
+						Errors::control_errors(UNKNOWN_NODE, label);
+				} else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
 					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
 						label = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
-					}
-					else if(label.find('.') != std::string::npos) {
+					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
 						for(int j = 0; j < tokens.size() - 1; j++) label2 = label + "|" + tokens.at(j);
-					}
-					else if(label2.find('.') != std::string::npos) {
+					} else if(label2.find('.') != std::string::npos) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
@@ -648,303 +616,276 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-							std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-							std::cerr << "W: Voltage mode simulation performed." << std::endl;
-							std::cerr << "W: Printing nodal voltage instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
+							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
 										-1.0));
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-							std::cerr << "W: This request for print will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
-					}
-					else if (label2 == "0" || label2 == "GND") {
+						} else 
+							Errors::control_errors(UNKNOWN_NODE, label2);
+					} else if (label2 == "0" || label2 == "GND") {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							thisTrace.name = "NP_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								index1)));
 							traces.push_back(thisTrace);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-							std::cerr << "W: Voltage mode simulation performed." << std::endl;
-							std::cerr << "W: Printing nodal voltage instead." << std::endl;
-							std::cerr << std::endl;
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
+							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							thisTrace.name = "NV_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(index1);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								index1)));
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-							std::cerr << "W: This request for print will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
-					}
-					else {
+						} else 
+							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+					} else {
 						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
+							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end())
+								Errors::control_errors(UNKNOWN_NODE, label);
 						}
 						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-							std::cerr << "W: Voltage mode simulation performed." << std::endl;
-							std::cerr << "W: Printing nodal voltage instead." << std::endl;
-							std::cerr << std::endl;
+							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) 
+								Errors::control_errors(UNKNOWN_NODE, label2);
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
+							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 							thisTrace.type = 'V';
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 							thisTrace.name = "NV_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
-									sObj.results.xVect.at(index2).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index2))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 							thisTrace.name = "NP_" + label + "_" + label2;
 							std::transform(
-									sObj.results.xVect.at(index1).begin(),
-									sObj.results.xVect.at(index1).end(),
-									sObj.results.xVect.at(index2).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index2))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
 						}
 					}
-				}
-				else {
-					std::cerr << "W: Invalid node voltage request found." << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: This request for print will be ignored." << std::endl;
-					std::cerr << std::endl;
-				}
-			}
-			else if(tokens.at(1) == "PHASE") {
-				if(tokens.size() > 4) {
-					std::cerr << "W: Print request for device current has too many arguments. " << std::endl;
-					std::cerr << "W: Line: " << i << std::endl;
-					std::cerr << "W: Ignoring the extra argument." << std::endl;
-					std::cerr << std::endl;
-				}
+				} else 
+					Errors::control_errors(INVALID_NODEP, i);
+			} else if(tokens.at(1) == "PHASE") {
+				if(tokens.size() > 4) 
+					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
 					tokens = Misc::tokenize_delimeter(label, "_");
 					label = tokens.back();
 					for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
-				}
-				else if(label.find('.') != std::string::npos) {
+				} else if(label.find('.') != std::string::npos) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
 				switch(label[0]) {
 					case 'R':
 						thisTrace.type = 'P';
-						if(mObj.components.voltRes.count(label) != 0) {
-							std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-							std::cerr << "W: Line: " << i << std::endl;
-							std::cerr << "W: This request will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
+						if(mObj.components.voltRes.count(label) != 0) 
+							Errors::control_errors(PHASE_WHEN_VOLT, i);
 						else if(mObj.components.phaseRes.count(label) != 0) {
 							if(mObj.components.phaseRes.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseRes.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseRes.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol);
+							} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseRes.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print phase for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'L':
 						thisTrace.type = 'P';
-						if(mObj.components.voltInd.count(label) != 0) {
-							std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-							std::cerr << "W: Line: " << i << std::endl;
-							std::cerr << "W: This request will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
+						if(mObj.components.voltInd.count(label) != 0) 
+							Errors::control_errors(PHASE_WHEN_VOLT, i);
 						else if(mObj.components.phaseInd.count(label) != 0) {
 							if(mObj.components.phaseInd.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseInd.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseInd.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol);
+							} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseInd.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print phase for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'C':
 						thisTrace.type = 'P';
-						if(mObj.components.voltCap.count(label) != 0) {
-							std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-							std::cerr << "W: Line: " << i << std::endl;
-							std::cerr << "W: This request will be ignored." << std::endl;
-							std::cerr << std::endl;
-						}
+						if(mObj.components.voltCap.count(label) != 0) 
+							Errors::control_errors(PHASE_WHEN_VOLT, i);
 						else if(mObj.components.phaseCap.count(label) != 0) {
 							if(mObj.components.phaseCap.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseCap.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseCap.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol);
+							} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseCap.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print phase for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'B':
 						thisTrace.type = 'P';
 						if(mObj.components.voltJJ.count(label) != 0) {
-							thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltJJ.at(label).phaseNCol);
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								mObj.components.voltJJ.at(label).phaseNCol)));
 							traces.push_back(thisTrace);
-						}
-						else if(mObj.components.phaseJJ.count(label) != 0) {
+						} else if(mObj.components.phaseJJ.count(label) != 0) {
 							if(mObj.components.phaseJJ.at(label).posNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseJJ.at(label).negNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol);
+							} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseJJ.at(label).posNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
+							} else {
 								std::transform(
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
-									sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseJJ.at(label).posNCol))).begin(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseJJ.at(label).posNCol))).end(),
+									sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseJJ.at(label).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print phase for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'V':
-						std::cerr << "W: Requesting phase of a voltage source." << std::endl;
-						std::cerr << "W: Line: " << i << std::endl;
-						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cerr << std::endl;
+						Errors::control_errors(PHASE_OF_VOLT, i);
 						break;
 					case 'P':
 						thisTrace.type = 'P';
 						if(mObj.sources.count(label) != 0) {
 							thisTrace.traceData = &mObj.sources.at(label);
 							traces.push_back(thisTrace);
-						}
-						else {
-							std::cerr << "W: Unknown device " << label << std::endl;
-							std::cerr << "W: Cannot print phase for this device." << std::endl;
-							std::cerr << "W: Ignoring this print request." << std::endl;
-							std::cerr << std::endl;
-						}
+						} else 
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 						break;
 					case 'I':
-						std::cerr << "W: Requesting phase of a current source." << std::endl;
-						std::cerr << "W: Line: " << i << std::endl;
-						std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-						std::cerr << std::endl;
+						Errors::control_errors(PHASE_OF_CURRENT, i);
 						break;
 				}
 			}
-		}
-		else if(i.find("PLOT") != std::string::npos) {
+		} else if(i.find("PLOT") != std::string::npos) {
 			tokens = Misc::tokenize_space(i);
 			for (int j = 1; j < tokens.size(); j++) {
 				Trace thisTrace;
@@ -957,8 +898,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
-						}
-						else if(label.find('.') != std::string::npos) {
+						} else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -967,276 +907,289 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								thisTrace.type = 'V';
 								if(mObj.components.voltRes.count(label) != 0) {
 									if(mObj.components.voltRes.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.voltRes.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol);
+									} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else if(mObj.components.phaseRes.count(label) != 0) {
-									std::cerr << "W: Request to print voltage for device " << label << std::endl;
-									std::cerr << "W: Phase mode simulation performed." << std::endl;
-									std::cerr << "W: Printing device phase instead." << std::endl;
-									std::cerr << std::endl;
+								} else if(mObj.components.phaseRes.count(label) != 0) {
+									Errors::control_errors(VOLT_WHEN_PHASE, label);
 									if(mObj.components.phaseRes.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseRes.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseRes.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol);
+									} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseRes.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseRes.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseRes.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseRes.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print voltage for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'L':
 								thisTrace.type = 'V';
 								if(mObj.components.voltInd.count(label) != 0) {
 									if(mObj.components.voltInd.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltInd.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.voltInd.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol);
+									} else if(mObj.components.voltInd.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltInd.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltInd.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.voltInd.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltInd.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltInd.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltInd.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else if(mObj.components.phaseInd.count(label) != 0) {
-									std::cerr << "W: Request to print voltage for device " << label << std::endl;
-									std::cerr << "W: Phase mode simulation performed." << std::endl;
-									std::cerr << "W: Printing device phase instead." << std::endl;
-									std::cerr << std::endl;
+								} else if(mObj.components.phaseInd.count(label) != 0) {
+									Errors::control_errors(VOLT_WHEN_PHASE, label);
 									if(mObj.components.phaseInd.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseInd.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseInd.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol);
+									} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseInd.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseInd.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseInd.at(label).posNCol))).end(),
+											sObj.results.xVect.at(std::distance(
+												mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseInd.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print voltage for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'C':
 								thisTrace.type = 'V';
 								if(mObj.components.voltCap.count(label) != 0) {
 									if(mObj.components.voltCap.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltCap.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.voltCap.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol);
+									} else if(mObj.components.voltCap.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltCap.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltCap.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.voltCap.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltCap.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltCap.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltCap.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else if(mObj.components.phaseCap.count(label) != 0) {
-									std::cerr << "W: Request to print voltage for device " << label << std::endl;
-									std::cerr << "W: Phase mode simulation performed." << std::endl;
-									std::cerr << "W: Printing device phase instead." << std::endl;
-									std::cerr << std::endl;
+								} else if(mObj.components.phaseCap.count(label) != 0) {
+									Errors::control_errors(VOLT_WHEN_PHASE, label);
 									if(mObj.components.phaseCap.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseCap.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseCap.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol);
+									} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseCap.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseCap.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseCap.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseCap.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print voltage for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'B':
 								thisTrace.type = 'V';
 								if(mObj.components.voltJJ.count(label) != 0) {
 									if(mObj.components.voltJJ.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltJJ.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.voltJJ.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol);
+									} else if(mObj.components.voltJJ.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltJJ.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltJJ.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.voltJJ.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltJJ.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltJJ.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltJJ.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else if(mObj.components.phaseJJ.count(label) != 0) {
-									std::cerr << "W: Request to print voltage for device " << label << std::endl;
-									std::cerr << "W: Phase mode simulation performed." << std::endl;
-									std::cerr << "W: Printing device phase instead." << std::endl;
-									std::cerr << std::endl;
+								} else if(mObj.components.phaseJJ.count(label) != 0) {
+									Errors::control_errors(VOLT_WHEN_PHASE, label);
 									if(mObj.components.phaseJJ.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseJJ.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol);
+									} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseJJ.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseJJ.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseJJ.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseJJ.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print voltage for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'V':
 								thisTrace.type = 'V';
 								if(mObj.sources.count(label) != 0) {
 									thisTrace.traceData = &mObj.sources.at(label);
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print voltage for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'I':
-								std::cerr << "W: Requesting voltage across a current source." << std::endl;
-								std::cerr << "W: Line: " << i << std::endl;
-								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cerr << std::endl;
+								Errors::control_errors(VOLT_ACROSS_CURRENT, i);
 								break;
 							default:
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 									thisTrace.name = "NV_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1)));
 									traces.push_back(thisTrace);
-								}
-								else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-									std::cerr << "W: Request to print nodal voltage for " << label << std::endl;
-									std::cerr << "W: Phase mode simulation performed." << std::endl;
-									std::cerr << "W: Printing nodal phase instead." << std::endl;
-									std::cerr << std::endl;
+								} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+									Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 									thisTrace.type = 'P';
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 									thisTrace.name = "NP_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1)));
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cerr << "W: This request for print will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_NODE, label);
 								break;
 						}
-					}
-					else {
+					} else {
 						label = tokens2.at(0);
 						label2 = tokens2.at(1);
 						if(label.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
-						}
-						else if(label.find('.') != std::string::npos) {
+						} else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						if(label2.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label2, "_");
 							label2 = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
-						}
-						else if(label2.find('.') != std::string::npos) {
+						} else if(label2.find('.') != std::string::npos) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
@@ -1244,104 +1197,100 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-								std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-								std::cerr << "W: Phase mode simulation performed." << std::endl;
-								std::cerr << "W: Printing nodal phase instead." << std::endl;
-								std::cerr << std::endl;
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
+								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
-						}
-						else if (label2 == "0" || label2 == "GND") {
+							} else
+								Errors::control_errors(UNKNOWN_NODE, label2);
+						} else if (label2 == "0" || label2 == "GND") {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								thisTrace.name = "NV_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									index1)));
 								traces.push_back(thisTrace);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-								std::cerr << "W: Phase mode simulation performed." << std::endl;
-								std::cerr << "W: Printing nodal phase instead." << std::endl;
-								std::cerr << std::endl;
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								thisTrace.name = "NP_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									index1)));
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
-						}
-						else {
+							} else 
+								Errors::control_errors(UNKNOWN_NODE, label);
+						} else {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cerr << "W: This request for print will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) 
+									Errors::control_errors(UNKNOWN_NODE, label);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-									std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-									std::cerr << "W: This request for print will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) 
+									Errors::control_errors(UNKNOWN_NODE, label);
 							}
 							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
-										sObj.results.xVect.at(index2).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index2))).begin(),
 										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								std::cerr << "W: Request to print nodal voltage from " << label << " to " << label2 << std::endl;
-								std::cerr << "W: Phase mode simulation performed." << std::endl;
-								std::cerr << "W: Printing nodal phase instead." << std::endl;
-								std::cerr << std::endl;
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
 								thisTrace.type = 'P';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
-										sObj.results.xVect.at(index2).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index2))).begin(),
 										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
@@ -1349,8 +1298,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 					}
-				}
-				else if (tokens.at(j)[0] == 'C') {
+				} else if (tokens.at(j)[0] == 'C') {
 					thisTrace.type = 'C';
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "C() ,");
 					if(tokens2.size() == 1) {
@@ -1359,8 +1307,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
-						}
-						else if(label.find('.') != std::string::npos) {
+						} else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
@@ -1370,27 +1317,39 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								if(mObj.components.voltRes.count(label) != 0) {
 									if(mObj.components.voltRes.at(label).posNCol == -1) {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).negNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).negNCol))).end(),
 											std::back_inserter(thisTrace.calcData),
 											std::bind(std::multiplies<double>(),
 												std::placeholders::_1,
 												(1 / mObj.components.voltRes.at(label).value)));
-									}
-									else if(mObj.components.voltRes.at(label).negNCol == -1) {
+									} else if(mObj.components.voltRes.at(label).negNCol == -1) {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).posNCol))).end(),
 											std::back_inserter(thisTrace.calcData),
 											std::bind(std::multiplies<double>(),
 												std::placeholders::_1,
 												(1 / mObj.components.voltRes.at(label).value)));
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.voltRes.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										std::transform(
@@ -1403,97 +1362,71 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									}
 									thisTrace.pointer = false;
 									traces.push_back(thisTrace);
-								}
-								else if(mObj.components.phaseRes.count(label) != 0) {
-									thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).curNCol);
+								} else if(mObj.components.phaseRes.count(label) != 0) {
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseRes.at(label).curNCol)));
 									traces.push_back(thisTrace);
 								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print current for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'L':
 								thisTrace.type = 'C';
 								if(mObj.components.voltInd.count(label) != 0) {
-									thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).curNCol);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltInd.at(label).curNCol)));
 									traces.push_back(thisTrace);
-								}
-								else if(mObj.components.phaseInd.count(label) != 0) {
-									thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).curNCol);
+								} else if(mObj.components.phaseInd.count(label) != 0) {
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseInd.at(label).curNCol)));
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print current for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'C':
 								thisTrace.type = 'C';
 								if(mObj.components.voltCap.count(label) != 0) {
-									thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).curNCol);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltCap.at(label).curNCol)));
 									traces.push_back(thisTrace);
-								}
-								else if(mObj.components.phaseCap.count(label) != 0) {
-									thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).curNCol);
+								} else if(mObj.components.phaseCap.count(label) != 0) {
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.phaseCap.at(label).curNCol)));
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print current for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'B':
 								thisTrace.type = 'C';
 								if(mObj.components.voltJJ.count(label) != 0) {
 									thisTrace.traceData = &mObj.components.voltJJ.at(label).jjCur;
 									traces.push_back(thisTrace);
-								}
-								else if(mObj.components.phaseJJ.count(label) != 0) {
+								} else if(mObj.components.phaseJJ.count(label) != 0) {
 									thisTrace.traceData = &mObj.components.phaseJJ.at(label).jjCur;
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print current for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'V':
-								std::cerr << "W: Requesting current through a voltage source." << std::endl;
-								std::cerr << "W: Line: " << i << std::endl;
-								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cerr << std::endl;
+								Errors::control_errors(CURRENT_THROUGH_VOLT, i);
 								break;
 							case 'I':
 								thisTrace.type = 'C';
 								if(mObj.sources.count(label) != 0) {
 									thisTrace.traceData = &mObj.sources.at(label);
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print current for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 						}
-					}
-					else {
-						std::cerr << "W: Invalid request to plot current." << std::endl;
-						std::cerr << "W: Infringing line: " << i << std::endl;
-						std::cerr << std::endl;
-					}
-				}
-				else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
+					} else 
+						Errors::control_errors(INVALID_CURRENT, i);
+				} else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
 					thisTrace.type = 'C';
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), " #");
 					label = tokens2.at(0);
@@ -1501,8 +1434,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						tokens2 = Misc::tokenize_delimeter(label, "_");
 						label = tokens2.back();
 						for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
-					}
-					else if(label.find('.') != std::string::npos) {
+					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					thisTrace.name = label;
@@ -1512,27 +1444,39 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							if(mObj.components.voltRes.count(label) != 0) {
 								if(mObj.components.voltRes.at(label).posNCol == -1) {
 									std::transform(
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).negNCol))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).negNCol))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
 											(1 / mObj.components.voltRes.at(label).value)));
-								}
-								else if(mObj.components.voltRes.at(label).negNCol == -1) {
+								} else if(mObj.components.voltRes.at(label).negNCol == -1) {
 									std::transform(
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).posNCol))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).posNCol))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
 											(1 / mObj.components.voltRes.at(label).value)));
-								}
-								else {
+								} else {
 									std::transform(
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).begin(),
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).posNCol).end(),
-										sObj.results.xVect.at(mObj.components.voltRes.at(label).negNCol).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).posNCol))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).posNCol))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.voltRes.at(label).negNCol))).begin(),
 										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 									std::transform(
@@ -1545,91 +1489,68 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								}
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseRes.count(label) != 0) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).curNCol);
+							} else if(mObj.components.phaseRes.count(label) != 0) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseRes.at(label).curNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Unknown device " << label << std::endl;
-								std::cerr << "W: Cannot print current for this device." << std::endl;
-								std::cerr << "W: Ignoring this print request." << std::endl;
-								std::cerr << std::endl;
-							}
+							} else 
+								Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 						case 'L':
 							thisTrace.type = 'C';
 							if(mObj.components.voltInd.count(label) != 0) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltInd.at(label).curNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltInd.at(label).curNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseInd.count(label) != 0) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).curNCol);
+							} else if(mObj.components.phaseInd.count(label) != 0) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseInd.at(label).curNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Unknown device " << label << std::endl;
-								std::cerr << "W: Cannot print current for this device." << std::endl;
-								std::cerr << "W: Ignoring this print request." << std::endl;
-								std::cerr << std::endl;
-							}
+							} else 
+								Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 						case 'C':
 							thisTrace.type = 'C';
 							if(mObj.components.voltCap.count(label) != 0) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltCap.at(label).curNCol);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.voltCap.at(label).curNCol)));
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseCap.count(label) != 0) {
-								thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).curNCol);
+							} else if(mObj.components.phaseCap.count(label) != 0) {
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									mObj.components.phaseCap.at(label).curNCol)));
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Unknown device " << label << std::endl;
-								std::cerr << "W: Cannot print current for this device." << std::endl;
-								std::cerr << "W: Ignoring this print request." << std::endl;
-								std::cerr << std::endl;
-							}
+							} else 
+								Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 						case 'B':
 							thisTrace.type = 'C';
 							if(mObj.components.voltJJ.count(label) != 0) {
 								thisTrace.traceData = &mObj.components.voltJJ.at(label).jjCur;
 								traces.push_back(thisTrace);
-							}
-							else if(mObj.components.phaseJJ.count(label) != 0) {
+							} else if(mObj.components.phaseJJ.count(label) != 0) {
 								thisTrace.traceData = &mObj.components.phaseJJ.at(label).jjCur;
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Unknown device " << label << std::endl;
-								std::cerr << "W: Cannot print current for this device." << std::endl;
-								std::cerr << "W: Ignoring this print request." << std::endl;
-								std::cerr << std::endl;
-							}
+							} else 
+								Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 						case 'V':
-							std::cerr << "W: Requesting current through a voltage source." << std::endl;
-							std::cerr << "W: Line: " << i << std::endl;
-							std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-							std::cerr << std::endl;
+							Errors::control_errors(CURRENT_THROUGH_VOLT, i);
 							break;
 						case 'I':
 							thisTrace.type = 'C';
 							if(mObj.sources.count(label) != 0) {
 								thisTrace.traceData = &mObj.sources.at(label);
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Unknown device " << label << std::endl;
-								std::cerr << "W: Cannot print current for this device." << std::endl;
-								std::cerr << "W: Ignoring this print request." << std::endl;
-								std::cerr << std::endl;
-							}
+							} else 
+								Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 					}
-				}
-				else if (tokens.at(j)[0] == 'P') {
+				} else if (tokens.at(j)[0] == 'P') {
 					thisTrace.type = 'P';
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
 					if(tokens2.size() == 1) {
@@ -1638,185 +1559,175 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
-						}
-						else if(label.find('.') != std::string::npos) {
+						} else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
 						switch(label[0]) {
 							case 'R':
 								thisTrace.type = 'P';
-								if(mObj.components.voltRes.count(label) != 0) {
-									std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-									std::cerr << "W: Line: " << i << std::endl;
-									std::cerr << "W: This request will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								if(mObj.components.voltRes.count(label) != 0) 
+									Errors::control_errors(PHASE_WHEN_VOLT, i);
 								else if(mObj.components.phaseRes.count(label) != 0) {
 									if(mObj.components.phaseRes.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseRes.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseRes.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol);
+									} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseRes.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseRes.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseRes.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseRes.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseRes.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print phase for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'L':
 								thisTrace.type = 'P';
-								if(mObj.components.voltInd.count(label) != 0) {
-									std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-									std::cerr << "W: Line: " << i << std::endl;
-									std::cerr << "W: This request will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								if(mObj.components.voltInd.count(label) != 0) 
+									Errors::control_errors(PHASE_WHEN_VOLT, i);
 								else if(mObj.components.phaseInd.count(label) != 0) {
 									if(mObj.components.phaseInd.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseInd.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseInd.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol);
+									} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseInd.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseInd.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseInd.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseInd.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseInd.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print phase for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'C':
 								thisTrace.type = 'P';
-								if(mObj.components.voltCap.count(label) != 0) {
-									std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-									std::cerr << "W: Line: " << i << std::endl;
-									std::cerr << "W: This request will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								if(mObj.components.voltCap.count(label) != 0) 
+									Errors::control_errors(PHASE_WHEN_VOLT, i);
 								else if(mObj.components.phaseCap.count(label) != 0) {
 									if(mObj.components.phaseCap.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseCap.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseCap.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol);
+									} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseCap.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseCap.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseCap.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseCap.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseCap.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print phase for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'B':
 								thisTrace.type = 'P';
 								if(mObj.components.voltJJ.count(label) != 0) {
-									thisTrace.traceData = &sObj.results.xVect.at(mObj.components.voltJJ.at(label).phaseNCol);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										mObj.components.voltJJ.at(label).phaseNCol)));
 									traces.push_back(thisTrace);
-								}
-								else if(mObj.components.phaseJJ.count(label) != 0) {
+								} else if(mObj.components.phaseJJ.count(label) != 0) {
 									if(mObj.components.phaseJJ.at(label).posNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol);
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseJJ.at(label).negNCol)));
 										traces.push_back(thisTrace);
-									}
-									else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
-										thisTrace.traceData = &sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol);
+									} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											mObj.components.phaseJJ.at(label).posNCol)));
 										traces.push_back(thisTrace);
-									}
-									else {
+									} else {
 										std::transform(
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).begin(),
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).posNCol).end(),
-											sObj.results.xVect.at(mObj.components.phaseJJ.at(label).negNCol).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseJJ.at(label).posNCol))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseJJ.at(label).posNCol))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												mObj.components.phaseJJ.at(label).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								}
-								else {
-									std::cerr << "W: Unknown device " << label << std::endl;
-									std::cerr << "W: Cannot print phase for this device." << std::endl;
-									std::cerr << "W: Ignoring this print request." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else 
+									Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 							case 'V':
-								std::cerr << "W: Requesting phase of a voltage source." << std::endl;
-								std::cerr << "W: Line: " << i << std::endl;
-								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cerr << std::endl;
+								Errors::control_errors(PHASE_OF_VOLT, i);
 								break;
 							case 'I':
-								std::cerr << "W: Requesting phase of a current source." << std::endl;
-								std::cerr << "W: Line: " << i << std::endl;
-								std::cerr << "W: This is invalid and the request will be ignored." << std::endl;
-								std::cerr << std::endl;
+								Errors::control_errors(PHASE_OF_CURRENT, i);
 								break;
 							default:
 								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 									thisTrace.name = "NP_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1)));
 									traces.push_back(thisTrace);
-								}
-								else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-									std::cerr << "W: Request to print nodal phase for " << label << std::endl;
-									std::cerr << "W: Voltage mode simulation performed." << std::endl;
-									std::cerr << "W: Printing nodal voltage instead." << std::endl;
-									std::cerr << std::endl;
+								} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
+									Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 									thisTrace.type = 'V';
 									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 									thisTrace.name = "NV_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(index1);
+									thisTrace.traceData = &sObj.results.xVect.at(
+										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+										index1)));
 									traces.push_back(thisTrace);
-								}
-								else {
-									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cerr << "W: This request for print will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
+								} else
+									Errors::control_errors(UNKNOWN_NODE, label);
 								break;
 						}
 					}
@@ -1827,16 +1738,14 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							tokens2 = Misc::tokenize_delimeter(label, "_");
 							label = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label += "|" + tokens2.at(k);
-						}
-						else if(label.find('.') != std::string::npos) {
+						} else if(label.find('.') != std::string::npos) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						if(label2.find('_') != std::string::npos) {
 							tokens2 = Misc::tokenize_delimeter(label2, "_");
 							label2 = tokens2.back();
 							for(int k = 0; k < tokens2.size() - 1; k++) label2 = label + "|" + tokens2.at(k);
-						}
-						else if(label2.find('.') != std::string::npos) {
+						} else if(label2.find('.') != std::string::npos) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
@@ -1844,104 +1753,98 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-								std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-								std::cerr << "W: Voltage mode simulation performed." << std::endl;
-								std::cerr << "W: Printing nodal voltage instead." << std::endl;
-								std::cerr << std::endl;
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
+								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
 											-1.0));
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
-						}
-						else if (label2 == "0" || label2 == "GND") {
+							} else
+								Errors::control_errors(UNKNOWN_NODE, label2);
+						} else if (label2 == "0" || label2 == "GND") {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								thisTrace.name = "NP_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									index1)));
 								traces.push_back(thisTrace);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-								std::cerr << "W: Voltage mode simulation performed." << std::endl;
-								std::cerr << "W: Printing nodal voltage instead." << std::endl;
-								std::cerr << std::endl;
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
+								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								thisTrace.name = "NV_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(index1);
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									index1)));
 								traces.push_back(thisTrace);
-							}
-							else {
-								std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-								std::cerr << "W: This request for print will be ignored." << std::endl;
-								std::cerr << std::endl;
-							}
-						}
-						else {
+							} else 
+								Errors::control_errors(UNKNOWN_NODE, label);
+						} else {
 							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) {
-									std::cerr << "W: Node " << label << " was not found in the circuit." << std::endl;
-									std::cerr << "W: This request for print will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) {
-									std::cerr << "W: Node " << label2 << " was not found in the circuit." << std::endl;
-									std::cerr << "W: This request for print will be ignored." << std::endl;
-									std::cerr << std::endl;
-								}
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								std::cerr << "W: Request to print nodal phase from " << label << " to " << label2 << std::endl;
-								std::cerr << "W: Voltage mode simulation performed." << std::endl;
-								std::cerr << "W: Printing nodal voltage instead." << std::endl;
-								std::cerr << std::endl;
+								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) 
+									Errors::control_errors(UNKNOWN_NODE, label);
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
+								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) 
+									Errors::control_errors(UNKNOWN_NODE, label);
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
+								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
 								thisTrace.type = 'V';
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
 								thisTrace.name = "NV_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
-										sObj.results.xVect.at(index2).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index2))).begin(),
 										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
+							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
 								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
 								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
 								thisTrace.name = "NP_" + label + "_" + label2;
 								std::transform(
-										sObj.results.xVect.at(index1).begin(),
-										sObj.results.xVect.at(index1).end(),
-										sObj.results.xVect.at(index2).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index2))).begin(),
 										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 								thisTrace.pointer = false;
@@ -1949,18 +1852,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 						}
 					}
-				}
-				else if (tokens.at(j).find("TRAN") != std::string::npos) {}
-				else if (tokens.at(j)[0] == '"') {
-					std::cerr << "W: Mathematical operations on output vectors are not yet supported." << std::endl;
-					std::cerr << "W: Ignoring plotting of " << tokens.at(j) << std::endl;
-					std::cerr << std::endl;
-				}
-				else {
-					std::cerr << "W: Unknown plot type " << i << std::endl;
-					std::cerr << "W: Ignoring request to plot." << std::endl;
-					std::cerr << std::endl;
-				}
+				} else if (tokens.at(j).find("TRAN") != std::string::npos) {}
+				else if (tokens.at(j)[0] == '"')
+					Errors::control_errors(MATHOPS, tokens.at(j));
+				else
+					Errors::control_errors(UNKNOWN_PLOT, i);
 			}
 		}
 		else if(i.find("SAVE") != std::string::npos) {
