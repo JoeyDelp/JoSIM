@@ -18,9 +18,9 @@ public:
       const std::unordered_map<JoSIM::ParameterName, double> &parsedParams,
       const std::string &subckt = "");
 
-  static int prec_lvl(std::string op);
+  static int prec_lvl(const std::string &op);
 
-  static double parse_operator(std::string op, double val1, double val2,
+  static double parse_operator(const std::string &op, double val1, double val2,
                                int &popCount);
 
   static void parse_parameters(Parameters &parameters);

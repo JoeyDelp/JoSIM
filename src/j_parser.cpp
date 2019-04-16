@@ -3,17 +3,13 @@
 #include "JoSIM/j_parser.h"
 
 // Possible functions that can be called
-std::string funcsArray[] = { "COS",  "SIN",  "TAN",   "ACOS",  "ASIN",  "ATAN",
-							 "COSH", "SINH", "TANH",  "ACOSH", "ASINH", "ATANH",
-							 "EXP",  "LOG",  "LOG10", "SQRT",  "CBRT" };
 std::unordered_map<std::string, double> consts = {{"C",299792458},
 												  {"MU0",12.566370614E-7},
 												  {"EPS0",8.854187817E-12},
 												  {"PI",3.141592653589793}};
-std::vector<std::string> funcs(funcsArray,
-	funcsArray +
-	sizeof(funcsArray) / sizeof(std::string));
-
+const std::vector<std::string> funcs = { "COS",  "SIN",  "TAN",   "ACOS",  "ASIN",  "ATAN",
+							 "COSH", "SINH", "TANH",  "ACOSH", "ASINH", "ATANH",
+							 "EXP",  "LOG",  "LOG10", "SQRT",  "CBRT" };
 
 double
 Parser::parse_param(const std::string& expr, const std::unordered_map<JoSIM::ParameterName, double> &parsedParams,
@@ -143,7 +139,7 @@ Parser::parse_param(const std::string& expr, const std::unordered_map<JoSIM::Par
 }
 
 int
-Parser::prec_lvl(std::string op)
+Parser::prec_lvl(const std::string &op)
 {
 	switch (op[0]) {
 		// + and - are lowest level
@@ -165,7 +161,7 @@ Parser::prec_lvl(std::string op)
 }
 
 double
-Parser::parse_operator(std::string op, double val1, double val2, int& popCount)
+Parser::parse_operator(const std::string &op, double val1, double val2, int& popCount)
 {
 	if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
 		popCount = 1;

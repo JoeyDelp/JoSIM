@@ -22,9 +22,9 @@ Misc::has_suffix(const std::string& str, const std::string& suffix)
 }
 
 bool
-Misc::starts_with(std::string input, char test)
+Misc::starts_with(const std::string &input, char test)
 {
-	for (auto i : input) {
+	for (const auto i : input) {
 		if (i != ' ') {
 			return i == test;
 		}
@@ -80,7 +80,7 @@ Misc::tokenize_delimeter(const std::string& c, const std::string& d)
 }
 
 int
-Misc::map_value_count(std::unordered_map<std::string, int> map, int value)
+Misc::map_value_count(const std::unordered_map<std::string, int> &map, int value)
 {
 	int counter = 0;
 	for (const auto& i : map) {
@@ -156,7 +156,7 @@ Misc::unique_push(std::vector<std::string>& vector, const std::string& string)
 }
 
 int
-Misc::index_of(std::vector<std::string> vector, const std::string& value)
+Misc::index_of(const std::vector<std::string> &vector, const std::string& value)
 {
 	int counter = 0;
 	for (const auto& i : vector) {
@@ -182,7 +182,7 @@ Misc::substring_after(const std::string& str, const std::string& whatpart)
 }
 
 std::string
-Misc::substring_before(std::string str, const std::string& whatpart)
+Misc::substring_before(const std::string &str, const std::string& whatpart)
 {
 	std::size_t pos = 0;
 	std::string substring;
@@ -430,7 +430,7 @@ Misc::parse_function(std::string &str, Input &iObj, const std::string& subckt) {
 }
 
 bool
-Misc::findX(std::vector<std::string>& segment, std::string& theLine, int &linePos)
+Misc::findX(const std::vector<std::string>& segment, std::string& theLine, int &linePos)
 {
 	for (int i = linePos; i < segment.size(); i++) {
 		if (segment[i][0] == 'X') {

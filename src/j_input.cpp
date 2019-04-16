@@ -18,7 +18,7 @@ Input::read_input_file(std::string &fileName,
 			if (!line.empty() && line.back() == '\r')
 				line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
 			if (!line.empty() && !Misc::starts_with(line, '*'))
-				fileLines.push_back(line);
+				fileLines.emplace_back(line);
 		}
 	} else
 		Errors::input_errors(CANNOT_OPEN_FILE, fileName);
@@ -113,7 +113,7 @@ Input::expand_subcircuits() {
 	std::vector<std::pair<std::string, std::string>> moddedLines;
 	std::string subcktName, label, line;
 	for(const auto& i : netlist.subcircuits) {
-		for (auto j : i.second.lines) {
+		for (const auto &j : i.second.lines) {
 			if (j.first[0] == 'X') {
 				netlist.subcircuits.at(i.first).containsSubckt = true;
 				netlist.nestedSubcktCount++;

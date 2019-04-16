@@ -21,7 +21,7 @@ class Misc {
 
     static
     bool
-    starts_with(std::string input, char test);
+    starts_with(const std::string& input, char test);
 
     static
     std::vector<std::string>
@@ -33,7 +33,7 @@ class Misc {
 
     static
     int
-    map_value_count(std::unordered_map<std::string, int> map, int value);
+    map_value_count(const std::unordered_map<std::string, int> &map, int value);
 
     static
     double
@@ -45,7 +45,7 @@ class Misc {
 
     static
     int
-    index_of(std::vector<std::string> vector, const std::string& value);
+    index_of(const std::vector<std::string>& vector, const std::string& value);
 
     static
     std::string
@@ -53,14 +53,14 @@ class Misc {
 
     static
     std::string
-    substring_before(std::string str, const std::string& whatpart);
+    substring_before(const std::string& str, const std::string& whatpart);
 
     static std::vector<double> parse_function(std::string &str, Input &iObj,
                                               const std::string &subckt = "");
 
     static
     bool
-    findX(std::vector<std::string>& segment, std::string& theLine, int &linePos);
+    findX(const std::vector<std::string>& segment, std::string& theLine, int &linePos);
 
     template<typename A, typename B>
     static
