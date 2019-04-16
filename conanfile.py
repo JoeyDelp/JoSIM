@@ -8,7 +8,7 @@ def get_version():
 
     try:
         content = tools.load("CMakeLists.txt")
-        version = re.search(r"set\(JoSIM_VERSION (.*)\)", content).group(1)
+        version = re.search(r"project\(JoSIM (.*)\)", content).group(1)
         return version.strip()
     except IOError:
         # If the package is installed, and there is no CMakeLists.txt, the
