@@ -314,6 +314,7 @@ Errors::control_errors(int errorCode, const std::string& whatPart) {
 		std::cerr << "W: Printing nodal voltage instead." 
 			<< std::endl;
 		std::cerr << std::endl;
+    break;
 	case INVALID_NODEV:
 		std::cerr << "W: Invalid node voltage request found." 
 			<< std::endl;
@@ -365,6 +366,7 @@ Errors::control_errors(int errorCode, const std::string& whatPart) {
 		std::cerr << "W: Infringing line: " << whatPart 
 			<< std::endl;
 		std::cerr << std::endl;
+    break;
 	case MATHOPS:
 		std::cerr << "W: Mathematical operations on output vectors are not yet supported." 
 			<< std::endl;

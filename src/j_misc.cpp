@@ -371,13 +371,12 @@ Misc::parse_function(std::string &str, Input &iObj, const std::string& subckt) {
 		std::string WFline = tokens[0];
 		std::vector<std::string> WF;
 		double TS = 0.0, SF = 0.0, TD = 0.0;
-		int IM = 0, PER = 0;
+		int PER = 0;
 		TS = modifier(tokens[1]);
 		SF = modifier(tokens[2]);
 		if (SF == 0.0)
 			if (iObj.argVerb)
 				Errors::function_errors(CUS_SF_ZERO, tokens[2]);
-		IM = stoi(tokens[3]);
 		if (tokens.size() == 6) {
 			TD = modifier(tokens[4]);
 			PER = stoi(tokens[5]);
