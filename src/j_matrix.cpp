@@ -744,9 +744,8 @@ Matrix::create_A_volt(Input &iObj) {
 		/** TRANSMISSION LINE **/
 		/***********************/
 		else if (i.first[0] == 'T') {
-			std::string label, cName2, rName2, cNameP2, rNameP2, cNameN2,
+			std::string Tx = label, cName2, rName2, cNameP2, rNameP2, cNameN2,
 				rNameN2, nodeP2, nodeN2;
-      const std::string &Tx = label;
 			bool pGND2, nGND2;
 			matrix_element e;
 			double z0 = 10, tD = 0.0;
