@@ -5,7 +5,7 @@
 #include <cassert>
 
 void
-Simulation::identify_simulation(std::vector<std::string> controls,
+Simulation::identify_simulation(const std::vector<std::string>& controls,
 						double &prstep,
 						double &tstop,
 						double &tstart,
@@ -72,6 +72,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 	klu_common Common;
 	klu_numeric * Numeric;
 	ok = klu_defaults(&Common);
+  assert(ok);
 	Symbolic = klu_analyze(mObj.Nsize, &mObj.rowptr.front(), &mObj.colind.front(), &Common);
 	Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(), &mObj.nzval.front(), Symbolic, &Common);
 	rowCounter = 0;
@@ -373,6 +374,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 	klu_common Common;
 	klu_numeric * Numeric;
 	ok = klu_defaults(&Common);
+  assert(ok);
 	Symbolic = klu_analyze(mObj.Nsize, &mObj.rowptr.front(), &mObj.colind.front(), &Common);
 	Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(), &mObj.nzval.front(), Symbolic, &Common);
 	rowCounter = 0;

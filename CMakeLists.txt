@@ -91,7 +91,7 @@ add_subdirectory(test)
 include(GNUInstallDirs)
 
 # Install headers
-install(DIRECTORY include/JoSIM DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM")
+install(DIRECTORY include/JoSIM/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM/")
 
 # Install targets
 install(TARGETS
