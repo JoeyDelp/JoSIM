@@ -130,6 +130,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							thisTrace.traceData = &mObj.sources.at(dev.index);
 							traces.push_back(thisTrace);
 							break;
+						default:
+							Errors::control_errors(UNKNOWN_DEVICE, label);
+							break;
 					}
 				} else Errors::control_errors(UNKNOWN_DEVICE, label);
 			} else if(tokens.at(1) == "DEVV") {
@@ -389,6 +392,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							break;
 						case RowDescriptor::Type::PhaseCS:
 							Errors::control_errors(VOLT_ACROSS_CURRENT, i);
+							break;
+						default:
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 					}
 				} else Errors::control_errors(UNKNOWN_DEVICE, label);
@@ -740,6 +746,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							break;
 						case RowDescriptor::Type::PhaseCS:
 							Errors::control_errors(PHASE_OF_CURRENT, i);
+							break;
+						default:
+							Errors::control_errors(UNKNOWN_DEVICE, label);
 							break;
 					}
 				} else Errors::control_errors(UNKNOWN_DEVICE, label);
@@ -1210,6 +1219,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									thisTrace.traceData = &mObj.sources.at(dev.index);
 									traces.push_back(thisTrace);
 									break;
+								default:
+									Errors::control_errors(UNKNOWN_DEVICE, label);
+									break;
 							}
 						} else Errors::control_errors(UNKNOWN_DEVICE, label);
 					} else 
@@ -1329,6 +1341,9 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							case RowDescriptor::Type::PhaseCS:
 								thisTrace.traceData = &mObj.sources.at(dev.index);
 								traces.push_back(thisTrace);
+								break;
+							default:
+								Errors::control_errors(UNKNOWN_DEVICE, label);
 								break;
 						}
 					} else Errors::control_errors(UNKNOWN_DEVICE, label);
