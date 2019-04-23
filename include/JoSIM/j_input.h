@@ -35,7 +35,7 @@ class Transient {
 			prstep = 1E-12;
 			maxtstep = 1E-12;
 		};
-		double simsize() {
+    std::size_t simsize() {
 			return (tstop - tstart) / prstep;
 		};
 };

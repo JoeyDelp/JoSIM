@@ -2436,8 +2436,7 @@ void
 Matrix::find_relevant_x(Input &iObj) {
 	std::vector<std::string> tokens, tokens2;
 	std::string label, label2;
-	RowDescriptor &dev = deviceLabelIndex.at(deviceLabelIndex.begin()->first);
-	RowDescriptor &dev2 = deviceLabelIndex.at(deviceLabelIndex.begin()->first);
+
 	int index1, index2;
 	for (const auto& i : iObj.controls) {
 		if(i.find("PRINT") != std::string::npos) {
@@ -2469,7 +2468,7 @@ Matrix::find_relevant_x(Input &iObj) {
 				if(deviceLabelIndex.count(label) == 0) { 
 					Errors::control_errors(UNKNOWN_DEVICE, label);
 				} else {
-					dev = deviceLabelIndex.at(label);
+          const auto &dev = deviceLabelIndex.at(label);
 					switch(dev.type) {
 						case RowDescriptor::Type::VoltageResistor:
 							if(components.voltRes.at(dev.index).posNCol == -1) {
@@ -2525,7 +2524,7 @@ Matrix::find_relevant_x(Input &iObj) {
 				if(deviceLabelIndex.count(label) == 0) {
 					Errors::control_errors(UNKNOWN_DEVICE, label);
 				} else { 
-					dev = deviceLabelIndex.at(label);
+					const auto &dev = deviceLabelIndex.at(label);
 					switch(dev.type) {
 						case RowDescriptor::Type::VoltageResistor:
 							if(components.voltRes.at(dev.index).posNCol == -1) {
@@ -2733,7 +2732,7 @@ Matrix::find_relevant_x(Input &iObj) {
 				if(deviceLabelIndex.count(label) == 0) {
 					Errors::control_errors(UNKNOWN_DEVICE, label);
 				} else {
-					dev = deviceLabelIndex.at(label);
+					const auto& dev = deviceLabelIndex.at(label);
 					switch(dev.type) {
 						case RowDescriptor::Type::VoltageResistor:
 							if(components.voltRes.at(dev.index).posNCol == -1) {
@@ -2873,7 +2872,7 @@ Matrix::find_relevant_x(Input &iObj) {
 						if(deviceLabelIndex.count(label) == 0) {
 							Errors::control_errors(UNKNOWN_DEVICE, label);
 						} else {
-							dev = deviceLabelIndex.at(label);
+							const auto& dev = deviceLabelIndex.at(label);
 							switch(dev.type) {
 								case RowDescriptor::Type::VoltageResistor:
 									if(components.voltRes.at(dev.index).posNCol == -1) {
@@ -3068,7 +3067,7 @@ Matrix::find_relevant_x(Input &iObj) {
 						}
 						if(deviceLabelIndex.count(label) == 0) { } 
 						else {
-							dev = deviceLabelIndex.at(label);
+							const auto& dev = deviceLabelIndex.at(label);
 							switch(dev.type) {
 								case RowDescriptor::Type::VoltageResistor:
 									if(components.voltRes.at(dev.index).posNCol == -1) {
@@ -3132,7 +3131,7 @@ Matrix::find_relevant_x(Input &iObj) {
 					}
 					if(deviceLabelIndex.count(label) == 0) {}
 					else {
-						dev = deviceLabelIndex.at(label);
+						const auto & dev = deviceLabelIndex.at(label);
 						switch(dev.type) {
 							case RowDescriptor::Type::VoltageResistor:
 								if(components.voltRes.at(dev.index).posNCol == -1) {
@@ -3196,7 +3195,7 @@ Matrix::find_relevant_x(Input &iObj) {
 						}
 						if(deviceLabelIndex.count(label) == 0) {}
 						else {
-							dev = deviceLabelIndex.at(label);
+							const auto& dev = deviceLabelIndex.at(label);
 							switch(dev.type) {
 								case RowDescriptor::Type::VoltageResistor:
 								case RowDescriptor::Type::PhaseResistor:
