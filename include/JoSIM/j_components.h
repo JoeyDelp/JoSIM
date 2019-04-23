@@ -29,6 +29,8 @@ class device {
 };
 
 class res_volt : public device {
+	public:
+		res_volt() { };
 };
 
 class ind_volt : public device {
@@ -36,7 +38,7 @@ class ind_volt : public device {
 		std::string curNodeR, curNodeC;
 		int curNRow, curNCol;
 		int indPtr;
-		std::unordered_map<std::string, double> mut;
+		std::unordered_map<int, double> mut;
 		std::unordered_map<std::string, int> mutPtr;
 		ind_volt() {
 			curNodeR = curNodeC = "NONE";
@@ -227,32 +229,46 @@ class tx_phase : public tx_line {
 		}
 };
 
+struct ComponentConnections {
+	enum class Type {
+		ResistorP, ResistorN, CapacitorP, CapacitorN, InductorP, InductorN,
+		JJP, JJN, VSP, VSN, CSP, CSN, PSP, PSN, TXP1, TXP2, TXN1, TXN2
+	} type;
+	int index;
+};
+
+struct NodeConnections {
+	std::string name;
+	std::vector<ComponentConnections> connections;
+};
+
 class Components {
 	public:
-		std::unordered_map<std::string, res_phase> phaseRes;
-		std::unordered_map<std::string, ind_phase> phaseInd;
-		std::unordered_map<std::string, cap_phase> phaseCap;
-		std::unordered_map<std::string, jj_phase> phaseJJ;
-		std::unordered_map<std::string, vs_phase> phaseVs;
-		std::unordered_map<std::string, ps_phase> phasePs;
 
-		std::unordered_map<std::string, res_volt> voltRes;
-		std::unordered_map<std::string, ind_volt> voltInd;
-		std::unordered_map<std::string, cap_volt> voltCap;
-		std::unordered_map<std::string, jj_volt> voltJJ;
-		std::unordered_map<std::string, vs_volt> voltVs;
+		std::vector<res_phase> phaseRes;
+		std::vector<ind_phase> phaseInd;
+		std::vector<cap_phase> phaseCap;
+		std::vector<jj_phase> phaseJJ;
+		std::vector<vs_phase> phaseVs;
+		std::vector<ps_phase> phasePs;
 
-		std::unordered_map<std::string, tx_line> txLine;
-		std::unordered_map<std::string, tx_phase> txPhase;
+		std::vector<res_volt> voltRes;
+		std::vector<ind_volt> voltInd;
+		std::vector<cap_volt> voltCap;
+		std::vector<jj_volt> voltJJ;
+		std::vector<vs_volt> voltVs;
+
+		std::vector<tx_line> txLine;
+		std::vector<tx_phase> txPhase;
 
 		std::vector<std::pair<std::string, std::string>> mutualInductanceLines;
 
 		Components() {};
 
 		void
-		jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt = "");
+		jj_model(std::string &modelstring, std::string &area, const int &jjIndex, Input &iObj, const std::string& subckt = "");
 
 		void
-		jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt = "");
+		jj_model_phase(std::string &modelstring, std::string &area, const int &jjIndex, Input &iObj, const std::string& subckt = "");
 };
 #endif

@@ -1,7 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-Testing: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Release?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=2&branchName=testing)
+##### Testing: v2.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Release?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=2&branchName=testing)
+
+##### Stable: v2.2 - Status: 
 
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120).
 

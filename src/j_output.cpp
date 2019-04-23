@@ -11,6 +11,8 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 	std::vector<std::string> tokens, tokens2;
 	std::string label, label2;
 	int index1, index2;
+	RowDescriptor &dev = mObj.deviceLabelIndex.at(mObj.deviceLabelIndex.begin()->first);
+	RowDescriptor &dev2 = mObj.deviceLabelIndex.at(mObj.deviceLabelIndex.begin()->first);
 	for (const auto& i : iObj.controls) {
 		if(i.find("PRINT") != std::string::npos) {
 			Trace thisTrace;
@@ -27,45 +29,46 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
-				switch(label[0]) {
-					case 'R':
-						thisTrace.type = 'C';
-						if(mObj.components.voltRes.count(label) != 0) {
-							if(mObj.components.voltRes.at(label).posNCol == -1) {
+				thisTrace.type = 'C';
+				if (mObj.deviceLabelIndex.count(label) != 0) {
+					dev = mObj.deviceLabelIndex.at(label);
+					switch(dev.type) {
+						case RowDescriptor::Type::VoltageResistor:
+							if(mObj.components.voltRes.at(dev.index).posNCol == -1) {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).negNCol))).begin(),
+										mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).negNCol))).end(),
+										mObj.components.voltRes.at(dev.index).negNCol))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
-										(1 / mObj.components.voltRes.at(label).value)));
-							} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+										(1 / mObj.components.voltRes.at(dev.index).value)));
+							} else if(mObj.components.voltRes.at(dev.index).negNCol == -1) {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).posNCol))).begin(),
+										mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).posNCol))).end(),
+										mObj.components.voltRes.at(dev.index).posNCol))).end(),
 									std::back_inserter(thisTrace.calcData),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
-										(1 / mObj.components.voltRes.at(label).value)));
+										(1 / mObj.components.voltRes.at(dev.index).value)));
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).posNCol))).begin(),
+										mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).posNCol))).end(),
+										mObj.components.voltRes.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).negNCol))).begin(),
+										mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								std::transform(
@@ -74,74 +77,62 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 									thisTrace.calcData.begin(),
 									std::bind(std::multiplies<double>(),
 										std::placeholders::_1,
-										(1 / mObj.components.voltRes.at(label).value)));
+										(1 / mObj.components.voltRes.at(dev.index).value)));
 							}
 							thisTrace.pointer = false;
 							traces.push_back(thisTrace);
-						} else if(mObj.components.phaseRes.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseResistor:
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								mObj.components.phaseRes.at(label).curNCol)));
+								mObj.components.phaseRes.at(dev.index).curNCol)));
 							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'L':
-						thisTrace.type = 'C';
-						if(mObj.components.voltInd.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::VoltageInductor:
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								mObj.components.voltInd.at(label).curNCol)));
+								mObj.components.voltInd.at(dev.index).curNCol)));
 							traces.push_back(thisTrace);
-						} else if(mObj.components.phaseInd.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseInductor:
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								mObj.components.phaseInd.at(label).curNCol)));
+								mObj.components.phaseInd.at(dev.index).curNCol)));
 							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'C':
-						thisTrace.type = 'C';
-						if(mObj.components.voltCap.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::VoltageCapacitor:
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								mObj.components.voltCap.at(label).curNCol)));
+								mObj.components.voltCap.at(dev.index).curNCol)));
 							traces.push_back(thisTrace);
-						} else if(mObj.components.phaseCap.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseCapacitor:
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								mObj.components.phaseCap.at(label).curNCol)));
+								mObj.components.phaseCap.at(dev.index).curNCol)));
 							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'B':
-						thisTrace.type = 'C';
-						if(mObj.components.voltJJ.count(label) != 0) {
-							thisTrace.traceData = &mObj.components.voltJJ.at(label).jjCur;
+							break;
+						case RowDescriptor::Type::VoltageJJ:
+							thisTrace.traceData = &mObj.components.voltJJ.at(dev.index).jjCur;
 							traces.push_back(thisTrace);
-						} else if(mObj.components.phaseJJ.count(label) != 0) {
-							thisTrace.traceData = &mObj.components.phaseJJ.at(label).jjCur;
+							break;
+						case RowDescriptor::Type::PhaseJJ:
+							thisTrace.traceData = &mObj.components.phaseJJ.at(dev.index).jjCur;
 							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'V':
-						Errors::control_errors(CURRENT_THROUGH_VOLT, i);
-						break;
-					case 'I':
-						thisTrace.type = 'C';
-						if(mObj.sources.count(label) != 0) {
-							thisTrace.traceData = &mObj.sources.at(label);
+							break;
+						case RowDescriptor::Type::VoltageVS:
+							Errors::control_errors(CURRENT_THROUGH_VOLT, i);
+							break;
+						case RowDescriptor::Type::PhaseVS:
+							Errors::control_errors(CURRENT_THROUGH_VOLT, i);
+							break;
+						case RowDescriptor::Type::VoltageCS:
+							thisTrace.traceData = &mObj.sources.at(dev.index);
 							traces.push_back(thisTrace);
-						} else {
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						}
-						break;
-				}
-			}
-			else if(tokens.at(1) == "DEVV") {
+							break;
+					}
+				} else Errors::control_errors(UNKNOWN_DEVICE, label);
+			} else if(tokens.at(1) == "DEVV") {
 				if(tokens.size() > 4) Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
 				label = tokens.at(2);
 				if(label.find('_') != std::string::npos) {
@@ -153,261 +144,255 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
-				switch(label[0]) {
-					case 'R':
-						thisTrace.type = 'V';
-						if(mObj.components.voltRes.count(label) != 0) {
-							if(mObj.components.voltRes.at(label).posNCol == -1) {
+				thisTrace.type = 'V';
+				if (mObj.deviceLabelIndex.count(label) != 0) { 
+					dev = mObj.deviceLabelIndex.at(label);
+					switch(dev.type) {
+						case RowDescriptor::Type::VoltageResistor:
+							if(mObj.components.voltRes.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltRes.at(label).negNCol)));
+									mObj.components.voltRes.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+							} else if(mObj.components.voltRes.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltRes.at(label).posNCol)));
+									mObj.components.voltRes.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).posNCol))).begin(),
+										mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).posNCol))).end(),
+										mObj.components.voltRes.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltRes.at(label).negNCol))).begin(),
+										mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else if(mObj.components.phaseRes.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseResistor:
 							Errors::control_errors(VOLT_WHEN_PHASE, label);
-							if(mObj.components.phaseRes.at(label).posNCol == -1) {
+							if(mObj.components.phaseRes.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseRes.at(label).negNCol)));
+									mObj.components.phaseRes.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseRes.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseRes.at(label).posNCol)));
+									mObj.components.phaseRes.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).posNCol))).begin(),
+										mObj.components.phaseRes.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).posNCol))).end(),
+										mObj.components.phaseRes.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).negNCol))).begin(),
+										mObj.components.phaseRes.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'L':
-						thisTrace.type = 'V';
-						if(mObj.components.voltInd.count(label) != 0) {
-							if(mObj.components.voltInd.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::VoltageInductor:
+							if(mObj.components.voltInd.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltInd.at(label).negNCol)));
+									mObj.components.voltInd.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.voltInd.at(label).negNCol == -1) {
+							} else if(mObj.components.voltInd.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltInd.at(label).posNCol)));
+									mObj.components.voltInd.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltInd.at(label).posNCol))).begin(),
+										mObj.components.voltInd.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltInd.at(label).posNCol))).end(),
+										mObj.components.voltInd.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltInd.at(label).negNCol))).begin(),
+										mObj.components.voltInd.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else if(mObj.components.phaseInd.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseInductor:
 							Errors::control_errors(VOLT_WHEN_PHASE, label);
-							if(mObj.components.phaseInd.at(label).posNCol == -1) {
+							if(mObj.components.phaseInd.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseInd.at(label).negNCol)));
+									mObj.components.phaseInd.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseInd.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseInd.at(label).posNCol)));
+									mObj.components.phaseInd.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).posNCol))).begin(),
+										mObj.components.phaseInd.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).posNCol))).end(),
+										mObj.components.phaseInd.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).negNCol))).begin(),
+										mObj.components.phaseInd.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'C':
-						thisTrace.type = 'V';
-						if(mObj.components.voltCap.count(label) != 0) {
-							if(mObj.components.voltCap.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::VoltageCapacitor:
+							if(mObj.components.voltCap.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltCap.at(label).negNCol)));
+									mObj.components.voltCap.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.voltCap.at(label).negNCol == -1) {
+							} else if(mObj.components.voltCap.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltCap.at(label).posNCol)));
+									mObj.components.voltCap.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltCap.at(label).posNCol))).begin(),
+										mObj.components.voltCap.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltCap.at(label).posNCol))).end(),
+										mObj.components.voltCap.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltCap.at(label).negNCol))).begin(),
+										mObj.components.voltCap.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else if(mObj.components.phaseCap.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseCapacitor:
 							Errors::control_errors(VOLT_WHEN_PHASE, label);
-							if(mObj.components.phaseCap.at(label).posNCol == -1) {
+							if(mObj.components.phaseCap.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseCap.at(label).negNCol)));
+									mObj.components.phaseCap.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseCap.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseCap.at(label).posNCol)));
+									mObj.components.phaseCap.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).posNCol))).begin(),
+										mObj.components.phaseCap.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).posNCol))).end(),
+										mObj.components.phaseCap.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).negNCol))).begin(),
+										mObj.components.phaseCap.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'B':
-						thisTrace.type = 'V';
-						if(mObj.components.voltJJ.count(label) != 0) {
-							if(mObj.components.voltJJ.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::VoltageJJ:
+							if(mObj.components.voltJJ.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltJJ.at(label).negNCol)));
+									mObj.components.voltJJ.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.voltJJ.at(label).negNCol == -1) {
+							} else if(mObj.components.voltJJ.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltJJ.at(label).posNCol)));
+									mObj.components.voltJJ.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(label).posNCol))).begin(),
+										mObj.components.voltJJ.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(label).posNCol))).end(),
+										mObj.components.voltJJ.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(label).negNCol))).begin(),
+										mObj.components.voltJJ.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else if(mObj.components.phaseJJ.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::PhaseJJ:
 							Errors::control_errors(VOLT_WHEN_PHASE, label);
-							if(mObj.components.phaseJJ.at(label).posNCol == -1) {
+							if(mObj.components.phaseJJ.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseJJ.at(label).negNCol)));
+									mObj.components.phaseJJ.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseJJ.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseJJ.at(label).posNCol)));
+									mObj.components.phaseJJ.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseJJ.at(label).posNCol))).begin(),
+										mObj.components.phaseJJ.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseJJ.at(label).posNCol))).end(),
+										mObj.components.phaseJJ.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseJJ.at(label).negNCol))).begin(),
+										mObj.components.phaseJJ.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'V':
-						thisTrace.type = 'V';
-						if(mObj.sources.count(label) != 0) {
-							thisTrace.traceData = &mObj.sources.at(label);
+							break;
+						case RowDescriptor::Type::VoltageVS:
+							thisTrace.traceData = &mObj.sources.at(dev.index);
 							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'I':
-						Errors::control_errors(VOLT_ACROSS_CURRENT, i);
-						break;
-				}
-			}
-			else if(tokens.at(1) == "NODEV") {
+							break;
+						case RowDescriptor::Type::PhaseVS:
+							thisTrace.traceData = &mObj.sources.at(dev.index);
+							traces.push_back(thisTrace);
+							break;
+						case RowDescriptor::Type::VoltageCS:
+							Errors::control_errors(VOLT_ACROSS_CURRENT, i);
+							break;
+						case RowDescriptor::Type::PhaseCS:
+							Errors::control_errors(VOLT_ACROSS_CURRENT, i);
+							break;
+					}
+				} else Errors::control_errors(UNKNOWN_DEVICE, label);
+			} else if(tokens.at(1) == "NODEV") {
 				thisTrace.type = 'V';
 				if (tokens.size() > 4) {
 					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
@@ -420,24 +405,18 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
-					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-						thisTrace.name = "NV_" + label;
+					if(mObj.deviceLabelIndex.count(label) != 0) {
+						index1 = mObj.deviceLabelIndex.at(label).index;
+						if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+							thisTrace.type = 'P';
+							thisTrace.name = "NP_" + label;
+						} else thisTrace.name = "NV_" + label;
 						thisTrace.traceData = &sObj.results.xVect.at(
 							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 							index1)));
 						traces.push_back(thisTrace);
-					} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-						Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-						thisTrace.type = 'P';
-						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-						thisTrace.name = "NP_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(
-							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-							index1)));
-						traces.push_back(thisTrace);
-					} else 
-						Errors::control_errors(UNKNOWN_NODE, label);
+					} else Errors::control_errors(UNKNOWN_NODE, label);
 				} else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
@@ -456,118 +435,63 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
-						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-							thisTrace.name = "NV_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									std::back_inserter(thisTrace.calcData),
-									std::bind(std::multiplies<double>(),
-										std::placeholders::_1,
-										-1.0));
-							thisTrace.pointer = false;
+						if(mObj.deviceLabelIndex.count(label2) != 0) {
+							index2 = mObj.deviceLabelIndex.at(label2).index;
+							if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+								Errors::control_errors(NODEVOLT_WHEN_PHASE, label2);
+								thisTrace.type = 'P';
+								thisTrace.name = "NP_" + label2;
+							} else thisTrace.name = "NV_" + label2;
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								index2)));
 							traces.push_back(thisTrace);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-							thisTrace.type = 'P';
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-							thisTrace.name = "NP_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									std::back_inserter(thisTrace.calcData),
-									std::bind(std::multiplies<double>(),
-										std::placeholders::_1,
-										-1.0));
-							thisTrace.pointer = false;
-							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_NODE, label2);
+						} else Errors::control_errors(UNKNOWN_NODE, label2);
 					} else if (label2 == "0" || label2 == "GND") {
-						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-							thisTrace.name = "NV_" + label + "_" + label2;
+						if(mObj.deviceLabelIndex.count(label) != 0) {
+							index1 = mObj.deviceLabelIndex.at(label).index;
+							if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+								thisTrace.type = 'P';
+								thisTrace.name = "NP_" + label;
+							} else thisTrace.name = "NV_" + label;
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 								index1)));
 							traces.push_back(thisTrace);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-							thisTrace.type = 'P';
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-							thisTrace.name = "NP_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(
-								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								index1)));
-							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_NODE, label);
+						} else Errors::control_errors(UNKNOWN_NODE, label);
 					} else {
-						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end())
-								Errors::control_errors(UNKNOWN_NODE, label);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end())
-								Errors::control_errors(UNKNOWN_NODE, label2);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-							thisTrace.name = "NV_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index2))).begin(),
-									std::back_inserter(thisTrace.calcData),
-									std::minus<double>());
-							thisTrace.pointer = false;
-							traces.push_back(thisTrace);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-							thisTrace.type = 'P';
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-							thisTrace.name = "NP_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index2))).begin(),
-									std::back_inserter(thisTrace.calcData),
-									std::minus<double>());
-							thisTrace.pointer = false;
-							traces.push_back(thisTrace);
-						}
-					}
+						if(mObj.deviceLabelIndex.count(label2) != 0) {
+							if(mObj.deviceLabelIndex.count(label) != 0) {
+								if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+									Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+									thisTrace.type = 'P';
+									thisTrace.name = "NP_" + label + "_" + label2;
+								} else thisTrace.name = "NV_" + label + "_" + label2;
+								std::transform(
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index2))).begin(),
+										std::back_inserter(thisTrace.calcData),
+										std::minus<double>());
+								thisTrace.pointer = false;
+								traces.push_back(thisTrace);
+							} else Errors::control_errors(UNKNOWN_NODE, label);
+						} else Errors::control_errors(UNKNOWN_NODE, label2);
+					}						
 				} else 
 					Errors::control_errors(INVALID_NODEV, i);
-			}
-			else if(tokens.at(1) == "NODEP") {
+			} else if(tokens.at(1) == "NODEP") {
 				thisTrace.type = 'P';
-				if (tokens.size() > 4) 
+				if (tokens.size() > 4) {
 					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
-				else if (tokens.size() == 3) {
+				} else if (tokens.size() == 3) {
 					label = tokens.at(2);
 					if(label.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label, "_");
@@ -576,24 +500,18 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
-					if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-						thisTrace.name = "NP_" + label;
+					if(mObj.deviceLabelIndex.count(label) != 0) {
+						index1 = mObj.deviceLabelIndex.at(label).index;
+						if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+							thisTrace.type = 'V';
+							thisTrace.name = "NV_" + label;
+						} else thisTrace.name = "NP_" + label;
 						thisTrace.traceData = &sObj.results.xVect.at(
 							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 							index1)));
 						traces.push_back(thisTrace);
-					} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-						Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-						thisTrace.type = 'V';
-						index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-						thisTrace.name = "NV_" + label;
-						thisTrace.traceData = &sObj.results.xVect.at(
-							std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-							index1)));
-						traces.push_back(thisTrace);
-					} else 
-						Errors::control_errors(UNKNOWN_NODE, label);
+					} else Errors::control_errors(UNKNOWN_NODE, label);
 				} else if (tokens.size() == 4) {
 					label = tokens.at(2);
 					label2 = tokens.at(3);
@@ -603,7 +521,7 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						for(int j = 0; j < tokens.size() - 1; j++) label += "|" + tokens.at(j);
 					} else if(label.find('.') != std::string::npos) {
 						std::replace(label.begin(), label.end(), '.', '|');
-					}
+					} 
 					if(label2.find('_') != std::string::npos) {
 						tokens = Misc::tokenize_delimeter(label2, "_");
 						label2 = tokens.back();
@@ -612,111 +530,58 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						std::replace(label2.begin(), label2.end(), '.', '|');
 					}
 					if(label == "0" || label == "GND") {
-						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-							thisTrace.name = "NP_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									std::back_inserter(thisTrace.calcData),
-									std::bind(std::multiplies<double>(),
-										std::placeholders::_1,
-										-1.0));
-							thisTrace.pointer = false;
+						if(mObj.deviceLabelIndex.count(label2) != 0) {
+							index2 = mObj.deviceLabelIndex.at(label2).index;
+							if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+								Errors::control_errors(NODEPHASE_WHEN_VOLT, label2);
+								thisTrace.type = 'V';
+								thisTrace.name = "NV_" + label2;
+							} else thisTrace.name = "NP_" + label2;
+							thisTrace.traceData = &sObj.results.xVect.at(
+								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+								index2)));
 							traces.push_back(thisTrace);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-							thisTrace.type = 'V';
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-							thisTrace.name = "NV_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									std::back_inserter(thisTrace.calcData),
-									std::bind(std::multiplies<double>(),
-										std::placeholders::_1,
-										-1.0));
-							thisTrace.pointer = false;
-							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_NODE, label2);
+						} else Errors::control_errors(UNKNOWN_NODE, label2);
 					} else if (label2 == "0" || label2 == "GND") {
-						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-							thisTrace.name = "NP_" + label + "_" + label2;
+						if(mObj.deviceLabelIndex.count(label) != 0) {
+							index1 = mObj.deviceLabelIndex.at(label).index;
+							if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+								thisTrace.type = 'V';
+								thisTrace.name = "NV_" + label;
+							} else thisTrace.name = "NP_" + label;
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 								index1)));
 							traces.push_back(thisTrace);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-							thisTrace.type = 'V';
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-							thisTrace.name = "NV_" + label + "_" + label2;
-							thisTrace.traceData = &sObj.results.xVect.at(
-								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								index1)));
-							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+						} else Errors::control_errors(UNKNOWN_NODE, label);
 					} else {
-						if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end())
-								Errors::control_errors(UNKNOWN_NODE, label);
-						}
-						else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) 
-								Errors::control_errors(UNKNOWN_NODE, label2);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-							Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-							thisTrace.type = 'V';
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-							thisTrace.name = "NV_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index2))).begin(),
-									std::back_inserter(thisTrace.calcData),
-									std::minus<double>());
-							thisTrace.pointer = false;
-							traces.push_back(thisTrace);
-						} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-							index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-							index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-							thisTrace.name = "NP_" + label + "_" + label2;
-							std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1))).end(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index2))).begin(),
-									std::back_inserter(thisTrace.calcData),
-									std::minus<double>());
-							thisTrace.pointer = false;
-							traces.push_back(thisTrace);
-						}
+						if(mObj.deviceLabelIndex.count(label2) != 0) {
+							if(mObj.deviceLabelIndex.count(label) != 0) {
+								if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+									Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+									thisTrace.type = 'V';
+									thisTrace.name = "NV_" + label + "_" + label2;
+								} else thisTrace.name = "NP_" + label + "_" + label2;
+								std::transform(
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).begin(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1))).end(),
+										sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index2))).begin(),
+										std::back_inserter(thisTrace.calcData),
+										std::minus<double>());
+								thisTrace.pointer = false;
+								traces.push_back(thisTrace);
+							} else Errors::control_errors(UNKNOWN_NODE, label);
+						} else Errors::control_errors(UNKNOWN_NODE, label2);
 					}
 				} else 
-					Errors::control_errors(INVALID_NODEP, i);
+					Errors::control_errors(INVALID_NODEV, i);
 			} else if(tokens.at(1) == "PHASE") {
 				if(tokens.size() > 4) 
 					Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
@@ -729,161 +594,155 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 					std::replace(label.begin(), label.end(), '.', '|');
 				}
 				thisTrace.name = label;
-				switch(label[0]) {
-					case 'R':
-						thisTrace.type = 'P';
-						if(mObj.components.voltRes.count(label) != 0) 
+				thisTrace.type = 'P';
+				if (mObj.deviceLabelIndex.count(label) != 0) {
+					dev = mObj.deviceLabelIndex.at(label);
+					switch(dev.type) {
+						case RowDescriptor::Type::VoltageResistor:
 							Errors::control_errors(PHASE_WHEN_VOLT, i);
-						else if(mObj.components.phaseRes.count(label) != 0) {
-							if(mObj.components.phaseRes.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::PhaseResistor:
+							if(mObj.components.phaseRes.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseRes.at(label).negNCol)));
+									mObj.components.phaseRes.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseRes.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseRes.at(label).posNCol)));
+									mObj.components.phaseRes.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).posNCol))).begin(),
+										mObj.components.phaseRes.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).posNCol))).end(),
+										mObj.components.phaseRes.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).negNCol))).begin(),
+										mObj.components.phaseRes.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'L':
-						thisTrace.type = 'P';
-						if(mObj.components.voltInd.count(label) != 0) 
+							break;
+						case RowDescriptor::Type::VoltageInductor:
 							Errors::control_errors(PHASE_WHEN_VOLT, i);
-						else if(mObj.components.phaseInd.count(label) != 0) {
-							if(mObj.components.phaseInd.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::PhaseInductor:
+							if(mObj.components.phaseInd.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseInd.at(label).negNCol)));
+									mObj.components.phaseInd.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseInd.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseInd.at(label).posNCol)));
+									mObj.components.phaseInd.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).posNCol))).begin(),
+										mObj.components.phaseInd.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).posNCol))).end(),
+										mObj.components.phaseInd.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).negNCol))).begin(),
+										mObj.components.phaseInd.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'C':
-						thisTrace.type = 'P';
-						if(mObj.components.voltCap.count(label) != 0) 
+							break;
+						case RowDescriptor::Type::VoltageCapacitor:
 							Errors::control_errors(PHASE_WHEN_VOLT, i);
-						else if(mObj.components.phaseCap.count(label) != 0) {
-							if(mObj.components.phaseCap.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::PhaseCapacitor:
+							if(mObj.components.phaseCap.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseCap.at(label).negNCol)));
+									mObj.components.phaseCap.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseCap.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseCap.at(label).posNCol)));
+									mObj.components.phaseCap.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).posNCol))).begin(),
+										mObj.components.phaseCap.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).posNCol))).end(),
+										mObj.components.phaseCap.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).negNCol))).begin(),
+										mObj.components.phaseCap.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'B':
-						thisTrace.type = 'P';
-						if(mObj.components.voltJJ.count(label) != 0) {
+							break;
+						case RowDescriptor::Type::VoltageJJ:
 							thisTrace.traceData = &sObj.results.xVect.at(
 								std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-								mObj.components.voltJJ.at(label).phaseNCol)));
+								mObj.components.voltJJ.at(dev.index).phaseNCol)));
 							traces.push_back(thisTrace);
-						} else if(mObj.components.phaseJJ.count(label) != 0) {
-							if(mObj.components.phaseJJ.at(label).posNCol == -1) {
+							break;
+						case RowDescriptor::Type::PhaseJJ:
+							if(mObj.components.phaseJJ.at(dev.index).posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseJJ.at(label).negNCol)));
+									mObj.components.phaseJJ.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+							} else if(mObj.components.phaseJJ.at(dev.index).negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseJJ.at(label).posNCol)));
+									mObj.components.phaseJJ.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
 								std::transform(
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseJJ.at(label).posNCol))).begin(),
+										mObj.components.phaseJJ.at(dev.index).posNCol))).begin(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseJJ.at(label).posNCol))).end(),
+										mObj.components.phaseJJ.at(dev.index).posNCol))).end(),
 									sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseJJ.at(label).negNCol))).begin(),
+										mObj.components.phaseJJ.at(dev.index).negNCol))).begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'V':
-						Errors::control_errors(PHASE_OF_VOLT, i);
-						break;
-					case 'P':
-						thisTrace.type = 'P';
-						if(mObj.sources.count(label) != 0) {
-							thisTrace.traceData = &mObj.sources.at(label);
+							break;
+						case RowDescriptor::Type::VoltageVS:
+							Errors::control_errors(PHASE_OF_VOLT, i);
+							break;
+						case RowDescriptor::Type::PhaseVS:
+							Errors::control_errors(PHASE_OF_VOLT, i);
+							break;
+						case RowDescriptor::Type::PhasePS:
+							thisTrace.traceData = &mObj.sources.at(dev.index);
 							traces.push_back(thisTrace);
-						} else 
-							Errors::control_errors(UNKNOWN_DEVICE, label);
-						break;
-					case 'I':
-						Errors::control_errors(PHASE_OF_CURRENT, i);
-						break;
-				}
+							break;
+						case RowDescriptor::Type::VoltageCS:
+							Errors::control_errors(PHASE_OF_CURRENT, i);
+							break;
+						case RowDescriptor::Type::PhaseCS:
+							Errors::control_errors(PHASE_OF_CURRENT, i);
+							break;
+					}
+				} else Errors::control_errors(UNKNOWN_DEVICE, label);
 			}
 		} else if(i.find("PLOT") != std::string::npos) {
 			tokens = Misc::tokenize_space(i);
@@ -902,279 +761,268 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
-						switch(label[0]) {
-							case 'R':
-								thisTrace.type = 'V';
-								if(mObj.components.voltRes.count(label) != 0) {
-									if(mObj.components.voltRes.at(label).posNCol == -1) {
+						if (mObj.deviceLabelIndex.count(label) != 0) { 
+							dev = mObj.deviceLabelIndex.at(label);
+							switch(dev.type) {
+								case RowDescriptor::Type::VoltageResistor:
+									if(mObj.components.voltRes.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).negNCol)));
+											mObj.components.voltRes.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+									} else if(mObj.components.voltRes.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).posNCol)));
+											mObj.components.voltRes.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).posNCol))).begin(),
+												mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).posNCol))).end(),
+												mObj.components.voltRes.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).negNCol))).begin(),
+												mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else if(mObj.components.phaseRes.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseResistor:
 									Errors::control_errors(VOLT_WHEN_PHASE, label);
-									if(mObj.components.phaseRes.at(label).posNCol == -1) {
+									if(mObj.components.phaseRes.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseRes.at(label).negNCol)));
+											mObj.components.phaseRes.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseRes.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseRes.at(label).posNCol)));
+											mObj.components.phaseRes.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseRes.at(label).posNCol))).begin(),
+												mObj.components.phaseRes.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseRes.at(label).posNCol))).end(),
+												mObj.components.phaseRes.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseRes.at(label).negNCol))).begin(),
+												mObj.components.phaseRes.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'L':
-								thisTrace.type = 'V';
-								if(mObj.components.voltInd.count(label) != 0) {
-									if(mObj.components.voltInd.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::VoltageInductor:
+									if(mObj.components.voltInd.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltInd.at(label).negNCol)));
+											mObj.components.voltInd.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.voltInd.at(label).negNCol == -1) {
+									} else if(mObj.components.voltInd.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltInd.at(label).posNCol)));
+											mObj.components.voltInd.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltInd.at(label).posNCol))).begin(),
+												mObj.components.voltInd.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltInd.at(label).posNCol))).end(),
+												mObj.components.voltInd.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltInd.at(label).negNCol))).begin(),
+												mObj.components.voltInd.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else if(mObj.components.phaseInd.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseInductor:
 									Errors::control_errors(VOLT_WHEN_PHASE, label);
-									if(mObj.components.phaseInd.at(label).posNCol == -1) {
+									if(mObj.components.phaseInd.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseInd.at(label).negNCol)));
+											mObj.components.phaseInd.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseInd.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseInd.at(label).posNCol)));
+											mObj.components.phaseInd.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseInd.at(label).posNCol))).begin(),
+												mObj.components.phaseInd.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseInd.at(label).posNCol))).end(),
+												mObj.components.phaseInd.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(std::distance(
 												mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseInd.at(label).negNCol))).begin(),
+												mObj.components.phaseInd.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'C':
-								thisTrace.type = 'V';
-								if(mObj.components.voltCap.count(label) != 0) {
-									if(mObj.components.voltCap.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::VoltageCapacitor:
+									if(mObj.components.voltCap.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltCap.at(label).negNCol)));
+											mObj.components.voltCap.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.voltCap.at(label).negNCol == -1) {
+									} else if(mObj.components.voltCap.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltCap.at(label).posNCol)));
+											mObj.components.voltCap.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltCap.at(label).posNCol))).begin(),
+												mObj.components.voltCap.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltCap.at(label).posNCol))).end(),
+												mObj.components.voltCap.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltCap.at(label).negNCol))).begin(),
+												mObj.components.voltCap.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else if(mObj.components.phaseCap.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseCapacitor:
 									Errors::control_errors(VOLT_WHEN_PHASE, label);
-									if(mObj.components.phaseCap.at(label).posNCol == -1) {
+									if(mObj.components.phaseCap.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseCap.at(label).negNCol)));
+											mObj.components.phaseCap.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseCap.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseCap.at(label).posNCol)));
+											mObj.components.phaseCap.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseCap.at(label).posNCol))).begin(),
+												mObj.components.phaseCap.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseCap.at(label).posNCol))).end(),
+												mObj.components.phaseCap.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseCap.at(label).negNCol))).begin(),
+												mObj.components.phaseCap.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'B':
-								thisTrace.type = 'V';
-								if(mObj.components.voltJJ.count(label) != 0) {
-									if(mObj.components.voltJJ.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::VoltageJJ:
+									if(mObj.components.voltJJ.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltJJ.at(label).negNCol)));
+											mObj.components.voltJJ.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.voltJJ.at(label).negNCol == -1) {
+									} else if(mObj.components.voltJJ.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltJJ.at(label).posNCol)));
+											mObj.components.voltJJ.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltJJ.at(label).posNCol))).begin(),
+												mObj.components.voltJJ.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltJJ.at(label).posNCol))).end(),
+												mObj.components.voltJJ.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltJJ.at(label).negNCol))).begin(),
+												mObj.components.voltJJ.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else if(mObj.components.phaseJJ.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseJJ:
 									Errors::control_errors(VOLT_WHEN_PHASE, label);
-									if(mObj.components.phaseJJ.at(label).posNCol == -1) {
+									if(mObj.components.phaseJJ.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseJJ.at(label).negNCol)));
+											mObj.components.phaseJJ.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseJJ.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseJJ.at(label).posNCol)));
+											mObj.components.phaseJJ.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseJJ.at(label).posNCol))).begin(),
+												mObj.components.phaseJJ.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseJJ.at(label).posNCol))).end(),
+												mObj.components.phaseJJ.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseJJ.at(label).negNCol))).begin(),
+												mObj.components.phaseJJ.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'V':
-								thisTrace.type = 'V';
-								if(mObj.sources.count(label) != 0) {
-									thisTrace.traceData = &mObj.sources.at(label);
+									break;
+								case RowDescriptor::Type::VoltageVS:
+									thisTrace.traceData = &mObj.sources.at(dev.index);
 									traces.push_back(thisTrace);
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'I':
-								Errors::control_errors(VOLT_ACROSS_CURRENT, i);
-								break;
-							default:
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-									thisTrace.name = "NV_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1)));
+									break;
+								case RowDescriptor::Type::PhaseVS:
+									thisTrace.traceData = &mObj.sources.at(dev.index);
 									traces.push_back(thisTrace);
-								} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-									Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-									thisTrace.type = 'P';
-									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-									thisTrace.name = "NP_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1)));
-									traces.push_back(thisTrace);
-								} else 
-									Errors::control_errors(UNKNOWN_NODE, label);
-								break;
-						}
+									break;
+								case RowDescriptor::Type::VoltageCS:
+									Errors::control_errors(VOLT_ACROSS_CURRENT, i);
+									break;
+								case RowDescriptor::Type::PhaseCS:
+									Errors::control_errors(VOLT_ACROSS_CURRENT, i);
+									break;
+								default:
+									if(mObj.deviceLabelIndex.count(label) != 0) { 
+										index1 = mObj.deviceLabelIndex.at(label).index;
+										if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+											Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+											thisTrace.type = 'P';
+											thisTrace.name = "NP_" + label;
+										} else thisTrace.name = "NV_" + label;
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1)));
+										traces.push_back(thisTrace);
+									}
+									else Errors::control_errors(UNKNOWN_NODE, label);
+									break;
+							}
+						} else Errors::control_errors(UNKNOWN_DEVICE, label);
 					} else {
 						label = tokens2.at(0);
 						label2 = tokens2.at(1);
@@ -1193,109 +1041,55 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-								thisTrace.name = "NV_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										std::back_inserter(thisTrace.calcData),
-										std::bind(std::multiplies<double>(),
-											std::placeholders::_1,
-											-1.0));
-								thisTrace.pointer = false;
+							if(mObj.deviceLabelIndex.count(label2) != 0) {
+								index2 = mObj.deviceLabelIndex.at(label2).index;
+								if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+									Errors::control_errors(NODEVOLT_WHEN_PHASE, label2);
+									thisTrace.type = 'P';
+									thisTrace.name = "NP_" + label2;
+								} else thisTrace.name = "NV_" + label2;
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									index2)));
 								traces.push_back(thisTrace);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-								thisTrace.type = 'P';
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-								thisTrace.name = "NP_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										std::back_inserter(thisTrace.calcData),
-										std::bind(std::multiplies<double>(),
-											std::placeholders::_1,
-											-1.0));
-								thisTrace.pointer = false;
-								traces.push_back(thisTrace);
-							} else
-								Errors::control_errors(UNKNOWN_NODE, label2);
+							} else Errors::control_errors(UNKNOWN_NODE, label2);
 						} else if (label2 == "0" || label2 == "GND") {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-								thisTrace.name = "NV_" + label + "_" + label2;
+							if(mObj.deviceLabelIndex.count(label) != 0) {
+								index1 = mObj.deviceLabelIndex.at(label).index;
+								if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+									Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+									thisTrace.type = 'P';
+									thisTrace.name = "NP_" + label;
+								} else thisTrace.name = "NV_" + label;
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 									index1)));
 								traces.push_back(thisTrace);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-								thisTrace.type = 'P';
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-								thisTrace.name = "NP_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(
-									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									index1)));
-								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_NODE, label);
+							} else Errors::control_errors(UNKNOWN_NODE, label);
 						} else {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) 
-									Errors::control_errors(UNKNOWN_NODE, label);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) 
-									Errors::control_errors(UNKNOWN_NODE, label);
-							}
-							else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-								thisTrace.name = "NV_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index2))).begin(),
-										std::back_inserter(thisTrace.calcData),
-										std::minus<double>());
-								thisTrace.pointer = false;
-								traces.push_back(thisTrace);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
-								thisTrace.type = 'P';
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-								thisTrace.name = "NP_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index2))).begin(),
-										std::back_inserter(thisTrace.calcData),
-										std::minus<double>());
-								thisTrace.pointer = false;
-								traces.push_back(thisTrace);
-							}
+							if(mObj.deviceLabelIndex.count(label2) != 0) {
+								if(mObj.deviceLabelIndex.count(label) != 0) {
+									if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+										Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+										thisTrace.type = 'P';
+										thisTrace.name = "NP_" + label + "_" + label2;
+									} else thisTrace.name = "NV_" + label + "_" + label2;
+									std::transform(
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												index1))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												index1))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												index2))).begin(),
+											std::back_inserter(thisTrace.calcData),
+											std::minus<double>());
+									thisTrace.pointer = false;
+									traces.push_back(thisTrace);
+								} else Errors::control_errors(UNKNOWN_NODE, label);
+							} else Errors::control_errors(UNKNOWN_NODE, label2);
 						}
 					}
 				} else if (tokens.at(j)[0] == 'C') {
@@ -1311,45 +1105,46 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
-						switch(label[0]) {
-							case 'R':
-								thisTrace.type = 'C';
-								if(mObj.components.voltRes.count(label) != 0) {
-									if(mObj.components.voltRes.at(label).posNCol == -1) {
+						thisTrace.type = 'C';
+						if (mObj.deviceLabelIndex.count(label) != 0) {
+							dev = mObj.deviceLabelIndex.at(label);
+							switch(dev.type) {
+								case RowDescriptor::Type::VoltageResistor:
+									if(mObj.components.voltRes.at(dev.index).posNCol == -1) {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).negNCol))).begin(),
+												mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).negNCol))).end(),
+												mObj.components.voltRes.at(dev.index).negNCol))).end(),
 											std::back_inserter(thisTrace.calcData),
 											std::bind(std::multiplies<double>(),
 												std::placeholders::_1,
-												(1 / mObj.components.voltRes.at(label).value)));
-									} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+												(1 / mObj.components.voltRes.at(dev.index).value)));
+									} else if(mObj.components.voltRes.at(dev.index).negNCol == -1) {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).posNCol))).begin(),
+												mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).posNCol))).end(),
+												mObj.components.voltRes.at(dev.index).posNCol))).end(),
 											std::back_inserter(thisTrace.calcData),
 											std::bind(std::multiplies<double>(),
 												std::placeholders::_1,
-												(1 / mObj.components.voltRes.at(label).value)));
+												(1 / mObj.components.voltRes.at(dev.index).value)));
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).posNCol))).begin(),
+												mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).posNCol))).end(),
+												mObj.components.voltRes.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.voltRes.at(label).negNCol))).begin(),
+												mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										std::transform(
@@ -1358,72 +1153,65 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 											thisTrace.calcData.begin(),
 											std::bind(std::multiplies<double>(),
 												std::placeholders::_1,
-												(1 / mObj.components.voltRes.at(label).value)));
+												(1 / mObj.components.voltRes.at(dev.index).value)));
 									}
 									thisTrace.pointer = false;
 									traces.push_back(thisTrace);
-								} else if(mObj.components.phaseRes.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseResistor:
 									thisTrace.traceData = &sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseRes.at(label).curNCol)));
+										mObj.components.phaseRes.at(dev.index).curNCol)));
 									traces.push_back(thisTrace);
-								}
-								else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'L':
-								thisTrace.type = 'C';
-								if(mObj.components.voltInd.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::VoltageInductor:
 									thisTrace.traceData = &sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltInd.at(label).curNCol)));
+										mObj.components.voltInd.at(dev.index).curNCol)));
 									traces.push_back(thisTrace);
-								} else if(mObj.components.phaseInd.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseInductor:
 									thisTrace.traceData = &sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseInd.at(label).curNCol)));
+										mObj.components.phaseInd.at(dev.index).curNCol)));
 									traces.push_back(thisTrace);
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'C':
-								thisTrace.type = 'C';
-								if(mObj.components.voltCap.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::VoltageCapacitor:
 									thisTrace.traceData = &sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltCap.at(label).curNCol)));
+										mObj.components.voltCap.at(dev.index).curNCol)));
 									traces.push_back(thisTrace);
-								} else if(mObj.components.phaseCap.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::PhaseCapacitor:
 									thisTrace.traceData = &sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.phaseCap.at(label).curNCol)));
+										mObj.components.phaseCap.at(dev.index).curNCol)));
 									traces.push_back(thisTrace);
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'B':
-								thisTrace.type = 'C';
-								if(mObj.components.voltJJ.count(label) != 0) {
-									thisTrace.traceData = &mObj.components.voltJJ.at(label).jjCur;
+									break;
+								case RowDescriptor::Type::VoltageJJ:
+									thisTrace.traceData = &mObj.components.voltJJ.at(dev.index).jjCur;
 									traces.push_back(thisTrace);
-								} else if(mObj.components.phaseJJ.count(label) != 0) {
-									thisTrace.traceData = &mObj.components.phaseJJ.at(label).jjCur;
+									break;
+								case RowDescriptor::Type::PhaseJJ:
+									thisTrace.traceData = &mObj.components.phaseJJ.at(dev.index).jjCur;
 									traces.push_back(thisTrace);
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'V':
-								Errors::control_errors(CURRENT_THROUGH_VOLT, i);
-								break;
-							case 'I':
-								thisTrace.type = 'C';
-								if(mObj.sources.count(label) != 0) {
-									thisTrace.traceData = &mObj.sources.at(label);
+									break;
+								case RowDescriptor::Type::VoltageVS:
+									Errors::control_errors(CURRENT_THROUGH_VOLT, i);
+									break;
+								case RowDescriptor::Type::PhaseVS:
+									Errors::control_errors(CURRENT_THROUGH_VOLT, i);
+									break;
+								case RowDescriptor::Type::VoltageCS:
+									thisTrace.traceData = &mObj.sources.at(dev.index);
 									traces.push_back(thisTrace);
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-						}
+									break;
+								case RowDescriptor::Type::PhaseCS:
+									thisTrace.traceData = &mObj.sources.at(dev.index);
+									traces.push_back(thisTrace);
+									break;
+							}
+						} else Errors::control_errors(UNKNOWN_DEVICE, label);
 					} else 
 						Errors::control_errors(INVALID_CURRENT, i);
 				} else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
@@ -1438,45 +1226,45 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 						std::replace(label.begin(), label.end(), '.', '|');
 					}
 					thisTrace.name = label;
-					switch(label[0]) {
-						case 'R':
-							thisTrace.type = 'C';
-							if(mObj.components.voltRes.count(label) != 0) {
-								if(mObj.components.voltRes.at(label).posNCol == -1) {
+					if (mObj.deviceLabelIndex.count(label) != 0) {
+						dev = mObj.deviceLabelIndex.at(label);
+						switch(dev.type) {
+							case RowDescriptor::Type::VoltageResistor:
+								if(mObj.components.voltRes.at(dev.index).posNCol == -1) {
 									std::transform(
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).negNCol))).begin(),
+											mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).negNCol))).end(),
+											mObj.components.voltRes.at(dev.index).negNCol))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
-											(1 / mObj.components.voltRes.at(label).value)));
-								} else if(mObj.components.voltRes.at(label).negNCol == -1) {
+											(1 / mObj.components.voltRes.at(dev.index).value)));
+								} else if(mObj.components.voltRes.at(dev.index).negNCol == -1) {
 									std::transform(
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).posNCol))).begin(),
+											mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).posNCol))).end(),
+											mObj.components.voltRes.at(dev.index).posNCol))).end(),
 										std::back_inserter(thisTrace.calcData),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
-											(1 / mObj.components.voltRes.at(label).value)));
+											(1 / mObj.components.voltRes.at(dev.index).value)));
 								} else {
 									std::transform(
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).posNCol))).begin(),
+											mObj.components.voltRes.at(dev.index).posNCol))).begin(),
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).posNCol))).end(),
+											mObj.components.voltRes.at(dev.index).posNCol))).end(),
 										sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.voltRes.at(label).negNCol))).begin(),
+											mObj.components.voltRes.at(dev.index).negNCol))).begin(),
 										std::back_inserter(thisTrace.calcData),
 										std::minus<double>());
 									std::transform(
@@ -1485,71 +1273,65 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 										thisTrace.calcData.begin(),
 										std::bind(std::multiplies<double>(),
 											std::placeholders::_1,
-											(1 / mObj.components.voltRes.at(label).value)));
+											(1 / mObj.components.voltRes.at(dev.index).value)));
 								}
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseRes.count(label) != 0) {
+								break;
+							case RowDescriptor::Type::PhaseResistor:
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseRes.at(label).curNCol)));
+									mObj.components.phaseRes.at(dev.index).curNCol)));
 								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_DEVICE, label);
-							break;
-						case 'L':
-							thisTrace.type = 'C';
-							if(mObj.components.voltInd.count(label) != 0) {
+								break;
+							case RowDescriptor::Type::VoltageInductor:
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltInd.at(label).curNCol)));
+									mObj.components.voltInd.at(dev.index).curNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseInd.count(label) != 0) {
+								break;
+							case RowDescriptor::Type::PhaseInductor:
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseInd.at(label).curNCol)));
+									mObj.components.phaseInd.at(dev.index).curNCol)));
 								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_DEVICE, label);
-							break;
-						case 'C':
-							thisTrace.type = 'C';
-							if(mObj.components.voltCap.count(label) != 0) {
+								break;
+							case RowDescriptor::Type::VoltageCapacitor:
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.voltCap.at(label).curNCol)));
+									mObj.components.voltCap.at(dev.index).curNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseCap.count(label) != 0) {
+								break;
+							case RowDescriptor::Type::PhaseCapacitor:
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									mObj.components.phaseCap.at(label).curNCol)));
+									mObj.components.phaseCap.at(dev.index).curNCol)));
 								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_DEVICE, label);
-							break;
-						case 'B':
-							thisTrace.type = 'C';
-							if(mObj.components.voltJJ.count(label) != 0) {
-								thisTrace.traceData = &mObj.components.voltJJ.at(label).jjCur;
+								break;
+							case RowDescriptor::Type::VoltageJJ:
+								thisTrace.traceData = &mObj.components.voltJJ.at(dev.index).jjCur;
 								traces.push_back(thisTrace);
-							} else if(mObj.components.phaseJJ.count(label) != 0) {
-								thisTrace.traceData = &mObj.components.phaseJJ.at(label).jjCur;
+								break;
+							case RowDescriptor::Type::PhaseJJ:
+								thisTrace.traceData = &mObj.components.phaseJJ.at(dev.index).jjCur;
 								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_DEVICE, label);
-							break;
-						case 'V':
-							Errors::control_errors(CURRENT_THROUGH_VOLT, i);
-							break;
-						case 'I':
-							thisTrace.type = 'C';
-							if(mObj.sources.count(label) != 0) {
-								thisTrace.traceData = &mObj.sources.at(label);
+								break;
+							case RowDescriptor::Type::VoltageVS:
+								Errors::control_errors(CURRENT_THROUGH_VOLT, i);
+								break;
+							case RowDescriptor::Type::PhaseVS:
+								Errors::control_errors(CURRENT_THROUGH_VOLT, i);
+								break;
+							case RowDescriptor::Type::VoltageCS:
+								thisTrace.traceData = &mObj.sources.at(dev.index);
 								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_DEVICE, label);
-							break;
-					}
+								break;
+							case RowDescriptor::Type::PhaseCS:
+								thisTrace.traceData = &mObj.sources.at(dev.index);
+								traces.push_back(thisTrace);
+								break;
+						}
+					} else Errors::control_errors(UNKNOWN_DEVICE, label);
 				} else if (tokens.at(j)[0] == 'P') {
 					thisTrace.type = 'P';
 					tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
@@ -1563,173 +1345,158 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							std::replace(label.begin(), label.end(), '.', '|');
 						}
 						thisTrace.name = label;
-						switch(label[0]) {
-							case 'R':
-								thisTrace.type = 'P';
-								if(mObj.components.voltRes.count(label) != 0) 
+						if (mObj.deviceLabelIndex.count(label) != 0) {
+							dev = mObj.deviceLabelIndex.at(label);
+							switch(dev.type) {
+								case RowDescriptor::Type::VoltageResistor:
 									Errors::control_errors(PHASE_WHEN_VOLT, i);
-								else if(mObj.components.phaseRes.count(label) != 0) {
-									if(mObj.components.phaseRes.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::PhaseResistor:
+									if(mObj.components.phaseRes.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseRes.at(label).negNCol)));
+											mObj.components.phaseRes.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseRes.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseRes.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseRes.at(label).posNCol)));
+											mObj.components.phaseRes.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseRes.at(label).posNCol))).begin(),
+												mObj.components.phaseRes.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseRes.at(label).posNCol))).end(),
+												mObj.components.phaseRes.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseRes.at(label).negNCol))).begin(),
+												mObj.components.phaseRes.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'L':
-								thisTrace.type = 'P';
-								if(mObj.components.voltInd.count(label) != 0) 
+									break;
+								case RowDescriptor::Type::VoltageInductor:
 									Errors::control_errors(PHASE_WHEN_VOLT, i);
-								else if(mObj.components.phaseInd.count(label) != 0) {
-									if(mObj.components.phaseInd.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::PhaseInductor:
+									if(mObj.components.phaseInd.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseInd.at(label).negNCol)));
+											mObj.components.phaseInd.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseInd.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseInd.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseInd.at(label).posNCol)));
+											mObj.components.phaseInd.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseInd.at(label).posNCol))).begin(),
+												mObj.components.phaseInd.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseInd.at(label).posNCol))).end(),
+												mObj.components.phaseInd.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseInd.at(label).negNCol))).begin(),
+												mObj.components.phaseInd.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'C':
-								thisTrace.type = 'P';
-								if(mObj.components.voltCap.count(label) != 0) 
+									break;
+								case RowDescriptor::Type::VoltageCapacitor:
 									Errors::control_errors(PHASE_WHEN_VOLT, i);
-								else if(mObj.components.phaseCap.count(label) != 0) {
-									if(mObj.components.phaseCap.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::PhaseCapacitor:
+									if(mObj.components.phaseCap.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseCap.at(label).negNCol)));
+											mObj.components.phaseCap.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseCap.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseCap.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseCap.at(label).posNCol)));
+											mObj.components.phaseCap.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseCap.at(label).posNCol))).begin(),
+												mObj.components.phaseCap.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseCap.at(label).posNCol))).end(),
+												mObj.components.phaseCap.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseCap.at(label).negNCol))).begin(),
+												mObj.components.phaseCap.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'B':
-								thisTrace.type = 'P';
-								if(mObj.components.voltJJ.count(label) != 0) {
+									break;
+								case RowDescriptor::Type::VoltageJJ:
 									thisTrace.traceData = &sObj.results.xVect.at(
 										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(label).phaseNCol)));
+										mObj.components.voltJJ.at(dev.index).phaseNCol)));
 									traces.push_back(thisTrace);
-								} else if(mObj.components.phaseJJ.count(label) != 0) {
-									if(mObj.components.phaseJJ.at(label).posNCol == -1) {
+									break;
+								case RowDescriptor::Type::PhaseJJ:
+									if(mObj.components.phaseJJ.at(dev.index).posNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseJJ.at(label).negNCol)));
+											mObj.components.phaseJJ.at(dev.index).negNCol)));
 										traces.push_back(thisTrace);
-									} else if(mObj.components.phaseJJ.at(label).negNCol == -1) {
+									} else if(mObj.components.phaseJJ.at(dev.index).negNCol == -1) {
 										thisTrace.traceData = &sObj.results.xVect.at(
 											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											mObj.components.phaseJJ.at(label).posNCol)));
+											mObj.components.phaseJJ.at(dev.index).posNCol)));
 										traces.push_back(thisTrace);
 									} else {
 										std::transform(
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseJJ.at(label).posNCol))).begin(),
+												mObj.components.phaseJJ.at(dev.index).posNCol))).begin(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseJJ.at(label).posNCol))).end(),
+												mObj.components.phaseJJ.at(dev.index).posNCol))).end(),
 											sObj.results.xVect.at(
 												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-												mObj.components.phaseJJ.at(label).negNCol))).begin(),
+												mObj.components.phaseJJ.at(dev.index).negNCol))).begin(),
 											std::back_inserter(thisTrace.calcData),
 											std::minus<double>());
 										thisTrace.pointer = false;
 										traces.push_back(thisTrace);
 									}
-								} else 
-									Errors::control_errors(UNKNOWN_DEVICE, label);
-								break;
-							case 'V':
-								Errors::control_errors(PHASE_OF_VOLT, i);
-								break;
-							case 'I':
-								Errors::control_errors(PHASE_OF_CURRENT, i);
-								break;
-							default:
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-									thisTrace.name = "NP_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1)));
-									traces.push_back(thisTrace);
-								} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-									Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-									thisTrace.type = 'V';
-									index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-									thisTrace.name = "NV_" + label;
-									thisTrace.traceData = &sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										index1)));
-									traces.push_back(thisTrace);
-								} else
-									Errors::control_errors(UNKNOWN_NODE, label);
-								break;
-						}
+									break;
+								case RowDescriptor::Type::VoltageVS:
+									Errors::control_errors(PHASE_OF_VOLT, i);
+									break;
+								case RowDescriptor::Type::VoltageCS:
+									Errors::control_errors(PHASE_OF_CURRENT, i);
+									break;
+								default:
+									if(mObj.deviceLabelIndex.count(label) != 0) {
+										index1 = mObj.deviceLabelIndex.at(label).index;
+										if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+											Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
+											thisTrace.type = 'V';
+											thisTrace.name = "NV_" + label;
+										} else thisTrace.name = "NP_" + label;
+										thisTrace.traceData = &sObj.results.xVect.at(
+											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+											index1)));
+										traces.push_back(thisTrace);
+									} else Errors::control_errors(UNKNOWN_NODE, label);
+									break;
+							}
+						} else Errors::control_errors(UNKNOWN_DEVICE, label);
 					}
 					else {
 						label = tokens2.at(0);
@@ -1749,107 +1516,55 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							std::replace(label2.begin(), label2.end(), '.', '|');
 						}
 						if(label == "0" || label == "GND") {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) != mObj.columnNames.end()) {
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-								thisTrace.name = "NP_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										std::back_inserter(thisTrace.calcData),
-										std::bind(std::multiplies<double>(),
-											std::placeholders::_1,
-											-1.0));
-								thisTrace.pointer = false;
+							if(mObj.deviceLabelIndex.count(label2) != 0) {
+								index2 = mObj.deviceLabelIndex.at(label2).index;
+								if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+									Errors::control_errors(NODEVOLT_WHEN_PHASE, label2);
+									thisTrace.type = 'V';
+									thisTrace.name = "NV_" + label2;
+								} else thisTrace.name = "NP_" + label2;
+								thisTrace.traceData = &sObj.results.xVect.at(
+									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+									index2)));
 								traces.push_back(thisTrace);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) != mObj.columnNames.end()) {
-								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-								thisTrace.type = 'V';
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-								thisTrace.name = "NV_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										std::back_inserter(thisTrace.calcData),
-										std::bind(std::multiplies<double>(),
-											std::placeholders::_1,
-											-1.0));
-								thisTrace.pointer = false;
-								traces.push_back(thisTrace);
-							} else
-								Errors::control_errors(UNKNOWN_NODE, label2);
+							} else Errors::control_errors(UNKNOWN_NODE, label2);
 						} else if (label2 == "0" || label2 == "GND") {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-								thisTrace.name = "NP_" + label + "_" + label2;
+							if(mObj.deviceLabelIndex.count(label) != 0) {
+								index1 = mObj.deviceLabelIndex.at(label).index;
+								if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+									Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+									thisTrace.type = 'V';
+									thisTrace.name = "NV_" + label;
+								} else thisTrace.name = "NP_" + label;
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 									index1)));
 								traces.push_back(thisTrace);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-								thisTrace.type = 'V';
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-								thisTrace.name = "NV_" + label + "_" + label2;
-								thisTrace.traceData = &sObj.results.xVect.at(
-									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-									index1)));
-								traces.push_back(thisTrace);
-							} else 
-								Errors::control_errors(UNKNOWN_NODE, label);
+							} else Errors::control_errors(UNKNOWN_NODE, label);
 						} else {
-							if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) == mObj.columnNames.end()) 
-									Errors::control_errors(UNKNOWN_NODE, label);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2) == mObj.columnNames.end()) {
-								if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2) == mObj.columnNames.end()) 
-									Errors::control_errors(UNKNOWN_NODE, label);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label) != mObj.columnNames.end()) {
-								Errors::control_errors(NODEPHASE_WHEN_VOLT, label);
-								thisTrace.type = 'V';
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label));
-								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NV" + label2));
-								thisTrace.name = "NV_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index2))).begin(),
-										std::back_inserter(thisTrace.calcData),
-										std::minus<double>());
-								thisTrace.pointer = false;
-								traces.push_back(thisTrace);
-							} else if(std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label) != mObj.columnNames.end()) {
-								index1 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label));
-								index2 = std::distance(mObj.columnNames.begin(), std::find(mObj.columnNames.begin(), mObj.columnNames.end(), "C_NP" + label2));
-								thisTrace.name = "NP_" + label + "_" + label2;
-								std::transform(
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).begin(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index1))).end(),
-										sObj.results.xVect.at(
-											std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-											index2))).begin(),
-										std::back_inserter(thisTrace.calcData),
-										std::minus<double>());
-								thisTrace.pointer = false;
-								traces.push_back(thisTrace);
-							}
+							if(mObj.deviceLabelIndex.count(label2) != 0) {
+								if(mObj.deviceLabelIndex.count(label) != 0) {
+									if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+										Errors::control_errors(NODEVOLT_WHEN_PHASE, label);
+										thisTrace.type = 'V';
+										thisTrace.name = "NV_" + label + "_" + label2;
+									} else thisTrace.name = "NP_" + label + "_" + label2;
+									std::transform(
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												index1))).begin(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												index1))).end(),
+											sObj.results.xVect.at(
+												std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
+												index2))).begin(),
+											std::back_inserter(thisTrace.calcData),
+											std::minus<double>());
+									thisTrace.pointer = false;
+									traces.push_back(thisTrace);
+								} else Errors::control_errors(UNKNOWN_NODE, label);
+							} else Errors::control_errors(UNKNOWN_NODE, label2);
 						}
 					}
 				} else if (tokens.at(j).find("TRAN") != std::string::npos) {}
@@ -1874,10 +1589,11 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 				index1 = tokens.at(k).find('[');
 				if (index1 != std::string::npos) tokens.at(k) = tokens.at(k).substr(0, index1);
 				/* If this is a current source */
-				if (mObj.sources.count(tokens.at(k)) != 0) {
+				if(mObj.deviceLabelIndex.count(tokens.at(k)) != 0) {
+					dev = mObj.deviceLabelIndex.at(tokens.at(k));
 					thisTrace.type = 'C';
 					thisTrace.name = tokens.at(k);
-					thisTrace.traceData = &mObj.sources.at(tokens.at(k));
+					thisTrace.traceData = &mObj.sources.at(dev.index);
 					traces.push_back(thisTrace);
 				}
 			}

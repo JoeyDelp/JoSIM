@@ -20,12 +20,28 @@ class matrix_element {
       }
 };
 
+struct RowDescriptor {
+	enum class Type {
+    VoltageNode, PhaseNode, VoltageResistor, PhaseResistor, VoltageCapacitor, PhaseCapacitor,
+    VoltageInductor, PhaseInductor, VoltageJJ, PhaseJJ, VoltageVS, PhaseVS, VoltageCS, PhaseCS,
+    VoltagePS, PhasePS, VoltageTX, VoltageTX1, VoltageTX2, PhaseTX, PhaseTX1, PhaseTX2
+	} type;
+	int index;
+
+    RowDescriptor() {}
+};
+
 class Matrix {
     public:
       Components components;
-      std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
+      // std::unordered_map<std::string, std::vector<std::string>> nodeConnections;
+      std::vector<NodeConnections> nodeConnections;
+      std::vector<RowDescriptor> rowDesc;
+      std::unordered_map<std::string, RowDescriptor> deviceLabelIndex;
+      std::unordered_map<std::string, int> nodeMap;
       std::vector<matrix_element> mElements;
-      std::unordered_map<std::string, std::vector<double>> sources;
+      // std::unordered_map<std::string, std::vector<double>> sources;
+      std::vector<std::vector<double>> sources;
       std::vector<std::string> rowNames, columnNames;
       std::vector<double> nzval;
 	    std::vector<int> colind, rowptr;

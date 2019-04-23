@@ -3,10 +3,10 @@
 #include "JoSIM/j_components.h"
 
 void
-Components::jj_model(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt) {
+Components::jj_model(std::string &modelstring, std::string &area, const int &jjIndex, Input &iObj, const std::string& subckt) {
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
-	jj_volt jj = voltJJ.at(jjLabel);
+	jj_volt jj = voltJJ.at(jjIndex);
 	double value = 0.0;
 	params = modelstring;
 	params = params.substr(params.find_first_of('('), params.size());
@@ -43,14 +43,14 @@ Components::jj_model(std::string &modelstring, std::string &area, std::string &j
 	jj.rN = jj.rN / value;
 	jj.r0 = jj.r0 / value;
 	jj.iC = jj.iC * value;
-	voltJJ.at(jjLabel) = jj;
+	voltJJ.at(jjIndex) = jj;
 }
 
 void
-Components::jj_model_phase(std::string &modelstring, std::string &area, std::string &jjLabel, Input &iObj, const std::string& subckt) {
+Components::jj_model_phase(std::string &modelstring, std::string &area, const int &jjIndex, Input &iObj, const std::string& subckt) {
 	std::string params;
 	std::vector<std::string> paramTokens, itemToken, tempToken;
-	jj_phase jj = phaseJJ.at(jjLabel);
+	jj_phase jj = phaseJJ.at(jjIndex);
 	double value = 0.0;
 	params = modelstring;
 	params = params.substr(params.find_first_of('('), params.size());
@@ -85,5 +85,5 @@ Components::jj_model_phase(std::string &modelstring, std::string &area, std::str
 	jj.rN = jj.rN / value;
 	jj.r0 = jj.r0 / value;
 	jj.iC = jj.iC * value;
-	phaseJJ.at(jjLabel) = jj;
+	phaseJJ.at(jjIndex) = jj;
 }
