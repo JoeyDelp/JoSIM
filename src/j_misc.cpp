@@ -359,6 +359,8 @@ Misc::parse_function(std::string &str, Input &iObj, const std::string& subckt) {
 		double currentTimestep, value;
 		int beginTime;
 		beginTime = TD / iObj.transSim.prstep;
+
+    assert(iObj.transSim.simsize() == functionOfT.size());
 		for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
 			currentTimestep = i * iObj.transSim.prstep;
 			value = VO + VA * sin(2 * M_PI * FREQ * (currentTimestep - TD)) * exp(-THETA * (currentTimestep - TD));

@@ -2,6 +2,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_output.h"
 
+#include <cassert>
+
 void
 Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
   // Clear Traces so that we don't repopulate it through the interface
@@ -323,32 +325,51 @@ Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj) {
 							}
 							break;
 						case RowDescriptor::Type::VoltageJJ:
-							if(mObj.components.voltJJ.at(dev.index).posNCol == -1) {
+              {
+              auto& voltjj = mObj.components.voltJJ.at(dev.index);
+
+							if(voltjj.posNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 									mObj.components.voltJJ.at(dev.index).negNCol)));
 								traces.push_back(thisTrace);
-							} else if(mObj.components.voltJJ.at(dev.index).negNCol == -1) {
+							} else if(voltjj.negNCol == -1) {
 								thisTrace.traceData = &sObj.results.xVect.at(
 									std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
 									mObj.components.voltJJ.at(dev.index).posNCol)));
 								traces.push_back(thisTrace);
 							} else {
+
+                std::cout << "posNCol " << voltjj.posNCol << std::endl;
+                std::cout << "negNCol " << voltjj.negNCol << std::endl;
+
+                for(auto& value: mObj.relXInd)
+                  std::cout << value << " ";
+                std::cout << std::endl;
+
+                auto posncol_iterator = std::find(mObj.relXInd.begin(), mObj.relXInd.end(), voltjj.posNCol);
+                auto negncol_iterator = std::find(mObj.relXInd.begin(), mObj.relXInd.end(), voltjj.negNCol);
+
+                assert(posncol_iterator != mObj.relXInd.end());
+                assert(negncol_iterator != mObj.relXInd.end());
+
+                auto index_posncol = std::distance(mObj.relXInd.begin(), posncol_iterator);
+                auto index_negncol = std::distance(mObj.relXInd.begin(), negncol_iterator);
+
+                auto& vector_posncol = sObj.results.xVect.at(index_posncol);
+                auto& vector_negncol = sObj.results.xVect.at(index_negncol);
+
 								std::transform(
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(dev.index).posNCol))).begin(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(dev.index).posNCol))).end(),
-									sObj.results.xVect.at(
-										std::distance(mObj.relXInd.begin(), std::find(mObj.relXInd.begin(), mObj.relXInd.end(), 
-										mObj.components.voltJJ.at(dev.index).negNCol))).begin(),
+									vector_posncol.begin(),
+                  vector_posncol.end(),
+                  vector_negncol.begin(),
 									std::back_inserter(thisTrace.calcData),
 									std::minus<double>());
+
 								thisTrace.pointer = false;
 								traces.push_back(thisTrace);
 							}
+              }
 							break;
 						case RowDescriptor::Type::PhaseJJ:
 							Errors::control_errors(VOLT_WHEN_PHASE, label);
