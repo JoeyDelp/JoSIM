@@ -92,10 +92,6 @@ class Misc {
     }
 
     static
-    std::string
-    stringSubtract(const std::string& src, const std::string& comp);
-
-    static
     int numDigits(int number);
 };
 #endif

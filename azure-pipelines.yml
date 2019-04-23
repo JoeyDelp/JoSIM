@@ -10,6 +10,9 @@ strategy:
     clang7-libc++:
       Container: pleroux0/devel-clang7:latest
       CXXFLAGS: -stdlib=libc++
+    clang7-sanitize-undefined:
+      Container: pleroux0/devel-clang7:latest
+      CXXFLAGS: -fsanitize=undefined
 
 trigger:
   batch: true

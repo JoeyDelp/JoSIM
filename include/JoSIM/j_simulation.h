@@ -27,7 +27,7 @@ class Simulation {
 		bool sOutput = true;
 
 		void
-		identify_simulation(std::vector<std::string> controls,
+		identify_simulation(const std::vector<std::string>& controls,
 							double &prstep,
 							double &tstop,
 							double &tstart,

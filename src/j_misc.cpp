@@ -2,6 +2,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_misc.h"
 
+#include <cassert>
+
 std::string
 Misc::file_from_path(const std::string& path)
 {
@@ -325,6 +327,7 @@ Misc::parse_function(std::string &str, Input &iObj, const std::string& subckt) {
 					(j - (int)startpoint));
 				else if (values.at(i - 1) == values[i])
 					value = values[i];
+        else assert(false);
 				functionOfT[j] = value;
 			}
 		}
@@ -398,9 +401,8 @@ Misc::parse_function(std::string &str, Input &iObj, const std::string& subckt) {
 		double functionSize = (iObj.transSim.tstop - TD)/TS;
 		if(PER == 1) {
 			double repeats = functionSize / values.size();
-			double lastTimestep = timesteps.back();
 			for(int j = 0; j < repeats; j++) {
-				lastTimestep = timesteps.back() + TS;
+				double lastTimestep = timesteps.back() + TS;
 				for (int i = 0; i < WF.size(); i++) {
 					values.push_back(modifier(WF[i]) * SF);
 					timesteps.push_back(lastTimestep + i * TS);
@@ -440,13 +442,6 @@ Misc::findX(const std::vector<std::string>& segment, std::string& theLine, int &
 		}
 	}
 	return false;
-}
-
-std::string Misc::stringSubtract(const std::string& src, const std::string& comp)
-{
-	int srcIt = src.size() - 1, compIt = comp.size() - 1;
-	std::string rslt = src;
-	return rslt;
 }
 
 int Misc::numDigits(int number) {
