@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef J_GLOBALS_H_
-#define J_GLOBALS_H_
+#ifndef JOSIM_J_GLOBALS_H
+#define JOSIM_J_GLOBALS_H
 
 #include "j_std_include.h"
 

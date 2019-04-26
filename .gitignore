@@ -303,3 +303,7 @@ buildint
 doc/src
 *.dat
 *.json
+
+# Clang files
+.clang-format
+.clang-tidy

@@ -22,7 +22,7 @@ struct CliOptions {
   FileOutputType output_file_type;
 
   // helper functions
-  static CliOptions parse(int argc, const char ** argv);
+  static CliOptions parse(int argc, const char **argv);
   static void display_help();
   static void version_info();
 };

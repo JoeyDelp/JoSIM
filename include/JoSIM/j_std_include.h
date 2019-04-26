@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef J_STD_INCLUDE
-#define J_STD_INCLUDE
+#ifndef JOSIM_J_STD_INCLUDE_H
+#define JOSIM_J_STD_INCLUDE_H
 
 // Version info
 #define VERSION 2.3
@@ -15,7 +15,10 @@
 
 // Standard library includes
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <ctime>
+#include <exception>
 #include <float.h>
 #include <fstream>
 #include <functional>
@@ -31,9 +34,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
-#include <cctype>
-#include <exception>
-#include <ctime>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -41,15 +42,13 @@
 // Linear algebra include
 #include "klu.h"
 
-struct pair_hash
-{
-    template <class T1, class T2>
-    std::size_t operator()(const std::pair<T1,T2> &p) const noexcept
-    {
-        std::size_t h1 = std::hash<T1>{}(p.first);
-        std::size_t h2 = std::hash<T2>{}(p.second);
-        return h1 ^ (h2 << 1);
-    }
+struct pair_hash {
+  template <class T1, class T2>
+  std::size_t operator()(const std::pair<T1, T2> &p) const noexcept {
+    std::size_t h1 = std::hash<T1>{}(p.first);
+    std::size_t h2 = std::hash<T2>{}(p.second);
+    return h1 ^ (h2 << 1);
+  }
 };
 
 #include "j_globals.h"

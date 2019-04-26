@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef J_ERRORS_H_
-#define J_ERRORS_H_
+#ifndef JOSIM_J_ERRORS_H
+#define JOSIM_J_ERRORS_H
 #include "j_std_include.h"
 
 #define NO_ANALYSIS 0
@@ -68,6 +68,7 @@
 #define INVALID_CURRENT 21
 #define MATHOPS 22
 #define UNKNOWN_PLOT 23
+#define INVALID_OUTPUT_COMMAND 24
 
 #define PARAM_TYPE_ERROR 0
 #define UNKNOWN_MODEL_TYPE 1
@@ -107,46 +108,29 @@
 #define INVALID_RPN 3
 
 class Errors {
-	public:
+public:
+  static void cli_errors(int errorCode, const std::string &whatPart = "");
 
-		static
-		void
-		cli_errors(int errorCode, const std::string& whatPart = "");
+  static void input_errors(int errorCode, const std::string &whatPart = "");
 
-		static
-		void
-		input_errors(int errorCode, const std::string& whatPart = "");
+  static void invalid_component_errors(int errorCode,
+                                       const std::string &componentLabel);
 
-		static
-		void
-		invalid_component_errors(int errorCode, const std::string& componentLabel);
+  static void control_errors(int errorCode, const std::string &whatPart);
 
-		static
-		void
-		control_errors(int errorCode, const std::string& whatPart);
+  [[noreturn]] static void model_errors(int errorCode,
+                                        const std::string &whatPart);
 
-		[[noreturn]] static
-		void
-		model_errors(int errorCode, const std::string& whatPart);
+  static void matrix_errors(int errorCode, const std::string &whatPart);
 
-		static
-		void
-		matrix_errors(int errorCode, const std::string& whatPart);
+  [[noreturn]] static void misc_errors(int errorCode,
+                                       const std::string &whatPart);
 
-		[[noreturn]] static
-		void
-		misc_errors(int errorCode, const std::string& whatPart);
+  static void function_errors(int errorCode, const std::string &whatPart);
 
-		static
-		void
-		function_errors(int errorCode, const std::string& whatPart);
+  [[noreturn]] static void simulation_errors(int errorCode,
+                                             const std::string &whatPart);
 
-		[[noreturn]] static
-		void
-		simulation_errors(int errorCode, const std::string& whatPart);
-
-		static
-		void
-		parsing_errors(int errorCode, const std::string& whatPart);
+  static void parsing_errors(int errorCode, const std::string &whatPart);
 };
 #endif

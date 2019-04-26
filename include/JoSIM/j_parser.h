@@ -1,11 +1,11 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef J_PARSER_H_
-#define J_PARSER_H_
+#ifndef JOSIM_J_PARSER_H
+#define JOSIM_J_PARSER_H
 
+#include "./j_input.h"
 #include "./j_misc.h"
 #include "./j_std_include.h"
-#include "./j_input.h"
 
 #include "./ParameterName.hpp"
 
