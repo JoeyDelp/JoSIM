@@ -13,6 +13,9 @@ strategy:
     clang7-sanitize-undefined:
       Container: pleroux0/devel-clang7:latest
       CXXFLAGS: -fsanitize=undefined
+    clang7-sanitize-address:
+      Container: pleroux0/devel-clang7:latest
+      CXXFLAGS: -fsanitize=address
 
 trigger:
   batch: true
