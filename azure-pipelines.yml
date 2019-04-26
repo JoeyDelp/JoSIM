@@ -16,6 +16,7 @@ strategy:
     clang7-sanitize-address:
       Container: pleroux0/devel-clang7:latest
       CXXFLAGS: -fsanitize=address
+      LSAN_OPTIONS: "verbosity=1:log_threads=1"
 
 trigger:
   batch: true
