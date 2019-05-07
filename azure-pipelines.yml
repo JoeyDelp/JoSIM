@@ -43,7 +43,9 @@ steps:
 - script: mkdir -p build
   displayName: 'Make build folder'
 
-- script: sudo apt-get -y install libsuitesparse-dev python3-dev
+- script: |
+    sudo apt-get -y update
+    sudo apt-get -y install libsuitesparse-dev python3-dev
   displayName: 'Install APT dependencies'
 
 - script: conan install ..
