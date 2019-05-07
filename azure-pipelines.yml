@@ -27,7 +27,9 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
-container: $[ variables['Container'] ]
+container:
+  image: $[ variables['Container'] ]
+  options: "--cap-add SYS_PTRACE"
 
 steps:
 - script: mkdir -p build
