@@ -1,20 +1,30 @@
 name: "Linux"
 
+resources:
+  containers:
+  - container: gcc8
+    image: pleroux0/devel-gcc8:latest
+  - container: clang7
+    image: pleroux0/devel-clang7:latest
+  - container: clang7_ptrace
+    image: pleroux0/devel-clang7:latest
+    options: --cap-add SYS_PTRACE
+
 strategy:
   matrix:
     gcc8:
-      Container: pleroux0/devel-gcc8:latest
+      Container: gcc8
     clang7-libstdc++:
-      Container: pleroux0/devel-clang7:latest
+      Container: clang7
       CXXFLAGS: -stdlib=libstdc++
     clang7-libc++:
-      Container: pleroux0/devel-clang7:latest
+      Container: clang7
       CXXFLAGS: -stdlib=libc++
     clang7-sanitize-undefined:
-      Container: pleroux0/devel-clang7:latest
+      Container: clang7
       CXXFLAGS: -fsanitize=undefined
     clang7-sanitize-address:
-      Container: pleroux0/devel-clang7:latest
+      Container: clang7_ptrace
       CXXFLAGS: -fsanitize=address
       LSAN_OPTIONS: "verbosity=1:log_threads=1"
 
@@ -27,9 +37,7 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
-container:
-  image: $[ variables['Container'] ]
-  options: "--cap-add SYS_PTRACE"
+container: $[ variables['Container'] ]
 
 steps:
 - script: mkdir -p build
