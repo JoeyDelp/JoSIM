@@ -26,7 +26,6 @@ strategy:
     clang7-sanitize-address:
       Container: clang7_ptrace
       CXXFLAGS: -fsanitize=address
-      LSAN_OPTIONS: "verbosity=1:log_threads=1"
 
 trigger:
   batch: true
