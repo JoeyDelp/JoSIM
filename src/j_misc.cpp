@@ -302,7 +302,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
         break;
       values.push_back(0.0);
     }
-    double startpoint, endpoint, value;
+    double startpoint, endpoint, value = 0;
     for (int i = 1; i < timesteps.size(); i++) {
       startpoint = ceil(timesteps.at(i - 1) / iObj.transSim.prstep);
       endpoint = ceil(timesteps[i] / iObj.transSim.prstep);

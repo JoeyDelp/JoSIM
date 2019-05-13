@@ -7,11 +7,13 @@
 
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120).
 
-JoSIM is a SPICE syntax circuit simulator specifically created to handle superconducting elements such as the Josephson junction. It reads in a standard SPICE deck, creates an A matrix and solves the linear algebra problem Ax=b. The linear algebra package KLU is used to solve the system of equations.
+JoSIM is a SPICE syntax circuit simulator specifically created to handle superconducting elements such as the Josephson junction. It reads in a standard SPICE deck, creates an A matrix and solves the linear algebra problem *Ax=b*. The linear algebra package KLU by Tim Davis (http://faculty.cse.tamu.edu/davis/suitesparse.html) is used to solve the system of equations.
 
-JoSIM can display output using built-in FLTK GUI library or store it as space/comma delimeted files. JoSIM has inherent support for .PARAM commands that allow components to have variable values as well as expression parsing. JoSIM implements the RCSJ model of the Josephson junction and only supports transient analysis at present.
+A three stage distribution platform is implemented in JoSIM with the first being a command line interface (CLI) binary that is always built as standard during compilation. This is accompanied by a C++ library (*libjosim*) as well as a Python package (*pyJoSIM*)
 
-JoSIM takes a .cir/.js file as input and produces a .dat/.csv file as output.
+JoSIM allows output of results in various formats such as comma seperated value (CSV) or raw SPICE output. JoSIM has inherent support for .PARAM commands that allow components to have variable values as well as expression parsing. JoSIM implements the RCSJ model of the Josephson junction and only supports transient analysis at present.
+
+JoSIM takes a *.cir* file as input and produces a *.dat/.csv* file as output.
 
 Prebuilt binaries can be found here:
 https://github.com/JoeyDelp/JoSIM/releases
