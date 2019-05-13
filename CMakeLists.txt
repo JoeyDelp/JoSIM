@@ -43,7 +43,7 @@ target_include_directories(josim PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 # Dependencies
-target_link_libraries(josim PUBLIC suitesparse::klu)
+target_link_libraries(josim PRIVATE suitesparse::klu)
 
 # Properties
 set_target_properties(josim

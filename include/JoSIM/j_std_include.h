@@ -39,9 +39,6 @@
 #include <omp.h>
 #endif
 
-// Linear algebra include
-#include "klu.h"
-
 struct pair_hash {
   template <class T1, class T2>
   std::size_t operator()(const std::pair<T1, T2> &p) const noexcept {

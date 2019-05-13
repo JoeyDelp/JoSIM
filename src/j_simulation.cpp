@@ -2,6 +2,9 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_simulation.h"
 
+// Linear algebra include
+#include "klu.h"
+
 #include <cassert>
 
 void Simulation::identify_simulation(const std::vector<std::string> &controls,
