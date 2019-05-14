@@ -3221,7 +3221,7 @@ void Matrix::find_relevant_x(Input &iObj)
             }
           }
         }
-      } else if (tokens.at(1) == "PHASE") {
+      } else if (tokens.at(1) == "PHASE"  || tokens.at(1) == "DEVP") {
         label = tokens.at(2);
         if (label.find('_') != std::string::npos) {
           tokens = Misc::tokenize_delimeter(label, "_");

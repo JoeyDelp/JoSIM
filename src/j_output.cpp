@@ -778,7 +778,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           }
         } else
           Errors::control_errors(INVALID_NODEV, i);
-      } else if (tokens.at(1) == "PHASE") {
+      } else if (tokens.at(1) == "PHASE" || tokens.at(1) == "DEVP") {
         if (tokens.size() > 4)
           Errors::control_errors(PRINT_TOO_MANY_ARGS, i);
         label = tokens.at(2);

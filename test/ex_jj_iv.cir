@@ -1,10 +1,10 @@
-* Example to generate IV curve
-IS         0          1          pwl(0      0 5p 25E-7)
+* Example to simulate an IV curve in JoSIM
+IS         0          1          pwl(0      0 10p 0 50p 25E-7 )
 B1         1          0          jj1        area=1
-R1         1          0          8       
-.model jj1 jj(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rN=16, icrit=0.1mA)
-.tran 0.25p 1n 0 0.25p
+*R1         1          0          8        
+.model jj1 jj(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rn=16, icrit=0.1mA)
+.tran 0.05p 1n 0 0.1p
+.print PHASE B1
 .print DEVI IS
 .print NODEV 1 0
-.sweep PWL IS 25E-7 250E-6 25E-7
 .end
