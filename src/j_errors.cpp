@@ -202,6 +202,13 @@ void Errors::invalid_component_errors(int errorCode,
     std::cerr << "E: Please ensure that " << whatPart << " exists."
               << std::endl;
     exit(-1);
+  case UNKNOWN_DEVICE_TYPE:
+    std::cerr << "E: Unkown device type " 
+              << whatPart << std::endl;
+    std::cerr << "E: Please refer to the syntax guide for a list of available device types."
+              << std::endl;
+    std::cerr << std::endl;
+    exit(-1);
   default:
     std::cerr << "E: Unknown invalid component error." << std::endl;
     std::cerr << "E: Please contact the developer." << std::endl;
@@ -599,6 +606,12 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
               << std::endl;
     std::cerr << "E: The expression in question: " << whatPart << std::endl;
     std::cerr << std::endl;
+    exit(-1);
+  case INVALID_DECLARATION:
+    std::cerr << "E: Missing parameter declaration in: " << whatPart
+                << std::endl;
+    std::cerr << "E: Please ensure that a valid .PARAM definition is declared."
+              << std::endl;
     exit(-1);
   default:
     std::cerr << "E: Unknown parsing error: " << whatPart << std::endl;

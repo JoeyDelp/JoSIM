@@ -75,8 +75,8 @@ double Parser::parse_param(
         opStack.pop_back();
       else
         Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
-    } else
-      Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
+    } else throw std::logic_error(partToEval);
+      //Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
     if (opLoc == 0)
       expToEval = expToEval.substr(opLoc + 1);
     else if (opLoc == -1)
@@ -210,39 +210,35 @@ void Parser::parse_parameters(Parameters &parameters) {
   auto &unparsedParams = parameters.unparsedParams;
 
   std::vector<std::string> tokens, paramTokens;
-  std::string paramName, paramExp;
   double value;
+  int pos;
+
+  // Loop through all the unparsed parameter.
+  // Each should have the syntax .param parname=expression
   for (const auto &i : unparsedParams) {
-    tokens = Misc::tokenize_space(i.second);
-    if (tokens.size() > 1) {
-      if (tokens.size() >= 2) {
-        if (tokens.size() > 2)
-          paramName = tokens.at(1);
-        else
-          paramName = tokens.at(1).substr(0, tokens.at(1).find_first_of('='));
-        paramExp = i.second.substr(i.second.find_first_of("=") + 1);
-        if (i.first == "") {
-          value = parse_param(paramExp, parsedParams);
-          parsedParams[JoSIM::ParameterName(paramName, "")] = value;
-        } else {
-          value = parse_param(paramExp, parsedParams, i.first);
-          parsedParams[JoSIM::ParameterName(paramName, i.first)] = value;
-        }
+    // First is the name of the subckt it belongs to. "" for main.
+    tokens = Misc::tokenize_space_once(i.second);
+    try {
+      // Validity check: Check to see if '=' exists
+      pos = i.second.find_first_of('=');
+      if(pos == std::string::npos) throw 0;
+      tokens = Misc::tokenize_delimeter(tokens.at(1), "=");
+      // Trim trailing and leading white spaces
+      Misc::rtrim(tokens.at(0));
+      Misc::ltrim(tokens.at(1));
+      if (i.first == "") {
+        value = parse_param(tokens.at(1), parsedParams);
+        parsedParams[JoSIM::ParameterName(tokens.at(0), "")] = value;
       } else {
-        std::cerr << "W: Missing parameter declaration in " << i.second << "."
-                  << std::endl;
-        std::cerr
-            << "W: Please ensure that a valid .PARAM definition is declared."
-            << std::endl;
-        std::cerr << "W: This line will be ignored." << std::endl;
+        value = parse_param(tokens.at(1), parsedParams, i.first);
+        parsedParams[JoSIM::ParameterName(tokens.at(0), i.first)] = value;
       }
-    } else {
-      std::cerr << "W: Missing parameter declaration in " << i.second << "."
-                << std::endl;
-      std::cerr
-          << "W: Please ensure that a valid .PARAM definition is declared."
-          << std::endl;
-      std::cerr << "W: This line will be ignored." << std::endl;
+    } catch (const std::out_of_range& oor) {
+      Errors::parsing_errors(INVALID_DECLARATION, i.second);
+    } catch (int e) {
+      Errors::parsing_errors(INVALID_DECLARATION, i.second);
+    } catch (const std::logic_error& le) {
+      Errors::parsing_errors(UNIDENTIFIED_PART, le.what());
     }
   }
 }

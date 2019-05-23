@@ -51,6 +51,18 @@ std::vector<std::string> Misc::tokenize_space(const std::string &c) {
   return tokens;
 }
 
+std::vector<std::string> Misc::tokenize_space_once(const std::string &c) {
+  std::vector<std::string> tokens (2, "");
+  std::string::size_type pos = c.find_first_of(" \t");
+  std::string::size_type length = c.length();
+  if (pos == std::string::npos) {
+      pos = length;
+  }
+  tokens.at(0) = c.substr(0, pos);
+  if(pos != length) tokens.at(1) = c.substr(pos + 1, length);
+  return tokens;
+}
+
 std::vector<std::string> Misc::tokenize_delimeter(const std::string &c,
                                                   const std::string &d) {
   std::vector<std::string> tokens;
@@ -67,6 +79,18 @@ std::vector<std::string> Misc::tokenize_delimeter(const std::string &c,
       tokens.push_back(line.substr(prev, std::string::npos));
   }
   return tokens;
+}
+
+void Misc::ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch);
+    }));
+}
+
+void Misc::rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
 }
 
 int Misc::map_value_count(const std::unordered_map<std::string, int> &map,

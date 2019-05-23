@@ -34,6 +34,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+#include <stdexcept>
 
 #ifdef _OPENMP
 #include <omp.h>

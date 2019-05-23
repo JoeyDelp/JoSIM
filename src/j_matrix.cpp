@@ -1342,6 +1342,11 @@ void Matrix::create_A_volt(Input &iObj)
     else if (i.first[0] == 'K') {
       components.mutualInductanceLines.push_back(i);
     }
+    /************************/
+    /*  UNKNOWN DEVICE TYPE */
+    /************************/
+    else 
+      Errors::invalid_component_errors(UNKNOWN_DEVICE_TYPE, label);
   }
   double mutualL = 0.0, cf = 0.0;
   for (const auto &i : components.mutualInductanceLines) {

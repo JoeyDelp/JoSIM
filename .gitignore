@@ -307,3 +307,6 @@ doc/src
 # Clang files
 .clang-format
 .clang-tidy
+
+# direnv file
+.envrc

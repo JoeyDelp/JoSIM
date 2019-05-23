@@ -19,8 +19,14 @@ public:
 
   static std::vector<std::string> tokenize_space(const std::string &c);
 
+  static std::vector<std::string> tokenize_space_once(const std::string &c);
+
   static std::vector<std::string> tokenize_delimeter(const std::string &c,
                                                      const std::string &d);
+
+  static void ltrim(std::string &s);
+
+  static void rtrim(std::string &s);
 
   static int map_value_count(const std::unordered_map<std::string, int> &map,
                              int value);

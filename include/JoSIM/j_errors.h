@@ -43,6 +43,7 @@
 #define INVALID_EXPR 20
 #define INVALID_TX_DEFINED 21
 #define MISSING_INDUCTOR 22
+#define UNKNOWN_DEVICE_TYPE 23
 
 #define TRANS_ERROR 0
 #define PRINT_ERROR 1
@@ -106,6 +107,7 @@
 #define UNIDENTIFIED_PART 1
 #define MISMATCHED_PARENTHESIS 2
 #define INVALID_RPN 3
+#define INVALID_DECLARATION 4
 
 class Errors {
 public:
