@@ -221,6 +221,10 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
               JoSIM::ParameterName(tokens[i], subckt)) != 0)
         values.push_back(iObj.parameters.parsedParams.at(
             JoSIM::ParameterName(tokens[i], subckt)));
+      else if (iObj.parameters.parsedParams.count(
+              JoSIM::ParameterName(tokens[i], "")) != 0)
+        values.push_back(iObj.parameters.parsedParams.at(
+            JoSIM::ParameterName(tokens[i], "")));
       else
         // values.push_back(modifier(tokens[i]));
         values.push_back(Parser::parse_param(
