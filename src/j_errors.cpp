@@ -388,7 +388,7 @@ void Errors::matrix_errors(int errorCode, const std::string &whatPart) {
   case NON_SQUARE:
     std::cerr << "E: Matrix is not square. Dimensions are " << whatPart
               << std::endl;
-    std::cout << "E: Please contact the developer as this is potentially a bug."
+    std::cerr << "E: Please contact the developer as this is potentially a bug."
               << std::endl;
     exit(-1);
   default:

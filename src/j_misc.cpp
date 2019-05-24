@@ -260,12 +260,9 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       functionOfT[startpoint] = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
         if (values.at(i - 1) < values[i])
-          if (values.at(i - 1) < 0)
-            value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
-                                           (endpoint - startpoint) *
-                                           (j - (int)startpoint);
-          else
-            value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
+          value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
+                                          (endpoint - startpoint) *
+                                          (j - (int)startpoint);
         else if (values.at(i - 1) > values[i])
           value = values.at(i - 1) -
                   ((values.at(i - 1) - (values.at(i))) /

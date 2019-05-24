@@ -238,7 +238,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
     ok =
         klu_tsolve(Symbolic, Numeric, mObj.Nsize, 1, &LHS_PRE.front(), &Common);
     if (!ok) {
-      Errors::matrix_errors(MATRIX_SINGULAR, "");
+      Errors::simulation_errors(MATRIX_SINGULAR, "");
     }
 
     lhsValues = LHS_PRE;
@@ -600,7 +600,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
     ok =
         klu_tsolve(Symbolic, Numeric, mObj.Nsize, 1, &LHS_PRE.front(), &Common);
     if (!ok) {
-      Errors::matrix_errors(MATRIX_SINGULAR, "");
+      Errors::simulation_errors(MATRIX_SINGULAR, "");
     }
 
     lhsValues = LHS_PRE;
