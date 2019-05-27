@@ -45,6 +45,11 @@ double Parser::parse_param(
       rpnQueue.push_back(Misc::precise_to_string(
           parsedParams.at(JoSIM::ParameterName(partToEval, subckt))));
       qType.push_back('V');
+    } else if (parsedParams.count(JoSIM::ParameterName(partToEval, "")) !=
+              0) {
+      rpnQueue.push_back(Misc::precise_to_string(
+          parsedParams.at(JoSIM::ParameterName(partToEval, ""))));
+      qType.push_back('V');
     } else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end())
       opStack.push_back(partToEval);
     else if (consts.count(partToEval) != 0) {
