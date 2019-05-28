@@ -2651,10 +2651,10 @@ void Matrix::create_A_phase(Input &iObj)
     /******************/
     else if (i.first[0] == 'P') {
       matrix_element e;
+      sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
       components.phasePs.emplace_back(ps_phase());
       deviceLabelIndex[label].type = RowDescriptor::Type::PhasePS;
       deviceLabelIndex[label].index = sources.size() - 1;
-      sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
       cName = "C_" + devicetokens[0];
       rName = "R_" + devicetokens[0];
       components.phasePs.back().curNodeC = devicetokens.at(0);
