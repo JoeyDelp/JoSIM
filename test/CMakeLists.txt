@@ -43,7 +43,7 @@ add_integration_test(
 add_integration_test(
   NAME test_param_undef
   CIR test_param_undef.cir
-  OUT test_param_undef.csv
+  WILL_FAIL
 )
 
 #add_integration_test(
