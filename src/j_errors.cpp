@@ -587,12 +587,12 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
     std::cerr << std::endl;
     break;
   case UNIDENTIFIED_PART:
-    std::cerr << "W: Unknown function/variable defined. What is " << whatPart
+    std::cerr << "E: Unknown function/variable defined. What is " << whatPart
               << "?" << std::endl;
-    std::cerr << "W: Please ensure variables are declared before being used."
+    std::cerr << "E: Please ensure variables are declared before being used."
               << std::endl;
     std::cerr << std::endl;
-    break;
+    exit(-1);
   case MISMATCHED_PARENTHESIS:
     std::cerr << "E: Mismatched parenthesis in expression: " << whatPart
               << std::endl;

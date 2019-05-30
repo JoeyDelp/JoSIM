@@ -213,37 +213,59 @@ double Parser::parse_operator(const std::string &op, double val1, double val2,
 void Parser::parse_parameters(Parameters &parameters) {
   auto &parsedParams = parameters.parsedParams;
   auto &unparsedParams = parameters.unparsedParams;
+  std::vector<std::pair<std::string, std::string>> unknownP;
 
-  std::vector<std::string> tokens, paramTokens;
+  std::vector<std::string> tokens;
   double value;
   int pos;
 
-  // Loop through all the unparsed parameter.
-  // Each should have the syntax .param parname=expression
-  for (const auto &i : unparsedParams) {
-    // First is the name of the subckt it belongs to. "" for main.
-    tokens = Misc::tokenize_space_once(i.second);
-    try {
-      // Validity check: Check to see if '=' exists
-      pos = i.second.find_first_of('=');
-      if(pos == std::string::npos) throw 0;
-      tokens = Misc::tokenize_delimeter(tokens.at(1), "=");
-      // Trim trailing and leading white spaces
-      Misc::rtrim(tokens.at(0));
-      Misc::ltrim(tokens.at(1));
-      if (i.first == "") {
-        value = parse_param(tokens.at(1), parsedParams);
-        parsedParams[JoSIM::ParameterName(tokens.at(0), "")] = value;
-      } else {
-        value = parse_param(tokens.at(1), parsedParams, i.first);
-        parsedParams[JoSIM::ParameterName(tokens.at(0), i.first)] = value;
+  while(unparsedParams.size() != 0) {
+    // Loop through all the unparsed parameter.
+    // Each should have the syntax .param parname=expression
+
+    auto initial_size = unparsedParams.size();
+
+    unparsedParams.erase(std::remove_if(
+      unparsedParams.begin(),
+      unparsedParams.end(),
+      [&](auto& i) {
+        tokens = Misc::tokenize_space_once(i.second);
+        try {
+          // Validity check: Check to see if '=' exists
+          pos = i.second.find_first_of('=');
+          if(pos == std::string::npos) throw 0;
+          tokens = Misc::tokenize_delimeter(tokens.at(1), "=");
+          // Trim trailing and leading white spaces
+          Misc::rtrim(tokens.at(0));
+          Misc::ltrim(tokens.at(1));
+          if (i.first == "") {
+            value = parse_param(tokens.at(1), parsedParams);
+            parsedParams[JoSIM::ParameterName(tokens.at(0), "")] = value;
+          } else {
+            value = parse_param(tokens.at(1), parsedParams, i.first);
+            parsedParams[JoSIM::ParameterName(tokens.at(0), i.first)] = value;
+          }
+        } catch (const std::out_of_range& oor) {
+          Errors::parsing_errors(INVALID_DECLARATION, i.second);
+        } catch (int e) {
+          Errors::parsing_errors(INVALID_DECLARATION, i.second);
+        } catch (const std::logic_error& le) {
+          return false;
+        }
+
+        return true;
       }
-    } catch (const std::out_of_range& oor) {
-      Errors::parsing_errors(INVALID_DECLARATION, i.second);
-    } catch (int e) {
-      Errors::parsing_errors(INVALID_DECLARATION, i.second);
-    } catch (const std::logic_error& le) {
-      Errors::parsing_errors(UNIDENTIFIED_PART, le.what());
+    ), unparsedParams.end());
+
+    if (!unparsedParams.empty() && initial_size == unparsedParams.size()) {
+      for(auto &i : unparsedParams) {
+        std::cerr << "E: Unknown function/variable defined. What is " << i.second
+              << "?" << std::endl;
+        std::cerr << "E: Please ensure variables are declared before being used."
+                  << std::endl;
+        std::cerr << std::endl;
+      }
+      exit(-1);
     }
   }
 }

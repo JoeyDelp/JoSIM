@@ -34,6 +34,18 @@ add_integration_test(
   WRSPICE
 )
 
+add_integration_test(
+  NAME test_param_nest
+  CIR test_param_nest.cir
+  OUT test_param_nets.csv
+)
+
+add_integration_test(
+  NAME test_param_undef
+  CIR test_param_undef.cir
+  OUT test_param_undef.csv
+)
+
 #add_integration_test(
 #  NAME test_mitll_xort
 #  CIR TEST_MITLL_XORT.cir
