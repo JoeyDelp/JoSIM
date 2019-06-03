@@ -101,7 +101,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
   for (int i = 0; i < simSize; i++) {
 #ifndef NO_PRINT
     if (sOutput)
-      std::cout << '\r';
+      std::cout << '\r' << std::flush;
 #endif
     RHS.clear();
     rowCounter = 0;
@@ -117,8 +117,6 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
             RHSvalue += mObj.sources.at(k.index).at(i);
           } else if (k.type == ComponentConnections::Type::CSP) {
             RHSvalue -= mObj.sources.at(k.index).at(i);
-          } else if (k.type == ComponentConnections::Type::ResistorP) {
-          } else if (k.type == ComponentConnections::Type::ResistorN) {
           }
         }
       } else if (j.type == RowDescriptor::Type::VoltageInductor) {
@@ -243,7 +241,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 
     lhsValues = LHS_PRE;
     for (int m = 0; m < mObj.relXInd.size(); m++) {
-      results.xVect[m][i] = lhsValues.at(mObj.relXInd.at(m));
+      results.xVect.at(m).at(i) = lhsValues.at(mObj.relXInd.at(m));
     }
 
     /* Guess next junction voltage */
@@ -426,7 +424,7 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
         pBar.append("=");
       }
       if (sOutput)
-        std::cout << std::setw(31) << std::left << pBar << "]";
+        std::cout << std::setw(31) << std::left << pBar << "]" << std::flush;
     }
 #endif
   }
@@ -434,10 +432,10 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
   if (sOutput)
     std::cout << "\r" << std::setw(3) << std::right << std::fixed
               << std::setprecision(0) << 100 << "%" << std::setw(31)
-              << std::left << pBar << "]\n";
+              << std::left << pBar << "]\n" << std::flush;
 #else
   if (sOutput)
-    std::cout << " done" << std::endl;
+    std::cout << " done" << std::flush << std::endl;
 #endif
 
   klu_free_symbolic(&Symbolic, &Common);
@@ -447,14 +445,14 @@ void Simulation::transient_voltage_simulation(Input &iObj, Matrix &mObj) {
 void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
   results.xVect.clear();
   results.timeAxis.clear();
-  std::vector<double> lhsValues(mObj.Nsize, 0.0);
+  std::vector<double> lhsValues(mObj.Nsize, 0.0),
+      RHS(mObj.columnNames.size(), 0.0), LHS_PRE;
   int simSize = iObj.transSim.simsize();
   for (int m = 0; m < mObj.relXInd.size(); m++) {
     results.xVect.emplace_back(std::vector<double>(simSize, 0.0));
   }
-  std::vector<double> RHS(mObj.columnNames.size(), 0.0), LHS_PRE;
-  std::vector<std::vector<std::string>> nodeConnectionVector(
-      mObj.rowNames.size());
+  // std::vector<std::vector<std::string>> nodeConnectionVector(
+  //     mObj.rowNames.size());
   std::string currentLabel;
   double RHSvalue;
   double hn_2_2e_hbar = (iObj.transSim.prstep / 2) * (2 * M_PI / PHI_ZERO);
@@ -481,6 +479,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
   double increments = 100 / (double)simSize;
   double progress_increments = 30 / (double)simSize;
   double incremental_progress = 0.0;
+
   int progress = 0;
   int old_progress = 0;
   int imintd = 0;
@@ -490,7 +489,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
   for (int i = 0; i < simSize; i++) {
 #ifndef NO_PRINT
     if (sOutput)
-      std::cout << '\r';
+      std::cout << '\r' << std::flush;
 #endif
     RHS.clear();
     rowCounter = 0;
@@ -509,88 +508,90 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
           }
         }
       } else if (j.type == RowDescriptor::Type::PhaseResistor) {
-        if (mObj.components.phaseRes[j.index].posNRow == -1)
-          mObj.components.phaseRes[j.index].pn1 =
-              -lhsValues.at(mObj.components.phaseRes[j.index].negNRow);
-        else if (mObj.components.phaseRes[j.index].negNRow == -1)
-          mObj.components.phaseRes[j.index].pn1 =
-              lhsValues.at(mObj.components.phaseRes[j.index].posNRow);
-        else
-          mObj.components.phaseRes[j.index].pn1 =
-              lhsValues.at(mObj.components.phaseRes[j.index].posNRow) -
-              lhsValues.at(mObj.components.phaseRes[j.index].negNRow);
+        if (mObj.components.phaseRes.at(j.index).posNRow == -1) {
+          mObj.components.phaseRes.at(j.index).pn1 =
+              -lhsValues.at(mObj.components.phaseRes.at(j.index).negNRow);
+        } else if (mObj.components.phaseRes.at(j.index).negNRow == -1) {
+          mObj.components.phaseRes.at(j.index).pn1 =
+              lhsValues.at(mObj.components.phaseRes.at(j.index).posNRow);
+        } else {
+          mObj.components.phaseRes.at(j.index).pn1 =
+              lhsValues.at(mObj.components.phaseRes.at(j.index).posNRow) -
+              lhsValues.at(mObj.components.phaseRes.at(j.index).negNRow);
+        }
         mObj.components.phaseRes[j.index].IRn1 =
-            lhsValues.at(mObj.components.phaseRes[j.index].curNRow);
-        RHSvalue += ((M_PI * mObj.components.phaseRes[j.index].value *
+            lhsValues.at(mObj.components.phaseRes.at(j.index).curNRow);
+        RHSvalue += ((M_PI * mObj.components.phaseRes.at(j.index).value *
                       iObj.transSim.prstep) /
                      PHI_ZERO) *
-                        mObj.components.phaseRes[j.index].IRn1 +
-                    mObj.components.phaseRes[j.index].pn1;
+                        mObj.components.phaseRes.at(j.index).IRn1 +
+                    mObj.components.phaseRes.at(j.index).pn1;
       } else if (j.type == RowDescriptor::Type::PhaseJJ) {
         RHSvalue = mObj.components.phaseJJ.at(j.index).pn1 +
                    hn_2_2e_hbar * mObj.components.phaseJJ.at(j.index).vn1;
       } else if (j.type == RowDescriptor::Type::PhaseCapacitor) {
         RHSvalue =
             -((2 * M_PI * iObj.transSim.prstep * iObj.transSim.prstep) /
-              (4 * PHI_ZERO * mObj.components.phaseCap[j.index].value)) *
-                mObj.components.phaseCap[j.index].ICn1 -
-            mObj.components.phaseCap[j.index].pn1 -
-            (iObj.transSim.prstep * mObj.components.phaseCap[j.index].dPn1);
+              (4 * PHI_ZERO * mObj.components.phaseCap.at(j.index).value)) *
+                mObj.components.phaseCap.at(j.index).ICn1 -
+            mObj.components.phaseCap.at(j.index).pn1 -
+            (iObj.transSim.prstep * mObj.components.phaseCap.at(j.index).dPn1);
       } else if (j.type == RowDescriptor::Type::PhaseVS) {
-        if (mObj.components.phaseVs[j.index].posNRow == -1.0)
-          mObj.components.phaseVs[j.index].pn1 =
-              -lhsValues.at(mObj.components.phaseVs[j.index].negNRow);
-        else if (mObj.components.phaseVs[j.index].negNRow == -1.0)
-          mObj.components.phaseVs[j.index].pn1 =
-              lhsValues.at(mObj.components.phaseVs[j.index].posNRow);
+        if (mObj.components.phaseVs.at(j.index).posNRow == -1.0)
+          mObj.components.phaseVs.at(j.index).pn1 =
+              -lhsValues.at(mObj.components.phaseVs.at(j.index).negNRow);
+        else if (mObj.components.phaseVs.at(j.index).negNRow == -1.0)
+          mObj.components.phaseVs.at(j.index).pn1 =
+              lhsValues.at(mObj.components.phaseVs.at(j.index).posNRow);
         else
-          mObj.components.phaseVs[j.index].pn1 =
-              lhsValues.at(mObj.components.phaseVs[j.index].posNRow) -
-              lhsValues.at(mObj.components.phaseVs[j.index].negNRow);
+          mObj.components.phaseVs.at(j.index).pn1 =
+              lhsValues.at(mObj.components.phaseVs.at(j.index).posNRow) -
+              lhsValues.at(mObj.components.phaseVs.at(j.index).negNRow);
         if (i >= 1)
           RHSvalue =
-              mObj.components.phaseVs[j.index].pn1 +
+              mObj.components.phaseVs.at(j.index).pn1 +
               ((iObj.transSim.prstep * M_PI) / PHI_ZERO) *
-                  (mObj.sources[j.index][i] + mObj.sources[j.index][i - 1]);
+                  (mObj.sources.at(mObj.components.phaseVs.at(j.index).sourceDex).at(i)
+                  + mObj.sources.at(mObj.components.phaseVs.at(j.index).sourceDex).at(i - 1));
         else if (i == 0)
-          RHSvalue = mObj.components.phaseVs[j.index].pn1 +
+          RHSvalue = mObj.components.phaseVs.at(j.index).pn1 +
                      ((iObj.transSim.prstep * M_PI) / PHI_ZERO) *
-                         mObj.sources[j.index][i];
+                         mObj.sources.at(mObj.components.phaseVs.at(j.index).sourceDex).at(i);
       } else if (j.type == RowDescriptor::Type::PhasePS) {
         RHSvalue = mObj.sources.at(j.index).at(i);
       } else if (j.type == RowDescriptor::Type::PhaseTX1) {
         if (i > mObj.components.txPhase.at(j.index).k) {
           RHSvalue =
               ((iObj.transSim.prstep * M_PI *
-                mObj.components.txPhase[j.index].value) /
+                mObj.components.txPhase.at(j.index).value) /
                (PHI_ZERO)) *
                   results.xVect
                       .at(std::distance(
                           mObj.relXInd.begin(),
                           std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                                    mObj.components.txPhase[j.index].curN2Row)))
-                      .at(i - mObj.components.txPhase[j.index].k) +
-              mObj.components.txPhase[j.index].p1n1 +
+                                    mObj.components.txPhase.at(j.index).curN2Row)))
+                      .at(i - mObj.components.txPhase.at(j.index).k) +
+              mObj.components.txPhase.at(j.index).p1n1 +
               (iObj.transSim.prstep / 2) *
-                  (mObj.components.txPhase[j.index].dP1n1 +
-                   mObj.components.txPhase[j.index].dP2nk);
+                  (mObj.components.txPhase.at(j.index).dP1n1 +
+                   mObj.components.txPhase.at(j.index).dP2nk);
         }
       } else if (j.type == RowDescriptor::Type::PhaseTX2) {
         if (i > mObj.components.txPhase.at(j.index).k) {
           RHSvalue =
               ((iObj.transSim.prstep * M_PI *
-                mObj.components.txPhase[j.index].value) /
+                mObj.components.txPhase.at(j.index).value) /
                (PHI_ZERO)) *
                   results.xVect
                       .at(std::distance(
                           mObj.relXInd.begin(),
                           std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                                    mObj.components.txPhase[j.index].curN1Row)))
-                      .at(i - mObj.components.txPhase[j.index].k) +
-              mObj.components.txPhase[j.index].p2n1 +
+                                    mObj.components.txPhase.at(j.index).curN1Row)))
+                      .at(i - mObj.components.txPhase.at(j.index).k) +
+              mObj.components.txPhase.at(j.index).p2n1 +
               (iObj.transSim.prstep / 2) *
-                  (mObj.components.txPhase[j.index].dP2n1 +
-                   mObj.components.txPhase[j.index].dP1nk);
+                  (mObj.components.txPhase.at(j.index).dP2n1 +
+                   mObj.components.txPhase.at(j.index).dP1nk);
         }
       }
       RHS.push_back(RHSvalue);
@@ -605,7 +606,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
 
     lhsValues = LHS_PRE;
     for (int m = 0; m < mObj.relXInd.size(); m++) {
-      results.xVect[m][i] = lhsValues.at(mObj.relXInd.at(m));
+      results.xVect.at(m).at(i) = lhsValues.at(mObj.relXInd.at(m));
     }
 
     for (int j = 0; j < mObj.components.phaseJJ.size(); j++) {
@@ -831,7 +832,7 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
         pBar.append("=");
       }
       if (sOutput)
-        std::cout << std::setw(31) << std::left << pBar << "]";
+        std::cout << std::setw(31) << std::left << pBar << "]" << std::flush;
     }
 #endif
   }
@@ -839,10 +840,10 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
   if (sOutput)
     std::cout << "\r" << std::setw(3) << std::right << std::fixed
               << std::setprecision(0) << 100 << "%" << std::setw(31)
-              << std::left << pBar << "]\n";
+              << std::left << pBar << "]\n" << std::flush;
 #else
   if (sOutput)
-    std::cout << " done" << std::endl;
+    std::cout << " done" << std::flush << std::endl;
 #endif
 
   klu_free_symbolic(&Symbolic, &Common);

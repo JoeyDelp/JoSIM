@@ -36,14 +36,23 @@ add_integration_test(
 
 add_integration_test(
   NAME test_param_nest
-  CIR test_param_nest.cir
-  OUT test_param_nets.csv
+  CIR param/test_param_nest.cir
 )
 
 add_integration_test(
   NAME test_param_undef
-  CIR test_param_undef.cir
+  CIR param/test_param_undef.cir
   WILL_FAIL
+)
+
+add_integration_test(
+  NAME test_line_cont
+  CIR syntax/test_line_cont.cir
+)
+
+add_integration_test(
+  NAME test_line_comment
+  CIR syntax/test_line_comment.cir
 )
 
 #add_integration_test(

@@ -462,6 +462,33 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       }
     }
   }
+  /* NOISE(VO VA TSTEP TD) */
+  else if (str.find("NOISE") != std::string::npos) {
+    if (tokens.size() < 2)
+      Errors::function_errors(NOISE_TOO_FEW_ARGUMENTS,
+                              std::to_string(tokens.size()));
+    if (tokens.size() > 4)
+      Errors::function_errors(NOISE_TOO_MANY_ARGUMENTS,
+                              std::to_string(tokens.size()));
+    double VO = 0.0, VA = 0.0, TD = 0.0, TSTEP = 0.0;
+    VO = modifier(tokens[0]);
+    if(VO != 0.0) 
+      Errors::function_errors(NOISE_VO_ZERO, tokens[0]);
+    VA = modifier(tokens[1]);
+    if (VA == 0.0)
+      if (iObj.argVerb)
+        Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
+    TD = modifier(tokens[3]);
+    TSTEP = iObj.transSim.prstep;
+    int beginTime;
+    double currentTimestep, value;
+    beginTime = TD / iObj.transSim.prstep;
+    for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
+      currentTimestep = i * iObj.transSim.prstep;
+      value = VA * grand() / sqrt(2.0 * TSTEP);
+      functionOfT[i] = value;
+    }
+  }
   return functionOfT;
 }
 
@@ -489,4 +516,16 @@ int Misc::numDigits(int number) {
     digits++;
   }
   return digits;
+}
+
+double Misc::grand() {
+  double r,v1,v2,fac;
+  r=2;
+  while (r>=1) {
+    v1=(2*((double)rand()/(double)RAND_MAX)-1);
+    v2=(2*((double)rand()/(double)RAND_MAX)-1);
+    r=v1*v1+v2*v2;
+  }
+  fac=sqrt(-2*log(r)/r);
+  return(v2*fac);
 }

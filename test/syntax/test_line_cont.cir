@@ -1,0 +1,11 @@
+* Testing line continuation using the '+' operator
+I01     2   0   pwl(0   0   10p     0   15p
++   620u    17p     0)
+I02     3   0   pwl(0   0   10p     0   15p
+                    +   620u    17p     0)
+ROUT    1   0   2         
+VIN     1   0   pwl(0 0 50p 0 52.5p 827.13u 55p 0)
+R01     2   0   2
+R02     3   0   2
+.tran 0.25p 100p
+.print NODEV 3

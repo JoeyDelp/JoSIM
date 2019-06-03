@@ -72,5 +72,7 @@ public:
   }
 
   static int numDigits(int number);
+
+  static double grand();
 };
 #endif

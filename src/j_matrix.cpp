@@ -260,7 +260,6 @@ void Matrix::create_A_volt(Input &iObj)
       components.voltCap.back().label = devicetokens.at(0);
       components.voltCap.back().value = value;
       cName = "C_I" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       if (rowMap.count(devicetokens.at(0)) == 0) {
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageCapacitor;
@@ -420,7 +419,6 @@ void Matrix::create_A_volt(Input &iObj)
       components.voltInd.back().label = label;
       components.voltInd.back().value = value;
       cName = "C_I" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       if (rowMap.count(devicetokens.at(0)) == 0) {
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageInductor;
@@ -565,7 +563,6 @@ void Matrix::create_A_volt(Input &iObj)
       deviceLabelIndex[label].type = RowDescriptor::Type::VoltageVS;
       deviceLabelIndex[label].index = sources.size() - 1;
       cName = "C_" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       if (rowMap.count(devicetokens.at(0)) == 0) {
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageVS;
@@ -807,7 +804,6 @@ void Matrix::create_A_volt(Input &iObj)
                           i.second);
       components.voltJJ.back().label = label;
       cName = "C_P" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       components.voltJJ.back().phaseNodeC = devicetokens.at(0);
       components.voltJJ.back().phaseNodeR = devicetokens.at(0);
       if (rowMap.count(devicetokens.at(0)) == 0) {
@@ -1530,7 +1526,6 @@ void Matrix::create_A_phase(Input &iObj)
         Errors::invalid_component_errors(RES_ERROR, i.first);
       }
       cName = "C_I" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       components.phaseRes.back().curNodeC = devicetokens.at(0);
       components.phaseRes.back().curNodeR = devicetokens.at(0);
       components.phaseRes.back().value = value;
@@ -1678,7 +1673,6 @@ void Matrix::create_A_phase(Input &iObj)
         Errors::invalid_component_errors(CAP_ERROR, i.first);
       }
       cName = "C_I" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       components.phaseCap.back().curNodeC = devicetokens.at(0);
       components.phaseCap.back().curNodeR = devicetokens.at(0);
       components.phaseCap.back().value = value;
@@ -1825,7 +1819,6 @@ void Matrix::create_A_phase(Input &iObj)
         Errors::invalid_component_errors(IND_ERROR, i.first);
       }
       cName = "C_I" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       components.phaseInd.back().curNodeC = devicetokens.at(0);
       components.phaseInd.back().curNodeR = devicetokens.at(0);
       components.phaseInd.back().value = value;
@@ -1956,16 +1949,15 @@ void Matrix::create_A_phase(Input &iObj)
       sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
       components.phaseVs.emplace_back(vs_phase());
       deviceLabelIndex[label].type = RowDescriptor::Type::PhaseVS;
-      deviceLabelIndex[label].index = sources.size() - 1;
+      deviceLabelIndex[label].index = components.phaseVs.back().sourceDex = sources.size() - 1;
       cName = "C_" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       components.phaseVs.back().curNodeC = devicetokens.at(0);
       components.phaseVs.back().curNodeR = devicetokens.at(0);
       components.phaseVs.back().label = label;
       if (rowMap.count(devicetokens.at(0)) == 0) {
         rowDesc.emplace_back(RowDescriptor());
-        rowDesc.back().type = RowDescriptor::Type::PhasePS;
-        rowDesc.back().index = sources.size() - 1;
+        rowDesc.back().type = RowDescriptor::Type::PhaseVS;
+        rowDesc.back().index = components.phaseVs.size() - 1;
         rowMap[devicetokens.at(0)] = rowCounter++;
       }
       if (columnMap.count(devicetokens.at(0)) == 0) {
@@ -2656,7 +2648,6 @@ void Matrix::create_A_phase(Input &iObj)
       deviceLabelIndex[label].type = RowDescriptor::Type::PhasePS;
       deviceLabelIndex[label].index = sources.size() - 1;
       cName = "C_" + devicetokens[0];
-      rName = "R_" + devicetokens[0];
       components.phasePs.back().curNodeC = devicetokens.at(0);
       components.phasePs.back().curNodeR = devicetokens.at(0);
       components.phasePs.back().label = label;

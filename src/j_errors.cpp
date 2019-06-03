@@ -522,6 +522,34 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
               << " specified." << std::endl;
     std::cerr << "W: Program will terminate." << std::endl;
     exit(-1);
+  case NOISE_TOO_FEW_ARGUMENTS:
+    std::cout
+        << "E: Total arguments specified do not match the required for NOISE. "
+        << whatPart << " specified." << std::endl;
+    std::cerr
+        << "E: Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)"
+        << std::endl;
+    exit(-1);
+  case NOISE_TOO_MANY_ARGUMENTS:
+    std::cout
+        << "E: Total arguments specified do not match the required for NOISE. "
+        << whatPart << " specified." << std::endl;
+    std::cerr
+        << "E: Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)"
+        << std::endl;
+    exit(-1);
+  case NOISE_VO_ZERO:
+    std::cout << "E: NOISE initial value is not 0.0, this needs to be zero."
+              << std::endl;
+    std::cerr << "E: Program will continue but NOISE command is redundant."
+              << std::endl;
+    exit(-1);
+  case NOISE_VA_ZERO:
+    std::cout << "W: NOISE amplitude is 0.0, this renders the function redundant."
+              << std::endl;
+    std::cerr << "W: Program will continue but NOISE command is redundant."
+              << std::endl;
+    break;
   default:
     std::cerr << "E: Unknown function error: " << whatPart << std::endl;
     std::cerr << "E: Please contact the developer." << std::endl;

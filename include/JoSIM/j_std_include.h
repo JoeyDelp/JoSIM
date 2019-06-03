@@ -35,6 +35,7 @@
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
+#include <random>
 
 #ifdef _OPENMP
 #include <omp.h>

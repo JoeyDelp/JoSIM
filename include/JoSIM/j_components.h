@@ -201,12 +201,13 @@ public:
 class vs_phase : public device {
 public:
   std::string curNodeR, curNodeC;
-  int curNRow, curNCol;
+  int curNRow, curNCol, sourceDex;
   double pn1;
   vs_phase() {
     curNodeR = curNodeC = "NONE";
     curNRow = curNCol = -1;
     pn1 = 0.0;
+    sourceDex = -1;
   }
 };
 
