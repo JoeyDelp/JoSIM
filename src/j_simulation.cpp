@@ -521,7 +521,11 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
               lhsValues.at(mObj.components.phaseRes.at(j.index).posNRow) -
               lhsValues.at(mObj.components.phaseRes.at(j.index).negNRow);
         }
+<<<<<<< HEAD
         mObj.components.phaseRes.at(j.index).IRn1 =
+=======
+        mObj.components.phaseRes[j.index].IRn1 =
+>>>>>>> 5a9b1126bacd9bfb81966fcfd6ee88a673689146
             lhsValues.at(mObj.components.phaseRes.at(j.index).curNRow);
         RHSvalue += ((M_PI * mObj.components.phaseRes.at(j.index).value *
                       iObj.transSim.prstep) /
