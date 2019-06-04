@@ -1,10 +1,73 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_matrix.h"
+#include "JoSIM/j_errors.h"
 
 #include <string>
 
 using namespace JoSIM;
+
+void Matrix::find_relevant_x(Input &iObj) {
+  std::vector<std::string> tokens, tokens2;
+
+  for (const auto &i : iObj.controls) {
+    if (i.find("PRINT") != std::string::npos) {
+      if (i.at(0) == '.')
+        iObj.relevantX.push_back(i.substr(1));
+      else
+        iObj.relevantX.push_back(i);
+    } else if (i.find("PLOT") != std::string::npos) {
+      if (i.at(0) == '.')
+        iObj.relevantX.push_back(i.substr(1));
+      else
+        iObj.relevantX.push_back(i);
+    } else if (i.find("SAVE") != std::string::npos) {
+      if (i.at(0) == '.')
+        iObj.relevantX.push_back(i.substr(1));
+      else
+        iObj.relevantX.push_back(i);
+    }
+  }
+  std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
+  auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
+  iObj.relevantX.erase(last, iObj.relevantX.end());
+  for (const auto &i : iObj.relevantX) {
+    tokens = Misc::tokenize_space(i.substr(i.find_first_of(" \t") + 1));
+    for (auto &j : tokens) {
+      if (j.find('_') != std::string::npos) {
+        tokens2 = Misc::tokenize_delimeter(j, "_");
+        j = tokens2.back();
+        for (int k = 0; k < tokens2.size() - 1; k++)
+          j += "|" + tokens2.at(k);
+      } else if (j.find('.') != std::string::npos) {
+        std::replace(j.begin(), j.end(), '.', '|');
+      }
+      if(j.at(0) == 'D' || (j.at(0) == 'P' && j.at(1) == 'H')) {
+        (tokens.size() > 2) ?
+          Errors::control_errors(INVALID_OUTPUT_COMMAND, i) :
+          relevantToStore.emplace_back(tokens.at(1));
+          break;
+      } else if (j.at(0) == 'C' || j.at(0) == 'P' || j.at(0) == 'V') {
+        tokens2 = Misc::tokenize_delimeter(j, "(),");
+        if(tokens2.size() == 2) {
+          if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") relevantToStore.emplace_back(tokens2.at(1));
+        } else if (tokens2.size() == 3) {
+          if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") relevantToStore.emplace_back(tokens2.at(1));
+          if(tokens2.at(2) != "0" && tokens2.at(2) != "GND") relevantToStore.emplace_back(tokens2.at(2));
+        } else Errors::control_errors(INVALID_OUTPUT_COMMAND, i);
+      } else if (j.at(0) == 'N') {
+        if(tokens.size() == 2) {
+          if(tokens.at(1) != "0" && tokens.at(1) != "GND") relevantToStore.emplace_back(tokens.at(1));
+          break;
+        } else if (tokens.size() == 3) {
+          if(tokens.at(1) != "0" && tokens.at(1) != "GND") relevantToStore.emplace_back(tokens.at(1));
+          if(tokens.at(2) != "0" && tokens.at(2) != "GND") relevantToStore.emplace_back(tokens.at(2));
+          break;
+        } else Errors::control_errors(INVALID_OUTPUT_COMMAND, i);
+      }
+    }
+  }
+}
 
 void Matrix::create_matrix(Input &iObj)
 {
@@ -2841,1293 +2904,1293 @@ void Matrix::create_CSR()
   }
 }
 
-void Matrix::find_relevant_x(Input &iObj)
-{
-  std::vector<std::string> tokens, tokens2;
-  std::string label, label2;
+// void Matrix::find_relevant_x(Input &iObj)
+// {
+//   std::vector<std::string> tokens, tokens2;
+//   std::string label, label2;
 
-  int index1, index2;
-  for (const auto &i : iObj.controls) {
-    if (i.find("PRINT") != std::string::npos) {
-      if (i.at(0) == '.')
-        iObj.relevantX.push_back(i.substr(1));
-      else
-        iObj.relevantX.push_back(i);
-    } else if (i.find("PLOT") != std::string::npos) {
-      if (i.at(0) == '.')
-        iObj.relevantX.push_back(i.substr(1));
-      else
-        iObj.relevantX.push_back(i);
-    } else if (i.find("SAVE") != std::string::npos) {
-      if (i.at(0) == '.')
-        iObj.relevantX.push_back(i.substr(1));
-      else
-        iObj.relevantX.push_back(i);
-    }
-  }
-  std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
-  auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
-  iObj.relevantX.erase(last, iObj.relevantX.end());
-  if(iObj.relevantX.size() == 0) {
-    for (int o = 0; o < rowNames.size(); o++) relXInd.emplace_back(o);
-  } else {
-    for (const auto &i : iObj.relevantX) {
-      if (i.find("PRINT") != std::string::npos) {
-        tokens = Misc::tokenize_space(i);
-        if (tokens.at(1) == "DEVI") {
-          label = tokens.at(2);
-          if (label.find('_') != std::string::npos) {
-            tokens = Misc::tokenize_delimeter(label, "_");
-            label = tokens.back();
-            for (int j = 0; j < tokens.size() - 1; j++)
-              label += "|" + tokens.at(j);
-          } else if (label.find('.') != std::string::npos) {
-            std::replace(label.begin(), label.end(), '.', '|');
-          }
-          if (deviceLabelIndex.count(label) == 0) {
-            Errors::control_errors(UNKNOWN_DEVICE, label);
-          } else {
-            const auto &dev = deviceLabelIndex.at(label);
-            switch (dev.type) {
-            case RowDescriptor::Type::VoltageResistor:
-              if (components.voltRes.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                }
-              } else if (components.voltRes.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseResistor:
-              if (std::find(relXInd.begin(), relXInd.end(),
-                            components.phaseRes.at(dev.index).curNCol) ==
-                  relXInd.end()) {
-                relXInd.push_back(components.phaseRes.at(dev.index).curNCol);
-              }
-              break;
-            case RowDescriptor::Type::VoltageInductor:
-              if (std::find(relXInd.begin(), relXInd.end(),
-                            components.voltInd.at(dev.index).curNCol) ==
-                  relXInd.end()) {
-                relXInd.push_back(components.voltInd.at(dev.index).curNCol);
-              }
-              break;
-            case RowDescriptor::Type::PhaseInductor:
-              if (std::find(relXInd.begin(), relXInd.end(),
-                            components.phaseInd.at(dev.index).curNCol) ==
-                  relXInd.end()) {
-                relXInd.push_back(components.phaseInd.at(dev.index).curNCol);
-              }
-              break;
-            case RowDescriptor::Type::VoltageCapacitor:
-              if (std::find(relXInd.begin(), relXInd.end(),
-                            components.voltCap.at(dev.index).curNCol) ==
-                  relXInd.end()) {
-                relXInd.push_back(components.voltCap.at(dev.index).curNCol);
-              }
-              break;
-            case RowDescriptor::Type::PhaseCapacitor:
-              if (std::find(relXInd.begin(), relXInd.end(),
-                            components.phaseCap.at(dev.index).curNCol) ==
-                  relXInd.end()) {
-                relXInd.push_back(components.phaseCap.at(dev.index).curNCol);
-              }
-              break;
-            default:
-              break;
-            }
-          }
-        } else if (tokens.at(1) == "DEVV") {
-          label = tokens.at(2);
-          if (label.find('_') != std::string::npos) {
-            tokens = Misc::tokenize_delimeter(label, "_");
-            label = tokens.back();
-            for (int j = 0; j < tokens.size() - 1; j++)
-              label += "|" + tokens.at(j);
-          } else if (label.find('.') != std::string::npos)
-            std::replace(label.begin(), label.end(), '.', '|');
-          if (deviceLabelIndex.count(label) == 0) {
-            Errors::control_errors(UNKNOWN_DEVICE, label);
-          } else {
-            const auto &dev = deviceLabelIndex.at(label);
-            switch (dev.type) {
-            case RowDescriptor::Type::VoltageResistor:
-              if (components.voltRes.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                }
-              } else if (components.voltRes.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseResistor:
-              if (components.phaseRes.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
-                }
-              } else if (components.phaseRes.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::VoltageInductor:
-              if (components.voltInd.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).negNCol);
-                }
-              } else if (components.voltInd.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseInductor:
-              if (components.phaseInd.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
-                }
-              } else if (components.phaseInd.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::VoltageCapacitor:
-              if (components.voltCap.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).negNCol);
-                }
-              } else if (components.voltCap.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseCapacitor:
-              if (components.phaseCap.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
-                }
-              } else if (components.phaseCap.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::VoltageJJ:
-              if (components.voltJJ.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltJJ.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
-                }
-              } else if (components.voltJJ.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltJJ.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltJJ.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltJJ.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseJJ:
-              if (components.phaseJJ.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                }
-              } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                }
-              }
-              break;
-            default:
-              break;
-            }
-          }
-        } else if ((tokens.at(1) == "NODEV") || (tokens.at(1) == "NODEP")) {
-          if (tokens.size() == 3) {
-            label = tokens.at(2);
-            if (label.find('_') != std::string::npos) {
-              tokens = Misc::tokenize_delimeter(label, "_");
-              label = tokens.back();
-              for (int j = 0; j < tokens.size() - 1; j++)
-                label += "|" + tokens.at(j);
-            } else if (label.find('.') != std::string::npos) {
-              std::replace(label.begin(), label.end(), '.', '|');
-            }
-            if (deviceLabelIndex.count(label) != 0) {
-              index1 = deviceLabelIndex.at(label).index;
-              if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                  relXInd.end()) {
-                relXInd.push_back(index1);
-              }
-            }
-          } else if (tokens.size() == 4) {
-            label = tokens.at(2);
-            label2 = tokens.at(3);
-            if (label.find('_') != std::string::npos) {
-              tokens = Misc::tokenize_delimeter(label, "_");
-              label = tokens.back();
-              for (int j = 0; j < tokens.size() - 1; j++)
-                label += "|" + tokens.at(j);
-            } else if (label.find('.') != std::string::npos) {
-              std::replace(label.begin(), label.end(), '.', '|');
-            }
-            if (label2.find('_') != std::string::npos) {
-              tokens = Misc::tokenize_delimeter(label2, "_");
-              label2 = tokens.back();
-              for (int j = 0; j < tokens.size() - 1; j++)
-                label2 = label + "|" + tokens.at(j);
-            } else if (label2.find('.') != std::string::npos) {
-              std::replace(label2.begin(), label2.end(), '.', '|');
-            }
-            if (label == "0" || label == "GND") {
-              if (deviceLabelIndex.count(label2) != 0) {
-                index2 = deviceLabelIndex.at(label2).index;
-                if (std::find(relXInd.begin(), relXInd.end(), index2) ==
-                    relXInd.end()) {
-                  relXInd.push_back(index2);
-                }
-              }
-            } else if (label2 == "0" || label2 == "GND") {
-              if (deviceLabelIndex.count(label) != 0) {
-                index1 = deviceLabelIndex.at(label).index;
-                if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                    relXInd.end()) {
-                  relXInd.push_back(index1);
-                }
-              }
-            } else {
-              if (deviceLabelIndex.count(label) != 0) {
-                if (deviceLabelIndex.count(label2) != 0) {
-                  index1 = deviceLabelIndex.at(label).index;
-                  if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                      relXInd.end()) {
-                    relXInd.push_back(index1);
-                  }
-                  index2 = deviceLabelIndex.at(label2).index;
-                  if (std::find(relXInd.begin(), relXInd.end(), index2) ==
-                      relXInd.end()) {
-                    relXInd.push_back(index2);
-                  }
-                }
-              }
-            }
-          }
-        } else if (tokens.at(1) == "PHASE"  || tokens.at(1) == "DEVP") {
-          label = tokens.at(2);
-          if (label.find('_') != std::string::npos) {
-            tokens = Misc::tokenize_delimeter(label, "_");
-            label = tokens.back();
-            for (int j = 0; j < tokens.size() - 1; j++)
-              label += "|" + tokens.at(j);
-          } else if (label.find('.') != std::string::npos) {
-            std::replace(label.begin(), label.end(), '.', '|');
-          }
-          if (deviceLabelIndex.count(label) == 0) {
-            Errors::control_errors(UNKNOWN_DEVICE, label);
-          } else {
-            const auto &dev = deviceLabelIndex.at(label);
-            switch (dev.type) {
-            case RowDescriptor::Type::VoltageResistor:
-              if (components.voltRes.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                }
-              } else if (components.voltRes.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseResistor:
-              if (components.phaseRes.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
-                }
-              } else if (components.phaseRes.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::VoltageInductor:
-              if (components.voltInd.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).negNCol);
-                }
-              } else if (components.voltInd.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseInductor:
-              if (components.phaseInd.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
-                }
-              } else if (components.phaseInd.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::VoltageCapacitor:
-              if (components.voltCap.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).negNCol);
-                }
-              } else if (components.voltCap.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::PhaseCapacitor:
-              if (components.phaseCap.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
-                }
-              } else if (components.phaseCap.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
-                }
-              }
-              break;
-            case RowDescriptor::Type::VoltageJJ:
-              if (std::find(relXInd.begin(), relXInd.end(),
-                            components.voltJJ.at(dev.index).phaseNCol) ==
-                  relXInd.end()) {
-                relXInd.push_back(components.voltJJ.at(dev.index).phaseNCol);
-              }
-              break;
-            case RowDescriptor::Type::PhaseJJ:
-              if (components.phaseJJ.at(dev.index).posNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                }
-              } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                }
-              } else {
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).posNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                }
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseJJ.at(dev.index).negNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                }
-              }
-              break;
-            default:
-              break;
-            }
-          }
-        }
-      } else if (i.find("PLOT") != std::string::npos) {
-        tokens = Misc::tokenize_space(i);
-        for (int j = 1; j < tokens.size(); j++) {
-          if (tokens.at(j)[0] == 'V') {
-            tokens2 = Misc::tokenize_delimeter(tokens.at(j), "V() ,");
-            if (tokens2.size() == 1) {
-              label = tokens2.at(0);
-              if (label.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label, "_");
-                label = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label += "|" + tokens2.at(k);
-              } else if (label.find('.') != std::string::npos) {
-                std::replace(label.begin(), label.end(), '.', '|');
-              }
-              if (deviceLabelIndex.count(label) == 0) {
-                Errors::control_errors(UNKNOWN_DEVICE, label);
-              } else {
-                const auto &dev = deviceLabelIndex.at(label);
-                switch (dev.type) {
-                case RowDescriptor::Type::VoltageResistor:
-                  if (components.voltRes.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                    }
-                  } else if (components.voltRes.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseResistor:
-                  if (components.phaseRes.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseRes.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageInductor:
-                  if (components.voltInd.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltInd.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltInd.at(dev.index).negNCol);
-                    }
-                  } else if (components.voltInd.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltInd.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltInd.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltInd.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltInd.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltInd.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltInd.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseInductor:
-                  if (components.phaseInd.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseInd.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageCapacitor:
-                  if (components.voltCap.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltCap.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltCap.at(dev.index).negNCol);
-                    }
-                  } else if (components.voltCap.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltCap.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltCap.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltCap.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltCap.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltCap.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltCap.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseCapacitor:
-                  if (components.phaseCap.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseCap.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageJJ:
-                  if (components.voltJJ.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltJJ.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
-                    }
-                  } else if (components.voltJJ.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltJJ.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltJJ.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltJJ.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseJJ:
-                  if (components.phaseJJ.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                default:
-                  if (std::find(relXInd.begin(), relXInd.end(), dev.index) ==
-                      relXInd.end()) {
-                    relXInd.push_back(dev.index);
-                  }
-                  break;
-                }
-              }
-            } else {
-              label = tokens2.at(0);
-              label2 = tokens2.at(1);
-              if (label.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label, "_");
-                label = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label += "|" + tokens2.at(k);
-              } else if (label.find('.') != std::string::npos) {
-                std::replace(label.begin(), label.end(), '.', '|');
-              }
-              if (label2.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label2, "_");
-                label2 = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label2 = label + "|" + tokens2.at(k);
-              } else if (label2.find('.') != std::string::npos) {
-                std::replace(label2.begin(), label2.end(), '.', '|');
-              }
-              if (label == "0" || label == "GND") {
-                if (deviceLabelIndex.count(label2) != 0) {
-                  index2 = deviceLabelIndex.at(label2).index;
-                  if (std::find(relXInd.begin(), relXInd.end(), index2) ==
-                      relXInd.end()) {
-                    relXInd.push_back(index2);
-                  }
-                }
-              } else if (label2 == "0" || label2 == "GND") {
-                if (deviceLabelIndex.count(label) != 0) {
-                  index1 = deviceLabelIndex.at(label).index;
-                  if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                      relXInd.end()) {
-                    relXInd.push_back(index1);
-                  }
-                }
-              } else {
-                if (deviceLabelIndex.count(label) != 0) {
-                  if (deviceLabelIndex.count(label2) != 0) {
-                    index1 = deviceLabelIndex.at(label).index;
-                    if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                        relXInd.end()) {
-                      relXInd.push_back(index1);
-                    }
-                    index2 = deviceLabelIndex.at(label2).index;
-                    if (std::find(relXInd.begin(), relXInd.end(), index2) ==
-                        relXInd.end()) {
-                      relXInd.push_back(index2);
-                    }
-                  }
-                }
-              }
-            }
-          } else if (tokens.at(j)[0] == 'C') {
-            tokens2 = Misc::tokenize_delimeter(tokens.at(j), "C() ,");
-            if (tokens2.size() == 1) {
-              label = tokens2.at(0);
-              if (label.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label, "_");
-                label = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label += "|" + tokens2.at(k);
-              } else if (label.find('.') != std::string::npos) {
-                std::replace(label.begin(), label.end(), '.', '|');
-              }
-              if (deviceLabelIndex.count(label) == 0) {
-              } else {
-                const auto &dev = deviceLabelIndex.at(label);
-                switch (dev.type) {
-                case RowDescriptor::Type::VoltageResistor:
-                  if (components.voltRes.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                    }
-                  } else if (components.voltRes.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.voltRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseResistor:
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.phaseRes.at(dev.index).curNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.phaseRes.at(dev.index).curNCol);
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageInductor:
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltInd.at(dev.index).curNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltInd.at(dev.index).curNCol);
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseInductor:
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.phaseInd.at(dev.index).curNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.phaseInd.at(dev.index).curNCol);
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageCapacitor:
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltCap.at(dev.index).curNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltCap.at(dev.index).curNCol);
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseCapacitor:
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.phaseCap.at(dev.index).curNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.phaseCap.at(dev.index).curNCol);
-                  }
-                  break;
-                default:
-                  break;
-                }
-              }
-            }
-          } else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
-            tokens2 = Misc::tokenize_delimeter(tokens.at(j), " #");
-            label = tokens2.at(0);
-            if (label.find('_') != std::string::npos) {
-              tokens2 = Misc::tokenize_delimeter(label, "_");
-              label = tokens2.back();
-              for (int k = 0; k < tokens2.size() - 1; k++)
-                label += "|" + tokens2.at(k);
-            } else if (label.find('.') != std::string::npos) {
-              std::replace(label.begin(), label.end(), '.', '|');
-            }
-            if (deviceLabelIndex.count(label) == 0) {
-            } else {
-              const auto &dev = deviceLabelIndex.at(label);
-              switch (dev.type) {
-              case RowDescriptor::Type::VoltageResistor:
-                if (components.voltRes.at(dev.index).posNCol == -1) {
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltRes.at(dev.index).negNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                  }
-                } else if (components.voltRes.at(dev.index).negNCol == -1) {
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltRes.at(dev.index).posNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                  }
-                } else {
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltRes.at(dev.index).posNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltRes.at(dev.index).posNCol);
-                  }
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltRes.at(dev.index).negNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltRes.at(dev.index).negNCol);
-                  }
-                }
-                break;
-              case RowDescriptor::Type::PhaseResistor:
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseRes.at(dev.index).curNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseRes.at(dev.index).curNCol);
-                }
-                break;
-              case RowDescriptor::Type::VoltageInductor:
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltInd.at(dev.index).curNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltInd.at(dev.index).curNCol);
-                }
-                break;
-              case RowDescriptor::Type::PhaseInductor:
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseInd.at(dev.index).curNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseInd.at(dev.index).curNCol);
-                }
-                break;
-              case RowDescriptor::Type::VoltageCapacitor:
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.voltCap.at(dev.index).curNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.voltCap.at(dev.index).curNCol);
-                }
-                break;
-              case RowDescriptor::Type::PhaseCapacitor:
-                if (std::find(relXInd.begin(), relXInd.end(),
-                              components.phaseCap.at(dev.index).curNCol) ==
-                    relXInd.end()) {
-                  relXInd.push_back(components.phaseCap.at(dev.index).curNCol);
-                }
-                break;
-              default:
-                break;
-              }
-            }
-          } else if (tokens.at(j)[0] == 'P') {
-            tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
-            if (tokens2.size() == 1) {
-              label = tokens2.at(0);
-              if (label.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label, "_");
-                label = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label += "|" + tokens2.at(k);
-              } else if (label.find('.') != std::string::npos) {
-                std::replace(label.begin(), label.end(), '.', '|');
-              }
-              if (deviceLabelIndex.count(label) == 0) {
-              } else {
-                const auto &dev = deviceLabelIndex.at(label);
-                switch (dev.type) {
-                case RowDescriptor::Type::VoltageResistor:
-                case RowDescriptor::Type::PhaseResistor:
-                  if (components.phaseRes.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseRes.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseRes.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseRes.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageInductor:
-                case RowDescriptor::Type::PhaseInductor:
-                  if (components.phaseInd.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseInd.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseInd.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseInd.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageCapacitor:
-                case RowDescriptor::Type::PhaseCapacitor:
-                  if (components.phaseCap.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseCap.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseCap.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(
-                          components.phaseCap.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                case RowDescriptor::Type::VoltageJJ:
-                  if (std::find(relXInd.begin(), relXInd.end(),
-                                components.voltJJ.at(dev.index).phaseNCol) ==
-                      relXInd.end()) {
-                    relXInd.push_back(components.voltJJ.at(dev.index).phaseNCol);
-                  }
-                  break;
-                case RowDescriptor::Type::PhaseJJ:
-                  if (components.phaseJJ.at(dev.index).posNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                    }
-                  } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                    }
-                  } else {
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).posNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
-                    }
-                    if (std::find(relXInd.begin(), relXInd.end(),
-                                  components.phaseJJ.at(dev.index).negNCol) ==
-                        relXInd.end()) {
-                      relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
-                    }
-                  }
-                  break;
-                default:
-                  if (deviceLabelIndex.count(label) != 0) {
-                    if (std::find(relXInd.begin(), relXInd.end(), dev.index) ==
-                        relXInd.end()) {
-                      relXInd.push_back(dev.index);
-                    }
-                  }
-                  break;
-                }
-              }
-            } else {
-              label = tokens2.at(0);
-              label2 = tokens2.at(1);
-              if (label.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label, "_");
-                label = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label += "|" + tokens2.at(k);
-              } else if (label.find('.') != std::string::npos) {
-                std::replace(label.begin(), label.end(), '.', '|');
-              }
-              if (label2.find('_') != std::string::npos) {
-                tokens2 = Misc::tokenize_delimeter(label2, "_");
-                label2 = tokens2.back();
-                for (int k = 0; k < tokens2.size() - 1; k++)
-                  label2 = label + "|" + tokens2.at(k);
-              } else if (label2.find('.') != std::string::npos) {
-                std::replace(label2.begin(), label2.end(), '.', '|');
-              }
-              if (label == "0" || label == "GND") {
-                if (deviceLabelIndex.count(label2) != 0) {
-                  index2 = deviceLabelIndex.at(label2).index;
-                  if (std::find(relXInd.begin(), relXInd.end(), index2) ==
-                      relXInd.end()) {
-                    relXInd.push_back(index2);
-                  }
-                }
-              } else if (label2 == "0" || label2 == "GND") {
-                if (deviceLabelIndex.count(label) != 0) {
-                  index1 = deviceLabelIndex.at(label).index;
-                  if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                      relXInd.end()) {
-                    relXInd.push_back(index1);
-                  }
-                }
-              } else {
-                if (deviceLabelIndex.count(label) != 0) {
-                  if (deviceLabelIndex.count(label2) != 0) {
-                    index1 = deviceLabelIndex.at(label).index;
-                    if (std::find(relXInd.begin(), relXInd.end(), index1) ==
-                        relXInd.end()) {
-                      relXInd.push_back(index1);
-                    }
-                    index2 = deviceLabelIndex.at(label2).index;
-                    if (std::find(relXInd.begin(), relXInd.end(), index2) ==
-                        relXInd.end()) {
-                      relXInd.push_back(index2);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
+//   int index1, index2;
+//   for (const auto &i : iObj.controls) {
+//     if (i.find("PRINT") != std::string::npos) {
+//       if (i.at(0) == '.')
+//         iObj.relevantX.push_back(i.substr(1));
+//       else
+//         iObj.relevantX.push_back(i);
+//     } else if (i.find("PLOT") != std::string::npos) {
+//       if (i.at(0) == '.')
+//         iObj.relevantX.push_back(i.substr(1));
+//       else
+//         iObj.relevantX.push_back(i);
+//     } else if (i.find("SAVE") != std::string::npos) {
+//       if (i.at(0) == '.')
+//         iObj.relevantX.push_back(i.substr(1));
+//       else
+//         iObj.relevantX.push_back(i);
+//     }
+//   }
+//   std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
+//   auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
+//   iObj.relevantX.erase(last, iObj.relevantX.end());
+//   if(iObj.relevantX.size() == 0) {
+//     for (int o = 0; o < rowNames.size(); o++) relXInd.emplace_back(o);
+//   } else {
+//     for (const auto &i : iObj.relevantX) {
+//       if (i.find("PRINT") != std::string::npos) {
+//         tokens = Misc::tokenize_space(i);
+//         if (tokens.at(1) == "DEVI") {
+//           label = tokens.at(2);
+//           if (label.find('_') != std::string::npos) {
+//             tokens = Misc::tokenize_delimeter(label, "_");
+//             label = tokens.back();
+//             for (int j = 0; j < tokens.size() - 1; j++)
+//               label += "|" + tokens.at(j);
+//           } else if (label.find('.') != std::string::npos) {
+//             std::replace(label.begin(), label.end(), '.', '|');
+//           }
+//           if (deviceLabelIndex.count(label) == 0) {
+//             Errors::control_errors(UNKNOWN_DEVICE, label);
+//           } else {
+//             const auto &dev = deviceLabelIndex.at(label);
+//             switch (dev.type) {
+//             case RowDescriptor::Type::VoltageResistor:
+//               if (components.voltRes.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltRes.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseResistor:
+//               if (std::find(relXInd.begin(), relXInd.end(),
+//                             components.phaseRes.at(dev.index).curNCol) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(components.phaseRes.at(dev.index).curNCol);
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageInductor:
+//               if (std::find(relXInd.begin(), relXInd.end(),
+//                             components.voltInd.at(dev.index).curNCol) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(components.voltInd.at(dev.index).curNCol);
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseInductor:
+//               if (std::find(relXInd.begin(), relXInd.end(),
+//                             components.phaseInd.at(dev.index).curNCol) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(components.phaseInd.at(dev.index).curNCol);
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageCapacitor:
+//               if (std::find(relXInd.begin(), relXInd.end(),
+//                             components.voltCap.at(dev.index).curNCol) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(components.voltCap.at(dev.index).curNCol);
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseCapacitor:
+//               if (std::find(relXInd.begin(), relXInd.end(),
+//                             components.phaseCap.at(dev.index).curNCol) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(components.phaseCap.at(dev.index).curNCol);
+//               }
+//               break;
+//             default:
+//               break;
+//             }
+//           }
+//         } else if (tokens.at(1) == "DEVV") {
+//           label = tokens.at(2);
+//           if (label.find('_') != std::string::npos) {
+//             tokens = Misc::tokenize_delimeter(label, "_");
+//             label = tokens.back();
+//             for (int j = 0; j < tokens.size() - 1; j++)
+//               label += "|" + tokens.at(j);
+//           } else if (label.find('.') != std::string::npos)
+//             std::replace(label.begin(), label.end(), '.', '|');
+//           if (deviceLabelIndex.count(label) == 0) {
+//             Errors::control_errors(UNKNOWN_DEVICE, label);
+//           } else {
+//             const auto &dev = deviceLabelIndex.at(label);
+//             switch (dev.type) {
+//             case RowDescriptor::Type::VoltageResistor:
+//               if (components.voltRes.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltRes.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseResistor:
+//               if (components.phaseRes.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseRes.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageInductor:
+//               if (components.voltInd.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltInd.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseInductor:
+//               if (components.phaseInd.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseInd.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageCapacitor:
+//               if (components.voltCap.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltCap.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseCapacitor:
+//               if (components.phaseCap.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseCap.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageJJ:
+//               if (components.voltJJ.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltJJ.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltJJ.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltJJ.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltJJ.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltJJ.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseJJ:
+//               if (components.phaseJJ.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             default:
+//               break;
+//             }
+//           }
+//         } else if ((tokens.at(1) == "NODEV") || (tokens.at(1) == "NODEP")) {
+//           if (tokens.size() == 3) {
+//             label = tokens.at(2);
+//             if (label.find('_') != std::string::npos) {
+//               tokens = Misc::tokenize_delimeter(label, "_");
+//               label = tokens.back();
+//               for (int j = 0; j < tokens.size() - 1; j++)
+//                 label += "|" + tokens.at(j);
+//             } else if (label.find('.') != std::string::npos) {
+//               std::replace(label.begin(), label.end(), '.', '|');
+//             }
+//             if (deviceLabelIndex.count(label) != 0) {
+//               index1 = deviceLabelIndex.at(label).index;
+//               if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(index1);
+//               }
+//             }
+//           } else if (tokens.size() == 4) {
+//             label = tokens.at(2);
+//             label2 = tokens.at(3);
+//             if (label.find('_') != std::string::npos) {
+//               tokens = Misc::tokenize_delimeter(label, "_");
+//               label = tokens.back();
+//               for (int j = 0; j < tokens.size() - 1; j++)
+//                 label += "|" + tokens.at(j);
+//             } else if (label.find('.') != std::string::npos) {
+//               std::replace(label.begin(), label.end(), '.', '|');
+//             }
+//             if (label2.find('_') != std::string::npos) {
+//               tokens = Misc::tokenize_delimeter(label2, "_");
+//               label2 = tokens.back();
+//               for (int j = 0; j < tokens.size() - 1; j++)
+//                 label2 = label + "|" + tokens.at(j);
+//             } else if (label2.find('.') != std::string::npos) {
+//               std::replace(label2.begin(), label2.end(), '.', '|');
+//             }
+//             if (label == "0" || label == "GND") {
+//               if (deviceLabelIndex.count(label2) != 0) {
+//                 index2 = deviceLabelIndex.at(label2).index;
+//                 if (std::find(relXInd.begin(), relXInd.end(), index2) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(index2);
+//                 }
+//               }
+//             } else if (label2 == "0" || label2 == "GND") {
+//               if (deviceLabelIndex.count(label) != 0) {
+//                 index1 = deviceLabelIndex.at(label).index;
+//                 if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(index1);
+//                 }
+//               }
+//             } else {
+//               if (deviceLabelIndex.count(label) != 0) {
+//                 if (deviceLabelIndex.count(label2) != 0) {
+//                   index1 = deviceLabelIndex.at(label).index;
+//                   if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(index1);
+//                   }
+//                   index2 = deviceLabelIndex.at(label2).index;
+//                   if (std::find(relXInd.begin(), relXInd.end(), index2) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(index2);
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         } else if (tokens.at(1) == "PHASE"  || tokens.at(1) == "DEVP") {
+//           label = tokens.at(2);
+//           if (label.find('_') != std::string::npos) {
+//             tokens = Misc::tokenize_delimeter(label, "_");
+//             label = tokens.back();
+//             for (int j = 0; j < tokens.size() - 1; j++)
+//               label += "|" + tokens.at(j);
+//           } else if (label.find('.') != std::string::npos) {
+//             std::replace(label.begin(), label.end(), '.', '|');
+//           }
+//           if (deviceLabelIndex.count(label) == 0) {
+//             Errors::control_errors(UNKNOWN_DEVICE, label);
+//           } else {
+//             const auto &dev = deviceLabelIndex.at(label);
+//             switch (dev.type) {
+//             case RowDescriptor::Type::VoltageResistor:
+//               if (components.voltRes.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltRes.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseResistor:
+//               if (components.phaseRes.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseRes.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageInductor:
+//               if (components.voltInd.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltInd.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseInductor:
+//               if (components.phaseInd.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseInd.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageCapacitor:
+//               if (components.voltCap.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).negNCol);
+//                 }
+//               } else if (components.voltCap.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseCapacitor:
+//               if (components.phaseCap.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseCap.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             case RowDescriptor::Type::VoltageJJ:
+//               if (std::find(relXInd.begin(), relXInd.end(),
+//                             components.voltJJ.at(dev.index).phaseNCol) ==
+//                   relXInd.end()) {
+//                 relXInd.push_back(components.voltJJ.at(dev.index).phaseNCol);
+//               }
+//               break;
+//             case RowDescriptor::Type::PhaseJJ:
+//               if (components.phaseJJ.at(dev.index).posNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                 }
+//               } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                 }
+//               } else {
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).posNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                 }
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseJJ.at(dev.index).negNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                 }
+//               }
+//               break;
+//             default:
+//               break;
+//             }
+//           }
+//         }
+//       } else if (i.find("PLOT") != std::string::npos) {
+//         tokens = Misc::tokenize_space(i);
+//         for (int j = 1; j < tokens.size(); j++) {
+//           if (tokens.at(j)[0] == 'V') {
+//             tokens2 = Misc::tokenize_delimeter(tokens.at(j), "V() ,");
+//             if (tokens2.size() == 1) {
+//               label = tokens2.at(0);
+//               if (label.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label, "_");
+//                 label = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label += "|" + tokens2.at(k);
+//               } else if (label.find('.') != std::string::npos) {
+//                 std::replace(label.begin(), label.end(), '.', '|');
+//               }
+//               if (deviceLabelIndex.count(label) == 0) {
+//                 Errors::control_errors(UNKNOWN_DEVICE, label);
+//               } else {
+//                 const auto &dev = deviceLabelIndex.at(label);
+//                 switch (dev.type) {
+//                 case RowDescriptor::Type::VoltageResistor:
+//                   if (components.voltRes.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.voltRes.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseResistor:
+//                   if (components.phaseRes.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseRes.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageInductor:
+//                   if (components.voltInd.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltInd.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltInd.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.voltInd.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltInd.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltInd.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltInd.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltInd.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltInd.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltInd.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseInductor:
+//                   if (components.phaseInd.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseInd.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageCapacitor:
+//                   if (components.voltCap.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltCap.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltCap.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.voltCap.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltCap.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltCap.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltCap.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltCap.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltCap.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltCap.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseCapacitor:
+//                   if (components.phaseCap.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseCap.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageJJ:
+//                   if (components.voltJJ.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltJJ.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.voltJJ.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltJJ.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltJJ.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltJJ.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltJJ.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltJJ.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseJJ:
+//                   if (components.phaseJJ.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 default:
+//                   if (std::find(relXInd.begin(), relXInd.end(), dev.index) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(dev.index);
+//                   }
+//                   break;
+//                 }
+//               }
+//             } else {
+//               label = tokens2.at(0);
+//               label2 = tokens2.at(1);
+//               if (label.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label, "_");
+//                 label = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label += "|" + tokens2.at(k);
+//               } else if (label.find('.') != std::string::npos) {
+//                 std::replace(label.begin(), label.end(), '.', '|');
+//               }
+//               if (label2.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label2, "_");
+//                 label2 = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label2 = label + "|" + tokens2.at(k);
+//               } else if (label2.find('.') != std::string::npos) {
+//                 std::replace(label2.begin(), label2.end(), '.', '|');
+//               }
+//               if (label == "0" || label == "GND") {
+//                 if (deviceLabelIndex.count(label2) != 0) {
+//                   index2 = deviceLabelIndex.at(label2).index;
+//                   if (std::find(relXInd.begin(), relXInd.end(), index2) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(index2);
+//                   }
+//                 }
+//               } else if (label2 == "0" || label2 == "GND") {
+//                 if (deviceLabelIndex.count(label) != 0) {
+//                   index1 = deviceLabelIndex.at(label).index;
+//                   if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(index1);
+//                   }
+//                 }
+//               } else {
+//                 if (deviceLabelIndex.count(label) != 0) {
+//                   if (deviceLabelIndex.count(label2) != 0) {
+//                     index1 = deviceLabelIndex.at(label).index;
+//                     if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(index1);
+//                     }
+//                     index2 = deviceLabelIndex.at(label2).index;
+//                     if (std::find(relXInd.begin(), relXInd.end(), index2) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(index2);
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           } else if (tokens.at(j)[0] == 'C') {
+//             tokens2 = Misc::tokenize_delimeter(tokens.at(j), "C() ,");
+//             if (tokens2.size() == 1) {
+//               label = tokens2.at(0);
+//               if (label.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label, "_");
+//                 label = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label += "|" + tokens2.at(k);
+//               } else if (label.find('.') != std::string::npos) {
+//                 std::replace(label.begin(), label.end(), '.', '|');
+//               }
+//               if (deviceLabelIndex.count(label) == 0) {
+//               } else {
+//                 const auto &dev = deviceLabelIndex.at(label);
+//                 switch (dev.type) {
+//                 case RowDescriptor::Type::VoltageResistor:
+//                   if (components.voltRes.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.voltRes.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.voltRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseResistor:
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.phaseRes.at(dev.index).curNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.phaseRes.at(dev.index).curNCol);
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageInductor:
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltInd.at(dev.index).curNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltInd.at(dev.index).curNCol);
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseInductor:
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.phaseInd.at(dev.index).curNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.phaseInd.at(dev.index).curNCol);
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageCapacitor:
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltCap.at(dev.index).curNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltCap.at(dev.index).curNCol);
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseCapacitor:
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.phaseCap.at(dev.index).curNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.phaseCap.at(dev.index).curNCol);
+//                   }
+//                   break;
+//                 default:
+//                   break;
+//                 }
+//               }
+//             }
+//           } else if (tokens.at(j).find("#BRANCH") != std::string::npos) {
+//             tokens2 = Misc::tokenize_delimeter(tokens.at(j), " #");
+//             label = tokens2.at(0);
+//             if (label.find('_') != std::string::npos) {
+//               tokens2 = Misc::tokenize_delimeter(label, "_");
+//               label = tokens2.back();
+//               for (int k = 0; k < tokens2.size() - 1; k++)
+//                 label += "|" + tokens2.at(k);
+//             } else if (label.find('.') != std::string::npos) {
+//               std::replace(label.begin(), label.end(), '.', '|');
+//             }
+//             if (deviceLabelIndex.count(label) == 0) {
+//             } else {
+//               const auto &dev = deviceLabelIndex.at(label);
+//               switch (dev.type) {
+//               case RowDescriptor::Type::VoltageResistor:
+//                 if (components.voltRes.at(dev.index).posNCol == -1) {
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltRes.at(dev.index).negNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                   }
+//                 } else if (components.voltRes.at(dev.index).negNCol == -1) {
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltRes.at(dev.index).posNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                   }
+//                 } else {
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltRes.at(dev.index).posNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltRes.at(dev.index).posNCol);
+//                   }
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltRes.at(dev.index).negNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltRes.at(dev.index).negNCol);
+//                   }
+//                 }
+//                 break;
+//               case RowDescriptor::Type::PhaseResistor:
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseRes.at(dev.index).curNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseRes.at(dev.index).curNCol);
+//                 }
+//                 break;
+//               case RowDescriptor::Type::VoltageInductor:
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltInd.at(dev.index).curNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltInd.at(dev.index).curNCol);
+//                 }
+//                 break;
+//               case RowDescriptor::Type::PhaseInductor:
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseInd.at(dev.index).curNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseInd.at(dev.index).curNCol);
+//                 }
+//                 break;
+//               case RowDescriptor::Type::VoltageCapacitor:
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.voltCap.at(dev.index).curNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.voltCap.at(dev.index).curNCol);
+//                 }
+//                 break;
+//               case RowDescriptor::Type::PhaseCapacitor:
+//                 if (std::find(relXInd.begin(), relXInd.end(),
+//                               components.phaseCap.at(dev.index).curNCol) ==
+//                     relXInd.end()) {
+//                   relXInd.push_back(components.phaseCap.at(dev.index).curNCol);
+//                 }
+//                 break;
+//               default:
+//                 break;
+//               }
+//             }
+//           } else if (tokens.at(j)[0] == 'P') {
+//             tokens2 = Misc::tokenize_delimeter(tokens.at(j), "P() ,");
+//             if (tokens2.size() == 1) {
+//               label = tokens2.at(0);
+//               if (label.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label, "_");
+//                 label = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label += "|" + tokens2.at(k);
+//               } else if (label.find('.') != std::string::npos) {
+//                 std::replace(label.begin(), label.end(), '.', '|');
+//               }
+//               if (deviceLabelIndex.count(label) == 0) {
+//               } else {
+//                 const auto &dev = deviceLabelIndex.at(label);
+//                 switch (dev.type) {
+//                 case RowDescriptor::Type::VoltageResistor:
+//                 case RowDescriptor::Type::PhaseResistor:
+//                   if (components.phaseRes.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseRes.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseRes.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseRes.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageInductor:
+//                 case RowDescriptor::Type::PhaseInductor:
+//                   if (components.phaseInd.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseInd.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseInd.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseInd.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageCapacitor:
+//                 case RowDescriptor::Type::PhaseCapacitor:
+//                   if (components.phaseCap.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseCap.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseCap.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(
+//                           components.phaseCap.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::VoltageJJ:
+//                   if (std::find(relXInd.begin(), relXInd.end(),
+//                                 components.voltJJ.at(dev.index).phaseNCol) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(components.voltJJ.at(dev.index).phaseNCol);
+//                   }
+//                   break;
+//                 case RowDescriptor::Type::PhaseJJ:
+//                   if (components.phaseJJ.at(dev.index).posNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                     }
+//                   } else if (components.phaseJJ.at(dev.index).negNCol == -1) {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                     }
+//                   } else {
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).posNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).posNCol);
+//                     }
+//                     if (std::find(relXInd.begin(), relXInd.end(),
+//                                   components.phaseJJ.at(dev.index).negNCol) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(components.phaseJJ.at(dev.index).negNCol);
+//                     }
+//                   }
+//                   break;
+//                 default:
+//                   if (deviceLabelIndex.count(label) != 0) {
+//                     if (std::find(relXInd.begin(), relXInd.end(), dev.index) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(dev.index);
+//                     }
+//                   }
+//                   break;
+//                 }
+//               }
+//             } else {
+//               label = tokens2.at(0);
+//               label2 = tokens2.at(1);
+//               if (label.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label, "_");
+//                 label = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label += "|" + tokens2.at(k);
+//               } else if (label.find('.') != std::string::npos) {
+//                 std::replace(label.begin(), label.end(), '.', '|');
+//               }
+//               if (label2.find('_') != std::string::npos) {
+//                 tokens2 = Misc::tokenize_delimeter(label2, "_");
+//                 label2 = tokens2.back();
+//                 for (int k = 0; k < tokens2.size() - 1; k++)
+//                   label2 = label + "|" + tokens2.at(k);
+//               } else if (label2.find('.') != std::string::npos) {
+//                 std::replace(label2.begin(), label2.end(), '.', '|');
+//               }
+//               if (label == "0" || label == "GND") {
+//                 if (deviceLabelIndex.count(label2) != 0) {
+//                   index2 = deviceLabelIndex.at(label2).index;
+//                   if (std::find(relXInd.begin(), relXInd.end(), index2) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(index2);
+//                   }
+//                 }
+//               } else if (label2 == "0" || label2 == "GND") {
+//                 if (deviceLabelIndex.count(label) != 0) {
+//                   index1 = deviceLabelIndex.at(label).index;
+//                   if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                       relXInd.end()) {
+//                     relXInd.push_back(index1);
+//                   }
+//                 }
+//               } else {
+//                 if (deviceLabelIndex.count(label) != 0) {
+//                   if (deviceLabelIndex.count(label2) != 0) {
+//                     index1 = deviceLabelIndex.at(label).index;
+//                     if (std::find(relXInd.begin(), relXInd.end(), index1) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(index1);
+//                     }
+//                     index2 = deviceLabelIndex.at(label2).index;
+//                     if (std::find(relXInd.begin(), relXInd.end(), index2) ==
+//                         relXInd.end()) {
+//                       relXInd.push_back(index2);
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
