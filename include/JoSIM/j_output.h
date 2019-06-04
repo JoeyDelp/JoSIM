@@ -28,13 +28,13 @@ public:
 
   void relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj);
 
-  void write_data(std::string &outname);
+  void write_data(std::string &outname, const Matrix &mObj, const Simulation &sObj);
 
-  void write_legacy_data(std::string &outname);
+  void write_legacy_data(std::string &outname, const Matrix &mObj, const Simulation &sObj);
 
   void write_wr_data(std::string &outname);
 
-  void write_cout(Matrix &mObj, Simulation &sObj);
+  void write_cout(const Matrix &mObj, const Simulation &sObj);
 };
 
 #endif

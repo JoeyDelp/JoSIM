@@ -2240,7 +2240,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
   }
 }
 
-void Output::write_data(std::string &outname)
+void Output::write_data(std::string &outname, const Matrix &mObj, const Simulation &sObj)
 {
   int loopsize = 0;
   std::ofstream outfile(outname);
@@ -2276,8 +2276,26 @@ void Output::write_data(std::string &outname)
       }
       outfile.close();
     } else if (traces.empty()) {
-      std::cerr << "W: Nothing specified to save." << std::endl;
+      std::cerr << "W: Nothing specified to output." << std::endl;
+      std::cerr << "W: Printing all vectors." << std::endl;
       std::cerr << std::endl;
+      outfile << "time"
+                << ",";
+      for (int i = 0; i < mObj.rowNames.size() - 1; i++) {
+        outfile << mObj.rowNames.at(i) << ",";
+      }
+      outfile << mObj.rowNames.at(mObj.rowNames.size() - 1) << "\n";
+      for (int i = 0; i < sObj.results.xVect.at(0).size(); i++) {
+        outfile << std::fixed << std::scientific << std::setprecision(16)
+                  << timesteps->at(i) << ",";
+        for (int j = 0; j < sObj.results.xVect.size() - 1; j++) {
+          outfile << std::fixed << std::scientific << std::setprecision(16)
+                    << sObj.results.xVect.at(j).at(i) << ",";
+        }
+        outfile << std::fixed << std::scientific << std::setprecision(16)
+                  << sObj.results.xVect.at(sObj.results.xVect.size() - 1).at(i)
+                  << "\n";
+      }
       outfile.close();
     }
   } else {
@@ -2287,7 +2305,7 @@ void Output::write_data(std::string &outname)
   }
 }
 
-void Output::write_legacy_data(std::string &outname)
+void Output::write_legacy_data(std::string &outname, const Matrix &mObj, const Simulation &sObj)
 {
   int loopsize = 0;
   std::ofstream outfile(outname);
@@ -2323,8 +2341,26 @@ void Output::write_legacy_data(std::string &outname)
       }
       outfile.close();
     } else if (traces.empty()) {
-      std::cerr << "W: Nothing specified to save." << std::endl;
+      std::cerr << "W: Nothing specified to output." << std::endl;
+      std::cerr << "W: Printing all vectors." << std::endl;
       std::cerr << std::endl;
+      outfile << "time"
+                << " ";
+      for (int i = 0; i < mObj.rowNames.size() - 1; i++) {
+        outfile << mObj.rowNames.at(i) << " ";
+      }
+      outfile << mObj.rowNames.at(mObj.rowNames.size() - 1) << "\n";
+      for (int i = 0; i < sObj.results.xVect.at(0).size(); i++) {
+        outfile << std::fixed << std::scientific << std::setprecision(16)
+                  << timesteps->at(i) << " ";
+        for (int j = 0; j < sObj.results.xVect.size() - 1; j++) {
+          outfile << std::fixed << std::scientific << std::setprecision(16)
+                    << sObj.results.xVect.at(j).at(i) << " ";
+        }
+        outfile << std::fixed << std::scientific << std::setprecision(16)
+                  << sObj.results.xVect.at(sObj.results.xVect.size() - 1).at(i)
+                  << "\n";
+      }
       outfile.close();
     }
   } else {
@@ -2412,7 +2448,7 @@ void Output::write_wr_data(std::string &outname)
   }
 }
 
-void Output::write_cout(Matrix &mObj, Simulation &sObj)
+void Output::write_cout(const Matrix &mObj, const Simulation &sObj)
 {
   int loopsize = 0;
   if (!traces.empty()) {
@@ -2450,10 +2486,10 @@ void Output::write_cout(Matrix &mObj, Simulation &sObj)
     std::cerr << std::endl;
     std::cout << "time"
               << " ";
-    for (int i = 0; i < mObj.columnNames.size() - 1; i++) {
-      std::cout << mObj.columnNames.at(i) << " ";
+    for (int i = 0; i < mObj.rowNames.size() - 1; i++) {
+      std::cout << mObj.rowNames.at(i) << " ";
     }
-    std::cout << mObj.columnNames.at(mObj.columnNames.size() - 1) << "\n";
+    std::cout << mObj.rowNames.at(mObj.rowNames.size() - 1) << "\n";
     for (int i = 0; i < sObj.results.xVect.at(0).size(); i++) {
       std::cout << std::fixed << std::scientific << std::setprecision(16)
                 << timesteps->at(i) << " ";

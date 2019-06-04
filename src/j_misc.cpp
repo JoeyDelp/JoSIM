@@ -51,6 +51,18 @@ std::vector<std::string> Misc::tokenize_space(const std::string &c) {
   return tokens;
 }
 
+std::vector<std::string> Misc::tokenize_space_once(const std::string &c) {
+  std::vector<std::string> tokens (2, "");
+  std::string::size_type pos = c.find_first_of(" \t");
+  std::string::size_type length = c.length();
+  if (pos == std::string::npos) {
+      pos = length;
+  }
+  tokens.at(0) = c.substr(0, pos);
+  if(pos != length) tokens.at(1) = c.substr(pos + 1, length);
+  return tokens;
+}
+
 std::vector<std::string> Misc::tokenize_delimeter(const std::string &c,
                                                   const std::string &d) {
   std::vector<std::string> tokens;
@@ -67,6 +79,18 @@ std::vector<std::string> Misc::tokenize_delimeter(const std::string &c,
       tokens.push_back(line.substr(prev, std::string::npos));
   }
   return tokens;
+}
+
+void Misc::ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch);
+    }));
+}
+
+void Misc::rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
 }
 
 int Misc::map_value_count(const std::unordered_map<std::string, int> &map,
@@ -197,6 +221,10 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
               JoSIM::ParameterName(tokens[i], subckt)) != 0)
         values.push_back(iObj.parameters.parsedParams.at(
             JoSIM::ParameterName(tokens[i], subckt)));
+      else if (iObj.parameters.parsedParams.count(
+              JoSIM::ParameterName(tokens[i], "")) != 0)
+        values.push_back(iObj.parameters.parsedParams.at(
+            JoSIM::ParameterName(tokens[i], "")));
       else
         // values.push_back(modifier(tokens[i]));
         values.push_back(Parser::parse_param(
@@ -232,12 +260,9 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       functionOfT[startpoint] = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
         if (values.at(i - 1) < values[i])
-          if (values.at(i - 1) < 0)
-            value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
-                                           (endpoint - startpoint) *
-                                           (j - (int)startpoint);
-          else
-            value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
+          value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
+                                          (endpoint - startpoint) *
+                                          (j - (int)startpoint);
         else if (values.at(i - 1) > values[i])
           value = values.at(i - 1) -
                   ((values.at(i - 1) - (values.at(i))) /
@@ -437,6 +462,33 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       }
     }
   }
+  /* NOISE(VO VA TSTEP TD) */
+  else if (str.find("NOISE") != std::string::npos) {
+    if (tokens.size() < 2)
+      Errors::function_errors(NOISE_TOO_FEW_ARGUMENTS,
+                              std::to_string(tokens.size()));
+    if (tokens.size() > 4)
+      Errors::function_errors(NOISE_TOO_MANY_ARGUMENTS,
+                              std::to_string(tokens.size()));
+    double VO = 0.0, VA = 0.0, TD = 0.0, TSTEP = 0.0;
+    VO = modifier(tokens[0]);
+    if(VO != 0.0) 
+      Errors::function_errors(NOISE_VO_ZERO, tokens[0]);
+    VA = modifier(tokens[1]);
+    if (VA == 0.0)
+      if (iObj.argVerb)
+        Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
+    TD = modifier(tokens[3]);
+    TSTEP = iObj.transSim.prstep;
+    int beginTime;
+    double currentTimestep, value;
+    beginTime = TD / iObj.transSim.prstep;
+    for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
+      currentTimestep = i * iObj.transSim.prstep;
+      value = VA * grand() / sqrt(2.0 * TSTEP);
+      functionOfT[i] = value;
+    }
+  }
   return functionOfT;
 }
 
@@ -464,4 +516,16 @@ int Misc::numDigits(int number) {
     digits++;
   }
   return digits;
+}
+
+double Misc::grand() {
+  double r,v1,v2,fac;
+  r=2;
+  while (r>=1) {
+    v1=(2*((double)rand()/(double)RAND_MAX)-1);
+    v2=(2*((double)rand()/(double)RAND_MAX)-1);
+    r=v1*v1+v2*v2;
+  }
+  fac=sqrt(-2*log(r)/r);
+  return(v2*fac);
 }

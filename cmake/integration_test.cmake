@@ -1,5 +1,5 @@
 function(add_integration_test)
-  set(option_args WRSPICE)
+  set(option_args WRSPICE WILL_FAIL)
   set(single_args NAME CIR OUT)
   set(multi_args OVERWRITE_ARGS)
   cmake_parse_arguments(TEST
@@ -35,4 +35,8 @@ function(add_integration_test)
   add_test(NAME "integration::${TEST_NAME}"
            WORKING_DIRECTORY "${TEST_BUILD_DIR}"
            COMMAND ${JOSIM_COMMAND})
+
+  if(${TEST_WILL_FAIL})
+    set_tests_properties("integration::${TEST_NAME}" PROPERTIES WILL_FAIL TRUE)
+  endif()
 endfunction()

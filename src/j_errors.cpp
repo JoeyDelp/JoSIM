@@ -202,6 +202,13 @@ void Errors::invalid_component_errors(int errorCode,
     std::cerr << "E: Please ensure that " << whatPart << " exists."
               << std::endl;
     exit(-1);
+  case UNKNOWN_DEVICE_TYPE:
+    std::cerr << "E: Unkown device type " 
+              << whatPart << std::endl;
+    std::cerr << "E: Please refer to the syntax guide for a list of available device types."
+              << std::endl;
+    std::cerr << std::endl;
+    exit(-1);
   default:
     std::cerr << "E: Unknown invalid component error." << std::endl;
     std::cerr << "E: Please contact the developer." << std::endl;
@@ -381,7 +388,7 @@ void Errors::matrix_errors(int errorCode, const std::string &whatPart) {
   case NON_SQUARE:
     std::cerr << "E: Matrix is not square. Dimensions are " << whatPart
               << std::endl;
-    std::cout << "E: Please contact the developer as this is potentially a bug."
+    std::cerr << "E: Please contact the developer as this is potentially a bug."
               << std::endl;
     exit(-1);
   default:
@@ -515,6 +522,34 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
               << " specified." << std::endl;
     std::cerr << "W: Program will terminate." << std::endl;
     exit(-1);
+  case NOISE_TOO_FEW_ARGUMENTS:
+    std::cout
+        << "E: Total arguments specified do not match the required for NOISE. "
+        << whatPart << " specified." << std::endl;
+    std::cerr
+        << "E: Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)"
+        << std::endl;
+    exit(-1);
+  case NOISE_TOO_MANY_ARGUMENTS:
+    std::cout
+        << "E: Total arguments specified do not match the required for NOISE. "
+        << whatPart << " specified." << std::endl;
+    std::cerr
+        << "E: Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)"
+        << std::endl;
+    exit(-1);
+  case NOISE_VO_ZERO:
+    std::cout << "E: NOISE initial value is not 0.0, this needs to be zero."
+              << std::endl;
+    std::cerr << "E: Program will continue but NOISE command is redundant."
+              << std::endl;
+    exit(-1);
+  case NOISE_VA_ZERO:
+    std::cout << "W: NOISE amplitude is 0.0, this renders the function redundant."
+              << std::endl;
+    std::cerr << "W: Program will continue but NOISE command is redundant."
+              << std::endl;
+    break;
   default:
     std::cerr << "E: Unknown function error: " << whatPart << std::endl;
     std::cerr << "E: Please contact the developer." << std::endl;
@@ -580,12 +615,12 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
     std::cerr << std::endl;
     break;
   case UNIDENTIFIED_PART:
-    std::cerr << "W: Unknown function/variable defined. What is " << whatPart
+    std::cerr << "E: Unknown function/variable defined. What is " << whatPart
               << "?" << std::endl;
-    std::cerr << "W: Please ensure variables are declared before being used."
+    std::cerr << "E: Please ensure variables are declared before being used."
               << std::endl;
     std::cerr << std::endl;
-    break;
+    exit(-1);
   case MISMATCHED_PARENTHESIS:
     std::cerr << "E: Mismatched parenthesis in expression: " << whatPart
               << std::endl;
@@ -599,6 +634,12 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
               << std::endl;
     std::cerr << "E: The expression in question: " << whatPart << std::endl;
     std::cerr << std::endl;
+    exit(-1);
+  case INVALID_DECLARATION:
+    std::cerr << "E: Missing parameter declaration in: " << whatPart
+                << std::endl;
+    std::cerr << "E: Please ensure that a valid .PARAM definition is declared."
+              << std::endl;
     exit(-1);
   default:
     std::cerr << "E: Unknown parsing error: " << whatPart << std::endl;

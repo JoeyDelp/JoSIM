@@ -16,8 +16,12 @@ void Input::read_input_file(std::string &fileName,
       std::transform(line.begin(), line.end(), line.begin(), toupper);
       if (!line.empty() && line.back() == '\r')
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-      if (!line.empty() && !Misc::starts_with(line, '*'))
-        fileLines.emplace_back(line);
+      if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#')) {
+        if(Misc::starts_with(line, '+')) 
+          fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
+        else 
+          fileLines.emplace_back(line);
+      }
     }
   } else
     Errors::input_errors(CANNOT_OPEN_FILE, fileName);

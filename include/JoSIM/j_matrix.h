@@ -59,7 +59,7 @@ public:
   std::unordered_map<std::string, int> nodeMap;
   std::vector<matrix_element> mElements;
   std::vector<std::vector<double>> sources;
-  std::vector<std::string> rowNames, columnNames;
+  std::vector<std::string> rowNames, columnNames, relevantToStore;
   std::vector<double> nzval;
   std::vector<int> colind, rowptr;
   std::vector<int> relXInd;

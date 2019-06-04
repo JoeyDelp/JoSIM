@@ -45,9 +45,9 @@ int main(int argc, const char **argv) {
 
   if (cli_options.output_to_file) {
     if (cli_options.output_file_type == FileOutputType::Csv)
-      oObj.write_data(cli_options.output_file_name);
+      oObj.write_data(cli_options.output_file_name, mObj, sObj);
     else if (cli_options.output_file_type == FileOutputType::Dat)
-      oObj.write_legacy_data(cli_options.output_file_name);
+      oObj.write_legacy_data(cli_options.output_file_name, mObj, sObj);
     else if (cli_options.output_file_type == FileOutputType::WrSpice)
       oObj.write_wr_data(cli_options.output_file_name);
   }

@@ -33,5 +33,7 @@ public:
   void transient_voltage_simulation(Input &iObj, Matrix &mObj);
 
   void transient_phase_simulation(Input &iObj, Matrix &mObj);
+
+  void trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType);
 };
 #endif
