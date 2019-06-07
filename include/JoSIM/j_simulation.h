@@ -34,6 +34,7 @@ public:
 
   void transient_phase_simulation(Input &iObj, Matrix &mObj);
 
-  void trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType);
+  template<JoSIM::AnalysisType AnalysisTypeValue = JoSIM::AnalysisType::Voltage>
+  void trans_sim(Input &iObj, Matrix &mObj);
 };
 #endif

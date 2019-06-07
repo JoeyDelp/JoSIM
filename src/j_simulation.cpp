@@ -3,7 +3,9 @@
 #include "JoSIM/j_simulation.h"
 
 // Linear algebra include
+#include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/j_components.h"
+#include "JoSIM/j_globals.h"
 #include "JoSIM/j_matrix.h"
 #include "klu.h"
 
@@ -852,7 +854,8 @@ void Simulation::transient_phase_simulation(Input &iObj, Matrix &mObj) {
   klu_free_numeric(&Numeric, &Common);
 }
 
-void Simulation::trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType) {
+template<JoSIM::AnalysisType AnalysisTypeValue>
+void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
   std::vector<double> lhsValues(mObj.Nsize, 0.0),
       RHS(mObj.Nsize, 0.0), LHS_PRE(mObj.Nsize, 0.0);
   int simSize = iObj.transSim.simsize();
@@ -860,7 +863,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType) {
     results.xVect.emplace_back(std::vector<double>(simSize, 0.0));
   }
   double hn_2_2e_hbar = (iObj.transSim.prstep / 2) * (2 * M_PI / PHI_ZERO);
-  int ok;
+  int ok, jjcount;
   bool needsLU = false;
   klu_symbolic *Symbolic;
   klu_common Common;
@@ -871,6 +874,13 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType) {
                          &Common);
   Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(),
                        &mObj.nzval.front(), Symbolic, &Common);
+
+  auto& jj_vector = [&]() -> auto& {
+    if constexpr(AnalysisTypeValue == JoSIM::AnalysisType::Phase)
+      return mObj.components.phaseJJ;
+    else
+      return mObj.components.voltJJ;
+  }();
   
   for(int i = 0; i < simSize; i++) {
     for (auto j : mObj.rowDesc) {
@@ -881,14 +891,10 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType) {
             RHS.emplace_back(0.0);
             switch(k.type) {
               case ComponentConnections::Type::JJP: 
-                (bool)AnalysisType ? 
-                  RHS.back() += mObj.components.voltJJ.at(k.index).iS:
-                  RHS.back() += mObj.components.phaseJJ.at(k.index).iS;
+                  RHS.back() += jj_vector.at(k.index).iS;
                 break;
               case ComponentConnections::Type::JJN: 
-                (bool)AnalysisType ? 
-                  RHS.back() -= mObj.components.voltJJ.at(k.index).iS:
-                  RHS.back() -= mObj.components.phaseJJ.at(k.index).iS;
+                  RHS.back() -= jj_vector.at(k.index).iS;
                 break;
               case ComponentConnections::Type::CSP:
                 RHS.back() += mObj.sources.at(k.index).at(i);
@@ -921,9 +927,231 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj, int &AnalysisType) {
                    hn_2_2e_hbar * mObj.components.voltJJ.at(j.index).vn1);
           break;
         case RowDescriptor::Type::VoltageVS:
+        case RowDescriptor::Type::PhasePS:
           RHS.emplace_back(mObj.sources.at(j.index).at(i));
           break;
+        case RowDescriptor::Type::VoltageTX1: {
+          const auto &txline = mObj.components.txLine.at(j.index);
+          if (i >= txline.k) {
+            if (txline.posN2Row == -1)
+              RHS.emplace_back(-results.xVect.at(mObj.relToXMap.at(txline.negNode2R)).at(i - txline.k));
+            else if (txline.negN2Row == -1)
+              RHS.emplace_back(results.xVect.at(mObj.relToXMap.at(txline.posNode2R)).at(i - txline.k));
+            else
+              RHS.emplace_back(results.xVect.at(mObj.relToXMap.at(txline.posNode2R)).at(i - txline.k)
+                - results.xVect.at(mObj.relToXMap.at(txline.negNode2R)).at(i - txline.k));
+            RHS.back() +=
+                txline.value *
+                    results.xVect
+                        .at(mObj.relToXMap.at(txline.curNode2R))
+                        .at(i - txline.k);
+          }
+          break; }
+        case RowDescriptor::Type::VoltageTX2: {
+          const auto &txline = mObj.components.txLine.at(j.index);
+          if (i >= txline.k) {
+            if (txline.posNRow == -1)
+              RHS.emplace_back(-results.xVect.at(mObj.relToXMap.at(txline.negNodeR)).at(i - txline.k));
+            else if (txline.negNRow == -1)
+              RHS.emplace_back(results.xVect.at(mObj.relToXMap.at(txline.posNodeR)).at(i - txline.k));
+            else
+              RHS.emplace_back(results.xVect.at(mObj.relToXMap.at(txline.posNodeR)).at(i - txline.k)
+                - results.xVect.at(mObj.relToXMap.at(txline.negNodeR)).at(i - txline.k));
+            RHS.back() +=
+                txline.value *
+                    results.xVect
+                        .at(mObj.relToXMap.at(txline.curNode1R))
+                        .at(i - txline.k);
+          }
+          break; }
+        case RowDescriptor::Type::PhaseResistor: {
+          auto &presis = mObj.components.phaseRes.at(j.index);
+          if(presis.posNRow == -1) presis.pn1 = -lhsValues.at(presis.negNRow);
+          else if (presis.negNRow == -1) presis.pn1 = lhsValues.at(presis.posNRow);
+          else presis.pn1 = lhsValues.at(presis.posNRow) - lhsValues.at(presis.negNRow);
+          presis.IRn1 = lhsValues.at(presis.curNRow);
+          RHS.emplace_back(((presis.value * iObj.transSim.prstep) / PHI_ZERO) * presis.IRn1 + presis.pn1);
+          break; }
+        case RowDescriptor::Type::PhaseJJ:
+          RHS.emplace_back(mObj.components.phaseJJ.at(j.index).pn1 + hn_2_2e_hbar * mObj.components.phaseJJ.at(j.index).vn1);
+          break;
+        case RowDescriptor::Type::PhaseCapacitor:
+          RHS.emplace_back(
+            -((2 * M_PI * iObj.transSim.prstep * iObj.transSim.prstep) /
+              (4 * PHI_ZERO * mObj.components.phaseCap.at(j.index).value)) *
+                mObj.components.phaseCap.at(j.index).ICn1 -
+            mObj.components.phaseCap.at(j.index).pn1 -
+            (iObj.transSim.prstep * mObj.components.phaseCap.at(j.index).dPn1));
+          break;
+        case RowDescriptor::Type::PhaseVS: {
+          auto &pvs = mObj.components.phaseVs.at(j.index);
+          if (pvs.posNRow == -1.0) pvs.pn1 = -lhsValues.at(pvs.negNRow);
+          else if (pvs.negNRow == -1.0) pvs.pn1 = lhsValues.at(pvs.posNRow);
+          else pvs.pn1 = lhsValues.at(pvs.posNRow) - lhsValues.at(pvs.negNRow);
+          if (i >= 1) 
+            RHS.emplace_back(pvs.pn1 + ((iObj.transSim.prstep * M_PI) / PHI_ZERO) *
+              (mObj.sources.at(pvs.sourceDex).at(i) + mObj.sources.at(pvs.sourceDex).at(i - 1)));
+          else if (i == 0)
+            RHS.emplace_back(pvs.pn1 + ((iObj.transSim.prstep * M_PI) / PHI_ZERO) *
+              mObj.sources.at(pvs.sourceDex).at(i));
+          break; }
+        case RowDescriptor::Type::PhaseTX1: {
+          const auto &txline = mObj.components.txPhase.at(j.index);
+          if (i > txline.k)
+            RHS.emplace_back(((iObj.transSim.prstep * M_PI * txline.value) / PHI_ZERO) *
+              results.xVect.at(mObj.relToXMap.at(txline.curNode2R)).at(i - txline.k) +
+              txline.p1n1 + (iObj.transSim.prstep / 2) * (txline.dP1n1 + txline.dP2nk));
+          break; }
+        case RowDescriptor::Type::PhaseTX2: {
+          const auto &txline = mObj.components.txPhase.at(j.index);
+          if (i > txline.k)
+            RHS.emplace_back(((iObj.transSim.prstep * M_PI * txline.value) / PHI_ZERO) *
+              results.xVect.at(mObj.relToXMap.at(txline.curNode1R)).at(i - txline.k) +
+              txline.p2n1 + (iObj.transSim.prstep / 2) * (txline.dP2n1 + txline.dP1nk));
+          break; }
       }
     }
+
+    LHS_PRE = RHS;
+    ok =
+        klu_tsolve(Symbolic, Numeric, mObj.Nsize, 1, &LHS_PRE.front(), &Common);
+    if (!ok)
+      Errors::simulation_errors(MATRIX_SINGULAR, "");
+
+    lhsValues = LHS_PRE;
+    for (int m = 0; m < mObj.relXInd.size(); m++)
+      results.xVect.at(m).at(i) = lhsValues.at(mObj.relXInd.at(m));
+
+    
+    for (int j = 0; j < jj_vector; j++) {
+      auto &jj = jj_vector.at(j);
+      // (simtype == JoSIM::AnalysisType::Voltage) ?
+      //   jj_volt &jj = mObj.components.voltJJ.at(j) :
+      //   jj_phase &jj = mObj.components.phaseJJ.at(j);
+      // V_n-1
+      if(jj.posNRow == -1) jj.vn1 = -lhsValues.at(jj.negNRow);
+      else if (jj.negNRow == -1) jj.vn1 = lhsValues.at(jj.posNRow);
+      else jj.vn1 = lhsValues.at(jj.posNRow) - lhsValues.at(jj.negNRow);
+      // Prevent initial large derivitive when V_n-1 = 0
+      // Otherwise: trapezoidal find dV_n-1
+      if (i <= 3) jj.dVn1 = 0;
+      else jj.dVn1 = (2 / iObj.transSim.prstep) * (jj.vn1 - jj.vn2) - jj.dVn2;
+      // Guess voltage (V0)
+      jj.v0 = jj.vn1 + iObj.transSim.prstep * jj.dVn1;
+      // Handle Rtype=1
+      if (jj.rType == 1) {
+        if (fabs(jj.v0) < jj.lowerB) {
+          jj.iT = 0.0;
+          if (jj.ppPtr != -1) {
+            if (mObj.mElements.at(jj.ppPtr).value != jj.subCond) {
+              mObj.mElements.at(jj.ppPtr).value = jj.subCond;
+              needsLU = true;
+            }
+          }
+          if (jj.nnPtr != -1) {
+            if (mObj.mElements.at(jj.nnPtr).value != jj.subCond) {
+              mObj.mElements.at(jj.nnPtr).value = jj.subCond;
+              needsLU = true;
+            }
+          }
+          if (jj.pnPtr != -1) {
+            if (mObj.mElements.at(jj.pnPtr).value != -jj.subCond) {
+              mObj.mElements.at(jj.pnPtr).value = -jj.subCond;
+              needsLU = true;
+            }
+          }
+          if (jj.npPtr != -1) {
+            if (mObj.mElements.at(jj.npPtr).value != -jj.subCond) {
+              mObj.mElements.at(jj.npPtr).value = -jj.subCond;
+              needsLU = true;
+            }
+          }
+        } else if (fabs(jj.v0) < jj.upperB) {
+          if (jj.v0 < 0) jj.iT = -jj.lowerB * ((1 / jj.r0) - jj.gLarge);
+          else jj.iT = jj.lowerB * ((1 / jj.r0) - jj.gLarge);
+          if (jj.ppPtr != -1) {
+            if (mObj.mElements.at(jj.ppPtr).value != jj.transCond) {
+              mObj.mElements.at(jj.ppPtr).value = jj.transCond;
+              needsLU = true;
+            }
+          }
+          if (jj.nnPtr != -1) {
+            if (mObj.mElements.at(jj.nnPtr).value != jj.transCond) {
+              mObj.mElements.at(jj.nnPtr).value = jj.transCond;
+              needsLU = true;
+            }
+          }
+          if (jj.pnPtr != -1) {
+            if (mObj.mElements.at(jj.pnPtr).value != jj.transCond) {
+              mObj.mElements.at(jj.pnPtr).value = -jj.transCond;
+              needsLU = true;
+            }
+          }
+          if (jj.npPtr != -1) {
+            if (mObj.mElements.at(jj.npPtr).value != jj.transCond) {
+              mObj.mElements.at(jj.npPtr).value = -jj.transCond;
+              needsLU = true;
+            }
+          }
+        } else {
+          if (jj.v0 < 0) 
+            jj.iT = -(jj.iC / jj.iCFact + jj.vG * (1 / jj.r0) - jj.lowerB * (1 / jj.rN));
+          else 
+            jj.iT = (jj.iC / jj.iCFact + jj.vG * (1 / jj.r0) - jj.lowerB * (1 / jj.rN));
+          if (jj.ppPtr != -1) {
+            if (mObj.mElements.at(jj.ppPtr).value != jj.normalCond) {
+              mObj.mElements.at(jj.ppPtr).value = jj.normalCond;
+              needsLU = true;
+            }
+          }
+          if (jj.nnPtr != -1) {
+            if (mObj.mElements.at(jj.nnPtr).value != jj.normalCond) {
+              mObj.mElements.at(jj.nnPtr).value = jj.normalCond;
+              needsLU = true;
+            }
+          }
+          if (jj.pnPtr != -1) {
+            if (mObj.mElements.at(jj.pnPtr).value != jj.normalCond) {
+              mObj.mElements.at(jj.pnPtr).value = -jj.normalCond;
+              needsLU = true;
+            }
+          }
+          if (jj.npPtr != -1) {
+            if (mObj.mElements.at(jj.npPtr).value != jj.normalCond) {
+              mObj.mElements.at(jj.npPtr).value = -jj.normalCond;
+              needsLU = true;
+            }
+          }
+        }
+      }
+      // Phase_n-1
+      jj.pn1 = lhsValues.at(jj.phaseNRow);
+      // Phase guess (P0)
+      jj.phi0 = jj.pn1 + (hn_2_2e_hbar) * (jj.vn1 + jj.v0);
+      // Junction current (Is)
+      jj.iS = -((M_PI * jj.Del) / (2 * EV * jj.rNCalc)) *
+              (sin(jj.phi0) / sqrt(1 - jj.D * (sin(jj.phi0 / 2) *
+                sin(jj.phi0 / 2)))) * tanh((jj.Del) / (2 * BOLTZMANN * jj.T) *
+                sqrt(1 - jj.D * (sin(jj.phi0 / 2) * sin(jj.phi0 / 2)))) +
+              (((2 * jj.C) / iObj.transSim.prstep) * jj.vn1) + (jj.C * jj.dVn1) - jj.iT;
+      // Set previous values
+      jj.vn2 = jj.vn1;
+      jj.dVn2 = jj.dVn1;
+      jj.pn2 = jj.pn1;
+      // Store current
+      jj.jjCur.push_back(jj.iS);
+    }
+
+    if (needsLU) {
+      mObj.create_CSR();
+      klu_free_numeric(&Numeric, &Common);
+      Numeric = klu_factor(&mObj.rowptr.front(), &mObj.colind.front(),
+                           &mObj.nzval.front(), Symbolic, &Common);
+      needsLU = false;
+    }
+
+    results.timeAxis.push_back(i * iObj.transSim.prstep);
   }
+  klu_free_symbolic(&Symbolic, &Common);
+  klu_free_numeric(&Numeric, &Common);
 }

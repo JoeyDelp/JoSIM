@@ -1,5 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
+#include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/j_input.h"
 #include "JoSIM/j_matrix.h"
 #include "JoSIM/j_output.h"
@@ -35,10 +36,11 @@ int main(int argc, const char **argv) {
   sObj.identify_simulation(iObj.controls, iObj.transSim.prstep,
                            iObj.transSim.tstop, iObj.transSim.tstart,
                            iObj.transSim.maxtstep);
-  mObj.create_matrix(iObj);
   mObj.find_relevant_x(iObj);
+  mObj.create_matrix(iObj);
   if (cli_options.analysis_type == AnalysisType::Voltage)
-    sObj.transient_voltage_simulation(iObj, mObj);
+    //sObj.transient_voltage_simulation(iObj, mObj);
+    sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
   else if (cli_options.analysis_type == AnalysisType::Phase)
     sObj.transient_phase_simulation(iObj, mObj);
   oObj.relevant_traces(iObj, mObj, sObj);

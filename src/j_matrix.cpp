@@ -3,6 +3,7 @@
 #include "JoSIM/j_matrix.h"
 #include "JoSIM/j_errors.h"
 
+#include <algorithm>
 #include <string>
 
 using namespace JoSIM;
@@ -43,8 +44,9 @@ void Matrix::find_relevant_x(Input &iObj) {
         std::replace(j.begin(), j.end(), '.', '|');
       }
       if(j.at(0) == 'D' || (j.at(0) == 'P' && j.at(1) == 'H')) {
-        (tokens.size() > 2) ?
-          Errors::control_errors(INVALID_OUTPUT_COMMAND, i) :
+        if (tokens.size() > 2)
+          Errors::control_errors(INVALID_OUTPUT_COMMAND, i);
+        else
           relevantToStore.emplace_back(tokens.at(1));
           break;
       } else if (j.at(0) == 'C' || j.at(0) == 'P' || j.at(0) == 'V') {
@@ -67,6 +69,9 @@ void Matrix::find_relevant_x(Input &iObj) {
       }
     }
   }
+  std::sort(relevantToStore.begin(), relevantToStore.end());
+  last = std::unique(relevantToStore.begin(), relevantToStore.end());
+  relevantToStore.erase(last, relevantToStore.end());
 }
 
 void Matrix::create_matrix(Input &iObj)
@@ -89,7 +94,7 @@ void Matrix::create_A_volt(Input &iObj)
   rowMap.clear();
   columnMap.clear();
   int rowCounter, colCounter, expStart, expEnd, nodeCounter;
-  bool pGND, nGND;
+  bool pGND, nGND, stillRelevant = false;
   rowCounter = colCounter = nodeCounter = 0;
   for (auto i : iObj.expNetlist) {
     devicetokens = Misc::tokenize_space(i.first);
@@ -166,6 +171,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** RESISTOR **/
     /**************/
     if (i.first[0] == 'R') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       matrix_element e;
       components.voltRes.emplace_back(res_volt());
       deviceLabelIndex[label].type = RowDescriptor::Type::VoltageResistor;
@@ -206,6 +214,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeP] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -244,6 +261,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeN] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -302,6 +328,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** CAPACITOR **/
     /***************/
     else if (i.first[0] == 'C') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       matrix_element e;
       components.voltCap.emplace_back(cap_volt());
       deviceLabelIndex[label].type = RowDescriptor::Type::VoltageCapacitor;
@@ -327,6 +356,15 @@ void Matrix::create_A_volt(Input &iObj)
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageCapacitor;
         rowDesc.back().index = components.voltCap.size() - 1;
+        if(stillRelevant) {
+          relXInd.emplace_back(rowDesc.size() - 1);
+          relToXMap[label] = rowDesc.size() - 1;
+        } else {
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[label] = rowDesc.size() - 1;
+          }
+        }
         rowMap[devicetokens.at(0)] = rowCounter++;
       }
       if (columnMap.count(devicetokens.at(0)) == 0) {
@@ -355,6 +393,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeP] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -393,6 +440,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeN] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -461,6 +517,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** INDUCTOR **/
     /**************/
     else if (i.first[0] == 'L') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       matrix_element e;
       components.voltInd.emplace_back(ind_volt());
       deviceLabelIndex[label].type = RowDescriptor::Type::VoltageInductor;
@@ -486,6 +545,15 @@ void Matrix::create_A_volt(Input &iObj)
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageInductor;
         rowDesc.back().index = components.voltInd.size() - 1;
+        if(stillRelevant) {
+          relXInd.emplace_back(rowDesc.size() - 1);
+          relToXMap[label] = rowDesc.size() - 1;
+        } else {
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[label] = rowDesc.size() - 1;
+          }
+        }
         rowMap[devicetokens.at(0)] = rowCounter++;
       }
       if (columnMap.count(devicetokens.at(0)) == 0) {
@@ -514,6 +582,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeP] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -552,6 +629,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeN] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -620,6 +706,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** VOLTAGE SOURCE **/
     /********************/
     else if (i.first[0] == 'V') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       matrix_element e;
       sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
       components.voltVs.emplace_back(vs_volt());
@@ -658,6 +747,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeP] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -696,6 +794,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeN] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -757,6 +864,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** CURRENT SOURCE **/
     /********************/
     else if (i.first[0] == 'I') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
       deviceLabelIndex[label].type = RowDescriptor::Type::VoltageCS;
       deviceLabelIndex[label].index = sources.size() - 1;
@@ -778,6 +888,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeP] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -812,6 +931,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeN] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -833,6 +961,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** JOSEPHSON JUNCTION **/
     /************************/
     else if (i.first[0] == 'B') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       matrix_element e;
       components.voltJJ.emplace_back(jj_volt());
       deviceLabelIndex[label].type = RowDescriptor::Type::VoltageJJ;
@@ -873,6 +1004,15 @@ void Matrix::create_A_volt(Input &iObj)
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageJJ;
         rowDesc.back().index = components.voltJJ.size() - 1;
+        if(stillRelevant) {
+          relXInd.emplace_back(rowDesc.size() - 1);
+          relToXMap[label] = rowDesc.size() - 1;
+        } else {
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[label] = rowDesc.size() - 1;
+          }
+        }
         rowMap[devicetokens.at(0)] = rowCounter++;
       }
       if (columnMap.count(devicetokens.at(0)) == 0) {
@@ -899,6 +1039,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeP] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -937,6 +1086,15 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(stillRelevant) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          } else {
+            if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+              relXInd.emplace_back(rowDesc.size() - 1);
+              relToXMap[nodeN] = rowDesc.size() - 1;
+            }
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -1056,6 +1214,9 @@ void Matrix::create_A_volt(Input &iObj)
     /** TRANSMISSION LINE **/
     /***********************/
     else if (i.first[0] == 'T') {
+      if(std::find(relevantToStore.begin(), relevantToStore.end(), label) != relevantToStore.end()) 
+        stillRelevant = true;
+      else stillRelevant = false;
       std::string cName2, rName2, cNameP2, rNameP2, cNameN2,
                   rNameN2, nodeP2, nodeN2;
       bool pGND2, nGND2;
@@ -1090,6 +1251,15 @@ void Matrix::create_A_volt(Input &iObj)
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageTX1;
         rowDesc.back().index = components.txLine.size() - 1;
+        if(stillRelevant) {
+          relXInd.emplace_back(rowDesc.size() - 1);
+          relToXMap[rName] = rowDesc.size() - 1;
+        } else {
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), rName) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[rName] = rowDesc.size() - 1;
+          }
+        }
         rowMap[rName] = rowCounter++;
       }
       if (columnMap.count(devicetokens.at(0)) == 0) {
@@ -1100,14 +1270,23 @@ void Matrix::create_A_volt(Input &iObj)
         rowDesc.emplace_back(RowDescriptor());
         rowDesc.back().type = RowDescriptor::Type::VoltageTX2;
         rowDesc.back().index = components.txLine.size() - 1;
+        if(stillRelevant) {
+          relXInd.emplace_back(rowDesc.size() - 1);
+          relToXMap[rName2] = rowDesc.size() - 1;
+        } else {
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), rName2) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[rName2] = rowDesc.size() - 1;
+          }
+        }
         rowMap[rName2] = rowCounter++;
       }
       if (columnMap.count(cName2) == 0) {
         columnMap[cName2] = colCounter;
         colCounter++;
       }
-      components.txLine.back().curNode1C = rName;
-      components.txLine.back().curNode1R = cName;
+      components.txLine.back().curNode1R = rName;
+      components.txLine.back().curNode1C = cName;
       components.txLine.back().curNode2C = cName2;
       components.txLine.back().curNode2R = rName2;
       if (nodeP != "0" && nodeP.find("GND") == std::string::npos) {
@@ -1130,6 +1309,10 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP);
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP] = rowDesc.size() - 1;
+          }
           deviceLabelIndex[nodeP].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP].index = rowCounter;
           rowMap[nodeP] = rowCounter++;
@@ -1168,6 +1351,10 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN);
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN] = rowDesc.size() - 1;
+          }
           deviceLabelIndex[nodeN].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN].index = rowCounter;
           rowMap[nodeN] = rowCounter++;
@@ -1218,6 +1405,10 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeP2);
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeP2) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeP2] = rowDesc.size() - 1;
+          }
           deviceLabelIndex[nodeP2].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeP2].index = rowCounter;
           rowMap[nodeP2] = rowCounter++;
@@ -1256,6 +1447,10 @@ void Matrix::create_A_volt(Input &iObj)
           rowDesc.emplace_back(RowDescriptor());
           rowDesc.back().type = RowDescriptor::Type::VoltageNode;
           rowDesc.back().index = nodeMap.at(nodeN2);
+          if(std::find(relevantToStore.begin(), relevantToStore.end(), nodeN2) != relevantToStore.end()) {
+            relXInd.emplace_back(rowDesc.size() - 1);
+            relToXMap[nodeN2] = rowDesc.size() - 1;
+          }
           deviceLabelIndex[nodeN2].type = RowDescriptor::Type::VoltageNode;
           deviceLabelIndex[nodeN2].index = rowCounter;
           rowMap[nodeN2] = rowCounter++;
@@ -1278,34 +1473,22 @@ void Matrix::create_A_volt(Input &iObj)
         e.label = label;
         components.txLine.back().curN1Col = e.colIndex = columnMap.at(cName);
         components.txLine.back().posNRow = e.rowIndex = rowMap.at(nodeP);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = 1;
         mElements.push_back(e);
         e.label = label;
         components.txLine.back().posNCol = e.colIndex = columnMap.at(cNameP);
         components.txLine.back().curN1Row = e.rowIndex = rowMap.at(rName);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = 1;
         mElements.push_back(e);
         if (!nGND) {
           e.label = label;
           components.txLine.back().curN1Col = e.colIndex = columnMap.at(cName);
           components.txLine.back().negNRow = e.rowIndex = rowMap.at(nodeN);
-          if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-              relXInd.end())
-            relXInd.push_back(e.rowIndex);
           e.value = -1;
           mElements.push_back(e);
           e.label = label;
           components.txLine.back().negNCol = e.colIndex = columnMap.at(cNameN);
           components.txLine.back().curN1Row = e.rowIndex = rowMap.at(rName);
-          if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-              relXInd.end())
-            relXInd.push_back(e.rowIndex);
           e.value = -1;
           mElements.push_back(e);
         }
@@ -1313,62 +1496,41 @@ void Matrix::create_A_volt(Input &iObj)
         e.label = label;
         components.txLine.back().curN1Col = e.colIndex = columnMap.at(cName);
         components.txLine.back().negNRow = e.rowIndex = rowMap.at(nodeN);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = -1;
         mElements.push_back(e);
         e.label = label;
         components.txLine.back().negNCol = e.colIndex = columnMap.at(cNameN);
         components.txLine.back().curN1Row = e.rowIndex =
             rowMap.at(devicetokens.at(0));
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = -1;
         mElements.push_back(e);
       }
       e.label = label;
       components.txLine.back().curN1Col = e.colIndex = columnMap.at(cName);
       components.txLine.back().curN1Row = e.rowIndex = rowMap.at(rName);
-      if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-          relXInd.end())
-        relXInd.push_back(e.rowIndex);
       e.value = -z0;
       mElements.push_back(e);
       if (!pGND2) {
         e.label = label;
         components.txLine.back().curN2Col = e.colIndex = columnMap.at(cName2);
         components.txLine.back().posN2Row = e.rowIndex = rowMap.at(nodeP2);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = 1;
         mElements.push_back(e);
         e.label = label;
         components.txLine.back().posN2Col = e.colIndex = columnMap.at(cNameP2);
         components.txLine.back().curN2Row = e.rowIndex = rowMap.at(rName2);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = 1;
         mElements.push_back(e);
         if (!nGND2) {
           e.label = label;
           components.txLine.back().curN2Col = e.colIndex = columnMap.at(cName2);
           components.txLine.back().negN2Row = e.rowIndex = rowMap.at(nodeN2);
-          if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-              relXInd.end())
-            relXInd.push_back(e.rowIndex);
           e.value = -1;
           mElements.push_back(e);
           e.label = label;
           components.txLine.back().negN2Col = e.colIndex =
               columnMap.at(cNameN2);
           components.txLine.back().curN2Row = e.rowIndex = rowMap.at(rName2);
-          if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-              relXInd.end())
-            relXInd.push_back(e.rowIndex);
           e.value = -1;
           mElements.push_back(e);
         }
@@ -1376,26 +1538,17 @@ void Matrix::create_A_volt(Input &iObj)
         e.label = label;
         components.txLine.back().curN2Col = e.colIndex = columnMap.at(cName2);
         components.txLine.back().negN2Row = e.rowIndex = rowMap.at(nodeN2);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = -1;
         mElements.push_back(e);
         e.label = label;
         components.txLine.back().negN2Col = e.colIndex = columnMap.at(cNameN2);
         components.txLine.back().curN2Row = e.rowIndex = rowMap.at(rName2);
-        if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-            relXInd.end())
-          relXInd.push_back(e.rowIndex);
         e.value = -1;
         mElements.push_back(e);
       }
       e.label = label;
       components.txLine.back().curN2Col = e.colIndex = columnMap.at(cName2);
       components.txLine.back().curN2Row = e.rowIndex = rowMap.at(rName2);
-      if (std::find(relXInd.begin(), relXInd.end(), e.rowIndex) ==
-          relXInd.end())
-        relXInd.push_back(e.rowIndex);
       e.value = -z0;
       mElements.push_back(e);
     }

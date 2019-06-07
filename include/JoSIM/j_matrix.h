@@ -56,7 +56,7 @@ public:
   std::vector<NodeConnections> nodeConnections;
   std::vector<RowDescriptor> rowDesc;
   std::unordered_map<std::string, RowDescriptor> deviceLabelIndex;
-  std::unordered_map<std::string, int> nodeMap;
+  std::unordered_map<std::string, int> nodeMap, relToXMap;
   std::vector<matrix_element> mElements;
   std::vector<std::vector<double>> sources;
   std::vector<std::string> rowNames, columnNames, relevantToStore;

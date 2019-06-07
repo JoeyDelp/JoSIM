@@ -51,7 +51,7 @@ set_target_properties(josim
                                  ON)
 make_target_static(josim)
 target_add_warnings(josim)
-target_compile_features(josim PUBLIC cxx_std_14)
+target_compile_features(josim PUBLIC cxx_std_17)
 
 # OpenMP usage
 if(USING_OPENMP)
