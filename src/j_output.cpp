@@ -1,6 +1,8 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_output.h"
+#include "JoSIM/j_input.h"
+#include "JoSIM/j_simulation.h"
 
 #include <cassert>
 
@@ -9,6 +11,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
   // Clear Traces so that we don't repopulate it through the interface
   traces.clear();
 
+/*
   timesteps = &sObj.results.timeAxis;
   std::vector<std::string> tokens, tokens2;
   std::string label, label2;
@@ -2227,7 +2230,6 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
         index1 = tokens.at(k).find('[');
         if (index1 != std::string::npos)
           tokens.at(k) = tokens.at(k).substr(0, index1);
-        /* If this is a current source */
         if (mObj.deviceLabelIndex.count(tokens.at(k)) != 0) {
           const auto &dev = mObj.deviceLabelIndex.at(tokens.at(k));
           thisTrace.type = 'C';
@@ -2238,6 +2240,130 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
       }
     }
   }
+*/
+  std::vector<std::string> tokens, tokens2;
+
+  for(const auto &i : iObj.relevantX) {
+    Misc::tokenize_space(i.substr(i.find_first_of(" \t") + 1));
+    for (auto &j : tokens) {
+      if (j.find('_') != std::string::npos) {
+        tokens2 = Misc::tokenize_delimeter(j, "_");
+        j = tokens2.back();
+        for (int k = 0; k < tokens2.size() - 1; k++)
+          j += "|" + tokens2.at(k);
+      } else if (j.find('.') != std::string::npos) {
+        std::replace(j.begin(), j.end(), '.', '|');
+      }
+      if(j.at(0) == 'D' || (j.at(0) == 'P' && j.at(1) == 'H')) { //////////////////// DEVV/DEVI/PHASE /////////////////
+          if(j.back() == 'V') //////////////////// DEVV /////////////////
+            break;
+          else if (j.back() == 'I') //////////////////// DEVI /////////////////
+            break;
+          else if (j.back() == 'E')//////////////////// PHASE /////////////////
+            break;
+      } else if (j.at(0) == 'C') { //////////////////// CURRENT - C() /////////////////
+        tokens2 = Misc::tokenize_delimeter(j, "(),");
+        if(tokens2.size() == 2) {
+          if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") {
+            // Handle current between 2 nodes/devices
+          }
+        } else {
+            // Handle current of single device
+        }
+      } else if (j.at(0) == 'P') { //////////////////// PHASE - P() /////////////////
+        tokens2 = Misc::tokenize_delimeter(j, "(),");
+        if(tokens2.size() == 2) {
+          if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") {
+            // Handle phase between 2 nodes/devices
+          }
+        } else {
+            // Handle phase of single device/node
+        }
+      } else if (j.at(0) == 'V') { //////////////////// VOLTAGE - P() /////////////////
+        tokens2 = Misc::tokenize_delimeter(j, "(),");
+        if(tokens2.size() == 2) {
+          if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") {
+            // Handle voltage between 2 nodes/devices
+          }
+        } else {
+            // Handle voltage of single device/node
+        }
+      } else if (j.at(0) == 'N') { //////////////////// NODEV - NODEP /////////////////
+        if(j.back() == 'V') {
+          if(tokens.size() == 2) {
+              // Handle difference between two nodal voltages
+            break;
+          } else {
+              // Handle single node voltage
+            break;
+          }
+        } else if(j.back() == 'P') {
+          if(tokens.size() == 2) {
+              // Handle difference between two nodal phases
+            break;
+          } else {
+              // Handle single node phase
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+void Output::handle_voltage(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj) {
+  if(devToHandle.size() > 1) {
+    const auto &dev1 = mObj.deviceLabelIndex.at(devToHandle.at(0));
+    const auto &dev2 = mObj.deviceLabelIndex.at(devToHandle.at(1));
+    switch(dev1.type) {
+      case RowDescriptor::Type::VoltageCapacitor:
+        break;
+      case RowDescriptor::Type::VoltageCS:
+        break;
+      case RowDescriptor::Type::VoltageInductor:
+        break;
+      case RowDescriptor::Type::VoltageJJ:
+        break;
+      case RowDescriptor::Type::VoltageNode:
+        break;
+      case RowDescriptor::Type::VoltagePS:
+        break;
+      case RowDescriptor::Type::VoltageResistor:
+        break;
+      case RowDescriptor::Type::VoltageTX:
+        break;
+      case RowDescriptor::Type::VoltageVS:
+        break;
+      case RowDescriptor::Type::PhaseCapacitor:
+        break;
+      case RowDescriptor::Type::PhaseCS:
+        break;
+      case RowDescriptor::Type::PhaseInductor:
+        break;
+      case RowDescriptor::Type::PhaseJJ:
+        break;
+      case RowDescriptor::Type::PhaseNode:
+        break;
+      case RowDescriptor::Type::PhasePS:
+        break;
+      case RowDescriptor::Type::PhaseResistor:
+        break;
+      case RowDescriptor::Type::PhaseTX:
+        break;
+      case RowDescriptor::Type::PhaseVS:
+        break;
+    }
+  } else {
+    const auto &dev = mObj.deviceLabelIndex.at(devToHandle.at(0));
+  }
+}
+
+void Output::handle_current(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj) {
+
+}
+
+void Output::handle_phase(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj) {
+
 }
 
 void Output::write_data(std::string &outname, const Matrix &mObj, const Simulation &sObj)

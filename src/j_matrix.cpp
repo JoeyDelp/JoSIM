@@ -2525,9 +2525,9 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseJJ.back().gLarge =
           components.phaseJJ.back().iC /
           (components.phaseJJ.back().iCFact * components.phaseJJ.back().delV);
-      components.phaseJJ.back().lower =
+      components.phaseJJ.back().lowerB =
           components.phaseJJ.back().vG - 0.5 * components.phaseJJ.back().delV;
-      components.phaseJJ.back().upper =
+      components.phaseJJ.back().upperB =
           components.phaseJJ.back().vG + 0.5 * components.phaseJJ.back().delV;
       components.phaseJJ.back().subCond =
           1 / components.phaseJJ.back().r0 +

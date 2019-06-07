@@ -62,15 +62,19 @@ public:
 
 class jj_volt : public device {
 public:
-  std::string phaseNodeR, phaseNodeC;
-  int phaseNRow, phaseNCol;
-  double phi0, pn1, pn2, dPn1, dPn2, v0, vn1, vn2, dVn1, dVn2;
-  double r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB, upperB,
-      subCond, transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
-  int rType;
+  std::string voltNodeR, voltNodeC, phaseNodeR, phaseNodeC;
+  int voltNRow, voltNCol, phaseNRow, phaseNCol,
+      pPtr, nPtr,
+      rType;
+  double phi0, Phi0n1, pn1, pn2, dPn1, dPn2, v0, vn1, vn2, dVn1, dVn2,
+        r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB, upperB,
+        subCond, transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
   std::vector<double> jjCur;
   jj_volt() {
-    phi0 = pn1 = pn2 = dPn1 = dPn2 = 0.0;
+    voltNodeR = voltNodeC = "NONE";
+    voltNRow = voltNCol = -1;
+    pPtr = nPtr = -1;
+    phi0 = Phi0n1 = pn1 = pn2 = dPn1 = dPn2 = 0.0;
     v0 = vn1 = vn2 = dVn1 = dVn2 = 0.0;
     rType = 1;
     vG = 2.8E-3;
@@ -167,31 +171,29 @@ public:
 
 class jj_phase : public device {
 public:
-  std::string voltNodeR, voltNodeC;
-  int voltNRow, voltNCol;
-  int pPtr, nPtr;
-  double phi0, Phi0n1, pn1, pn2, dPn1, dPn2, v0, vn1, vn2, dVn1, dVn2;
-  int rType;
-  double r0, rN, C, iC, iCFact, delV, vG, iS, It, gLarge, lower, upper, subCond,
-      transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
+  std::string voltNodeR, voltNodeC, phaseNodeR, phaseNodeC;
+  int voltNRow, voltNCol, phaseNRow, phaseNCol,
+      pPtr, nPtr,
+      rType;
+  double phi0, Phi0n1, pn1, pn2, dPn1, dPn2, v0, vn1, vn2, dVn1, dVn2,
+        r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB, upperB,
+        subCond, transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
   std::vector<double> jjCur;
   jj_phase() {
     voltNodeR = voltNodeC = "NONE";
     voltNRow = voltNCol = -1;
     pPtr = nPtr = -1;
-    phi0 = Phi0n1 = pn1 = pn2 = dPn1 = dPn2 = v0 = vn1 = vn2 = dVn1 = dVn2 =
-        0.0;
-    rType = 0;
+    phi0 = Phi0n1 = pn1 = pn2 = dPn1 = dPn2 = 0.0;
+    v0 = vn1 = vn2 = dVn1 = dVn2 = 0.0;
+    rType = 1;
     vG = 2.8E-3;
     delV = 0.1E-3;
     r0 = 30;
     rN = 5;
-    iS = 0.0;
     C = 2.5E-12;
     iC = 1E-3;
     iCFact = M_PI / 4;
-    It = 0.0;
-    gLarge = 0.0;
+    iT = iS = gLarge = 0.0;
     T = 4.2;
     tC = 9.1;
     D = 0.0;

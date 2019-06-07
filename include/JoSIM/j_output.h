@@ -35,6 +35,12 @@ public:
   void write_wr_data(std::string &outname);
 
   void write_cout(const Matrix &mObj, const Simulation &sObj);
+
+  void handle_voltage(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj);
+
+  void handle_current(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj);
+
+  void handle_phase(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj);
 };
 
 #endif
