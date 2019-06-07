@@ -1023,7 +1023,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       results.xVect.at(m).at(i) = lhsValues.at(mObj.relXInd.at(m));
 
     
-    for (int j = 0; j < jj_vector; j++) {
+    for (int j = 0; j < jj_vector.size(); j++) {
       auto &jj = jj_vector.at(j);
       // (simtype == JoSIM::AnalysisType::Voltage) ?
       //   jj_volt &jj = mObj.components.voltJJ.at(j) :
@@ -1155,3 +1155,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
   klu_free_symbolic(&Symbolic, &Common);
   klu_free_numeric(&Numeric, &Common);
 }
+
+// Compile template for classes
+template void Simulation::trans_sim<JoSIM::AnalysisType::Voltage>(Input &iObj, Matrix &mObj);
+template void Simulation::trans_sim<JoSIM::AnalysisType::Phase>(Input &iObj, Matrix &mObj);
