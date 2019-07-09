@@ -129,6 +129,16 @@ public:
   }
 };
 
+class ps_volt : public device {
+public:
+  std::string curNodeR, curNodeC;
+  int curNRow, curNCol;
+  ps_volt() {
+    curNodeR = curNodeC = "NONE";
+    curNRow = curNCol = -1;
+  }
+};
+
 class res_phase : public device {
 public:
   std::string curNodeR, curNodeC;
@@ -276,6 +286,7 @@ public:
   std::vector<cap_volt> voltCap;
   std::vector<jj_volt> voltJJ;
   std::vector<vs_volt> voltVs;
+  std::vector<ps_volt> voltPs;
 
   std::vector<tx_line> txLine;
   std::vector<tx_phase> txPhase;

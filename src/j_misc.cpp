@@ -472,13 +472,20 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
                               std::to_string(tokens.size()));
     double VO = 0.0, VA = 0.0, TD = 0.0, TSTEP = 0.0;
     VO = modifier(tokens[0]);
-    if(VO != 0.0) 
+    if(VO != 0.0 && tokens.size() == 4) {
       Errors::function_errors(NOISE_VO_ZERO, tokens[0]);
-    VA = modifier(tokens[1]);
-    if (VA == 0.0)
-      if (iObj.argVerb)
-        Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
-    TD = modifier(tokens[3]);
+      VA = modifier(tokens[1]);
+      if (VA == 0.0)
+        if (iObj.argVerb)
+          Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
+      TD = modifier(tokens[3]);
+    } else {
+      VA = modifier(tokens[0]);
+      if (VA == 0.0)
+        if (iObj.argVerb)
+          Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
+      TD = modifier(tokens[2]);
+    }
     TSTEP = iObj.transSim.prstep;
     int beginTime;
     double currentTimestep, value;

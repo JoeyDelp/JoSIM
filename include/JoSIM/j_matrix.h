@@ -2,9 +2,11 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_MATRIX_H
 #define JOSIM_J_MATRIX_H
+#include "JoSIM/AnalysisType.hpp"
 #include "j_components.h"
 #include "j_errors.h"
 #include "j_input.h"
+#include <unordered_map>
 
 class matrix_element {
 public:
@@ -50,8 +52,14 @@ struct RowDescriptor {
   RowDescriptor() {}
 };
 
+struct LabelNodes {
+  std::string posNode;
+  std::string negNode;
+};
+
 class Matrix {
 public:
+  JoSIM::AnalysisType analysisType;
   Components components;
   std::vector<NodeConnections> nodeConnections;
   std::vector<RowDescriptor> rowDesc;
@@ -63,6 +71,8 @@ public:
   std::vector<double> nzval;
   std::vector<int> colind, rowptr;
   std::vector<int> relXInd;
+  std::unordered_map<int, int> XtoTraceMap;
+  std::unordered_map<std::string, LabelNodes> labelNodes;
   int Nsize, Msize;
 
   Matrix(){};

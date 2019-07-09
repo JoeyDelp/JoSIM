@@ -40,8 +40,10 @@ int main(int argc, const char **argv) {
   mObj.create_matrix(iObj);
   if (cli_options.analysis_type == AnalysisType::Voltage)
     sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
+    //sObj.transient_voltage_simulation(iObj, mObj);
   else if (cli_options.analysis_type == AnalysisType::Phase)
     sObj.trans_sim<JoSIM::AnalysisType::Phase>(iObj, mObj);
+    // sObj.transient_phase_simulation(iObj, mObj);
   oObj.relevant_traces(iObj, mObj, sObj);
 
   if (cli_options.output_to_file) {

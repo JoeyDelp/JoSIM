@@ -209,6 +209,15 @@ void Errors::invalid_component_errors(int errorCode,
               << std::endl;
     std::cerr << std::endl;
     exit(-1);
+  case SPECIAL_CHARS:
+    std::cerr << "W: Label " << whatPart << " contains special characters."
+              << std::endl;
+    std::cerr << "W: The use of special characters in label names is not "
+                  "advised."
+              << std::endl;
+    std::cerr << "W: This might produce unexpected results." << std::endl;
+    std::cerr << "W: Continuing operation." << std::endl;
+    break;
   default:
     std::cerr << "E: Unknown invalid component error." << std::endl;
     std::cerr << "E: Please contact the developer." << std::endl;
@@ -543,7 +552,7 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
               << std::endl;
     std::cerr << "E: Program will continue but NOISE command is redundant."
               << std::endl;
-    exit(-1);
+    break;
   case NOISE_VA_ZERO:
     std::cout << "W: NOISE amplitude is 0.0, this renders the function redundant."
               << std::endl;

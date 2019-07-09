@@ -16,7 +16,7 @@ public:
   bool pointer;
   std::vector<double> *traceData = nullptr;
   std::vector<double> calcData;
-  Trace() { pointer = true; };
+  Trace() { pointer = false; };
   ~Trace(){};
 };
 
@@ -36,11 +36,11 @@ public:
 
   void write_cout(const Matrix &mObj, const Simulation &sObj);
 
-  void handle_voltage(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj);
+  void handle_voltage(const std::vector<std::string> &devToHandle, Trace &result, const Input &iObj, const Matrix &mObj, const Simulation &sObj);
 
-  void handle_current(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj);
+  void handle_current(const std::vector<std::string> &devToHandle, Trace &result, const Input &iObj, const Matrix &mObj, const Simulation &sObj);
 
-  void handle_phase(const std::vector<std::string> &devToHandle, Trace &result, const Matrix &mObj, const Simulation &sObj);
+  void handle_phase(const std::vector<std::string> &devToHandle, Trace &result, const Input &iObj, const Matrix &mObj, const Simulation &sObj);
 };
 
 #endif
