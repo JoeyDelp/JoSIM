@@ -261,7 +261,7 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
     exit(-1);
   case UNKNOWN_DEVICE:
     std::cerr << "W: Unknown device " << whatPart << std::endl;
-    std::cerr << "W: Cannot print current for this device." << std::endl;
+    std::cerr << "W: Cannot print results for this device." << std::endl;
     std::cerr << "W: Ignoring this print request." << std::endl;
     std::cerr << std::endl;
     break;
