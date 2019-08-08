@@ -1,0 +1,13 @@
+* Test nested params. This tests parameters used before being declared.
+.param junction = 5 * scale
+.param scale = 2
+.param five = four + one
+.param four = three + one
+.param three = two + one
+.param two = one + one
+.param one = 1    
+ROUT       1          0          2         
+VIN        1          0          pwl(0 0 50p 0 52.5p 827.13u 55p 0)
+.tran 0.25p 100p 0 0.25p
+.print NODEV 1 0
+.end

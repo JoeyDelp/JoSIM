@@ -1,5 +1,3 @@
-include(${CMAKE_SOURCE_DIR}/cmake/integration_test.cmake)
-
 # Commad line options
 
 #add_integration_test(
@@ -11,22 +9,50 @@ include(${CMAKE_SOURCE_DIR}/cmake/integration_test.cmake)
 
 # Tests
 add_integration_test(
-  NAME basic_jtl
-  CIR basic_jtl.cir
-  OUT basic_jtl.csv
+  NAME ex_jtl_basic
+  CIR ex_jtl_basic.cir
+  OUT ex_jtl_basic.csv
 )
 
 add_integration_test(
-  NAME dcsfq_jtl_sink
-  CIR dcsfq_jtl_sink.cir
-  OUT dcsfq_jtl_sink.csv
+  NAME ex_dcsfq_jtl_sink
+  CIR ex_dcsfq_jtl_sink.cir
+  OUT ex_dcsfq_jtl_sink.csv
 )
 
 add_integration_test(
-  NAME test_mitll_dfft
-  CIR TEST_MITLL_DFFT.cir
-  OUT test_mitll_dfft.csv
+  NAME ex_mitll_dff_wr
+  CIR ex_mitll_dff_wr.cir
+  OUT ex_mitll_dff_wr.csv
   WRSPICE
+)
+
+add_integration_test(
+  NAME ex_mitll_not_wr
+  CIR ex_mitll_not_wr.cir
+  OUT ex_mitll_not_wr.csv
+  WRSPICE
+)
+
+add_integration_test(
+  NAME test_param_nest
+  CIR param/test_param_nest.cir
+)
+
+add_integration_test(
+  NAME test_param_undef
+  CIR param/test_param_undef.cir
+  WILL_FAIL
+)
+
+add_integration_test(
+  NAME test_line_cont
+  CIR syntax/test_line_cont.cir
+)
+
+add_integration_test(
+  NAME test_line_comment
+  CIR syntax/test_line_comment.cir
 )
 
 #add_integration_test(

@@ -1,241 +1,111 @@
-# SpecIFy the minimum version for CMake
-CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
-CMAKE_POLICY(SET CMP0048 NEW)
-# The version number.
-SET(JoSIM_VERSION "2.2")
-# Project name
-PROJECT(JoSIM VERSION ${JoSIM_VERSION})
-MESSAGE("Current CMAKE Source dir: ${CMAKE_CURRENT_BINARY_DIR}")
-# Welcoming MESSAGE
-MESSAGE("Welcome to the JoSIM CMake file.")
-MESSAGE("Please wait while we SET a few configuration options.")
-MESSAGE("=====================================================")
-# Identify the platform type
-MESSAGE("Platform: ${CMAKE_SYSTEM_NAME}")
-# IdentIFy the build type
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG 
-    OR CMAKE_BUILD_TYPE MATCHES Debug
-    OR CMAKE_BUILD_TYPE MATCHES debug)
-    MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
-ELSE()
-    # Default build type is release. Change to debug for debugging
-    SET(CMAKE_BUILD_TYPE RELEASE)
-    MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
-ENDIF()
-# Ensure C++14
-SET(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+
+project(JoSIM VERSION 2.3)
+
+include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
+
+# Default to release
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # See if OpenMP was specified
-OPTION(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
-IF(USING_OPENMP)
-  FIND_PACKAGE(OpenMP REQUIRED)
-ENDIF()
+option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
+option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
 
-# SuiteSparse
-include(cmake/suitesparse.cmake)
+if(MAKING_STATIC_BUILD)
+  set(CMAKE_BUILD_SHARED OFF)
+endif()
 
-# Set which graphical interface to use (USING_FLTK, USING_MATPLOTLIB, USING_NONE)
-OPTION(USING_FLTK "Using FLTK basic graphical interface" OFF)
-OPTION(USING_MATPLOTLIB "Using Python based matplotlib graphical interface" OFF)
-OPTION(USING_NONE "Using no plotting engine" ON)
-# Sets whether a library or executable will be built
-OPTION(BUILD_LIBRARY "Build the dynamic library for JoSIM" OFF)
+# CMake utils
+include(${PROJECT_SOURCE_DIR}/cmake/suitesparse.cmake)
 
-IF(BUILD_LIBRARY)
-    MESSAGE("Building the JoSIM shared library")
-    IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-        SET(WINDOWS TRUE)
-        SET(PLATFORM "win")
-        MESSAGE("=====================================================")
-        SET(PLOTTING_ENGINE "NONE")
-        MESSAGE("Graphical engine: None")
-    ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        SET(LINUX TRUE)
-        SET(PLATFORM "linux")
-        MESSAGE("=====================================================")
-        SET(PLOTTING_ENGINE "NONE")
-        MESSAGE("Graphical engine: None")
-        FIND_PACKAGE(SuiteSparse REQUIRED)
-    ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        SET(MACOSX TRUE)
-        SET(PLATFORM "mac")
-        MESSAGE("=====================================================")
-        SET(PLOTTING_ENGINE "NONE")
-        MESSAGE("Graphical engine: None")
-    ENDIF()
-    ADD_DEFINITIONS(-DBUILD_LIBRARY)
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/JoSIM)
-    ADD_SUBDIRECTORY(src)
-    ADD_LIBRARY(JoSIM SHARED ${JOSIM_SRC})
-    set_target_properties(JoSIM
-    PROPERTIES
-        VERSION ${JoSIM_VERSION}
-        SOVERSION ${JoSIM_VERSION}
-    )
-    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-        TARGET_COMPILE_OPTIONS(JoSIM PRIVATE -Wall -Wextra)
-    ELSEIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
-        TARGET_COMPILE_OPTIONS(JoSIM PRIVATE /EHsc /MTd /W2 /c)
-        TARGET_COMPILE_DEFINITIONS(JoSIM PRIVATE WIN_EXPORT)
-    ENDIF()
+# JoSIM library
+# -------------
 
-    TARGET_LINK_LIBRARIES(JoSIM PUBLIC suitesparse::all)
-ELSE()
-    IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        SET(WINDOWS TRUE)
-        SET(PLATFORM "win")
-        MESSAGE("=====================================================")
-        IF(USING_FLTK)
-            SET(PLOTTING_ENGINE "FLTK")
-            MESSAGE("Graphical engine: FLTK")
-            INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/Fl)
-            ADD_DEFINITIONS(-DUSING_FLTK)
-        ELSEIF(USING_MATLPOTLIB)
-            SET(PLOTTING_ENGINE "MATPLOTLIB")
-            MESSAGE("Graphical engine: Matplotlib")
-            ADD_DEFINITIONS(-DUSING_MATPLOTLIB)
-            INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/matplotlib)
-        ELSEIF(USING_NONE)
-            SET(PLOTTING_ENGINE "NONE")
-            MESSAGE("Graphical engine: None")
-            ADD_DEFINITIONS(-DUSING_NONE)
-        ENDIF()
-    ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        SET(LINUX TRUE)
-        SET(PLATFORM "linux")
-        MESSAGE("=====================================================")
-        IF(USING_FLTK)
-            SET(PLOTTING_ENGINE "FLTK")
-            MESSAGE("Graphical engine: FLTK")
-            ADD_DEFINITIONS(-DUSING_FLTK)
-            FIND_PACKAGE(FLTK REQUIRED)
-            INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
-        ELSEIF(USING_MATPLOTLIB)
-            SET(PLOTTING_ENGINE "MATPLOTLIB")
-            MESSAGE("Graphical engine: Matplotlib")
-            ADD_DEFINITIONS(-DUSING_MATPLOTLIB)
-            IF(EXISTS /usr/local/bin/python3.6)
-                MESSAGE("Found Python 3.6")
-                INCLUDE_DIRECTORIES(/usr/local/include/python3.6m)
-                INCLUDE_DIRECTORIES(/usr/local/lib/python3.6/site-packages/numpy/core/include/)
-            ELSEIF(EXISTS /usr/bin/python3.6)
-                MESSAGE("Found Python 3.6")
-                INCLUDE_DIRECTORIES(/usr/include/python3.6m)
-                INCLUDE_DIRECTORIES(/usr/lib64/python3.6/site-packages/numpy/core/include/)
-            ELSE()
-                FIND_PACKAGE(PythonInterp 2.7 REQUIRED)
-                FIND_PACKAGE(PythonLibs 2.7 REQUIRED)
-                INCLUDE_DIRECTORIES(/usr/lib64/python2.7/site-packages/numpy/core/include)
-            ENDIF()
-            INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/matplotlib)
-        ELSEIF(USING_NONE)
-            SET(PLOTTING_ENGINE "NONE")
-            MESSAGE("Graphical engine: None")
-            ADD_DEFINITIONS(-DUSING_NONE)
-        ENDIF()
-    ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        SET(MACOSX TRUE)
-        SET(PLATFORM "mac")
-        MESSAGE("=====================================================")
-        IF(USING_FLTK)
-            SET(PLOTTING_ENGINE "FLTK")
-            MESSAGE("Graphical engine: FLTK")
-            ADD_DEFINITIONS(-DUSING_FLTK)
-            FIND_PACKAGE(FLTK REQUIRED)
-            INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
-        ELSEIF(USING_MATPLOTLIB)
-            SET(PLOTTING_ENGINE "MATPLOTLIB")
-            MESSAGE("Graphical engine: Matplotlib")
-            ADD_DEFINITIONS(-DUSING_MATPLOTLIB)
-            FIND_PACKAGE(Python3 COMPONENTS Interpreter Development)
-            IF(${Python3_FOUND})
-                INCLUDE_DIRECTORIES(${Python3_INCLUDE_DIRS})
-                INCLUDE_DIRECTORIES(${Python3_LIBRARY_DIRS}/python3.7/site-packages/numpy/core/include)
-            ELSE()
-                FIND_PACKAGE(Python2 COMPONENTS Interpreter Development)
-                INCLUDE_DIRECTORIES(${Python2_INCLUDE_DIRS})
-                INCLUDE_DIRECTORIES(${Python2_LIBRARY_DIRS}/python2.7/site-packages/numpy/core/include)
-            ENDIF()
-            INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/matplotlib)
-        ELSEIF(USING_NONE)
-            SET(PLOTTING_ENGINE "NONE")
-            MESSAGE("Graphical engine: None")
-            ADD_DEFINITIONS(-DUSING_NONE)
-        ENDIF()
-    ENDIF()
-    # Include directory for JoSIM header files
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include/JoSIM)
-    # Add the source files for JoSIM
-    ADD_SUBDIRECTORY(src)
+add_library(josim
+            src/CliOptions.cpp
+            src/j_simulation.cpp
+            src/j_output.cpp
+            src/j_misc.cpp
+            src/j_matrix.cpp
+            src/j_input.cpp
+            src/j_errors.cpp
+            src/j_components.cpp
+            src/j_parser.cpp
+            src/j_verbose.cpp)
 
-    # Add the source to the executable for compilation
-    ADD_EXECUTABLE(JoSIM ${JOSIM_SRC})
-    IF(USING_OPENMP)
-      TARGET_LINK_LIBRARIES(JoSIM PUBLIC OpenMP::OpenMP_CXX)
-        MESSAGE("Parellization is ENABLED")
-    ELSE()
-        MESSAGE("Parellization is DISABLED")
-    ENDIF()
-    # IF Darwin system FLTK can be installed from source and found but SuiteSparse is harder.
-    # We therefore provide SuiteSparse libraries as Darwin is not as fragmented and libraries can be precompiled
-    IF(MACOSX)
-        IF(USING_FLTK)
-            TARGET_LINK_LIBRARIES(JoSIM PRIVATE ${FLTK_LIBRARIES})
-        ELSEIF(USING_MATPLOTLIB)
-            TARGET_INCLUDE_DIRECTORIES(JoSIM PRIVATE ${PYTHON_INCLUDE_DIRS})
-            IF(${Python3_FOUND})
-                TARGET_LINK_LIBRARIES(JoSIM PRIVATE ${Python3_LIBRARIES})
-            ELSE()
-                TARGET_LINK_LIBRARIES(JoSIM PRIVATE ${Python2_LIBRARIES})
-            ENDIF()
-            # IF(EXISTS /usr/local/Cellar/python/3.7.0)
-            #     MESSAGE("Finding Python 3.7 library:")
-            #     TARGET_LINK_LIBRARIES(JoSIM /usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib)
-            #     MESSAGE("Found: /usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib")
-            # ELSEIF(EXISTS /usr/local/Cellar/python/3.6.5)
-            #     MESSAGE("Finding Python 3.6 library:")
-            #     TARGET_LINK_LIBRARIES(JoSIM /usr/local/Cellar/python/3.6.5/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib)
-            #     MESSAGE("Found: /usr/local/Cellar/python/3.6.5/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib")
-            # ELSE()
-            #     MESSAGE("Finding Python 2.7 library:")
-            #     TARGET_LINK_LIBRARIES(JoSIM /usr/lib/libpython2.7.dylib)
-            #     MESSAGE("Found: /usr/lib/libpython2.7.dylib")
-            # ENDIF()
-        ENDIF()
-    ELSEIF(LINUX)
-        IF(USING_FLTK)
-            TARGET_LINK_LIBRARIES(JoSIM PRIVATE ${FLTK_LIBRARIES})
-        ELSEIF(USING_MATPLOTLIB)
-            IF(EXISTS /usr/local/bin/python3.6)
-                MESSAGE("Finding Python 3.6 library:")
-                TARGET_LINK_LIBRARIES(JoSIM PRIVATE /usr/local/lib/libpython3.6m.a)
-                MESSAGE("Found: /usr/local/lib/libpython3.6m.a")
-            ELSEIF(EXISTS /usr/bin/python3.6)
-                MESSAGE("Finding Python 3.6 library:")
-                IF(EXISTS /usr/lib64/libpython3.6m.a)
-                    TARGET_LINK_LIBRARIES(JoSIM PRIVATE /usr/lib64/libpython3.6m.a)
-                    MESSAGE("Found: /usr/lib64/libpython3.6m.a")
-                ELSEIF(EXISTS /usr/lib64/libpython3.6m.a)
-                    TARGET_LINK_LIBRARIES(JoSIM PRIVATE /usr/lib64/libpython3.6m.a)
-                    MESSAGE("Found: /usr/lib64/libpython3.6m.a")
-                ENDIF()
-            ELSE()
-                TARGET_INCLUDE_DIRECTORIES(JoSIM PRIVATE ${PYTHON_INCLUDE_DIRS})
-                TARGET_LINK_LIBRARIES(JoSIM PRIVATE ${PYTHON_LIBRARIES})
-            ENDIF()
-        ENDIF()
-    ENDIF()
+# Include directories
+target_include_directories(josim PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 
-    TARGET_LINK_LIBRARIES(JoSIM PUBLIC suitesparse::all)
+# Dependencies
+target_link_libraries(josim PRIVATE suitesparse::klu)
 
-    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
-    SET(EXECUTABLE_NAME ${PROJECT_NAME}_${PLATFORM}_${CMAKE_BUILD_TYPE}_${PLOTTING_ENGINE})
-    MESSAGE("Setting executable name to: ${EXECUTABLE_NAME}")
-    MESSAGE("=====================================================")
-    MESSAGE("Configuration done.")
-    MESSAGE("Now run make")
+# Properties
+set_target_properties(josim
+                      PROPERTIES POSITION_INDEPENDENT_CODE
+                                 ON)
+make_target_static(josim)
+target_add_warnings(josim)
+target_compile_features(josim PUBLIC cxx_std_17)
 
-    enable_testing()
-    ADD_SUBDIRECTORY(test)
-ENDIF()
+# OpenMP usage
+if(USING_OPENMP)
+  find_package(OpenMP REQUIRED)
+  target_link_libraries(josim PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
+# JoSIM command line interface
+# ----------------------------
+
+add_executable(josim-cli src/josim.cpp)
+
+# Dependencies
+target_link_libraries(josim-cli PRIVATE josim)
+
+# Properties
+make_target_static(josim-cli)
+target_add_warnings(josim-cli)
+
+# Testing
+# -------
+
+# Neccesary includes
+include(CTest)
+include(${PROJECT_SOURCE_DIR}/cmake/integration_test.cmake)
+
+# Enable testing
+enable_testing()
+
+# Add tests
+add_subdirectory(test)
+
+# Install
+# -------
+
+# Get install locations
+include(GNUInstallDirs)
+
+# Install headers
+install(DIRECTORY include/JoSIM/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM/")
+
+# Install targets
+install(TARGETS
+    josim
+    josim-cli
+  EXPORT josim-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
+
+install(EXPORT josim-targets
+  FILE josim-config.cmake
+  NAMESPACE josim::
+  DESTINATION share/josim/
+)

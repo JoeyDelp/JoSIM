@@ -1,0 +1,8 @@
+* Testing the exclusion of comment lines. This should include '*' and '#' at the start of a line.
+ROUT    1   0   2         
+VIN     1   0   pwl(0 0 50p 0 52.5p 827.13u 55p 0)
+* This is a comment at the start of the line
+                * This is a comment in the middle of the line
+# This is a # comment
+                # This is a # comment in the middle of the line
+.tran 0.25p 100p

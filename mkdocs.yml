@@ -1,0 +1,25 @@
+site_name: JoSIM v2.3 Documentation
+repo_url: https://github.com/JoeyDelp/JoSIM
+site_author: Johannes Delport
+nav:
+  - Home: 'index.md'
+  - Technical Discussion: 'tech_disc.md'
+  - Example Usage: 'ex_usage.md'
+  - Component Stamps: 'comp_stamps.md'
+  - Syntax Guide: 'syntax.md'
+  - Development Schedule and Bugs: 'bugs.md'
+theme: 
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+    - bash
+    - c++
+markdown_extensions:
+  - mdx_bib:
+      bibtex_file: "docs/refer.bib"
+      order: sorted
+  - markdown_figcap
+  - attr_list
+  - mdx_math
+extra_javascript: 
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML

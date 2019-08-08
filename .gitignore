@@ -296,6 +296,20 @@ test/MITLL_DFFT.cir
 release_build
 build
 
+# Internal testing directories
+testint
+buildint
+
+doc
 doc/src
+doc/*
+
 *.dat
 *.json
+
+# Clang files
+.clang-format
+.clang-tidy
+
+# direnv file
+.envrc

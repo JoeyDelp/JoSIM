@@ -1,102 +1,78 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef J_MISC_H_
-#define J_MISC_H_
-#include "j_std_include.h"
+#ifndef JOSIM_J_MISC_H
+#define JOSIM_J_MISC_H
 #include "j_input.h"
 #include "j_parser.h"
+#include "j_std_include.h"
+
 
 class Input;
 
 class Misc {
-  public:
+public:
+  static std::string file_from_path(const std::string &path);
 
-    static
-    std::string
-    file_from_path(std::string path);
+  static bool has_suffix(const std::string &str, const std::string &suffix);
 
-    static
-    bool
-    has_suffix(const std::string& str, const std::string& suffix);
+  static bool starts_with(const std::string &input, char test);
 
-    static
-    bool
-    starts_with(std::string input, char test);
+  static std::vector<std::string> tokenize_space(const std::string &c);
 
-    static
-    std::vector<std::string>
-    tokenize_space(std::string c);
+  static std::vector<std::string> tokenize_space_once(const std::string &c);
 
-    static
-    std::vector<std::string>
-    tokenize_delimeter(std::string c, std::string d);
+  static std::vector<std::string> tokenize_delimeter(const std::string &c,
+                                                     const std::string &d);
 
-    static
-    int
-    map_value_count(std::unordered_map<std::string, int> map, int value);
+  static void ltrim(std::string &s);
 
-    static
-    double
-    modifier(std::string value);
+  static void rtrim(std::string &s);
 
-    static
-    void
-    unique_push(std::vector<std::string>& vector, std::string string);
+  static int map_value_count(const std::unordered_map<std::string, int> &map,
+                             int value);
 
-    static
-    int
-    index_of(std::vector<std::string> vector, std::string value);
+  static double modifier(const std::string &value);
 
-    static
-    std::string
-    substring_after(std::string str, std::string whatpart);
+  static void unique_push(std::vector<std::string> &vector,
+                          const std::string &string);
 
-    static
-    std::string
-    substring_before(std::string str, std::string whatpart);
-    
-    static
-    std::vector<double>
-    parse_function(std::string &str, Input &iObj, std::string subckt = "");
+  static int index_of(const std::vector<std::string> &vector,
+                      const std::string &value);
 
-    static
-    bool
-    findX(std::vector<std::string>& segment, std::string& theLine, int &linePos);
+  static std::string substring_after(const std::string &str,
+                                     const std::string &whatpart);
 
-    template<typename A, typename B>
-    static
-    std::pair<B, A>
-    flip_pair(const std::pair<A, B>& p)
-    {
-      return std::pair<B, A>(p.second, p.first);
-    }
+  static std::string substring_before(const std::string &str,
+                                      const std::string &whatpart);
 
-    template<typename A, typename B>
-    static
-    std::map<B, A>
-    flip_map(const std::unordered_map<A, B>& src)
-    {
-      std::map<B, A> dst;
-      std::transform(
-        src.begin(), src.end(), std::inserter(dst, dst.begin()), flip_pair<A, B>);
-      return dst;
-    }
+  static std::vector<double> parse_function(std::string &str, Input &iObj,
+                                            const std::string &subckt = "");
 
-    template<typename T>
-    static
-    std::string
-    precise_to_string(const T a_value, const int n = 50)
-    {
-      std::ostringstream out;
-      out << std::fixed << std::setprecision(n) << a_value;
-      return out.str();
-    }
+  static bool findX(const std::vector<std::string> &segment,
+                    std::string &theLine, int &linePos);
 
-    static
-    std::string 
-    stringSubtract(std::string src, std::string comp);
+  template <typename A, typename B>
+  static std::pair<B, A> flip_pair(const std::pair<A, B> &p) {
+    return std::pair<B, A>(p.second, p.first);
+  }
 
-    static
-    int numDigits(int number);
+  template <typename A, typename B>
+  static std::map<B, A> flip_map(const std::unordered_map<A, B> &src) {
+    std::map<B, A> dst;
+    std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()),
+                   flip_pair<A, B>);
+    return dst;
+  }
+
+  template <typename T>
+  static std::string precise_to_string(const T a_value, const int n = 50) {
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(n) << a_value;
+    return out.str();
+  }
+
+  static int numDigits(int number);
+
+  static double grand();
 };
 #endif

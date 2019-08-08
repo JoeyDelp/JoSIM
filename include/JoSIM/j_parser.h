@@ -1,30 +1,29 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef J_PARSER_H_
-#define J_PARSER_H_
-#include "j_std_include.h"
-#include "j_misc.h"
+#ifndef JOSIM_J_PARSER_H
+#define JOSIM_J_PARSER_H
+
+#include "./j_input.h"
+#include "./j_misc.h"
+#include "./j_std_include.h"
+
+#include "./ParameterName.hpp"
+
+class Parameters;
 
 class Parser {
-	public:
+public:
+  static double parse_param(
+      const std::string &expr,
+      const std::unordered_map<JoSIM::ParameterName, double> &parsedParams,
+      const std::string &subckt = "");
 
-		static
-		double
-		parse_param(std::string expr, std::unordered_map<std::pair<std::string, 
-				std::string>, double, pair_hash> parsedParams, 
-				std::string subckt = "");
+  static int prec_lvl(const std::string &op);
 
-		static
-		int
-		prec_lvl(std::string op);
+  static double parse_operator(const std::string &op, double val1, double val2,
+                               int &popCount);
 
-		static
-		double
-		parse_operator(std::string op, double val1, double val2, int& popCount);
-
-		static
-		void
-		parse_parameters(std::vector<std::pair<std::string, std::string>> unparsedParams,
-		std::unordered_map<std::pair<std::string, std::string>, double, pair_hash> &parsedParams);
+  static void parse_parameters(Parameters &parameters);
 };
+
 #endif
