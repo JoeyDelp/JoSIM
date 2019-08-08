@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Johannes Delport">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Syntax Guide - JoSIM v2.3 Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Syntax Guide";
+    var mkdocs_page_input_path = "syntax.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/bash.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/c++.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> JoSIM v2.3 Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Home</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../tech_disc/">Technical Discussion</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../ex_usage/">Example Usage</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../comp_stamps/">Component Stamps</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Syntax Guide</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#syntax">Syntax</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#basic-components">Basic Components</a></li>
+        
+            <li><a class="toctree-l3" href="#sources">Sources</a></li>
+        
+            <li><a class="toctree-l3" href="#control-commands">Control Commands</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../bugs/">Development Schedule and Bugs</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">JoSIM v2.3 Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Syntax Guide</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/JoeyDelp/JoSIM/edit/master/docs/syntax.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="syntax">Syntax</h1>
+<p>In this section we will attempt to provide the user with a comprehensive guide of the available syntax within JoSIM</p>
+<p>JoSIM is <strong><em>CaSe InSeNsItIvE</em></strong> as each line is cast to uppercase upon read-in.</p>
+<p>Each line follows similar syntax which uses the first non-blank space character as identifier. Each identifier tells JoSIM how to handle that specific line. </p>
+<p>Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of <strong>0</strong> and <strong>GND</strong> which indicate a grounded node. Additionally, the use of underscores (<strong>_</strong>) or vertical bars (<strong>|</strong>) in label or node names are prohibited as they are reserved characters within JoSIM.</p>
+<p>Lines that start with a period (<strong>.</strong>) indicate that the line relates in some way to simulation control. In this case whatever follows the period identifies the control, e.g. .tran, .print, .end.</p>
+<p>Comments are lines that start with an asterisk (<strong>*</strong>) or a pound sign (<strong>#</strong>). Comments are meant to be in a line of their own and will not work if placed at the end of a line.</p>
+<p>Lines that end with a plus sign (<strong>+</strong>) indicate that the line that follows is a continuation of this line. Internally the two lines will be combined.</p>
+<p>In most cases the <strong>VALUE</strong> of a component can be replaced by a variable name or an expression. Variables can be defined using the <strong>.PARAM</strong> control and expressions can be evaluated by encapsulating the expression in braces (<strong>{}</strong>). These will be discussed in detail further.</p>
+<p>Values in JoSIM can be modified with engineering notation or through suffixes. A list of the available suffixes is found below:</p>
+<table>
+  <th>Suffix</th><th>Meaning</th><th>Engineering Notation Equivalent</th>
+  <tr><td>F</td><td>Femto</td><td>1E-15</td></tr>
+  <tr><td>P</td><td>Pico</td><td>1E-12</td></tr>
+  <tr><td>N</td><td>Nano</td><td>1E-9</td></tr>
+  <tr><td>U</td><td>Micro</td><td>1E-6</td></tr>
+  <tr><td>M</td><td>Milli</td><td>1E-3</td></tr>
+  <tr><td>K</td><td>Kilo</td><td>1E3</td></tr>
+  <tr><td>MEG</td><td rowspan="2">Mega</td><td rowspan="2">1E6</td></tr>
+  <tr><td>X</td></tr>
+  <tr><td>G</td><td>Giga</td><td>1E9</td></tr>
+  <tr><td>T</td><td>Terra</td><td>1E12</td></tr>
+</table>
+
+<p>We will now run through all the available physical components and their limitations. Any parameter surrounded by square brackets are optional and nested square brackets mean that the encapsulated parameter relies on the existance of the previous.</p>
+<h2 id="basic-components">Basic Components</h2>
+<h3 id="resistor">Resistor</h3>
+<p><strong>R</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value of a resistor is in Ohms.</p>
+<h3 id="inductor">Inductor</h3>
+<p><strong>L</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value of an inductor is in Henry.</p>
+<h3 id="capacitor">Capacitor</h3>
+<p><strong>C</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value of a capacitor is in Farad.</p>
+<h3 id="josephson-junction-jj">Josephson Junction (JJ)</h3>
+<p><strong>B</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&lt;PhaseNode></em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>MODEL</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&lt;<strong>AREA</strong>>]</p>
+<p>A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.</p>
+<p>The Josephson junction requires specification of a model name which can be defined anyware in the program using the control <strong>.MODEL</strong>.</p>
+<p>This model control has the following syntax</p>
+<p><strong>.MODEL</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>ModelName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>ModelType</em>([<strong>MODEL PARAMETERS</strong>])</p>
+<p>The only junction model currently supported by JoSIM is the RCSJ model and thus the only available ModelType is <strong>jj</strong> with the following tunable parameters:</p>
+<table>
+  <th>Parameter</th><th>Range</th><th>Default</th><th>Description</th>
+  <tr><td>RTYPE</td><td>0, 1</td><td>1</td><td>Linearisation model used </td></tr>
+  <tr><td>VG or VGAP</td><td>-\(\infty\), \(\infty\)</td><td>2.8E-3</td><td>Junction gap voltage</td></tr>
+  <tr><td>IC or ICRIT</td><td>-\(\infty\), \(\infty\)</td><td>1E-3</td><td>Junction critical current</td></tr>
+  <tr><td>RN</td><td>0, \(\infty\)</td><td>5</td><td>Junction normal resistance</td></tr>
+  <tr><td>R0</td><td>0, \(\infty\)</td><td>30</td><td>Junction subgap resistance</td></tr>
+  <tr><td>C or CAP</td><td>0, \(\infty\)</td><td>2.5E-12</td><td>Junction capacitance</td></tr>
+  <tr><td>T</td><td>0, \(\infty\)</td><td>4.2</td><td>Boiling point of liquid coolant</td></tr>
+  <tr><td>TC</td><td>0, \(\infty\)</td><td>9.1</td><td>Critical temperature of superconducting material</td></tr>
+  <tr><td>DELV</td><td>0, \(\infty\)</td><td>0.1E-3</td><td>Transitional voltage from subgap to normal</td></tr>
+  <tr><td>D</td><td>0.0, 1</td><td>0.0</td><td>Point contact transparency affecting current phase relationship</td></tr>
+  <tr><td>ICFCT or ICFACT</td><td>0, 1</td><td>\(\pi\)/4</td><td>Ratio of critical current to quasiparticle step height</td></tr>
+  <tr><td>PHI</td><td>0, n\(\pi\)</td><td>0</td><td>Starting phase for junction</td></tr>
+</table>
+
+<p>The <em>.model</em> line is unique to the subcircuit it falls under and can thus allow different models with the same name under seperate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.</p>
+<h3 id="transmission-line">Transmission Line</h3>
+<p><strong>T</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode2</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode2</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>TD=VALUE</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Z0=VALUE</strong></p>
+<p><strong>TD</strong> is the time delay in pico seconds.</p>
+<p><strong>Z0</strong> is the impedance in Ohms.</p>
+<h3 id="mutual-inductance">Mutual Inductance</h3>
+<p><strong>K</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inductor1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inductor2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value is the coupling factor <em>k</em>.</p>
+<h2 id="sources">Sources</h2>
+<h3 id="voltage-source">Voltage Source</h3>
+<p><strong>V</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="current-source">Current Source</h3>
+<p><strong>I</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="phase-source">Phase Source</h3>
+<p><strong>P</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="source-types">Source Types</h3>
+<h4 id="piece-wise-linear-pwl">Piece Wise Linear (PWL)</h4>
+<p><strong>pwl(0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Time1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Amplitude1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>...</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>TimeN</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>AmplitudeN</em> <strong>)</strong></p>
+<p>This source linearly interpolates amplitude values for every time point in the simulation between the specified amplitudes.</p>
+<p>The initial two values are required to be zero at the start of the simulation.</p>
+<h4 id="pulse">Pulse</h4>
+<p><strong>pulse(</strong><script type="math/tex">A_1</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">A_2</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_D</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_R</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_F</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>PW</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>PER</em>]]]]] <strong>)</strong></p>
+<p>This source generates a pulse between two amplitudes (<script type="math/tex">A_1</script> &amp; <script type="math/tex">A_2</script>), starts after <script type="math/tex">T_D</script> and has a rise and fall time (<script type="math/tex">T_R</script> &amp; <script type="math/tex">T_F</script>), which default to the transient simulation step size.</p>
+<p><em>PW</em> and <em>PER</em> refer to the pulse width and the period respectivrespectively. These values default to the transient simulation stop time when not specified.</p>
+<p>This source allows the continuous generation of a pulse at a set frequency.</p>
+<h4 id="sinusoidal">Sinusoidal</h4>
+<p><strong>sin(</strong><script type="math/tex">A_O</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">A</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>FREQ</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_D</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>THETA</em>]]] <strong>)</strong></p>
+<p>A source that generates a sinusoidal signal with <script type="math/tex">A_O</script> offset and <em>A</em> amplitude at a frequency of <em>FREQ</em> which defaults to 1/(Transient simulation stop time).</p>
+<p>
+<script type="math/tex">T_D</script> sets the stop time and <em>THETA</em> modulates the signal amplitude.</p>
+<p>The function generates a data point for each step in the transient simulation based on the following equation:</p>
+<p>
+<script type="math/tex">f(t) = A_O + A\sin (2\pi FREQ(t-T_D))e^{-THETA(t-T_D)}</script>
+</p>
+<h4 id="custom-waveform">Custom Waveform</h4>
+<p><strong>cus(</strong> <em>wavefile</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_S</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SF</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IM</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_D</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PER]</em> <strong>)</strong></p>
+<p>This source allows the generates a function based on the points inside the plain text wave file. This file should contain a single line of space seperated numbers. E.g 0 2 3 6 2 1 0</p>
+<p>Each number in this line represents an amplitude seperated by time step <script type="math/tex">T_S</script> and scaled using scale factor <em>SF</em>. The values between the points are interpolated using either no interpolation (0), linear (1), cubic (2) or spline (3). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.</p>
+<h2 id="control-commands">Control Commands</h2>
+<p>The simulation engine requires control commands to know what to do with the components it has just been provided with.</p>
+<p>The most important of these control commands is the transient simulation command as no simulation can be performed without it.</p>
+<h3 id="simulation">Simulation</h3>
+<p><strong>.tran</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{step}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{stop}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_{start}</script>]</p>
+<p>This generates a simulation that runs from <script type="math/tex">T_{start}</script> (0 unless specified) until <script type="math/tex">T_{stop}</script> and generates a simulation point at every <script type="math/tex">T_{step}</script> between those two points. The difference between start and stop divided by the step size floored to the closest integer value indicates how many simulation steps there will be.</p>
+<h3 id="output">Output</h3>
+<p>A simulation is meaningless unless the results are stored or viewed in some way. In order to know which of these results are relevant and need to be stored the simulator needs output control commands.</p>
+<p>These output commands can be of either </p>
+<p><strong>.print</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>.plot</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>.save</strong></p>
+<p>Any of these commands can be followed by either of the following commands</p>
+<p><em>PrintType</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Device</em> or <em>Node</em></p>
+<p><em>PType(Device or Node)</em><script type="math/tex">_0</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>...</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PType(Device or Node)</em><script type="math/tex">_n</script>
+</p>
+<p>Where <em>PrintType</em> can be either device voltage (<em>DEVV</em>), device current (<em>DEVI</em>), device phase (<em>PHASE</em>), node voltage (<em>NODEV</em>) or node phase (<em>NODEP</em>).</p>
+<p>When specifying a device type store only a single device can be specified, but when a node type store is specified 2 nodes can be specified to store the difference between them.</p>
+<p><em>PType</em> is shorthand for the above and can have multiple per line requests. <em>PType</em> can be either of <em>V</em>, <em>I</em> (or <em>C</em>) or <em>P</em> followed by the device or node in brackets. If more than one device or node is specified by comma seperation (maximum 2) the difference between the two devices or nodes is stored.</p>
+<p>An additional save type exists that has the following syntax</p>
+<p>@<em>Device</em>[<em>PType</em>]</p>
+<p>This stores the <em>PType</em> of the device specified.</p>
+<h3 id="subcircuits">Subcircuits</h3>
+<p>Subcircuits allow subdivision and reuse of smaller circuits within a larger design. When wrapped in a subcircuit control devices are allowed to have the same label names as specified elsewhere in the netlist as the subcircuit completely isolates them.</p>
+<p>Subcircuits have the following wrapping control syntax</p>
+<p><strong>.subckt</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SubcktName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IO Nodes</em></p>
+<p>...</p>
+<p><strong>.ends</strong></p>
+<p>The <em>SubcktName</em> specifies the name of the subcircuit and <em>IO Nodes</em> specify the which nodes within the subcircuit connects to outside.</p>
+<p>A subcircuit can be used in the main netlist or another subcircuit (nesting) using the following syntax</p>
+<p><strong>X</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SubcktName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IO Nodes</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(JSIM mode)</p>
+<p><strong>X</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IO Nodes</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SubcktName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(WRspice (normal SPICE) mode)</p>
+<p>Additional features of the subcircuit include isolation of parameters (discussed next) and the ability to plot/print the devices or nodes within a subcircuit by specifying the <em>XLabel</em> followed by either a <em>_</em> or a <em>|</em> and then the device or node.</p>
+<p>Subcircuits as mentioned before can also be nested almost indefinitely as they are expanded upon simulation.</p>
+<h3 id="parameters">Parameters</h3>
+<p>The final control command that is of importance in JoSIM is the parameters command with the following syntax</p>
+<p><strong>.param</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>VarName</em>=<em>Expression</em></p>
+<p><em>VarName</em> is the variable name that can be used anywhere else in the circuit and <em>Expression</em> is a mathematical expression that is evaluated using an implementation of Dijkstra's shunting yard algorithm, whereby the expression is converted into reverse polish notation (RPN) and evaluated.</p>
+<p>Additionally, expressions can also contain other variables and parameters will be continuosly evaluated untill all variables are reduced to values. If variables are not defined the program will halt and produce an error.</p>
+<h3 id="control-block">Control Block</h3>
+<p>Any of the above controls can be wrapped inside a control block with the following syntax</p>
+<p><strong>.control</strong></p>
+<p>...</p>
+<p><strong>.endc</strong></p>
+<p>Wherein all controls can be specified by omitting the usual prepending period to the command.</p>
+<div class="references"></div>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../bugs/" class="btn btn-neutral float-right" title="Development Schedule and Bugs">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../comp_stamps/" class="btn btn-neutral" title="Component Stamps"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/JoeyDelp/JoSIM/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../comp_stamps/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../bugs/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

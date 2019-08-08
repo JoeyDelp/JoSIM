@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  <meta name="author" content="Johannes Delport">
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>Home - JoSIM v2.3 Documentation</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/bash.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/c++.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> JoSIM v2.3 Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Home</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#josim-superconducting-circuit-simulator">JoSIM - Superconducting Circuit Simulator</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#project-status">Project Status</a></li>
+        
+            <li><a class="toctree-l3" href="#introduction">Introduction</a></li>
+        
+            <li><a class="toctree-l3" href="#project-layout">Project layout</a></li>
+        
+            <li><a class="toctree-l3" href="#initial-setup">Initial setup</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="tech_disc/">Technical Discussion</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="ex_usage/">Example Usage</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="comp_stamps/">Component Stamps</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="syntax/">Syntax Guide</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="bugs/">Development Schedule and Bugs</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">JoSIM v2.3 Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/JoeyDelp/JoSIM/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="josim-superconducting-circuit-simulator">JoSIM - Superconducting Circuit Simulator</h1>
+<p>Developers Manual v2.3</p>
+<h2 id="project-status">Project Status</h2>
+<h2 id="introduction">Introduction</h2>
+<p>JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.</p>
+<p>JoSIM is meant to function as a replacement to the aging simulators such as JSIM[<a class="citation" href="#ref-jsim" id="cite-jsim">jsim</a>] and WRspice[<a class="citation" href="#ref-wrspice" id="cite-wrspice">wrspice</a>]. JoSIM is written in modern C++ and is fully customizable and extendable to offer support for improved superconducting elements as well better approximations to the Josephson effect in superconducting materials.</p>
+<p>A <em>.cir</em> file containing a SPICE syntax circuit netlist is provided as input. The circuit netlist, given appropriate input excitations can then be simulated through transient analysis. Results of this simulation can be dumped to standard output or saved in various formats such as a comma separated value (<em>.csv</em>) file.</p>
+<p>Fig. 1 shows an overview of how JoSIM operates internally. This is much like any other SPICE deck simulator with the exception that it incorporates native handling of the Josephson junction. We will discuss each of these blocks in further detail in the <a href="tech_disc/">Technical Discussion</a> section.</p>
+<figure>
+    <img src="img/josim_macro.pdf" alt="JoSIM macro overview" class="center">
+    <figcaption align="center"> Fig. 1 - JoSIM Macro Overview.</figcaption>
+</figure>
+
+<h2 id="project-layout">Project layout</h2>
+<p>The JoSIM repository has the following layout. A quick description shows the purpose of the various files and folders.</p>
+<pre><code>cmake               # CMake scripts.
+docs/
+    index.md        # The documentation homepage.
+    ...             # Other markdown pages, images and other files.
+include/
+    JoSIM           # JoSIM header files.
+    suitesparse     # SuiteSparse header files.
+lib                 # Libraries for different platforms.
+site                # Where this documentation spawns from.
+src/
+    josim_vs        # Visual Studio solution for JoSIM.
+    ...             # JoSIM source files.
+test                # Folder containing various examples.
+README.md           # Basic readme to get the user going.
+LICENSE             # License that governs use of JoSIM.
+CMakeLists.txt      # Configuration to compile code.
+...                 # Other configuration files and scripts.
+</code></pre>
+<h2 id="initial-setup">Initial setup</h2>
+<p>Release versions of JoSIM can be found on the <a href="https://www.github.com/JoeyDelp/JoSIM/releases">release page</a> of the open source github repository repository. At the time of writing this version is 2.3.</p>
+<p>The source can also be cloned and compiled for either macOS, Linux or Windows. Within this repository there will be a <strong>CMakeLists.txt</strong> which is a recipe used to compile JoSIM using CMake.</p>
+<p>To compile the source a working C++ compiler with support for C++14 is required. Additionally SuiteSparse linear algebra libraries are required but are provided in the repository. Git version control software is recommended, but is not required to compile JoSIM. A single executable binary is generated using the CMake recipe and can be placed anywhere on the system as well as freely redistributed.</p>
+<h3 id="license">License</h3>
+<p>JoSIM is governed by the MIT license, which is a very permissive license that allows anyone to redistribute the source as well as commercialize it without repercussions. The MIT license allows use of this software within proprietary software as long as all copies of the licensed software includes a copy of the MIT license as well as the copyright notice.</p>
+<h3 id="building-from-source">Building from source</h3>
+<h4 id="linux">Linux</h4>
+<p>These instructions were executed on a vanilla install of CentOS 7 to reduce oversight in the compilation instructions created by previous package installs. For other distributions please use the package manager relevant to the distribution of choice.</p>
+<p>A working internet connection is required, as well as the ability to install packages.</p>
+<p>JoSIM source can be directly downloaded from the repository as a compressed <em>.tar.gz</em> file or by cloning the repository. In either case, navigate to a directory where compilation will take place and extract the tarball or execute:</p>
+<pre><code>$ sudo yum install git
+$ git clone https://github.com/JoeyDelp/JoSIM.git
+</code></pre>
+<p>CMake 3 will be required to compile the source and would require the activation of the <em>epel-release</em> repository.</p>
+<pre><code>$ sudo yum install epel-release
+$ sudo yum install cmake3
+</code></pre>
+<p>Finally, JoSIM requires only a single external library called SuiteSparse [<a class="citation" href="#ref-suitesparse" id="cite-suitesparse">suitesparse</a>]. To install it, execute the following command:</p>
+<pre><code>$ sudo yum install suitesparse suitesparse-devel
+</code></pre>
+<p>Navigate to the newly cloned/extracted JoSIM directory then run the following commands:</p>
+<pre><code>$ mkdir build
+$ cd build
+$ cmake3 ..
+$ make
+</code></pre>
+<p>This will generate a JoSIM executable in the <strong>build</strong> directory.</p>
+<h4 id="apple-macos">Apple macOS</h4>
+<p>Apple macOS is very similar to most Unix systems and therefore follows mostly the same procedure. The user would clone the repository and install CMake as well as the necessary library as indicated in previous sections. These requirements can be installed using either Homebrew, Macports or compiled from source using the standard macOS compilers (installed through Xcode).</p>
+<h4 id="windows">Windows</h4>
+<p>A Microsoft Visual Studio solution is provided and can be found in the <strong>src</strong> folder. This is by far the easiest way to compile the software under a Microsoft Windows environment. Simply open the solution and click build (F6) to build the Release target for the software.</p>
+<p>It is also posisble to compile JoSIM on Windows using CMake. To do this, <a href="https://cmake.org/download/">CMake for Windows</a> would need to be installed along with the MSVC compiler, which is included in the <a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&amp;rel=16">Build Tools for Visual Studio 2019</a>.</p>
+<p>Once installed, the graphical interface for CMake can be used to choose the source directory, build directory and compiler to use (MSVC in this case). This will build the Windows version of JoSIM using the CMakeLists.txt configuration script.</p>
+<style>
+.center {
+    display: block;
+    margin: 0 auto;
+}
+</style>
+
+<div class="references">
+<table>
+<tbody>
+<tr id="ref-jsim">
+<td>jsim</td>
+<td><p>Fang E.S.: <i>A Josephson integrated circuit simulator (JSIM) for superconductive electronics application</i>. (1989)</p></td>
+</tr>
+<tr id="ref-wrspice">
+<td>wrspice</td>
+<td><p>Simulator W.C.: <i>Whiteley Research Incorporated</i>. (2017)</p></td>
+</tr>
+<tr id="ref-suitesparse">
+<td>suitesparse</td>
+<td><p>Davis T.A.: <i>Direct methods for sparse linear systems</i>. (2006)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tech_disc/" class="btn btn-neutral float-right" title="Technical Discussion">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/JoeyDelp/JoSIM/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="tech_disc/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme.js" defer></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" defer></script>
+      <script src="search/main.js" defer></script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2019-08-08 09:24:30
+-->
