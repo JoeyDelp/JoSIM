@@ -1,0 +1,928 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+      
+      
+        <meta name="author" content="Johannes Delport">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.0">
+    
+    
+      
+        <title>Syntax Guide - JoSIM v2.3 Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
+      
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.74668098.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+    
+    
+  </head>
+  
+    <body dir="ltr">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#syntax" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="JoSIM v2.3 Documentation" class="md-header-nav__button md-logo">
+          
+            <i class="md-icon"></i>
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              JoSIM v2.3 Documentation
+            </span>
+            <span class="md-header-nav__topic">
+              
+                Syntax Guide
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/JoeyDelp/JoSIM/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="JoSIM v2.3 Documentation" class="md-nav__button md-logo">
+      
+        <i class="md-icon"></i>
+      
+    </a>
+    JoSIM v2.3 Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/JoeyDelp/JoSIM/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../tech_disc/" title="Technical Discussion" class="md-nav__link">
+      Technical Discussion
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../ex_usage/" title="Example Usage" class="md-nav__link">
+      Example Usage
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../comp_stamps/" title="Component Stamps" class="md-nav__link">
+      Component Stamps
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Syntax Guide
+      </label>
+    
+    <a href="./" title="Syntax Guide" class="md-nav__link md-nav__link--active">
+      Syntax Guide
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-components" title="Basic Components" class="md-nav__link">
+    Basic Components
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resistor" title="Resistor" class="md-nav__link">
+    Resistor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inductor" title="Inductor" class="md-nav__link">
+    Inductor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacitor" title="Capacitor" class="md-nav__link">
+    Capacitor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#josephson-junction-jj" title="Josephson Junction (JJ)" class="md-nav__link">
+    Josephson Junction (JJ)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transmission-line" title="Transmission Line" class="md-nav__link">
+    Transmission Line
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-inductance" title="Mutual Inductance" class="md-nav__link">
+    Mutual Inductance
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" title="Sources" class="md-nav__link">
+    Sources
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#voltage-source" title="Voltage Source" class="md-nav__link">
+    Voltage Source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-source" title="Current Source" class="md-nav__link">
+    Current Source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-source" title="Phase Source" class="md-nav__link">
+    Phase Source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-types" title="Source Types" class="md-nav__link">
+    Source Types
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#piece-wise-linear-pwl" title="Piece Wise Linear (PWL)" class="md-nav__link">
+    Piece Wise Linear (PWL)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pulse" title="Pulse" class="md-nav__link">
+    Pulse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sinusoidal" title="Sinusoidal" class="md-nav__link">
+    Sinusoidal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-waveform" title="Custom Waveform" class="md-nav__link">
+    Custom Waveform
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-commands" title="Control Commands" class="md-nav__link">
+    Control Commands
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulation" title="Simulation" class="md-nav__link">
+    Simulation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output" title="Output" class="md-nav__link">
+    Output
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subcircuits" title="Subcircuits" class="md-nav__link">
+    Subcircuits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" title="Parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-block" title="Control Block" class="md-nav__link">
+    Control Block
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../bugs/" title="Development Schedule and Bugs" class="md-nav__link">
+      Development Schedule and Bugs
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-components" title="Basic Components" class="md-nav__link">
+    Basic Components
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resistor" title="Resistor" class="md-nav__link">
+    Resistor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inductor" title="Inductor" class="md-nav__link">
+    Inductor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacitor" title="Capacitor" class="md-nav__link">
+    Capacitor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#josephson-junction-jj" title="Josephson Junction (JJ)" class="md-nav__link">
+    Josephson Junction (JJ)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transmission-line" title="Transmission Line" class="md-nav__link">
+    Transmission Line
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-inductance" title="Mutual Inductance" class="md-nav__link">
+    Mutual Inductance
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" title="Sources" class="md-nav__link">
+    Sources
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#voltage-source" title="Voltage Source" class="md-nav__link">
+    Voltage Source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-source" title="Current Source" class="md-nav__link">
+    Current Source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-source" title="Phase Source" class="md-nav__link">
+    Phase Source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-types" title="Source Types" class="md-nav__link">
+    Source Types
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#piece-wise-linear-pwl" title="Piece Wise Linear (PWL)" class="md-nav__link">
+    Piece Wise Linear (PWL)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pulse" title="Pulse" class="md-nav__link">
+    Pulse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sinusoidal" title="Sinusoidal" class="md-nav__link">
+    Sinusoidal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-waveform" title="Custom Waveform" class="md-nav__link">
+    Custom Waveform
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-commands" title="Control Commands" class="md-nav__link">
+    Control Commands
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulation" title="Simulation" class="md-nav__link">
+    Simulation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output" title="Output" class="md-nav__link">
+    Output
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subcircuits" title="Subcircuits" class="md-nav__link">
+    Subcircuits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" title="Parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control-block" title="Control Block" class="md-nav__link">
+    Control Block
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/JoeyDelp/JoSIM/edit/master/docs/syntax.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="syntax">Syntax</h1>
+<p>In this section we will attempt to provide the user with a comprehensive guide of the available syntax within JoSIM</p>
+<p>JoSIM is <strong><em>CaSe InSeNsItIvE</em></strong> as each line is cast to uppercase upon read-in.</p>
+<p>Each line follows similar syntax which uses the first non-blank space character as identifier. Each identifier tells JoSIM how to handle that specific line. </p>
+<p>Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of <strong>0</strong> and <strong>GND</strong> which indicate a grounded node. Additionally, the use of underscores (<strong>_</strong>) or vertical bars (<strong>|</strong>) in label or node names are prohibited as they are reserved characters within JoSIM.</p>
+<p>Lines that start with a period (<strong>.</strong>) indicate that the line relates in some way to simulation control. In this case whatever follows the period identifies the control, e.g. .tran, .print, .end.</p>
+<p>Comments are lines that start with an asterisk (<strong>*</strong>) or a pound sign (<strong>#</strong>). Comments are meant to be in a line of their own and will not work if placed at the end of a line.</p>
+<p>Lines that end with a plus sign (<strong>+</strong>) indicate that the line that follows is a continuation of this line. Internally the two lines will be combined.</p>
+<p>In most cases the <strong>VALUE</strong> of a component can be replaced by a variable name or an expression. Variables can be defined using the <strong>.PARAM</strong> control and expressions can be evaluated by encapsulating the expression in braces (<strong>{}</strong>). These will be discussed in detail further.</p>
+<p>Values in JoSIM can be modified with engineering notation or through suffixes. A list of the available suffixes is found below:</p>
+<table>
+  <th>Suffix</th><th>Meaning</th><th>Engineering Notation Equivalent</th>
+  <tr><td>F</td><td>Femto</td><td>1E-15</td></tr>
+  <tr><td>P</td><td>Pico</td><td>1E-12</td></tr>
+  <tr><td>N</td><td>Nano</td><td>1E-9</td></tr>
+  <tr><td>U</td><td>Micro</td><td>1E-6</td></tr>
+  <tr><td>M</td><td>Milli</td><td>1E-3</td></tr>
+  <tr><td>K</td><td>Kilo</td><td>1E3</td></tr>
+  <tr><td>MEG</td><td rowspan="2">Mega</td><td rowspan="2">1E6</td></tr>
+  <tr><td>X</td></tr>
+  <tr><td>G</td><td>Giga</td><td>1E9</td></tr>
+  <tr><td>T</td><td>Terra</td><td>1E12</td></tr>
+</table>
+
+<p>We will now run through all the available physical components and their limitations. Any parameter surrounded by square brackets are optional and nested square brackets mean that the encapsulated parameter relies on the existance of the previous.</p>
+<h2 id="basic-components">Basic Components</h2>
+<h3 id="resistor">Resistor</h3>
+<p><strong>R</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value of a resistor is in Ohms.</p>
+<h3 id="inductor">Inductor</h3>
+<p><strong>L</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value of an inductor is in Henry.</p>
+<h3 id="capacitor">Capacitor</h3>
+<p><strong>C</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value of a capacitor is in Farad.</p>
+<h3 id="josephson-junction-jj">Josephson Junction (JJ)</h3>
+<p><strong>B</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&lt;PhaseNode></em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>MODEL</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&lt;<strong>AREA</strong>>]</p>
+<p>A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.</p>
+<p>The Josephson junction requires specification of a model name which can be defined anyware in the program using the control <strong>.MODEL</strong>.</p>
+<p>This model control has the following syntax</p>
+<p><strong>.MODEL</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>ModelName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>ModelType</em>([<strong>MODEL PARAMETERS</strong>])</p>
+<p>The only junction model currently supported by JoSIM is the RCSJ model and thus the only available ModelType is <strong>jj</strong> with the following tunable parameters:</p>
+<table>
+  <th>Parameter</th><th>Range</th><th>Default</th><th>Description</th>
+  <tr><td>RTYPE</td><td>0, 1</td><td>1</td><td>Linearisation model used </td></tr>
+  <tr><td>VG or VGAP</td><td>-\(\infty\), \(\infty\)</td><td>2.8E-3</td><td>Junction gap voltage</td></tr>
+  <tr><td>IC or ICRIT</td><td>-\(\infty\), \(\infty\)</td><td>1E-3</td><td>Junction critical current</td></tr>
+  <tr><td>RN</td><td>0, \(\infty\)</td><td>5</td><td>Junction normal resistance</td></tr>
+  <tr><td>R0</td><td>0, \(\infty\)</td><td>30</td><td>Junction subgap resistance</td></tr>
+  <tr><td>C or CAP</td><td>0, \(\infty\)</td><td>2.5E-12</td><td>Junction capacitance</td></tr>
+  <tr><td>T</td><td>0, \(\infty\)</td><td>4.2</td><td>Boiling point of liquid coolant</td></tr>
+  <tr><td>TC</td><td>0, \(\infty\)</td><td>9.1</td><td>Critical temperature of superconducting material</td></tr>
+  <tr><td>DELV</td><td>0, \(\infty\)</td><td>0.1E-3</td><td>Transitional voltage from subgap to normal</td></tr>
+  <tr><td>D</td><td>0.0, 1</td><td>0.0</td><td>Point contact transparency affecting current phase relationship</td></tr>
+  <tr><td>ICFCT or ICFACT</td><td>0, 1</td><td>\(\pi\)/4</td><td>Ratio of critical current to quasiparticle step height</td></tr>
+  <tr><td>PHI</td><td>0, n\(\pi\)</td><td>0</td><td>Starting phase for junction</td></tr>
+</table>
+
+<p>The <em>.model</em> line is unique to the subcircuit it falls under and can thus allow different models with the same name under seperate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.</p>
+<h3 id="transmission-line">Transmission Line</h3>
+<p><strong>T</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode2</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode2</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>TD=VALUE</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Z0=VALUE</strong></p>
+<p><strong>TD</strong> is the time delay in pico seconds.</p>
+<p><strong>Z0</strong> is the impedance in Ohms.</p>
+<h3 id="mutual-inductance">Mutual Inductance</h3>
+<p><strong>K</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inductor1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inductor2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
+<p>The value is the coupling factor <em>k</em>.</p>
+<h2 id="sources">Sources</h2>
+<h3 id="voltage-source">Voltage Source</h3>
+<p><strong>V</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="current-source">Current Source</h3>
+<p><strong>I</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="phase-source">Phase Source</h3>
+<p><strong>P</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="source-types">Source Types</h3>
+<h4 id="piece-wise-linear-pwl">Piece Wise Linear (PWL)</h4>
+<p><strong>pwl(0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Time1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Amplitude1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>...</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>TimeN</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>AmplitudeN</em> <strong>)</strong></p>
+<p>This source linearly interpolates amplitude values for every time point in the simulation between the specified amplitudes.</p>
+<p>The initial two values are required to be zero at the start of the simulation.</p>
+<h4 id="pulse">Pulse</h4>
+<p><strong>pulse(</strong><script type="math/tex">A_1</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">A_2</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_D</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_R</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_F</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>PW</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>PER</em>]]]]] <strong>)</strong></p>
+<p>This source generates a pulse between two amplitudes (<script type="math/tex">A_1</script> &amp; <script type="math/tex">A_2</script>), starts after <script type="math/tex">T_D</script> and has a rise and fall time (<script type="math/tex">T_R</script> &amp; <script type="math/tex">T_F</script>), which default to the transient simulation step size.</p>
+<p><em>PW</em> and <em>PER</em> refer to the pulse width and the period respectivrespectively. These values default to the transient simulation stop time when not specified.</p>
+<p>This source allows the continuous generation of a pulse at a set frequency.</p>
+<h4 id="sinusoidal">Sinusoidal</h4>
+<p><strong>sin(</strong><script type="math/tex">A_O</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">A</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>FREQ</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_D</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<em>THETA</em>]]] <strong>)</strong></p>
+<p>A source that generates a sinusoidal signal with <script type="math/tex">A_O</script> offset and <em>A</em> amplitude at a frequency of <em>FREQ</em> which defaults to 1/(Transient simulation stop time).</p>
+<p>
+<script type="math/tex">T_D</script> sets the stop time and <em>THETA</em> modulates the signal amplitude.</p>
+<p>The function generates a data point for each step in the transient simulation based on the following equation:</p>
+<p>
+<script type="math/tex">f(t) = A_O + A\sin (2\pi FREQ(t-T_D))e^{-THETA(t-T_D)}</script>
+</p>
+<h4 id="custom-waveform">Custom Waveform</h4>
+<p><strong>cus(</strong> <em>wavefile</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_S</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SF</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IM</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_D</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PER]</em> <strong>)</strong></p>
+<p>This source allows the generates a function based on the points inside the plain text wave file. This file should contain a single line of space seperated numbers. E.g 0 2 3 6 2 1 0</p>
+<p>Each number in this line represents an amplitude seperated by time step <script type="math/tex">T_S</script> and scaled using scale factor <em>SF</em>. The values between the points are interpolated using either no interpolation (0), linear (1), cubic (2) or spline (3). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.</p>
+<h2 id="control-commands">Control Commands</h2>
+<p>The simulation engine requires control commands to know what to do with the components it has just been provided with.</p>
+<p>The most important of these control commands is the transient simulation command as no simulation can be performed without it.</p>
+<h3 id="simulation">Simulation</h3>
+<p><strong>.tran</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{step}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{stop}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_{start}</script>]</p>
+<p>This generates a simulation that runs from <script type="math/tex">T_{start}</script> (0 unless specified) until <script type="math/tex">T_{stop}</script> and generates a simulation point at every <script type="math/tex">T_{step}</script> between those two points. The difference between start and stop divided by the step size floored to the closest integer value indicates how many simulation steps there will be.</p>
+<h3 id="output">Output</h3>
+<p>A simulation is meaningless unless the results are stored or viewed in some way. In order to know which of these results are relevant and need to be stored the simulator needs output control commands.</p>
+<p>These output commands can be of either </p>
+<p><strong>.print</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>.plot</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>.save</strong></p>
+<p>Any of these commands can be followed by either of the following commands</p>
+<p><em>PrintType</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Device</em> or <em>Node</em></p>
+<p><em>PType(Device or Node)</em><script type="math/tex">_0</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>...</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PType(Device or Node)</em><script type="math/tex">_n</script>
+</p>
+<p>Where <em>PrintType</em> can be either device voltage (<em>DEVV</em>), device current (<em>DEVI</em>), device phase (<em>PHASE</em>), node voltage (<em>NODEV</em>) or node phase (<em>NODEP</em>).</p>
+<p>When specifying a device type store only a single device can be specified, but when a node type store is specified 2 nodes can be specified to store the difference between them.</p>
+<p><em>PType</em> is shorthand for the above and can have multiple per line requests. <em>PType</em> can be either of <em>V</em>, <em>I</em> (or <em>C</em>) or <em>P</em> followed by the device or node in brackets. If more than one device or node is specified by comma seperation (maximum 2) the difference between the two devices or nodes is stored.</p>
+<p>An additional save type exists that has the following syntax</p>
+<p>@<em>Device</em>[<em>PType</em>]</p>
+<p>This stores the <em>PType</em> of the device specified.</p>
+<h3 id="subcircuits">Subcircuits</h3>
+<p>Subcircuits allow subdivision and reuse of smaller circuits within a larger design. When wrapped in a subcircuit control devices are allowed to have the same label names as specified elsewhere in the netlist as the subcircuit completely isolates them.</p>
+<p>Subcircuits have the following wrapping control syntax</p>
+<p><strong>.subckt</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SubcktName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IO Nodes</em></p>
+<p>...</p>
+<p><strong>.ends</strong></p>
+<p>The <em>SubcktName</em> specifies the name of the subcircuit and <em>IO Nodes</em> specify the which nodes within the subcircuit connects to outside.</p>
+<p>A subcircuit can be used in the main netlist or another subcircuit (nesting) using the following syntax</p>
+<p><strong>X</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SubcktName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IO Nodes</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(JSIM mode)</p>
+<p><strong>X</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>IO Nodes</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>SubcktName</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(WRspice (normal SPICE) mode)</p>
+<p>Additional features of the subcircuit include isolation of parameters (discussed next) and the ability to plot/print the devices or nodes within a subcircuit by specifying the <em>XLabel</em> followed by either a <em>_</em> or a <em>|</em> and then the device or node.</p>
+<p>Subcircuits as mentioned before can also be nested almost indefinitely as they are expanded upon simulation.</p>
+<h3 id="parameters">Parameters</h3>
+<p>The final control command that is of importance in JoSIM is the parameters command with the following syntax</p>
+<p><strong>.param</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>VarName</em>=<em>Expression</em></p>
+<p><em>VarName</em> is the variable name that can be used anywhere else in the circuit and <em>Expression</em> is a mathematical expression that is evaluated using an implementation of Dijkstra's shunting yard algorithm, whereby the expression is converted into reverse polish notation (RPN) and evaluated.</p>
+<p>Additionally, expressions can also contain other variables and parameters will be continuosly evaluated untill all variables are reduced to values. If variables are not defined the program will halt and produce an error.</p>
+<h3 id="control-block">Control Block</h3>
+<p>Any of the above controls can be wrapped inside a control block with the following syntax</p>
+<p><strong>.control</strong></p>
+<p>...</p>
+<p><strong>.endc</strong></p>
+<p>Wherein all controls can be specified by omitting the usual prepending period to the command.</p>
+<div class="references"></div>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../comp_stamps/" title="Component Stamps" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Component Stamps
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../bugs/" title="Development Schedule and Bugs" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Development Schedule and Bugs
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.245445c6.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+    
+  </body>
+</html>

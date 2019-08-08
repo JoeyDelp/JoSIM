@@ -9,7 +9,7 @@ nav:
   - Syntax Guide: 'syntax.md'
   - Development Schedule and Bugs: 'bugs.md'
 theme: 
-  name: readthedocs
+  name: material
   highlightjs: true
   hljs_languages:
     - bash
