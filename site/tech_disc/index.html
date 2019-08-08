@@ -1,0 +1,772 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+      
+      
+        <meta name="author" content="Johannes Delport">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.0">
+    
+    
+      
+        <title>Technical Discussion - JoSIM v2.3 Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
+      
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.74668098.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+    
+    
+  </head>
+  
+    <body dir="ltr">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#technical-discussion" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="JoSIM v2.3 Documentation" class="md-header-nav__button md-logo">
+          
+            <i class="md-icon"></i>
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              JoSIM v2.3 Documentation
+            </span>
+            <span class="md-header-nav__topic">
+              
+                Technical Discussion
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/JoeyDelp/JoSIM/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="JoSIM v2.3 Documentation" class="md-nav__button md-logo">
+      
+        <i class="md-icon"></i>
+      
+    </a>
+    JoSIM v2.3 Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/JoeyDelp/JoSIM/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Technical Discussion
+      </label>
+    
+    <a href="./" title="Technical Discussion" class="md-nav__link md-nav__link--active">
+      Technical Discussion
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modified-nodal-analysis" title="Modified nodal analysis" class="md-nav__link">
+    Modified nodal analysis
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trapezoidal-integration" title="Trapezoidal integration" class="md-nav__link">
+    Trapezoidal integration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modified-nodal-phase-analysis" title="Modified nodal phase analysis" class="md-nav__link">
+    Modified nodal phase analysis
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lu-decomposition" title="LU decomposition" class="md-nav__link">
+    LU decomposition
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-structures-speed-considerations" title="Data structures &amp; speed considerations" class="md-nav__link">
+    Data structures &amp; speed considerations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-files" title="Input Files" class="md-nav__link">
+    Input Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-files" title="Output Files" class="md-nav__link">
+    Output Files
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plotting-interfaces" title="Plotting interfaces" class="md-nav__link">
+    Plotting interfaces
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../ex_usage/" title="Example Usage" class="md-nav__link">
+      Example Usage
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../comp_stamps/" title="Component Stamps" class="md-nav__link">
+      Component Stamps
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../syntax/" title="Syntax Guide" class="md-nav__link">
+      Syntax Guide
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../bugs/" title="Development Schedule and Bugs" class="md-nav__link">
+      Development Schedule and Bugs
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modified-nodal-analysis" title="Modified nodal analysis" class="md-nav__link">
+    Modified nodal analysis
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trapezoidal-integration" title="Trapezoidal integration" class="md-nav__link">
+    Trapezoidal integration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modified-nodal-phase-analysis" title="Modified nodal phase analysis" class="md-nav__link">
+    Modified nodal phase analysis
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lu-decomposition" title="LU decomposition" class="md-nav__link">
+    LU decomposition
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-structures-speed-considerations" title="Data structures &amp; speed considerations" class="md-nav__link">
+    Data structures &amp; speed considerations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input-files" title="Input Files" class="md-nav__link">
+    Input Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output-files" title="Output Files" class="md-nav__link">
+    Output Files
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plotting-interfaces" title="Plotting interfaces" class="md-nav__link">
+    Plotting interfaces
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/JoeyDelp/JoSIM/edit/master/docs/tech_disc.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="technical-discussion">Technical Discussion</h1>
+<h2 id="modified-nodal-analysis">Modified nodal analysis</h2>
+<p>There are many ways to setup a set of linear equations to solve the voltage or currents in a circuit. One of the more well known ways is to use nodal analysis which creates an equation for each node defined in the circuit netlist. This method is the basis on which the original Berkeley SPICE[<a class="citation" href="#ref-spice" id="cite-spice">spice</a>] was built. This method, however, only calculates the voltages of every node which makes it difficult to handle components that are voltage dependent such as inductors and junctions.</p>
+<p>This drawback lead to the creation of the modified nodal analysis which is an extension to the prior with the ability to calculating branch currents in addition to nodal voltages[<a class="citation" href="#ref-mna" id="cite-mna">mna</a>]. We therefore make use of the MNA method to build the set of linear equations within JoSIM due to the large use of inductors as well as Josephson junctions in superconductivity.</p>
+<p>A useful feature of the MNA method allows every component to be represented as a sub-matrix called a stamp. The summation of all the stamps provide us with the <strong>A</strong>, <strong>x</strong> as well as <strong>b</strong> matrices that are required to solve the linear equations. These stamps will be discussed further in the following subsection.</p>
+<h2 id="trapezoidal-integration">Trapezoidal integration</h2>
+<figure>
+  <fig>
+  </fig>
+  <figcaption 
+</figure>
+
+<p>We therefore rather focus on higher order methods such as the trapezoidal rule for solving the linear equations as the accuracy of this method increases by reducing the time step size. </p>
+<p>We can express the trapezoidal method as:</p>
+<p>
+<script type="math/tex; mode=display">\left( \frac{dx}{dt}\right) _{n}=\frac{2}{h_{n}}\left( x_{n} - x_{n-1} \right) - \left(\frac{dx}{dt} \right) _{n-1} </script>
+</p>
+<p>In this case <script type="math/tex">n</script> is the current time step and <script type="math/tex">n-1​</script> refers to the previous time step. By using this method to solve differential equations we are able to create generic stamps for each component that JoSIM can handle.</p>
+<p>To demonstrate this method and how a stamp is formed we will show an example of an inductor.
+<figure>
+    <img src="../img/inductor.pdf" alt="Inductor Symbol" class="center" width="25%">
+    <figcaption align="center">Fig. 1 - A basic inductor with current flowing through it</figcaption>
+</figure></p>
+<p>The inductor in Fig. 1 has a general equation to determine the voltage across it as:</p>
+<p>
+<script type="math/tex; mode=display"> v_{L1}(t) = L1\frac{di}{dt} </script>
+</p>
+<p>When we apply the trapezoidal rule we find that this equation can be rewritten as:</p>
+<p>
+<script type="math/tex; mode=display">\begin{align}
+    v_{n} &= L1 \left[ \frac{2}{h_n} \left( I_{n} - I_{n-1} \right) - \left( \frac{di}{dt}\right)_{n-1} \right] \\
+    & = \frac{2L1}{h_n} \left( I_{n} - I_{n-1} \right) - L1 \left( \frac{di}{dt}\right)_{n-1} \\
+    & = \frac{2L1}{h_n} \left( I_{n} - I_{n-1} \right) - v_{n-1} \\
+    \therefore I_{n} & = \frac{h_{n}}{2L1} \left( V_{n} + V_{n-1}\right) + I_{n-1} \\
+    \therefore \frac{h_{n}}{2L1}V_{n} - I_{n} & = -\frac{h_{n}}{2L1}V_{n-1} + I_{n-1}
+\end{align}</script>
+</p>
+<p>Where the above is the current step voltage and current as a function of the previous step values. We further expand this equation by stating that the voltage is the potential across the two nodes: <script type="math/tex">v = v_{1} - v_{2} </script>.</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+    \frac{h_{n}}{2L1}(V_{1})_{n} - \frac{h_{n}}{2L1}(V_{2})_{n} - I_{n} = -\left( \frac{h_{n}}{2L1}V(V_{1})_{n-1} - \frac{h_{n}}{2L1}(V_{2})_{n-1}\right)  - I_{n-1}
+\end{equation}</script>
+</p>
+<p>Which we can then write in matrix form as:</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+    \begin{bmatrix}
+        0 & 0 & 1 \\
+        0 & 0 & -1 \\
+        1 & -1 & \frac{-2L1}{h_n}
+    \end{bmatrix}
+    \begin{bmatrix}
+        V_{1} \\
+        V_{2} \\
+        I_{L1}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        0 \\
+        0 \\
+        -\frac{2L1}{h_{n}}(I_{L1})_{n-1} - \left( (V_{1})_{n-1} - (V_{2})_{n-1}\right)
+    \end{bmatrix}
+\end{equation}</script>
+</p>
+<p>The matrix above is a generic stamp that we can place into the A matrix which describes the inductor L1.</p>
+<p>We can do the same for a resistor, capacitor, current source, voltage source, Josephson junction and a transmission line. The stamps for each of these components can be found in the <a href="../comp_stamps/">Component Stamps</a> section.</p>
+<h2 id="modified-nodal-phase-analysis">Modified nodal phase analysis</h2>
+<p>First introduced in version 2.0 of JoSIM, the ability to perform a simulation that calculates the nodal phase instead of voltage is presented. This new analysis method is named the modified nodal phase analysis (MNPA) and utilizes the voltage-phase [<a class="citation" href="#ref-orlando" id="cite-orlando">orlando</a>] relationship seen below.</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+    v = \frac{\Phi_{0}}{2\pi}\frac{d\phi}{dt}
+\end{equation}</script>
+</p>
+<p>If this relationship is applied to all the component models found in JoSIM we obtain the MNPA stamps, which allow us to solve the phase directly. As example we demonstrate this on the inductor equation shown in the previous section.</p>
+<p>
+<script type="math/tex; mode=display">\begin{align}
+    \frac{\Phi_{0}}{2\pi}\frac{d\phi}{dt} &= L1\frac{di}{dt} \\ 
+    \frac{\Phi_{0}}{2\pi}\phi_{n} &= L1 I_{n} \\
+    \frac{\Phi_{0}}{2\pi L1}\phi_{n}^{+} -  \frac{\Phi_{0}}{2\pi L1}\phi_{n}^{-}&= I_{n}
+\end{align}</script>
+</p>
+<p>The above is functionally equivalent to the resistor in voltage analysis. The computation required to solve the phase of an inductor is therefore far less complex than that of solving the voltage. With superconducting circuits being largely inductive, the use of phase reduces the overall complexity of the solution which in turn provides faster simulations and reduced memory usage.</p>
+<p>JoSIM has been adapted to allow phase analysis on any design that works with voltage analysis without requiring alterations to the netlist file. Since the voltage is simply the scaled time derivative of the phase the voltage can be calculated as a post process if the user requests it.</p>
+<p>Phase mode simulation can be enabled using the command line switch <strong>-a</strong> followed by a <strong>1</strong>. If not provided the default for this command is <strong>0</strong>, which indicates a voltage mode simulation will be performed.</p>
+<p>All the MNPA stamps are included in the <a href="../comp_stamps/">Component Stamps</a> section.</p>
+<h2 id="lu-decomposition">LU decomposition</h2>
+<p>When the A matrix has been set up as detailed in the previous section all that is left to do is to solve the <script type="math/tex">Ax=b​</script> problem using some form of iterative method. We choose KLU from the SuiteSparse[<a class="citation" href="#ref-suitesparse" id="cite-suitesparse">suitesparse</a>] library to accomplish this task.</p>
+<p>This requires the A matrix to be in compressed row storage (CRS)[<a class="citation" href="#ref-crs" id="cite-crs">crs</a>] format which is a data structure of 3 vectors. The first of these vectors contains all the non-zero elements in the A matrix. The second contains an initial zero followed by the total number of non-zero elements at the end of each row such that the final entry in the vector is the total number of non-zero elements. The third vector contains the column index of each non-zero element. As an example, the following sparse <script type="math/tex">5x5</script> matrix:</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+    \begin{bmatrix}
+        1 & 0 & 0 & 4 & 0\\
+        0 & 3 & 2 & 0 & 0 \\
+        0 & 0 & 1 & 0  & 0\\
+        0& 4 & 0 & 5 & 0 \\
+        0 & 0 & 0 & 0 & 1
+    \end{bmatrix}
+\end{equation}</script>
+</p>
+<p>would yield a CSR format data structure of </p>
+<p>
+<script type="math/tex; mode=display">\begin{align}
+    nnz & = \left[ 1, 4, 3, 2, 1, 4, 5, 1 \right]  \\
+    rowptr & = \left[ 0, 2, 4, 5, 7, 8 \right] \\
+    colind & = \left[ 0, 3, 1, 2, 2, 1, 3, 4 \right]
+\end{align}</script>
+</p>
+<p>which has a total of 21 elements compared to the 25 required for the original A matrix. This difference, ofcourse, becomes much greater as the A matrix grows in size as well as the sparser the matrix becomes, which is almost always the case for electrical type simulations.</p>
+<p>Once in this format we can proceed with the KLU factorization. Due to the MNA forcing only the RHS to change upon every time step, we only have to compute the LU decomposition for the A matrix once at the start of the time loop. With this single calculation of the LU decomposition done, the only calculation required is the solving of <script type="math/tex">x</script> (LHS) upon each iteration using the ever changing <script type="math/tex">b</script> (RHS).</p>
+<h2 id="data-structures-speed-considerations">Data structures &amp; speed considerations</h2>
+<p>JoSIM relies heavily on the use of the C++ map data structure which creates a hash table for quick lookup. This immensely simplifies code legibility as well as component identification within later stages of the process. The drawback of this, however, is the hashing and comparing becomes quite slow when using string types. </p>
+<p>Initially a standard map was used, however, this very negatively impacted the execution speed of the program and thus alternatives were sought. These ordered map (standard maps) were replaced by the much faster unordered map since the map no longer needed to be sorted by keys upon each new entry. Ideally the use of unordered maps are not perfect if speed was the only consideration. They do, however, provide a good balance between implementation, speed and debugging.</p>
+<p>To avoid some of the speed problems, a string map is only used initially to create components, mapping component labels to integer indices. During the simulation step only the indices are used. The results are then mapped back to the string equivalents to find the relevant output vectors requested by the user.</p>
+<p>Additional steps have been implemented to reduce the required memory for the result vectors. This is achieved by idenitifying which vectors are required to produce the relevant output prior to simulation. During simulation only these required vectors are then populated with values as opposed to storing all calculated values. This drastically reduces the required memory.</p>
+<p>Through the implementation of the MNPA method in JoSIM, additional improvements were introduced such as the objectification of every component at the matrix creation level that increases efficiency and debugging. This change allows for simplification of output functions since a direct link to the rows of the result matrix for each component reduces the indexing time required to identify the correct row. </p>
+<h2 id="input-files">Input Files</h2>
+<p>Input files for JoSIM are called netlists and follow mostly a standard SPICE syntax as described in [<a class="citation" href="#ref-spice" id="cite-spice">spice</a>]. There are, however, many functions and components of this syntax that have not been implemented since they are only of relevance to semiconductor circuits. A full syntax guideline is avalable in the <a href="../syntax/">Syntax</a> section.</p>
+<p>There are a few caviates to making JoSIM compatible with other netlist generating systems. Most of these can be ironed out through routines within the code itself to make the simulator as accepting as possible. One of these caviates, however, requires user input and this is to identify the convention used when simulating using subcircuits.</p>
+<p>When a netlist with subcircuits is generated to be JSIM[<a class="citation" href="#ref-jsim" id="cite-jsim">jsim</a>] compatible, a subcircuit line would for example be:</p>
+<p>X01&nbsp;&nbsp;&nbsp;&nbsp;SUBNAME&nbsp;&nbsp;&nbsp;&nbsp;    1&nbsp;&nbsp;&nbsp;&nbsp;   2</p>
+<p>This indicates that a subcircuit of name SUBNAME is to be used with I/O nodes 1 and 2. This we call convention <strong>0</strong> and is the default for JoSIM.</p>
+<p>If a circuit is generated for compatibility with WRspice[<a class="citation" href="#ref-wrspice" id="cite-wrspice">wrspice</a>] then this convention would be <strong>1</strong> and an example of a subcircuit line would be:</p>
+<p>X01&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;SUBNAME</p>
+<p>This is the general SPICE syntax convention and in all honesty makes more sense since a component definition line should always carry the notation:</p>
+<p>LABEL&nbsp;&nbsp;&nbsp;&nbsp;POSNODE&nbsp;&nbsp;&nbsp;&nbsp;NEGNODE</p>
+<p>It is required that the user specify the convention when working with a non JSIM netlist. The convention can be set using the <strong>-c</strong> command line switch followed by the convention required.</p>
+<h2 id="output-files">Output Files</h2>
+<p>As stated before, JoSIM is a simulator that solves <script type="math/tex">Ax=b</script> problems. As a result the output that JoSIM provides to the user is always that of the <script type="math/tex">x</script> vector. At present JoSIM only does a transient analysis, which means that each entry of the <script type="math/tex">x</script> vector contains another vector of result values for each time step in the transient analysis.</p>
+<p>When the user does not request any output, and does not specify a file within which to save the results, all of the results for the entire <script type="math/tex">x</script> vector are dumped to the screen in a space seperated way. This can be resource intensive and does not mean much to the user. It is therefore advisable to always specify the vectors of interest using the output commands specfied in <a href="../syntax/">Syntax</a> as well as a resulting file to store the output in. </p>
+<p>The output file can be either a <em>comma seperated variable</em> (<em>.csv</em>) file or a <em>space seperated</em> (<em>.dat</em>) file. The the type and name of the output file are specified using the <strong>-o</strong> command switch followed by the file name. The file extension determines the type. </p>
+<p>There is a third option of output format which follows the standard SPICE RAW data syntax. This format is compatible with various output trace viewers and can be specified by simply ommiting the file extension of in the output name.</p>
+<h3 id="plotting-interfaces">Plotting interfaces</h3>
+<p>In previous versions of JoSIM there existed 2 plotting windows, namely FLTK and Matplotlib. These interfaces were, however, ultimately scrapped due to maintainability issues as well as cross-platform compatibility. The user is requested to use the plotting system they are most comfortable with. </p>
+<p>Below we provide a simple Python 3 script that plots all the results in a <em>.csv</em> file. It is very basic and the user should modify it as required. This script requires installation of the <strong>Numpy</strong> as well as <strong>Matplotlib</strong> packages for Python 3. Optionally, we comment the lines for use of the <strong>Qt5</strong> backend for plotting. The user can enable this if the <strong>PyQt5</strong> package is installed.</p>
+<pre><code class="python">#!/usr/bin/env python
+import math
+# import matplotlib
+# matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as pl
+from matplotlib import gridspec
+import numpy as np
+import csv
+import sys
+
+time = []
+data = []
+labels = set()
+with open(sys.argv[1], 'r') as csvFile:
+    reader = csv.DictReader(csvFile)
+    labels = reader.fieldnames
+    data.append([])
+    for row in reader:
+        time.append(float(row[labels[0]]))
+        for var in range(1,len(labels)):
+            data.append([])
+            data[var].append(float(row[labels[var]]))
+csvFile.close()
+
+N = len(labels) - 1
+cols = int(math.ceil(N / 4))
+rows = int(math.ceil(N / cols))
+
+gs = gridspec.GridSpec(rows, cols)
+fig = pl.figure()
+for var in range(1,len(labels)):
+    ax = fig.add_subplot(gs[var - 1])
+    ax.plot(time, data[var])
+    ax.set_xlabel(labels[0])
+    ax.set_ylabel(labels[var])
+
+fig.set_tight_layout(True)
+fig.show()
+input()
+</code></pre>
+
+<style>
+.center {
+    display: block;
+    margin: 0 auto;
+}
+</style>
+
+<div class="references">
+<table>
+<tbody>
+<tr id="ref-spice">
+<td>spice</td>
+<td><p>Nagel L.: <i>Spice: A computer program to simulate computer circuits</i>. University of California, Berkeley UCB/ERL Memo M520. (1995)</p></td>
+</tr>
+<tr id="ref-mna">
+<td>mna</td>
+<td><p>Ho C., Ruehli A., Brennan P.: <i>The modified nodal approach to network analysis</i>. IEEE Transactions on circuits and systems. <b>22</b>, (1975)</p></td>
+</tr>
+<tr id="ref-orlando">
+<td>orlando</td>
+<td><p>Orlando T.P., Delin K.A.: <i>Foundations of applied superconductivity</i>. (1991)</p></td>
+</tr>
+<tr id="ref-suitesparse">
+<td>suitesparse</td>
+<td><p>Davis T.A.: <i>Direct methods for sparse linear systems</i>. (2006)</p></td>
+</tr>
+<tr id="ref-crs">
+<td>crs</td>
+<td _c_c="\c{c"><p>Bulu</td>
+</tr>
+<tr id="ref-jsim">
+<td>jsim</td>
+<td><p>Fang E.S.: <i>A Josephson integrated circuit simulator (JSIM) for superconductive electronics application</i>. (1989)</p></td>
+</tr>
+<tr id="ref-wrspice">
+<td>wrspice</td>
+<td><p>Simulator W.C.: <i>Whiteley Research Incorporated</i>. (2017)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href=".." title="Home" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Home
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../ex_usage/" title="Example Usage" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Example Usage
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.245445c6.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+    
+  </body>
+</html>
