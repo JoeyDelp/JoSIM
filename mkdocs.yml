@@ -4,7 +4,10 @@ site_author: Johannes Delport
 nav:
   - Home: 'index.md'
   - Technical Discussion: 'tech_disc.md'
+  - Example Usage: 'ex_usage.md'
   - Component Stamps: 'comp_stamps.md'
+  - Syntax Guide: 'syntax.md'
+  - Development Schedule and Bugs: 'bugs.md'
 theme: 
   name: readthedocs
   highlightjs: true
