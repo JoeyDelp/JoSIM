@@ -300,7 +300,10 @@ build
 testint
 buildint
 
+doc
 doc/src
+doc/*
+
 *.dat
 *.json
 

@@ -2284,7 +2284,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
             break;
           }
-      } else if (j.at(0) == 'C') { //////////////////// CURRENT - C() /////////////////
+      } else if (j.at(0) == 'C' || j.at(0) == 'I') { //////////////////// CURRENT - C() /////////////////
         tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
         traces.emplace_back(Trace());
         traces.back().calcData.reserve(iObj.transSim.simsize());
