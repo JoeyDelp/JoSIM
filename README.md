@@ -1,7 +1,7 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Release?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=2&branchName=testing)
+##### Testing: v2.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
 ##### Stable: v2.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
@@ -143,11 +143,6 @@ sObj.transient_voltage_simulation(iObj, mObj);
 # Store results
 oObj.relevant_traces(iObj, mObj, sObj);
 ```
----
-
-## Documentation
-
-For a comprehensive guide (development guideline) please refer to the [ReadMe.pdf](https://github.com/JoeyDelp/JoSIM//blob/master/doc/JoSIM%20-%20ReadMe.pdf) in the *doc* folder 
 
 ---
 
