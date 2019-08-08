@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_output.h"
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/j_errors.h"
 #include "JoSIM/j_input.h"
 #include "JoSIM/j_simulation.h"
 
@@ -2390,8 +2391,12 @@ void Output::handle_voltage(const std::vector<std::string> &devToHandle, Trace &
       }
     } else {
       if(mObj.labelNodes.count(devToHandle.at(0)) == 0) {
-        result.name = "NODEV_" + devToHandle.at(0);
-        result.calcData = sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0))));
+        if(std::find(mObj.rowNames.begin(), mObj.rowNames.end(), devToHandle.at(0)) != mObj.rowNames.end()) {
+          result.name = "NODEV_" + devToHandle.at(0);
+          result.calcData = sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0))));
+        } else {
+          Errors::control_errors(UNKNOWN_DEVICE, devToHandle.at(0));
+        }
       } else {
         if(mObj.deviceLabelIndex.at(devToHandle.at(0)).type == RowDescriptor::Type::VoltageVS) {
           result.calcData = mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index);
@@ -2667,8 +2672,12 @@ void Output::handle_phase(const std::vector<std::string> &devToHandle, Trace &re
       }
     } else {
         if(mObj.labelNodes.count(devToHandle.at(0)) == 0) {
-          result.name = "NODEP_" + devToHandle.at(0);
-          result.calcData = sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0))));
+          if(std::find(mObj.rowNames.begin(), mObj.rowNames.end(), devToHandle.at(0)) != mObj.rowNames.end()) {
+            result.name = "NODEP_" + devToHandle.at(0);
+            result.calcData = sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0))));
+          } else {
+            Errors::control_errors(UNKNOWN_DEVICE, devToHandle.at(0));
+          }
         } else {
           if(mObj.deviceLabelIndex.at(devToHandle.at(0)).type == RowDescriptor::Type::PhasePS) {
             result.calcData = mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index);
