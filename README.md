@@ -143,11 +143,6 @@ sObj.transient_voltage_simulation(iObj, mObj);
 # Store results
 oObj.relevant_traces(iObj, mObj, sObj);
 ```
----
-
-## Documentation
-
-For a comprehensive guide (development guideline) please refer to the [ReadMe.pdf](https://github.com/JoeyDelp/JoSIM//blob/master/doc/JoSIM%20-%20ReadMe.pdf) in the *doc* folder 
 
 ---
 
