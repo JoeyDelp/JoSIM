@@ -8,11 +8,6 @@
 #)
 
 # Tests
-add_integration_test(
-  NAME ex_jtl_basic
-  CIR ex_jtl_basic.cir
-  OUT ex_jtl_basic.csv
-)
 
 add_integration_test(
   NAME ex_dcsfq_jtl_sink
@@ -21,10 +16,72 @@ add_integration_test(
 )
 
 add_integration_test(
+  NAME ex_gen_pp_ipht
+  CIR ex_gen_pp_ipht.cir
+  OUT ex_gen_pp_ipht.csv
+)
+
+add_integration_test(
+  NAME ex_jj_char
+  CIR ex_jj_char.cir
+  OUT ex_jj_char.csv
+)
+
+add_integration_test(
+  NAME ex_jtl_1kA
+  CIR ex_jtl_1kA.cir
+  OUT ex_jtl_1kA.csv
+)
+
+add_integration_test(
+  NAME ex_jtl_basic
+  CIR ex_jtl_basic.cir
+  OUT ex_jtl_basic.csv
+)
+
+add_integration_test(
+  NAME ex_jtl_string
+  CIR ex_jtl_string.cir
+  OUT ex_jtl_string.csv
+)
+
+add_integration_test(
+  NAME ex_ksa4bit
+  CIR ex_ksa4bit.cir
+  OUT ex_ksa4bit.csv
+)
+
+add_integration_test(
   NAME ex_mitll_dff_wr
   CIR ex_mitll_dff_wr.cir
   OUT ex_mitll_dff_wr.csv
   WRSPICE
+)
+
+add_integration_test(
+  NAME ex_mitll_xor
+  CIR ex_mitll_xor_wr.cir
+  OUT ex_mitll_xor_wr.csv
+  WRSPICE
+)
+
+add_integration_test(
+  NAME ex_mut_test
+  CIR ex_mut_test.cir
+  OUT ex_mut_test.csv
+)
+
+add_integration_test(
+  NAME ex_ps_jtl
+  CIR ex_ps_jtl.cir
+  OUT ex_ps_jtl.csv
+  PHASE
+)
+
+add_integration_test(
+  NAME ex_xline_test
+  CIR ex_xline_test.cir
+  OUT ex_xline_test.csv
 )
 
 # add_integration_test(
