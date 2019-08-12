@@ -107,32 +107,34 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
       } else if (j.at(0) == '@') {
         traces.emplace_back(Trace());
         traces.back().calcData.reserve(iObj.transSim.simsize());
-        if(tokens.at(0).at(tokens.at(0).size() - 2) == 'C') {
-          tokens.at(0) = tokens.at(0).substr(1, tokens.at(0).size() - 4);
-          if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), tokens.at(0)) != mObj.rowNames.end()
-            || mObj.labelNodes.count(tokens.at(0)) != 0) {
-            handle_current(tokens, traces.back(), iObj, mObj, sObj);
-            break;
-          } else {
-            Errors::control_errors(UNKNOWN_DEVICE, tokens.at(0));
-          }
-        } else if(tokens.at(0).at(tokens.at(0).size() - 2) == 'V') {
-          tokens.at(0) = tokens.at(0).substr(1, tokens.at(0).size() - 4);
-          if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), tokens.at(0)) != mObj.rowNames.end()
-            || mObj.labelNodes.count(tokens.at(0)) != 0) {
-            handle_voltage(tokens, traces.back(), iObj, mObj, sObj);
-            break;
-          } else {
-            Errors::control_errors(UNKNOWN_DEVICE, tokens.at(0));
-          }
-        } else if(tokens.at(0).at(tokens.at(0).size() - 2) == 'P') {
-          tokens.at(0) = tokens.at(0).substr(1, tokens.at(0).size() - 4);
-          if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), tokens.at(0)) != mObj.rowNames.end()
-            || mObj.labelNodes.count(tokens.at(0)) != 0) {
-            handle_phase(tokens, traces.back(), iObj, mObj, sObj);
-            break;
-          } else {
-            Errors::control_errors(UNKNOWN_DEVICE, tokens.at(0));
+        for(auto t : tokens) {
+          if(t.at(tokens.at(0).size() - 2) == 'C') {
+            t = t.substr(1, t.size() - 4);
+            if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), t) != mObj.rowNames.end()
+              || mObj.labelNodes.count(t) != 0) {
+                tokens2 = Misc::tokenize_delimeter(t, ",");
+                handle_current(tokens2, traces.back(), iObj, mObj, sObj);
+            } else {
+              Errors::control_errors(UNKNOWN_DEVICE, t);
+            }
+          } else if(t.at(t.size() - 2) == 'V') {
+            t = t.substr(1, t.size() - 4);
+            if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), t) != mObj.rowNames.end()
+              || mObj.labelNodes.count(t) != 0) {
+                tokens2 = Misc::tokenize_delimeter(t, ",");
+                handle_voltage(tokens2, traces.back(), iObj, mObj, sObj);
+            } else {
+              Errors::control_errors(UNKNOWN_DEVICE, t);
+            }
+          } else if(t.at(t.size() - 2) == 'P') {
+            t = t.substr(1, t.size() - 4);
+            if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), t) != mObj.rowNames.end()
+              || mObj.labelNodes.count(t) != 0) {
+                tokens2 = Misc::tokenize_delimeter(t, ",");
+                handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
+            } else {
+              Errors::control_errors(UNKNOWN_DEVICE, t);
+            }
           }
         }
         break;

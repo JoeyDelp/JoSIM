@@ -1,0 +1,18 @@
+* Test the output functions, ensure that relevant data is stored.
+V1  1 0 pwl(0 0 30p 0 32.5p 827.3u  35p 0)
+R1  1 2 1
+R3  2 3 0.5
+R4  3 0 0.5
+.tran 0.25p 100p
+.print DEVV R1
+.print DEVI R2
+.print NODEV  1
+.print NODEV  1 2
+.print NODEP  1
+.print NODEP  1 2
+.print PHASE  R3
+.plot v(1) v(1,0) v(R1) v(R1,R3)
+.plot c(R1) p(1) p(1,0) p(R4)
+.save v(1) v(1,0) v(R1) v(R1,R3)
+.save c(R1) p(1) p(1,0) p(R4)
+.save @R1[v] @R3[c] @R4[p]

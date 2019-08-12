@@ -27,12 +27,12 @@ add_integration_test(
   WRSPICE
 )
 
-add_integration_test(
-  NAME ex_mitll_not_wr
-  CIR ex_mitll_not_wr.cir
-  OUT ex_mitll_not_wr.csv
-  WRSPICE
-)
+# add_integration_test(
+#   NAME ex_mitll_not_wr
+#   CIR ex_mitll_not_wr.cir
+#   OUT ex_mitll_not_wr.csv
+#   WRSPICE
+# )
 
 add_integration_test(
   NAME test_param_nest
@@ -53,6 +53,11 @@ add_integration_test(
 add_integration_test(
   NAME test_line_comment
   CIR syntax/test_line_comment.cir
+)
+
+add_integration_test(
+  NAME test_output
+  CIR syntax/test_output.cir
 )
 
 #add_integration_test(
