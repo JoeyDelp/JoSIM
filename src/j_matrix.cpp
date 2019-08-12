@@ -1058,8 +1058,8 @@ void Matrix::create_A_volt(Input &iObj)
                                         devicetokens[t].size() - 1);
         }
       }
-      if (area == "")
-        Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
+      // if (area == "")
+      //   Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
       components.jj_model(modelstring, area, components.voltJJ.size() - 1, iObj, i.second);
       components.voltJJ.back().label = label;
       cName = "C_P" + devicetokens.at(0);
@@ -2816,8 +2816,8 @@ void Matrix::create_A_phase(Input &iObj)
                                         devicetokens[t].size() - 1);
         }
       }
-      if (area == "")
-        Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
+      // if (area == "")
+      //   Errors::invalid_component_errors(MODEL_AREA_NOT_GIVEN, label);
       components.phaseJJ.back().label = jj;
       components.jj_model_phase(modelstring, area, components.phaseJJ.size() - 1, iObj, subckt);
       cVolt = "C_V" + devicetokens.at(0);
