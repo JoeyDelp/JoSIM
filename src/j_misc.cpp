@@ -201,7 +201,7 @@ std::string Misc::substring_before(const std::string &str,
 
 std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
                                          const std::string &subckt) {
-  std::vector<double> functionOfT(iObj.transSim.simsize(), 0.0);
+  std::vector<double> functionOfT(iObj.transSim.simsize() + 1, 0.0);
   std::vector<std::string> tokens;
   std::string posVarName; // subckt = "";
   tokens = tokenize_space(str);

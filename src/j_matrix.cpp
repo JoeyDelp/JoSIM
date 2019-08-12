@@ -71,7 +71,11 @@ void Matrix::find_relevant_x(Input &iObj) {
         } else Errors::control_errors(INVALID_OUTPUT_COMMAND, i);
       } else if (j.at(0) == '@') {
         if (tokens.size() > 2) {
-          Errors::control_errors(INVALID_OUTPUT_COMMAND, i);
+          //Errors::control_errors(INVALID_OUTPUT_COMMAND, i);
+          for (auto t : tokens) {
+            relevantToStore.emplace_back(t.substr(1, t.find_first_of('[') - 1));
+          }
+          break;
         } else {
           relevantToStore.emplace_back(j.substr(1, j.find_first_of('[') - 1));
           break;
