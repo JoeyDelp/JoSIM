@@ -384,7 +384,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     assert(iObj.transSim.simsize() == functionOfT.size());
     for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
       currentTimestep = i * iObj.transSim.prstep;
-      value = VO + VA * sin(2 * M_PI * FREQ * (currentTimestep - TD)) *
+      value = VO + VA * sin(2 * PI * FREQ * (currentTimestep - TD)) *
                        exp(-THETA * (currentTimestep - TD));
       functionOfT.at(i) = value;
     }

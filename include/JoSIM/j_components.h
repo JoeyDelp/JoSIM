@@ -83,7 +83,7 @@ public:
     rN = 5;
     C = 2.5E-12;
     iC = 1E-3;
-    iCFact = M_PI / 4;
+    iCFact = PI / 4;
     iT = iS = gLarge = 0.0;
     T = 4.2;
     tC = 9.1;
@@ -202,7 +202,7 @@ public:
     rN = 5;
     C = 2.5E-12;
     iC = 1E-3;
-    iCFact = M_PI / 4;
+    iCFact = PI / 4;
     iT = iS = gLarge = 0.0;
     T = 4.2;
     tC = 9.1;

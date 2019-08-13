@@ -10,6 +10,8 @@
 #define EV 1.6021766208e-19
 #define HBAR 1.0545718001391127e-34
 
+#define PI 3.141592653589793238463
+
 #define LEFT 0
 #define RIGHT 1
 
