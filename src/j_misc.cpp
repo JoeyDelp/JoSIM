@@ -168,7 +168,7 @@ int Misc::index_of(const std::vector<std::string> &vector,
   int counter = 0;
   for (const auto &i : vector) {
     /* Value found, return counter */
-    if (value == vector[counter])
+    if (value == vector.at(counter))
       return counter;
     counter++;
   }
@@ -210,25 +210,25 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
   std::string params = str.substr(first, last - first);
   tokens = tokenize_delimeter(params, " ,");
   if (str.find("PWL") != std::string::npos) {
-    if (std::stod(tokens[0]) != 0.0 || std::stod(tokens[1]) != 0.0)
-      Errors::function_errors(INITIAL_VALUES, tokens[0] + " & " + tokens[1]);
+    if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0)
+      Errors::function_errors(INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
     std::vector<double> timesteps, values;
     for (int i = 0; i < tokens.size(); i = i + 2) {
-      timesteps.push_back(modifier(tokens[i]));
+      timesteps.push_back(modifier(tokens.at(i)));
     }
     for (int i = 1; i < tokens.size(); i = i + 2) {
       if (iObj.parameters.parsedParams.count(
-              JoSIM::ParameterName(tokens[i], subckt)) != 0)
+              JoSIM::ParameterName(tokens.at(i), subckt)) != 0)
         values.push_back(iObj.parameters.parsedParams.at(
-            JoSIM::ParameterName(tokens[i], subckt)));
+            JoSIM::ParameterName(tokens.at(i), subckt)));
       else if (iObj.parameters.parsedParams.count(
-              JoSIM::ParameterName(tokens[i], "")) != 0)
+              JoSIM::ParameterName(tokens.at(i), "")) != 0)
         values.push_back(iObj.parameters.parsedParams.at(
-            JoSIM::ParameterName(tokens[i], "")));
+            JoSIM::ParameterName(tokens.at(i), "")));
       else
-        // values.push_back(modifier(tokens[i]));
+        // values.push_back(modifier(tokens.at(i)));
         values.push_back(Parser::parse_param(
-            tokens[i], iObj.parameters.parsedParams, subckt));
+            tokens.at(i), iObj.parameters.parsedParams, subckt));
     }
     if (timesteps.size() < values.size())
       Errors::function_errors(TOO_FEW_TIMESTEPS,
@@ -240,13 +240,13 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
           TOO_FEW_VALUES, std::to_string(timesteps.size()) + " timesteps & " +
                               std::to_string(timesteps.size()) + " values");
     if ((timesteps.back() > iObj.transSim.tstop) &&
-        (values.back() > values[values.size() - 2])) {
-      values[values.size() - 1] = (iObj.transSim.tstop / timesteps.back()) *
-                                  (values.back() - values[values.size() - 2]);
-      timesteps[timesteps.size() - 1] = iObj.transSim.tstop;
+        (values.back() > values.at(values.size() - 2))) {
+      values.at(values.size() - 1) = (iObj.transSim.tstop / timesteps.back()) *
+                                  (values.back() - values.at(values.size() - 2));
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
     } else if ((timesteps.back() > iObj.transSim.tstop) &&
-               (values.back() == values[values.size() - 2])) {
-      timesteps[timesteps.size() - 1] = iObj.transSim.tstop;
+               (values.back() == values.at(values.size() - 2))) {
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
     }
     if (values.at(values.size() - 1) != 0.0) {
       std::fill(functionOfT.begin() +
@@ -255,47 +255,47 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     }
     double startpoint, endpoint, value = 0.0;
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = ceil(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = ceil(timesteps[i] / iObj.transSim.prstep);
-      functionOfT[startpoint] = values.at(i - 1);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
+      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
-        if (values.at(i - 1) < values[i])
+        if (values.at(i - 1) < values.at(i))
           value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
                                           (endpoint - startpoint) *
                                           (j - (int)startpoint);
-        else if (values.at(i - 1) > values[i])
+        else if (values.at(i - 1) > values.at(i))
           value = values.at(i - 1) -
                   ((values.at(i - 1) - (values.at(i))) /
                    (endpoint - startpoint) * (j - (int)startpoint));
-        else if (values.at(i - 1) == values[i])
-          value = values[i];
-        functionOfT[j] = value;
+        else if (values.at(i - 1) == values.at(i))
+          value = values.at(i);
+        functionOfT.at(j) = value;
       }
     }
   }
   /* PULSE */
   else if (str.find("PULSE") != std::string::npos) {
-    if (std::stod(tokens[0]) != 0.0)
-      Errors::function_errors(INITIAL_PULSE_VALUE, tokens[0]);
+    if (std::stod(tokens.at(0)) != 0.0)
+      Errors::function_errors(INITIAL_PULSE_VALUE, tokens.at(0));
     if (tokens.size() < 7)
       Errors::function_errors(PULSE_TOO_FEW_ARGUMENTS,
                               std::to_string(tokens.size()));
     double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
-    vPeak = modifier(tokens[1]);
+    vPeak = modifier(tokens.at(1));
     if (vPeak == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(PULSE_VPEAK_ZERO, tokens[1]);
-    timeDelay = modifier(tokens[2]);
-    timeRise = modifier(tokens[3]);
-    timeFall = modifier(tokens[4]);
-    pulseWidth = modifier(tokens[5]);
+        Errors::function_errors(PULSE_VPEAK_ZERO, tokens.at(1));
+    timeDelay = modifier(tokens.at(2));
+    timeRise = modifier(tokens.at(3));
+    timeFall = modifier(tokens.at(4));
+    pulseWidth = modifier(tokens.at(5));
     if (pulseWidth == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(PULSE_WIDTH_ZERO, tokens[5]);
-    pulseRepeat = modifier(tokens[6]);
+        Errors::function_errors(PULSE_WIDTH_ZERO, tokens.at(5));
+    pulseRepeat = modifier(tokens.at(6));
     if (pulseRepeat == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(PULSE_REPEAT, tokens[6]);
+        Errors::function_errors(PULSE_REPEAT, tokens.at(6));
     int PR = pulseRepeat / iObj.transSim.prstep;
     int TD = timeDelay / iObj.transSim.prstep;
     std::vector<double> timesteps, values;
@@ -329,26 +329,26 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     }
     double startpoint, endpoint, value = 0;
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = ceil(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = ceil(timesteps[i] / iObj.transSim.prstep);
-      functionOfT[startpoint] = values.at(i - 1);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
+      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
-        if (values.at(i - 1) < values[i])
+        if (values.at(i - 1) < values.at(i))
           if (values.at(i - 1) < 0)
             value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
                                            (endpoint - startpoint) *
                                            (j - (int)startpoint);
           else
-            value = values[i] / (endpoint - startpoint) * (j - (int)startpoint);
-        else if (values.at(i - 1) > values[i])
+            value = values.at(i) / (endpoint - startpoint) * (j - (int)startpoint);
+        else if (values.at(i - 1) > values.at(i))
           value = values.at(i - 1) -
                   ((values.at(i - 1) - (values.at(i))) /
                    (endpoint - startpoint) * (j - (int)startpoint));
-        else if (values.at(i - 1) == values[i])
-          value = values[i];
+        else if (values.at(i - 1) == values.at(i))
+          value = values.at(i);
         else
           assert(false);
-        functionOfT[j] = value;
+        functionOfT.at(j) = value;
       }
     }
   }
@@ -362,20 +362,20 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
                               std::to_string(tokens.size()));
     double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1 / iObj.transSim.tstop,
            THETA = 0.0;
-    VO = modifier(tokens[0]);
-    VA = modifier(tokens[1]);
+    VO = modifier(tokens.at(0));
+    VA = modifier(tokens.at(1));
     if (VA == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(SIN_VA_ZERO, tokens[1]);
+        Errors::function_errors(SIN_VA_ZERO, tokens.at(1));
     if (tokens.size() == 5) {
-      FREQ = modifier(tokens[2]);
-      TD = modifier(tokens[3]);
-      THETA = modifier(tokens[4]);
+      FREQ = modifier(tokens.at(2));
+      TD = modifier(tokens.at(3));
+      THETA = modifier(tokens.at(4));
     } else if (tokens.size() == 4) {
-      FREQ = modifier(tokens[2]);
-      TD = modifier(tokens[3]);
+      FREQ = modifier(tokens.at(2));
+      TD = modifier(tokens.at(3));
     } else if (tokens.size() == 3) {
-      FREQ = modifier(tokens[2]);
+      FREQ = modifier(tokens.at(2));
     }
     double currentTimestep, value;
     int beginTime;
@@ -386,7 +386,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       currentTimestep = i * iObj.transSim.prstep;
       value = VO + VA * sin(2 * M_PI * FREQ * (currentTimestep - TD)) *
                        exp(-THETA * (currentTimestep - TD));
-      functionOfT[i] = value;
+      functionOfT.at(i) = value;
     }
   }
   /* CUSTOM: CUS(WaveFile.dat TS SF IM <TD PER>) */
@@ -397,20 +397,20 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     if (tokens.size() > 5)
       Errors::function_errors(CUS_TOO_MANY_ARGUMENTS,
                               std::to_string(tokens.size()));
-    std::string WFline = tokens[0];
+    std::string WFline = tokens.at(0);
     std::vector<std::string> WF;
     double TS = 0.0, SF = 0.0, TD = 0.0;
     int PER = 0;
-    TS = modifier(tokens[1]);
-    SF = modifier(tokens[2]);
+    TS = modifier(tokens.at(1));
+    SF = modifier(tokens.at(2));
     if (SF == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(CUS_SF_ZERO, tokens[2]);
+        Errors::function_errors(CUS_SF_ZERO, tokens.at(2));
     if (tokens.size() == 6) {
-      TD = modifier(tokens[4]);
-      PER = stoi(tokens[5]);
+      TD = modifier(tokens.at(4));
+      PER = stoi(tokens.at(5));
     } else if (tokens.size() == 5) {
-      TD = modifier(tokens[4]);
+      TD = modifier(tokens.at(4));
     }
     std::ifstream wffile(WFline);
     if (wffile.good())
@@ -421,7 +421,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     WF = tokenize_delimeter(WFline, " ,;");
     std::vector<double> timesteps, values;
     for (int i = 0; i < WF.size(); i++) {
-      values.push_back(modifier(WF[i]) * SF);
+      values.push_back(modifier(WF.at(i)) * SF);
       timesteps.push_back(TD + i * TS);
     }
     if (TS < iObj.transSim.prstep)
@@ -432,18 +432,18 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       for (int j = 0; j < repeats; j++) {
         double lastTimestep = timesteps.back() + TS;
         for (int i = 0; i < WF.size(); i++) {
-          values.push_back(modifier(WF[i]) * SF);
+          values.push_back(modifier(WF.at(i)) * SF);
           timesteps.push_back(lastTimestep + i * TS);
         }
       }
     }
     double startpoint, endpoint, value = 0.0;
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = ceil(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = ceil(timesteps[i] / iObj.transSim.prstep);
-      functionOfT[startpoint] = values.at(i - 1);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
+      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
-        if (values.at(i - 1) < values[i])
+        if (values.at(i - 1) < values.at(i))
           if (values.at(i - 1) < 0)
             value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
                                            (endpoint - startpoint) *
@@ -452,13 +452,13 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
             value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
                                            (endpoint - startpoint) *
                                            (j - (int)startpoint);
-        else if (values.at(i - 1) > values[i])
+        else if (values.at(i - 1) > values.at(i))
           value = values.at(i - 1) -
                   ((values.at(i - 1) - (values.at(i))) /
                    (endpoint - startpoint) * (j - (int)startpoint));
-        else if (values.at(i - 1) == values[i])
-          value = values[i];
-        functionOfT[j] = value;
+        else if (values.at(i - 1) == values.at(i))
+          value = values.at(i);
+        functionOfT.at(j) = value;
       }
     }
   }
@@ -471,20 +471,20 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       Errors::function_errors(NOISE_TOO_MANY_ARGUMENTS,
                               std::to_string(tokens.size()));
     double VO = 0.0, VA = 0.0, TD = 0.0, TSTEP = 0.0;
-    VO = modifier(tokens[0]);
+    VO = modifier(tokens.at(0));
     if(VO != 0.0 && tokens.size() == 4) {
-      Errors::function_errors(NOISE_VO_ZERO, tokens[0]);
-      VA = modifier(tokens[1]);
+      Errors::function_errors(NOISE_VO_ZERO, tokens.at(0));
+      VA = modifier(tokens.at(1));
       if (VA == 0.0)
         if (iObj.argVerb)
-          Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
-      TD = modifier(tokens[3]);
+          Errors::function_errors(NOISE_VA_ZERO, tokens.at(1));
+      TD = modifier(tokens.at(3));
     } else {
-      VA = modifier(tokens[0]);
+      VA = modifier(tokens.at(0));
       if (VA == 0.0)
         if (iObj.argVerb)
-          Errors::function_errors(NOISE_VA_ZERO, tokens[1]);
-      TD = modifier(tokens[2]);
+          Errors::function_errors(NOISE_VA_ZERO, tokens.at(1));
+      TD = modifier(tokens.at(2));
     }
     TSTEP = iObj.transSim.prstep;
     int beginTime;
@@ -493,7 +493,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
       currentTimestep = i * iObj.transSim.prstep;
       value = VA * grand() / sqrt(2.0 * TSTEP);
-      functionOfT[i] = value;
+      functionOfT.at(i) = value;
     }
   }
   return functionOfT;
@@ -502,8 +502,8 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
 bool Misc::findX(const std::vector<std::string> &segment, std::string &theLine,
                  int &linePos) {
   for (int i = linePos; i < segment.size(); i++) {
-    if (segment[i][0] == 'X') {
-      theLine = segment[i];
+    if (segment.at(i).at(0) == 'X') {
+      theLine = segment.at(i);
       if (i < segment.size() - 1)
         linePos = i + 1;
       else
