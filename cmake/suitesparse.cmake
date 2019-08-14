@@ -33,7 +33,7 @@ function(win_suitesparse_lib name lib)
   target_include_directories(suitesparse::${lib}
                              INTERFACE ${CMAKE_SOURCE_DIR}/include/suitesparse)
   target_link_libraries(suitesparse::${lib}
-                        INTERFACE ${CMAKE_SOURCE_DIR}/lib/windows/release/${name}.lib
+                        INTERFACE ${CMAKE_SOURCE_DIR}/lib/win/release/${name}.lib
                                   suitesparse::config)
   target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
 endfunction()
