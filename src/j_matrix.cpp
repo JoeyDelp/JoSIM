@@ -1200,7 +1200,7 @@ void Matrix::create_A_volt(Input &iObj)
         components.voltJJ.back().posNCol = e.colIndex = columnMap.at(cNameP);
         components.voltJJ.back().phaseNRow = e.rowIndex =
             rowMap.at(devicetokens.at(0));
-        e.value = (-iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
+        e.value = (-iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
         mElements.push_back(e);
         if (!nGND) {
           e.label = label;
@@ -1230,7 +1230,7 @@ void Matrix::create_A_volt(Input &iObj)
           components.voltJJ.back().negNCol = e.colIndex = columnMap.at(cNameN);
           components.voltJJ.back().phaseNRow = e.rowIndex =
               rowMap.at(devicetokens.at(0));
-          e.value = (iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
+          e.value = (iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
           mElements.push_back(e);
         }
       } else if (!nGND) {
@@ -1245,7 +1245,7 @@ void Matrix::create_A_volt(Input &iObj)
         components.voltJJ.back().negNCol = e.colIndex = columnMap.at(cNameN);
         components.voltJJ.back().phaseNRow = e.rowIndex =
             rowMap.at(devicetokens.at(0));
-        e.value = (iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
+        e.value = (iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
         mElements.push_back(e);
       }
       e.label = label;
@@ -1274,11 +1274,11 @@ void Matrix::create_A_volt(Input &iObj)
           1.76 * BOLTZMANN * components.voltJJ.back().tC;
       components.voltJJ.back().Del =
           components.voltJJ.back().Del0 *
-          sqrt(cos((M_PI / 2) *
+          sqrt(cos((PI / 2) *
                    (components.voltJJ.back().T / components.voltJJ.back().tC) *
                    (components.voltJJ.back().T / components.voltJJ.back().tC)));
       components.voltJJ.back().rNCalc =
-          ((M_PI * components.voltJJ.back().Del) /
+          ((PI * components.voltJJ.back().Del) /
            (2 * EV * components.voltJJ.back().iC)) *
           tanh(components.voltJJ.back().Del /
                (2 * BOLTZMANN * components.voltJJ.back().T));
@@ -2136,7 +2136,7 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseRes.back().curNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
       e.value =
-          -(M_PI * components.phaseRes.back().value * iObj.transSim.prstep) /
+          -(PI * components.phaseRes.back().value * iObj.transSim.prstep) /
           PHI_ZERO;
       components.phaseRes.back().resPtr = mElements.size();
       mElements.push_back(e);
@@ -2321,7 +2321,7 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseCap.back().curNCol = e.colIndex = columnMap.at(cName);
       components.phaseCap.back().curNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
-      e.value = (-2 * M_PI * iObj.transSim.prstep * iObj.transSim.prstep) /
+      e.value = (-2 * PI * iObj.transSim.prstep * iObj.transSim.prstep) /
                 (PHI_ZERO * 4 * components.phaseCap.back().value);
       components.phaseCap.back().capPtr = mElements.size();
       mElements.push_back(e);
@@ -2507,7 +2507,7 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseInd.back().curNCol = e.colIndex = columnMap.at(cName);
       components.phaseInd.back().curNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
-      e.value = -(components.phaseInd.back().value * 2 * M_PI) / PHI_ZERO;
+      e.value = -(components.phaseInd.back().value * 2 * PI) / PHI_ZERO;
       components.phaseInd.back().indPtr = mElements.size();
       mElements.push_back(e);
     }
@@ -2978,7 +2978,7 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseJJ.back().voltNCol = e.colIndex = columnMap.at(cVolt);
       components.phaseJJ.back().voltNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
-      e.value = -(iObj.transSim.prstep / 2) * ((2 * M_PI) / PHI_ZERO);
+      e.value = -(iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
       mElements.push_back(e);
       components.phaseJJ.back().gLarge =
           components.phaseJJ.back().iC /
@@ -3001,11 +3001,11 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseJJ.back().Del =
           components.phaseJJ.back().Del0 *
           sqrt(cos(
-              (M_PI / 2) *
+              (PI / 2) *
               (components.phaseJJ.back().T / components.phaseJJ.back().tC) *
               (components.phaseJJ.back().T / components.phaseJJ.back().tC)));
       components.phaseJJ.back().rNCalc =
-          ((M_PI * components.phaseJJ.back().Del) /
+          ((PI * components.phaseJJ.back().Del) /
            (2 * EV * components.phaseJJ.back().iC)) *
           tanh(components.phaseJJ.back().Del /
                (2 * BOLTZMANN * components.phaseJJ.back().T));
@@ -3324,7 +3324,7 @@ void Matrix::create_A_phase(Input &iObj)
           relXInd.end())
         relXInd.push_back(e.rowIndex);
       e.value =
-          -(M_PI * iObj.transSim.prstep * components.txPhase.back().value) /
+          -(PI * iObj.transSim.prstep * components.txPhase.back().value) /
           (PHI_ZERO);
       mElements.push_back(e);
       e.label = label;
@@ -3334,7 +3334,7 @@ void Matrix::create_A_phase(Input &iObj)
           relXInd.end())
         relXInd.push_back(e.rowIndex);
       e.value =
-          -(M_PI * iObj.transSim.prstep * components.txPhase.back().value) /
+          -(PI * iObj.transSim.prstep * components.txPhase.back().value) /
           (PHI_ZERO);
       mElements.push_back(e);
     }
@@ -3509,13 +3509,13 @@ void Matrix::create_A_phase(Input &iObj)
     e.label = label;
     e.colIndex = components.phaseInd.at(index2).curNCol;
     e.rowIndex = components.phaseInd.at(index1).curNRow;
-    e.value = -(mutualL * 2 * M_PI) / PHI_ZERO;
+    e.value = -(mutualL * 2 * PI) / PHI_ZERO;
     components.phaseInd.at(index1).mutPtr = mElements.size();
     mElements.push_back(e);
     e.label = label;
     e.colIndex = components.phaseInd.at(index1).curNCol;
     e.rowIndex = components.phaseInd.at(index2).curNRow;
-    e.value = -(mutualL * 2 * M_PI) / PHI_ZERO;
+    e.value = -(mutualL * 2 * PI) / PHI_ZERO;
     components.phaseInd.at(index2).mutPtr = mElements.size();
     mElements.push_back(e);
   }

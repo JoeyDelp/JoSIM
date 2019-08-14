@@ -27,12 +27,31 @@ function(mac_suitesparse_lib name lib)
   target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
 endfunction()
 
+# WINDOWS: Function adds suitesparse lib target and add it to all
+function(win_suitesparse_lib name lib)
+  add_library(suitesparse::${lib} INTERFACE IMPORTED)
+  target_include_directories(suitesparse::${lib}
+                             INTERFACE ${CMAKE_SOURCE_DIR}/include/suitesparse)
+  target_link_libraries(suitesparse::${lib}
+                        INTERFACE ${CMAKE_SOURCE_DIR}/lib/win/release/${name}.lib
+                                  suitesparse::config)
+  target_link_libraries(suitesparse::all INTERFACE suitesparse::${lib})
+endfunction()
+
 # All library
 add_library(suitesparse::all INTERFACE IMPORTED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows") # Windows
-  messages(SEND_ERROR
-           "Suitesparse cmake integration not yet implemented for windows!")
+  win_suitesparse_lib(libamd amd)
+  win_suitesparse_lib(libbtf btf)
+  win_suitesparse_lib(libcamd camd)
+  win_suitesparse_lib(libccolamd ccolamd)
+  win_suitesparse_lib(libcholmod cholmod)
+  win_suitesparse_lib(libcolamd colamd)
+  win_suitesparse_lib(libklu klu)
+  win_suitesparse_lib(libldl ldl)
+  win_suitesparse_lib(suitesparseconfig config)
+  win_suitesparse_lib(libumfpack umfpack)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # OSX
   mac_suitesparse_lib(amd amd)
   mac_suitesparse_lib(btf btf)
