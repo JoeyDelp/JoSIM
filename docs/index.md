@@ -58,32 +58,104 @@ JoSIM is governed by the MIT license, which is a very permissive license that al
 ### Building from source
 #### Linux
 
-These instructions were executed on a vanilla install of CentOS 7 to reduce oversight in the compilation instructions created by previous package installs. For other distributions please use the package manager relevant to the distribution of choice.
+These instructions were executed on a minimal install of CentOS 7 to reduce oversight in the compilation instructions created by previous package installs. For other distributions please use the package manager relevant to the distribution of choice.
 
-A working internet connection is required, as well as the ability to install packages.
+A working internet connection is required, as well as the ability to install packages. If the internet connection is not up please run, and replace <network interface> with your relevant interface i.e *eth0*:
+
+```
+$ sudo ifup <network interface>
+```
+
+CentOS 7 does not contain all the enterprise Linux packages in its default repository and therefore needs to be activated using:
+
+```
+$ sudo yum install epel-release
+$ sudo yum update
+```
+
+CentOS 7 will require development packages to be installed. Fortunately this can be done using a single command:
+
+```
+$ sudo yum groupinstall "Development Tools"
+```
+
+This will install various development tools such as *gcc*, *make* and *git*. JoSIM, however, requires a newer version of *gcc* than the one supplied within these packages. Fortunately this can be installed fairly easily by running the following:
+
+```
+$ sudo yum install centos-release-scl
+$ sudo yum install devtoolset-7
+$ scl enable devtoolset-7 bash
+```
+
+The last command needs to be entered whenever the newer *gcc* is needed. This can fortunately be shortened using an alias:
+
+```
+$ echo 'alias dts7="scl enable devtoolset-7 bash"' >> ~/.bashrc
+```
+
+This will enable the devtoolset-7 environment on the current bash by just entering the command *dts7*.
+
+To simplify installation of various packages we make use of Python 3 and pip:
+
+```
+$ sudo install python36 python36-pip
+```
+
+This allows installation of the most relevant package versions of *cmake* and *conan*:
+
+```
+$ pip3 install conan cmake --user
+```
+
+We then only require the *suitesparse* package which can be installed using:
+
+```
+$ sudo yum install suitesparse suitesparse-devel
+```
+
+We are now ready to compile JoSIM
 
 JoSIM source can be directly downloaded from the repository as a compressed *.tar.gz* file or by cloning the repository. In either case, navigate to a directory where compilation will take place and extract the tarball or execute:
 
-	$ sudo yum install git
 	$ git clone https://github.com/JoeyDelp/JoSIM.git
-
-CMake 3 will be required to compile the source and would require the activation of the *epel-release* repository.
-	
-	$ sudo yum install epel-release
-	$ sudo yum install cmake3
-
-Finally, JoSIM requires only a single external library called SuiteSparse [@suitesparse]. To install it, execute the following command:
-
-	$ sudo yum install suitesparse suitesparse-devel
+	$ cd JoSIM
 
 Navigate to the newly cloned/extracted JoSIM directory then run the following commands:
 
 	$ mkdir build
 	$ cd build
+	$ conan install ..
 	$ cmake3 ..
 	$ make
 
 This will generate a JoSIM executable in the **build** directory.
+
+If the above fails complaining about C++17, then the *devtoolset-7* environment was not enabled or *conan* could not find the newer compiler. Ensure the *devtoolset* is enabled and ensure that the *conan* profile points to the correct *gcc* version:
+
+```
+$ conan profile new ~/.conan/profiles/gcc7 --detect
+$ conan install ..
+```
+
+*conan* should display the following if the correct *gcc* was detected and the above command was executed:
+
+```
+Configuration:
+[settings]
+arch=x86_64
+arch_build=x86_64
+build_type=Release
+compiler=gcc
+compiler.libcxx=libstdc++
+compiler.version=7
+os=Linux
+os_build=Linux
+[options]
+[build_requires]
+[env]
+```
+
+If this is correct then *cmake* and *make* can be executed normally and JoSIM should compile.
 
 #### Apple macOS
 
