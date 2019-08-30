@@ -2,9 +2,10 @@
 IS         0          1          pwl(0      0 10p 0 50p 25E-7 )
 B1         1          0          jj1        area=1
 *R1         1          0          8        
-.model jj1 jj(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rn=16, icrit=0.1mA)
+*.model jj1 jj(rtype=1, vg=2.69844599999997mV, cap=0.07pF, r0=240.3564, rn=19.73531654, icrit=0.0755756mA, delv=0.000085, icfct=0.6)
+.model jj1 jj(rtype=1, vg=0.0026984459999999997, cap=0.07pF, r0=250.80388261253415, rn=19.73531654, icrit=7.557560000000001e-05, delv=0.000085, icfct=0.6601359197877052)
 .tran 0.05p 1n 0 0.1p
-.print PHASE B1
 .print DEVI IS
 .print NODEV 1 0
+.print PHASE B1
 .end

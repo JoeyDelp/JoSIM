@@ -20,8 +20,8 @@ call([sim, "-o", outfile, infile])
 filename = outfile
 data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
 t = data[:,0]
-p = data[:,1]
-v = data[:,3]
+p = data[:,3]
+v = data[:,2]
 avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
 avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 netlist = open(infile, "r");
@@ -41,8 +41,8 @@ call([sim, "-o", outfile, infile])
 filename = outfile;
 data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
 t = data[:,0]
-p = data[:,1]
-v = data[:,3]
+p = data[:,3]
+v = data[:,2]
 avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
 avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 for i in range(1, 99):
@@ -60,8 +60,8 @@ for i in range(1, 99):
     filename = outfile;
     data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
     t = data[:,0]
-    p = data[:,1]
-    v = data[:,3]
+    p = data[:,3]
+    v = data[:,2]
     avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
     avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 netlist = open(infile, "r");
@@ -79,8 +79,8 @@ call([sim, "-o", outfile, infile])
 filename = outfile;
 data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
 t = data[:,0]
-p = data[:,1]
-v = data[:,3]
+p = data[:,3]
+v = data[:,2]
 avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
 avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 for i in range(1, 101):
@@ -99,8 +99,8 @@ for i in range(1, 101):
     filename = outfile;
     data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
     t = data[:,0]
-    p = data[:,1]
-    v = data[:,3]
+    p = data[:,3]
+    v = data[:,2]
     avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
     avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 netlist = open(infile, "r");
@@ -118,8 +118,8 @@ call([sim, "-o", outfile, infile])
 filename = outfile;
 data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
 t = data[:,0]
-p = data[:,1]
-v = data[:,3]
+p = data[:,3]
+v = data[:,2]
 avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
 avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 for i in range(1, 99):
@@ -138,8 +138,8 @@ for i in range(1, 99):
     filename = outfile;
     data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
     t = data[:,0]
-    p = data[:,1]
-    v = data[:,3]
+    p = data[:,3]
+    v = data[:,2]
     avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
     avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 netlist = open(infile, "r");
@@ -157,8 +157,8 @@ call([sim, "-o", outfile, infile])
 filename = outfile;
 data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
 t = data[:,0]
-p = data[:,1]
-v = data[:,3]
+p = data[:,3]
+v = data[:,2]
 avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
 avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 for i in range(1, 100):
@@ -177,8 +177,8 @@ for i in range(1, 100):
     filename = outfile;
     data = np.genfromtxt(filename, delimiter=',', skip_header=1, dtype=None)
     t = data[:,0]
-    p = data[:,1]
-    v = data[:,3]
+    p = data[:,3]
+    v = data[:,2]
     avgVolt.append(np.mean(v[int(len(v)/2):len(v)]));
     avgV.append(((p[len(t) - 1] - p[int(len(t)/2)]) / t[len(t) - 1]/2) * k);
 
