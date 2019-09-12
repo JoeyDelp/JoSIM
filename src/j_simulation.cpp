@@ -468,7 +468,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       jj.dVn2 = jj.dVn1;
       jj.pn2 = jj.pn1;
       // Store current
-      jj.jjCur.push_back(jj.iS);
+      if(jj.storeCurrent) jj.jjCur.push_back(jj.iS);
     }
 
     for (int j = 0; j < mObj.components.phaseCap.size(); j++) {
