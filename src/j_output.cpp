@@ -25,7 +25,8 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
         if (k.find('_') != std::string::npos) {
           tokens2 = Misc::tokenize_delimeter(k, "_");
           k = tokens2.back();
-          for (int l = 0; l < tokens2.size() - 1; l++)
+          tokens2.pop_back();
+          for (int l = tokens2.size() - 1; l >= 0; l--)
             k += "|" + tokens2.at(l);
         } else if (k.find('.') != std::string::npos) {
           std::replace(k.begin(), k.end(), '.', '|');

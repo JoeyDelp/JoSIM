@@ -70,6 +70,7 @@ public:
         r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB, upperB,
         subCond, transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
   std::vector<double> jjCur;
+  bool storeCurrent;
   jj_volt() {
     voltNodeR = voltNodeC = "NONE";
     voltNRow = voltNCol = -1;
@@ -88,6 +89,7 @@ public:
     T = 4.2;
     tC = 9.1;
     D = 0.0;
+    storeCurrent = false;
   }
 };
 
@@ -189,6 +191,7 @@ public:
         r0, rN, C, iC, iCFact, delV, vG, iS, iT, gLarge, lowerB, upperB,
         subCond, transCond, normalCond, T, tC, Del0, Del, D, rNCalc;
   std::vector<double> jjCur;
+  bool storeCurrent;
   jj_phase() {
     voltNodeR = voltNodeC = "NONE";
     voltNRow = voltNCol = -1;
@@ -207,6 +210,7 @@ public:
     T = 4.2;
     tC = 9.1;
     D = 0.0;
+    storeCurrent = false;
   }
 };
 

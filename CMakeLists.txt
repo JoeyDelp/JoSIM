@@ -5,6 +5,7 @@ project(JoSIM VERSION 2.3)
 include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
 
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
