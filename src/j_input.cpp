@@ -133,6 +133,7 @@ void Input::expand_subcircuits() {
     for (const auto &j : i.second.lines) {
       if (j.first[0] == 'X') {
         netlist.subcircuits.at(i.first).containsSubckt = true;
+        netlist.subcircuits.at(i.first).subcktCounter++;
         netlist.nestedSubcktCount++;
       }
     }
@@ -153,8 +154,7 @@ void Input::expand_subcircuits() {
           }
           if (netlist.subcircuits.count(subcktName) != 0) {
             if (!netlist.subcircuits.at(subcktName).containsSubckt) {
-              for (int k = 0;
-                   k < netlist.subcircuits.at(subcktName).lines.size(); k++) {
+              for (int k = 0; k < netlist.subcircuits.at(subcktName).lines.size(); k++) {
                 tokens = Misc::tokenize_space(
                     netlist.subcircuits.at(subcktName).lines.at(k).first);
                 tokens[0] = tokens[0] + "|" + label;
@@ -197,8 +197,10 @@ void Input::expand_subcircuits() {
                   netlist.subcircuits.at(i.first).lines.begin() + j,
                   moddedLines.begin(), moddedLines.end());
               moddedLines.clear();
+              netlist.subcircuits.at(i.first).subcktCounter--;
               netlist.nestedSubcktCount--;
-              netlist.subcircuits.at(i.first).containsSubckt = false;
+              if(netlist.subcircuits.at(i.first).subcktCounter == 0) 
+                netlist.subcircuits.at(i.first).containsSubckt = false;
             }
           } else
             Errors::input_errors(UNKNOWN_SUBCKT, subcktName);

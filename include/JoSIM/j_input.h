@@ -44,12 +44,13 @@ public:
   std::vector<std::string> io;
   std::vector<std::pair<std::string, std::string>> lines;
   std::vector<std::string> subckts;
-  int jjCount, compCount;
+  int jjCount, compCount, subcktCounter;
   bool containsSubckt;
   Subcircuit() {
     jjCount = 0;
     compCount = 0;
     containsSubckt = false;
+    subcktCounter = 0;
   };
 };
 

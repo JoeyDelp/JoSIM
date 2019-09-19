@@ -40,7 +40,8 @@ void Matrix::find_relevant_x(Input &iObj) {
         if (l.find('_') != std::string::npos) {
           tokens2 = Misc::tokenize_delimeter(l, "_");
           l = tokens2.back();
-          for (int k = 0; k < tokens2.size() - 1; k++)
+          tokens2.pop_back();
+          for (int k = tokens2.size() - 1; k >= 0; k--)
             l += "|" + tokens2.at(k);
         } else if (l.find('.') != std::string::npos) {
           std::replace(l.begin(), l.end(), '.', '|');
