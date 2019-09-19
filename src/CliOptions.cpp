@@ -2,6 +2,7 @@
 
 #include "JoSIM/j_errors.h"
 #include "JoSIM/j_globals.h"
+#include "JoSIM/j_std_include.h"
 #include <cstring>
 
 #include <cstring>
@@ -301,7 +302,7 @@ void CliOptions::version_info() {
       << std::endl;
   std::cout << "Copyright (C) 2019 by Johannes Delport (jdelport@sun.ac.za)"
             << std::endl;
-  std::cout << "v" << VERSION << " compiled on " << __DATE__ << " at "
+  std::cout << "v" << VERSION << "." << GIT_COMMIT_HASH << " compiled on " << __DATE__ << " at "
             << __TIME__ << std::endl;
   std::cout << std::endl;
 }
