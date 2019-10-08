@@ -818,7 +818,7 @@ void Output::write_wr_data(std::string &outname)
           label = traces.at(i).name;
           std::replace(label.begin(), label.end(), '|', '.');
           outfile << " " << i + 1 << " "
-                  << "@" << label << "[c] C\n";
+                  << label << "#branch A\n";
         }
       }
       outfile << "Values:\n";
