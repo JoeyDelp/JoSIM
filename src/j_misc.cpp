@@ -254,6 +254,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
                 functionOfT.end(), values.at(values.size() - 1));
     }
     double startpoint, endpoint, value = 0.0;
+    if((timesteps.back() / iObj.transSim.prstep) > iObj.transSim.simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.prstep)), 0.0);
     for (int i = 1; i < timesteps.size(); i++) {
       startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
       endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
