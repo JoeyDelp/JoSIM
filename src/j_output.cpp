@@ -795,7 +795,7 @@ void Output::write_wr_data(std::string &outname)
       outfile << " 0 time S\n";
       for (int i = 0; i < traces.size(); i++) {
         if (traces.at(i).type == 'V') {
-          if (traces.at(i).name.substr(0, 2) == "NV") {
+          if (traces.at(i).name.substr(0, 5) == "NODEV") {
             tokens = Misc::tokenize_delimeter(traces.at(i).name, "_");
             if (tokens.size() > 2)
               outfile << " " << i + 1 << " v(" << tokens[1] << "," << tokens[2]
@@ -805,7 +805,7 @@ void Output::write_wr_data(std::string &outname)
           } else
             outfile << " " << i + 1 << " " << traces.at(i).name << " V\n";
         } else if (traces.at(i).type == 'P') {
-          if (traces.at(i).name.substr(0, 2) == "NP") {
+          if (traces.at(i).name.substr(0, 5) == "NODEP" || traces.at(i).name.substr(0, 5) == "PHASE") {
             tokens = Misc::tokenize_delimeter(traces.at(i).name, "_");
             if (tokens.size() > 2)
               outfile << " " << i + 1 << " p(" << tokens[1] << "," << tokens[2]

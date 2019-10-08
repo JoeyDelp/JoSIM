@@ -114,6 +114,7 @@ void Matrix::create_A_volt(Input &iObj)
   rowCounter = colCounter = nodeCounter = 0;
   for (auto i : iObj.expNetlist) {
     devicetokens = Misc::tokenize_space(i.first);
+    subckt = i.second;
     // Parse {} expressions
       expStart = expEnd = -1;
       for (int t = 0; t < devicetokens.size(); t++) {
@@ -1888,6 +1889,7 @@ void Matrix::create_A_phase(Input &iObj)
   /* Main circuit node identification */
   for (auto i : iObj.expNetlist) {
     devicetokens = Misc::tokenize_space(i.first);
+    subckt = i.second;
     // Patse {} expression
       expStart = expEnd = -1;
       for (int t = 0; t < devicetokens.size(); t++) {
