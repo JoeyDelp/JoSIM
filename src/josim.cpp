@@ -1,7 +1,6 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/j_input.h"
 #include "JoSIM/j_matrix.h"
 #include "JoSIM/j_output.h"
 #include "JoSIM/j_parser.h"
@@ -10,16 +9,19 @@
 #include "JoSIM/j_verbose.h"
 
 #include "JoSIM/CliOptions.hpp"
+#include "JoSIM/Input.hpp"
 
-using namespace JoSIM;
 
 int main(int argc, const char **argv) {
 
-  CliOptions::version_info();
-  auto cli_options = CliOptions::parse(argc, argv);
 
-  Input iObj(cli_options.analysis_type, cli_options.input_type,
+  JoSIM::CliOptions::version_info();
+  auto cli_options = JoSIM::CliOptions::parse(argc, argv);
+
+  Input iObj(cli_options.analysis_type, 
+             cli_options.input_type,
              cli_options.verbose);
+
   Matrix mObj;
   Simulation sObj;
   Output oObj;
@@ -38,20 +40,20 @@ int main(int argc, const char **argv) {
                            iObj.transSim.maxtstep);
   mObj.find_relevant_x(iObj);
   mObj.create_matrix(iObj);
-  if (cli_options.analysis_type == AnalysisType::Voltage)
+  if (cli_options.analysis_type == JoSIM::AnalysisType::Voltage)
     sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
     //sObj.transient_voltage_simulation(iObj, mObj);
-  else if (cli_options.analysis_type == AnalysisType::Phase)
+  else if (cli_options.analysis_type == JoSIM::AnalysisType::Phase)
     sObj.trans_sim<JoSIM::AnalysisType::Phase>(iObj, mObj);
     // sObj.transient_phase_simulation(iObj, mObj);
   oObj.relevant_traces(iObj, mObj, sObj);
 
   if (cli_options.output_to_file) {
-    if (cli_options.output_file_type == FileOutputType::Csv)
+    if (cli_options.output_file_type == JoSIM::FileOutputType::Csv)
       oObj.write_data(cli_options.output_file_name, mObj, sObj);
-    else if (cli_options.output_file_type == FileOutputType::Dat)
+    else if (cli_options.output_file_type == JoSIM::FileOutputType::Dat)
       oObj.write_legacy_data(cli_options.output_file_name, mObj, sObj);
-    else if (cli_options.output_file_type == FileOutputType::WrSpice)
+    else if (cli_options.output_file_type == JoSIM::FileOutputType::WrSpice)
       oObj.write_wr_data(cli_options.output_file_name);
   }
   if (!cli_options.output_to_file)

@@ -1,13 +1,11 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "JoSIM/j_input.h"
-
+#include "JoSIM/Input.hpp"
 #include "JoSIM/InputType.hpp"
 
-using namespace JoSIM;
-
 void Input::read_input_file(std::string &fileName,
-                            std::vector<std::string> &fileLines) {
+                            std::vector<std::string> &fileLines) 
+{
   std::string line;
   std::fstream ifile(fileName);
   if (ifile.is_open()) {
@@ -145,10 +143,10 @@ void Input::expand_subcircuits() {
           tokens = Misc::tokenize_space(
               netlist.subcircuits.at(i.first).lines.at(j).first);
           label = tokens.at(0);
-          if (argConv == InputType::Jsim) /* LEFT */ {
+          if (argConv == JoSIM::InputType::Jsim) /* LEFT */ {
             subcktName = tokens.at(1);
             io.assign(tokens.begin() + 2, tokens.end());
-          } else if (argConv == InputType::WrSpice) /* RIGHT */ {
+          } else if (argConv == JoSIM::InputType::WrSpice) /* RIGHT */ {
             subcktName = tokens.back();
             io.assign(tokens.begin() + 1, tokens.end() - 1);
           }
@@ -218,10 +216,10 @@ void Input::expand_maindesign() {
     if (netlist.maindesign.at(i)[0] == 'X') {
       tokens = Misc::tokenize_space(netlist.maindesign.at(i));
       label = tokens.at(0);
-      if (argConv == InputType::Jsim) /* LEFT */ {
+      if (argConv == JoSIM::InputType::Jsim) /* LEFT */ {
         subcktName = tokens.at(1);
         io.assign(tokens.begin() + 2, tokens.end());
-      } else if (argConv == InputType::WrSpice) /* RIGHT */ {
+      } else if (argConv == JoSIM::InputType::WrSpice) /* RIGHT */ {
         subcktName = tokens.back();
         io.assign(tokens.begin() + 1, tokens.end() - 1);
       }

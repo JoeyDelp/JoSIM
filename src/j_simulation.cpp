@@ -5,8 +5,8 @@
 // Linear algebra include
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/j_components.h"
-#include "JoSIM/j_globals.h"
 #include "JoSIM/j_matrix.h"
+#include "JoSIM/Constants.hpp"
 #include "klu.h"
 
 #include <cassert>
@@ -69,7 +69,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
     for (int m = 0; m < mObj.rowDesc.size(); m++)
       results.xVect.emplace_back(std::vector<double>(simSize, 0.0));
   }
-  double hn_2_2e_hbar = (iObj.transSim.prstep / 2) * (2 * PI / PHI_ZERO);
+  double hn_2_2e_hbar = (iObj.transSim.prstep / 2) * (2 * JoSIM::Constants::PI / JoSIM::Constants::PHI_ZERO);
   double RHSvalue = 0.0;
   int ok, jjcount, rowCounter = 0;
   int fqtr, sqtr, tqtr;
@@ -118,6 +118,8 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
                 break;
               case ComponentConnections::Type::CSN:
                 RHSvalue += mObj.sources.at(k.index).at(i);
+                break;
+              default:
                 break;
             }
           }
@@ -252,15 +254,15 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
           else if (presis.negNRow == -1) presis.pn1 = lhsValues.at(presis.posNRow);
           else presis.pn1 = lhsValues.at(presis.posNRow) - lhsValues.at(presis.negNRow);
           presis.IRn1 = lhsValues.at(presis.curNRow);
-          RHS.at(rowCounter) = ((PI * presis.value * iObj.transSim.prstep) / PHI_ZERO) * presis.IRn1 + presis.pn1;
+          RHS.at(rowCounter) = ((JoSIM::Constants::PI * presis.value * iObj.transSim.prstep) / JoSIM::Constants::PHI_ZERO) * presis.IRn1 + presis.pn1;
           break; }
         case RowDescriptor::Type::PhaseJJ:
           RHS.at(rowCounter) = mObj.components.phaseJJ.at(j.index).pn1 + hn_2_2e_hbar * mObj.components.phaseJJ.at(j.index).vn1;
           break;
         case RowDescriptor::Type::PhaseCapacitor:
           RHS.at(rowCounter) = 
-            -((2 * PI * iObj.transSim.prstep * iObj.transSim.prstep) /
-              (4 * PHI_ZERO * mObj.components.phaseCap.at(j.index).value)) *
+            -((2 * JoSIM::Constants::PI * iObj.transSim.prstep * iObj.transSim.prstep) /
+              (4 * JoSIM::Constants::PHI_ZERO * mObj.components.phaseCap.at(j.index).value)) *
                 mObj.components.phaseCap.at(j.index).ICn1 -
             mObj.components.phaseCap.at(j.index).pn1 -
             (iObj.transSim.prstep * mObj.components.phaseCap.at(j.index).dPn1);
@@ -271,26 +273,28 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
           else if (pvs.negNRow == -1.0) pvs.pn1 = lhsValues.at(pvs.posNRow);
           else pvs.pn1 = lhsValues.at(pvs.posNRow) - lhsValues.at(pvs.negNRow);
           if (i >= 1) 
-            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.prstep * PI) / PHI_ZERO) *
+            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.prstep * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO) *
               (mObj.sources.at(pvs.sourceDex).at(i) + mObj.sources.at(pvs.sourceDex).at(i - 1));
           else if (i == 0)
-            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.prstep * PI) / PHI_ZERO) *
+            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.prstep * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO) *
               mObj.sources.at(pvs.sourceDex).at(i);
           break; }
         case RowDescriptor::Type::PhaseTX1: {
           const auto &txline = mObj.components.txPhase.at(j.index);
           if (i > txline.k)
-            RHS.at(rowCounter) = ((iObj.transSim.prstep * PI * txline.value) / PHI_ZERO) *
+            RHS.at(rowCounter) = ((iObj.transSim.prstep * JoSIM::Constants::PI * txline.value) / JoSIM::Constants::PHI_ZERO) *
               results.xVect.at(mObj.relToXMap.at(txline.curNode2R)).at(i - txline.k) +
               txline.p1n1 + (iObj.transSim.prstep / 2) * (txline.dP1n1 + txline.dP2nk);
           break; }
         case RowDescriptor::Type::PhaseTX2: {
           const auto &txline = mObj.components.txPhase.at(j.index);
           if (i > txline.k)
-            RHS.at(rowCounter) = ((iObj.transSim.prstep * PI * txline.value) / PHI_ZERO) *
+            RHS.at(rowCounter) = ((iObj.transSim.prstep * JoSIM::Constants::PI * txline.value) / JoSIM::Constants::PHI_ZERO) *
               results.xVect.at(mObj.relToXMap.at(txline.curNode1R)).at(i - txline.k) +
               txline.p2n1 + (iObj.transSim.prstep / 2) * (txline.dP2n1 + txline.dP1nk);
           break; }
+        default:
+          break;
       }
       rowCounter++;
     }
@@ -458,9 +462,9 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       // Phase guess (P0)
       jj.phi0 = jj.pn1 + (hn_2_2e_hbar) * (jj.vn1 + jj.v0);
       // Junction current (Is)
-      jj.iS = -((PI * jj.Del) / (2 * EV * jj.rNCalc)) *
+      jj.iS = -((JoSIM::Constants::PI * jj.Del) / (2 * JoSIM::Constants::EV * jj.rNCalc)) *
               (sin(jj.phi0) / sqrt(1 - jj.D * (sin(jj.phi0 / 2) *
-                sin(jj.phi0 / 2)))) * tanh((jj.Del) / (2 * BOLTZMANN * jj.T) *
+                sin(jj.phi0 / 2)))) * tanh((jj.Del) / (2 * JoSIM::Constants::BOLTZMANN * jj.T) *
                 sqrt(1 - jj.D * (sin(jj.phi0 / 2) * sin(jj.phi0 / 2)))) +
               (((2 * jj.C) / iObj.transSim.prstep) * jj.vn1) + (jj.C * jj.dVn1) - jj.iT;
       // Set previous values

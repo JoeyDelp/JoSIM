@@ -2,11 +2,11 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_SIMULATION_H
 #define JOSIM_J_SIMULATION_H
-#include "j_errors.h"
 #include "j_matrix.h"
 #include "j_misc.h"
 #include "j_std_include.h"
 
+#include "./Errors.hpp"
 
 #define TRANSIENT 0
 #define DC 1

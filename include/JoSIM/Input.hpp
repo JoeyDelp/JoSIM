@@ -3,7 +3,6 @@
 #ifndef JOSIM_J_INPUT_H
 #define JOSIM_J_INPUT_H
 
-#include "j_errors.h"
 #include "j_misc.h"
 #include "j_std_include.h"
 
@@ -11,12 +10,7 @@
 #include "./AnalysisType.hpp"
 #include "./InputType.hpp"
 #include "./ParameterName.hpp"
-
-#define UTYPE -1
-#define RCSJ 0
-#define MTJ 1
-#define NTRON 2
-#define CSHE 3
+#include "./Errors.hpp"
 
 class Parameters {
 public:
@@ -30,11 +24,13 @@ public:
   double tstop;
   double tstart;
   double maxtstep;
-  Transient() {
-    tstart = 0.0;
-    tstop = 0.0;
-    prstep = 1E-12;
-    maxtstep = 1E-12;
+  Transient() :
+    prstep(1E-12),
+    tstop(0.0),
+    tstart(0.0),
+    maxtstep(1E-12)
+  {
+
   };
   std::size_t simsize() { return (tstop - tstart) / prstep; };
 };
@@ -46,11 +42,13 @@ public:
   std::vector<std::string> subckts;
   int jjCount, compCount, subcktCounter;
   bool containsSubckt;
-  Subcircuit() {
-    jjCount = 0;
-    compCount = 0;
-    containsSubckt = false;
-    subcktCounter = 0;
+  Subcircuit() :
+    jjCount(0),
+    compCount(0),
+    subcktCounter(0),
+    containsSubckt(false)
+  {
+
   };
 };
 
@@ -65,12 +63,14 @@ public:
   std::vector<std::string> subckts;
   int jjCount, compCount, subcktCounter, nestedSubcktCount;
   bool containsSubckt;
-  Netlist() {
-    jjCount = 0;
-    compCount = 0;
-    subcktCounter = 0;
-    nestedSubcktCount = 0;
-    containsSubckt = false;
+  Netlist() :
+    jjCount(0),
+    compCount(0),
+    subcktCounter(0),
+    nestedSubcktCount(0),
+    containsSubckt(false)
+  {
+  
   };
 };
 
@@ -85,10 +85,13 @@ public:
 
   Input(JoSIM::AnalysisType analysis_type,
         JoSIM::InputType input_type = JoSIM::InputType::Jsim,
-        bool verbose = false)
-      : argAnal(analysis_type), argConv(input_type), argVerb(verbose) {
-    // Empty
-  }
+        bool verbose = false) : 
+    argAnal(analysis_type), 
+    argConv(input_type), 
+    argVerb(verbose) 
+    {
+
+    };
 
   JoSIM::AnalysisType argAnal;
   JoSIM::InputType argConv;

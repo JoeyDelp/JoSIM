@@ -1,6 +1,7 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_misc.h"
+#include "JoSIM/Constants.hpp"
 
 #include <cassert>
 
@@ -209,6 +210,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
   auto last = str.find(')');
   std::string params = str.substr(first, last - first);
   tokens = tokenize_delimeter(params, " ,");
+  /* PWL(0 0 T1 V1 T2 V2 ... TN VN) */
   if (str.find("PWL") != std::string::npos) {
     if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0)
       Errors::function_errors(INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
@@ -385,7 +387,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     assert(iObj.transSim.simsize() == functionOfT.size());
     for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
       currentTimestep = i * iObj.transSim.prstep;
-      value = VO + VA * sin(2 * PI * FREQ * (currentTimestep - TD)) *
+      value = VO + VA * sin(2 * JoSIM::Constants::PI * FREQ * (currentTimestep - TD)) *
                        exp(-THETA * (currentTimestep - TD));
       functionOfT.at(i) = value;
     }
@@ -495,6 +497,72 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       currentTimestep = i * iObj.transSim.prstep;
       value = VA * grand() / sqrt(2.0 * TSTEP);
       functionOfT.at(i) = value;
+    }
+  }
+  /* PWS(0 0 T1 V1 T2 V2 .. TN VN) */
+  else if (str.find("PWS") != std::string::npos) {
+    if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0)
+      Errors::function_errors(INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
+    std::vector<double> timesteps, values;
+    for (int i = 0; i < tokens.size(); i = i + 2) {
+      timesteps.push_back(modifier(tokens.at(i)));
+    }
+    for (int i = 1; i < tokens.size(); i = i + 2) {
+      if (iObj.parameters.parsedParams.count(
+              JoSIM::ParameterName(tokens.at(i), subckt)) != 0)
+        values.push_back(iObj.parameters.parsedParams.at(
+            JoSIM::ParameterName(tokens.at(i), subckt)));
+      else if (iObj.parameters.parsedParams.count(
+              JoSIM::ParameterName(tokens.at(i), "")) != 0)
+        values.push_back(iObj.parameters.parsedParams.at(
+            JoSIM::ParameterName(tokens.at(i), "")));
+      else
+        // values.push_back(modifier(tokens.at(i)));
+        values.push_back(Parser::parse_param(
+            tokens.at(i), iObj.parameters.parsedParams, subckt));
+    }
+    if (timesteps.size() < values.size())
+      Errors::function_errors(TOO_FEW_TIMESTEPS,
+                              std::to_string(timesteps.size()) +
+                                  " timesteps & " +
+                                  std::to_string(timesteps.size()) + " values");
+    if (timesteps.size() > values.size())
+      Errors::function_errors(
+          TOO_FEW_VALUES, std::to_string(timesteps.size()) + " timesteps & " +
+                              std::to_string(timesteps.size()) + " values");
+    if ((timesteps.back() > iObj.transSim.tstop) &&
+        (values.back() > values.at(values.size() - 2))) {
+      values.at(values.size() - 1) = (iObj.transSim.tstop / timesteps.back()) *
+                                  (values.back() - values.at(values.size() - 2));
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
+    } else if ((timesteps.back() > iObj.transSim.tstop) &&
+               (values.back() == values.at(values.size() - 2))) {
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
+    }
+    if (values.at(values.size() - 1) != 0.0) {
+      std::fill(functionOfT.begin() +
+                    timesteps.at(timesteps.size() - 1) / iObj.transSim.prstep,
+                functionOfT.end(), values.at(values.size() - 1));
+    }
+    double startpoint, endpoint, value, period, ba = 0.0;
+    if((timesteps.back() / iObj.transSim.prstep) > iObj.transSim.simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.prstep)), 0.0);
+    for (int i = 1; i < timesteps.size(); i++) {
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
+      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      period = (endpoint - startpoint) * 2;
+      functionOfT.at(startpoint) = values.at(i - 1);
+      for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
+        if (values.at(i - 1) < values.at(i)) {
+          ba = (values.at(i) - values.at(i - 1)) / 2;
+          value = values.at(i - 1) + ba * sin((2 * JoSIM::Constants::PI * (j - (period/4)))/period) + ba;
+        } else if (values.at(i - 1) > values.at(i)) {
+          ba = (values.at(i - 1) - values.at(i)) / 2;
+          value = values.at(i - 1) - ba * sin((2 * JoSIM::Constants::PI * (j + (period/4)))/period) - ba;
+        } else if (values.at(i - 1) == values.at(i)) {
+          value = values.at(i);
+        }
+        functionOfT.at(j) = value;
+      }
     }
   }
   return functionOfT;

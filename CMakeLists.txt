@@ -32,8 +32,8 @@ add_library(josim
             src/j_output.cpp
             src/j_misc.cpp
             src/j_matrix.cpp
-            src/j_input.cpp
-            src/j_errors.cpp
+            src/Input.cpp
+            src/Errors.cpp
             src/j_components.cpp
             src/j_parser.cpp
             src/j_verbose.cpp)

@@ -2,10 +2,11 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_MATRIX_H
 #define JOSIM_J_MATRIX_H
-#include "JoSIM/AnalysisType.hpp"
+#include "./AnalysisType.hpp"
 #include "j_components.h"
-#include "j_errors.h"
-#include "j_input.h"
+#include "./Input.hpp"
+#include "./Errors.hpp"
+
 #include <unordered_map>
 
 class matrix_element {

@@ -2,9 +2,11 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_output.h"
 #include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/j_errors.h"
-#include "JoSIM/j_input.h"
+#include "JoSIM/Input.hpp"
 #include "JoSIM/j_simulation.h"
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+
 
 #include <algorithm>
 #include <cassert>
@@ -222,28 +224,28 @@ void Output::handle_voltage(const std::vector<std::string> &devToHandle, Trace &
       if(mObj.labelNodes.count(devToHandle.at(0)) == 0) {
         if(devToHandle.at(1) == "0" || devToHandle.at(1) == "GND") {
           result.name = "NODEV_" + devToHandle.at(0) + "_0";
-          result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
+          result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV))
+            result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i) - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i-1))
               - result.calcData.back());
           }
         } else if(devToHandle.at(0) == "0" || devToHandle.at(0) == "GND") {
           result.name = "NODEV_0_" + devToHandle.at(1);
-          result.calcData.emplace_back(-((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
+          result.calcData.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            result.calcData.emplace_back(-((HBAR / (iObj.transSim.prstep * EV))
+            result.calcData.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i) - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i-1))
               - result.calcData.back()));
           }
         } else {
           result.name = "NODEV_" + devToHandle.at(0) + "_" + devToHandle.at(1);
-          result.calcData.emplace_back(((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0))
-            - ((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
+          result.calcData.emplace_back(((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0))
+            - ((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            result.calcData.emplace_back(((HBAR / (iObj.transSim.prstep * EV))
+            result.calcData.emplace_back(((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i) - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i-1)))
-              - ((HBAR / (iObj.transSim.prstep * EV))
+              - ((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i) - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i-1)))
               - result.calcData.back());
           }
@@ -251,58 +253,58 @@ void Output::handle_voltage(const std::vector<std::string> &devToHandle, Trace &
       } else {
         std::vector<double> devv1, devv2;
         if(mObj.labelNodes.at(devToHandle.at(0)).negNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).negNode == "GND") {
-          devv1.emplace_back((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
+          devv1.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            devv1.emplace_back((HBAR / (iObj.transSim.prstep * EV))
+            devv1.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1)) 
               - devv1.back());
           }
         } else if(mObj.labelNodes.at(devToHandle.at(0)).posNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).posNode == "GND") {
-          devv1.emplace_back(-((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
+          devv1.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            devv1.emplace_back(-((HBAR / (iObj.transSim.prstep * EV))
+            devv1.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i-1)) 
               - devv1.back()));
           }
         } else {
-          devv1.emplace_back(((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0))
-            - ((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
+          devv1.emplace_back(((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0))
+            - ((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            devv1.emplace_back(((HBAR / (iObj.transSim.prstep * EV))
+            devv1.emplace_back(((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1)))
-              - ((HBAR / (iObj.transSim.prstep * EV))
+              - ((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i-1)))
               - devv1.back());
           }
         }
         if(mObj.labelNodes.at(devToHandle.at(1)).negNode == "0" || mObj.labelNodes.at(devToHandle.at(1)).negNode == "GND") {
-          devv2.emplace_back((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0));
+          devv2.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            devv2.emplace_back((HBAR / (iObj.transSim.prstep * EV))
+            devv2.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i-1)) 
               - devv2.back());
           }
         } else if(mObj.labelNodes.at(devToHandle.at(1)).posNode == "0" || mObj.labelNodes.at(devToHandle.at(1)).posNode == "GND") {
-          devv2.emplace_back(-((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
+          devv2.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            devv2.emplace_back(-((HBAR / (iObj.transSim.prstep * EV))
+            devv2.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i-1)) 
               - devv2.back()));
           }
         } else {
-          devv2.emplace_back(((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0))
-            - ((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
+          devv2.emplace_back(((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0))
+            - ((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            devv2.emplace_back(((HBAR / (iObj.transSim.prstep * EV))
+            devv2.emplace_back(((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i-1)))
-              - ((HBAR / (iObj.transSim.prstep * EV))
+              - ((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV))
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i) 
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i-1)))
               - devv2.back());
@@ -314,9 +316,9 @@ void Output::handle_voltage(const std::vector<std::string> &devToHandle, Trace &
     } else {
       if(mObj.labelNodes.count(devToHandle.at(0)) == 0) {
         result.name = "NODEV_" + devToHandle.at(0);
-        result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
+        result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
         for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-          result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) 
+          result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) 
             * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i) 
             - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i-1))
             - result.calcData.back());
@@ -325,36 +327,36 @@ void Output::handle_voltage(const std::vector<std::string> &devToHandle, Trace &
         if(mObj.deviceLabelIndex.at(devToHandle.at(0)).type == RowDescriptor::Type::PhaseVS) {
           result.calcData = mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index);
         } else if(mObj.deviceLabelIndex.at(devToHandle.at(0)).type == RowDescriptor::Type::PhasePS) {
-          result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) * mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index).at(0));
+          result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index).at(0));
           for (int i = 1; i < mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index).size(); i++) {
-            result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) 
+            result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) 
               * (mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index).at(i) 
               - mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index).at(i-1))
               - result.calcData.back());
           }
         } else {
           if(mObj.labelNodes.at(devToHandle.at(0)).negNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).negNode == "GND") {
-            result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
+            result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
             for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).size(); i++) {
-              result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) 
+              result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) 
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i)
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1))
               - result.calcData.back());
             }
           } else if(mObj.labelNodes.at(devToHandle.at(0)).posNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).posNode == "GND") {
-            result.calcData.emplace_back(-((HBAR / (iObj.transSim.prstep * EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
+            result.calcData.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
             for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).size(); i++) {
-              result.calcData.emplace_back(-((HBAR / (iObj.transSim.prstep * EV)) 
+              result.calcData.emplace_back(-((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) 
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i)
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i-1))
               - result.calcData.back()));
             }
           } else {
-            result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) 
+            result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) 
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0)
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
             for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).size(); i++) {
-              result.calcData.emplace_back((HBAR / (iObj.transSim.prstep * EV)) 
+              result.calcData.emplace_back((JoSIM::Constants::HBAR / (iObj.transSim.prstep * JoSIM::Constants::EV)) 
               * ((sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i)
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1))
               - (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i)
@@ -499,28 +501,28 @@ void Output::handle_phase(const std::vector<std::string> &devToHandle, Trace &re
       if(mObj.labelNodes.count(devToHandle.at(0)) == 0) {
         if(devToHandle.at(1) == "0" || devToHandle.at(1) == "GND") {
           result.name = "NODEP_" + devToHandle.at(0) + "_0";
-          result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
+          result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+            result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i) + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i-1))
               + result.calcData.back());
           }
         } else if(devToHandle.at(0) == "0" || devToHandle.at(0) == "GND") {
           result.name = "NODEP_0_" + devToHandle.at(1);
-          result.calcData.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
+          result.calcData.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            result.calcData.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR)
+            result.calcData.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i) + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i-1))
               + result.calcData.back()));
           }
         } else {
           result.name = "NODEP_" + devToHandle.at(0) + "_" + devToHandle.at(1);
-          result.calcData.emplace_back((((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0))
-            - (((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
+          result.calcData.emplace_back((((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0))
+            - (((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            result.calcData.emplace_back((((iObj.transSim.prstep * EV) / HBAR)
+            result.calcData.emplace_back((((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i) + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i-1)))
-              - (((iObj.transSim.prstep * EV) / HBAR)
+              - (((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i) + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).at(i-1)))
               + result.calcData.back());
           }
@@ -528,58 +530,58 @@ void Output::handle_phase(const std::vector<std::string> &devToHandle, Trace &re
       } else {
         std::vector<double> devv1, devv2;
         if(mObj.labelNodes.at(devToHandle.at(0)).negNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).negNode == "GND") {
-          devv1.emplace_back(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
+          devv1.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            devv1.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+            devv1.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1)) 
               + devv1.back());
           }
         } else if(mObj.labelNodes.at(devToHandle.at(0)).posNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).posNode == "GND") {
-          devv1.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
+          devv1.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            devv1.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR)
+            devv1.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i-1)) 
               + devv1.back()));
           }
         } else {
-          devv1.emplace_back((((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0))
-            - (((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
+          devv1.emplace_back((((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0))
+            - (((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-            devv1.emplace_back((((iObj.transSim.prstep * EV) / HBAR)
+            devv1.emplace_back((((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1)))
-              - (((iObj.transSim.prstep * EV) / HBAR)
+              - (((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i-1)))
               + devv1.back());
           }
         }
         if(mObj.labelNodes.at(devToHandle.at(1)).negNode == "0" || mObj.labelNodes.at(devToHandle.at(1)).negNode == "GND") {
-          devv2.emplace_back(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0));
+          devv2.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            devv2.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+            devv2.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i-1)) 
               + devv2.back());
           }
         } else if(mObj.labelNodes.at(devToHandle.at(1)).posNode == "0" || mObj.labelNodes.at(devToHandle.at(1)).posNode == "GND") {
-          devv2.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
+          devv2.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            devv2.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR)
+            devv2.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i-1)) 
               + devv2.back()));
           }
         } else {
-          devv2.emplace_back((((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0))
-            - (((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
+          devv2.emplace_back((((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(0))
+            - (((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(0)));
           for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(1)))).size(); i++) {
-            devv2.emplace_back((((iObj.transSim.prstep * EV) / HBAR)
+            devv2.emplace_back((((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).posNode))).at(i-1)))
-              - (((iObj.transSim.prstep * EV) / HBAR)
+              - (((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i) 
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(1)).negNode))).at(i-1)))
               + devv2.back());
@@ -594,9 +596,9 @@ void Output::handle_phase(const std::vector<std::string> &devToHandle, Trace &re
         result.name = "PHASE_" + devToHandle.at(0);
       } else if(mObj.labelNodes.count(devToHandle.at(0)) == 0) {
         result.name = "NODEP_" + devToHandle.at(0);
-        result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
+        result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(0));
         for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).size(); i++) {
-          result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+          result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
             * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i) 
             + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(devToHandle.at(0)))).at(i-1))
             + result.calcData.back());
@@ -606,27 +608,27 @@ void Output::handle_phase(const std::vector<std::string> &devToHandle, Trace &re
           result.calcData = mObj.sources.at(mObj.deviceLabelIndex.at(devToHandle.at(0)).index);
         } else {
           if(mObj.labelNodes.at(devToHandle.at(0)).negNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).negNode == "GND") {
-            result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
+            result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR) * sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0));
             for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).size(); i++) {
-              result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+              result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i)
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1))
               + result.calcData.back());
             }
           } else if(mObj.labelNodes.at(devToHandle.at(0)).posNode == "0" || mObj.labelNodes.at(devToHandle.at(0)).posNode == "GND") {
-            result.calcData.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR)* sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
+            result.calcData.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)* sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
             for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).size(); i++) {
-              result.calcData.emplace_back(-(((iObj.transSim.prstep * EV) / HBAR)
+              result.calcData.emplace_back(-(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i)
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i-1))
               + result.calcData.back()));
             }
           } else {
-            result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+            result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(0)
               - sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(0)));
             for (int i = 1; i < sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).size(); i++) {
-              result.calcData.emplace_back(((iObj.transSim.prstep * EV) / HBAR)
+              result.calcData.emplace_back(((iObj.transSim.prstep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR)
               * ((sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i)
               + sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).posNode))).at(i-1))
               - (sObj.results.xVect.at(mObj.XtoTraceMap.at(mObj.relToXMap.at(mObj.labelNodes.at(devToHandle.at(0)).negNode))).at(i)

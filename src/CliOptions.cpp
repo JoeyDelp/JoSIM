@@ -1,9 +1,7 @@
 #include "JoSIM/CliOptions.hpp"
 
-#include "JoSIM/j_errors.h"
-#include "JoSIM/j_globals.h"
+#include "JoSIM/Errors.hpp"
 #include "JoSIM/j_std_include.h"
-#include <cstring>
 
 #include <cstring>
 

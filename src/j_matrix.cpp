@@ -1,8 +1,10 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/j_matrix.h"
-#include "JoSIM/j_errors.h"
 #include "JoSIM/j_misc.h"
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+
 
 #include <algorithm>
 #include <string>
@@ -30,9 +32,10 @@ void Matrix::find_relevant_x(Input &iObj) {
         iObj.relevantX.push_back(i);
     }
   }
-  std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
-  auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
-  iObj.relevantX.erase(last, iObj.relevantX.end());
+  //std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
+  //auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
+  //iObj.relevantX.erase(last, iObj.relevantX.end());
+  iObj.relevantX.erase(uniquify(iObj.relevantX.begin(), iObj.relevantX.end()), iObj.relevantX.end());
   for (const auto &i : iObj.relevantX) {
     tokens = Misc::tokenize_space(i.substr(i.find_first_of(" \t") + 1));
     for (auto &j : tokens) {
@@ -84,9 +87,11 @@ void Matrix::find_relevant_x(Input &iObj) {
       }
     }
   }
-  std::sort(relevantToStore.begin(), relevantToStore.end());
-  last = std::unique(relevantToStore.begin(), relevantToStore.end());
-  relevantToStore.erase(last, relevantToStore.end());
+  // std::sort(relevantToStore.begin(), relevantToStore.end());
+  // last = std::unique(relevantToStore.begin(), relevantToStore.end());
+  // relevantToStore.erase(last, relevantToStore.end());
+  relevantToStore.erase(uniquify(relevantToStore.begin(), relevantToStore.end()), relevantToStore.end());
+
 }
 
 void Matrix::create_matrix(Input &iObj)
@@ -1203,7 +1208,7 @@ void Matrix::create_A_volt(Input &iObj)
         components.voltJJ.back().posNCol = e.colIndex = columnMap.at(cNameP);
         components.voltJJ.back().phaseNRow = e.rowIndex =
             rowMap.at(devicetokens.at(0));
-        e.value = (-iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
+        e.value = (-iObj.transSim.prstep / 2) * ((2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO);
         mElements.push_back(e);
         if (!nGND) {
           e.label = label;
@@ -1233,7 +1238,7 @@ void Matrix::create_A_volt(Input &iObj)
           components.voltJJ.back().negNCol = e.colIndex = columnMap.at(cNameN);
           components.voltJJ.back().phaseNRow = e.rowIndex =
               rowMap.at(devicetokens.at(0));
-          e.value = (iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
+          e.value = (iObj.transSim.prstep / 2) * ((2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO);
           mElements.push_back(e);
         }
       } else if (!nGND) {
@@ -1248,7 +1253,7 @@ void Matrix::create_A_volt(Input &iObj)
         components.voltJJ.back().negNCol = e.colIndex = columnMap.at(cNameN);
         components.voltJJ.back().phaseNRow = e.rowIndex =
             rowMap.at(devicetokens.at(0));
-        e.value = (iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
+        e.value = (iObj.transSim.prstep / 2) * ((2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO);
         mElements.push_back(e);
       }
       e.label = label;
@@ -1274,17 +1279,17 @@ void Matrix::create_A_volt(Input &iObj)
           1 / components.voltJJ.back().rN +
           ((2 * components.voltJJ.back().C) / iObj.transSim.prstep);
       components.voltJJ.back().Del0 =
-          1.76 * BOLTZMANN * components.voltJJ.back().tC;
+          1.76 * JoSIM::Constants::BOLTZMANN * components.voltJJ.back().tC;
       components.voltJJ.back().Del =
           components.voltJJ.back().Del0 *
-          sqrt(cos((PI / 2) *
+          sqrt(cos((JoSIM::Constants::PI / 2) *
                    (components.voltJJ.back().T / components.voltJJ.back().tC) *
                    (components.voltJJ.back().T / components.voltJJ.back().tC)));
       components.voltJJ.back().rNCalc =
-          ((PI * components.voltJJ.back().Del) /
-           (2 * EV * components.voltJJ.back().iC)) *
+          ((JoSIM::Constants::PI * components.voltJJ.back().Del) /
+           (2 * JoSIM::Constants::EV * components.voltJJ.back().iC)) *
           tanh(components.voltJJ.back().Del /
-               (2 * BOLTZMANN * components.voltJJ.back().T));
+               (2 * JoSIM::Constants::BOLTZMANN * components.voltJJ.back().T));
       components.voltJJ.back().iS =
           -components.voltJJ.back().iC * sin(components.voltJJ.back().phi0);
     }
@@ -2140,8 +2145,8 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseRes.back().curNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
       e.value =
-          -(PI * components.phaseRes.back().value * iObj.transSim.prstep) /
-          PHI_ZERO;
+          -(JoSIM::Constants::PI * components.phaseRes.back().value * iObj.transSim.prstep) /
+          JoSIM::Constants::PHI_ZERO;
       components.phaseRes.back().resPtr = mElements.size();
       mElements.push_back(e);
     }
@@ -2325,8 +2330,8 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseCap.back().curNCol = e.colIndex = columnMap.at(cName);
       components.phaseCap.back().curNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
-      e.value = (-2 * PI * iObj.transSim.prstep * iObj.transSim.prstep) /
-                (PHI_ZERO * 4 * components.phaseCap.back().value);
+      e.value = (-2 * JoSIM::Constants::PI * iObj.transSim.prstep * iObj.transSim.prstep) /
+                (JoSIM::Constants::PHI_ZERO * 4 * components.phaseCap.back().value);
       components.phaseCap.back().capPtr = mElements.size();
       mElements.push_back(e);
     }
@@ -2511,7 +2516,7 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseInd.back().curNCol = e.colIndex = columnMap.at(cName);
       components.phaseInd.back().curNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
-      e.value = -(components.phaseInd.back().value * 2 * PI) / PHI_ZERO;
+      e.value = -(components.phaseInd.back().value * 2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO;
       components.phaseInd.back().indPtr = mElements.size();
       mElements.push_back(e);
     }
@@ -2983,7 +2988,7 @@ void Matrix::create_A_phase(Input &iObj)
       components.phaseJJ.back().voltNCol = e.colIndex = columnMap.at(cVolt);
       components.phaseJJ.back().voltNRow = e.rowIndex =
           rowMap.at(devicetokens.at(0));
-      e.value = -(iObj.transSim.prstep / 2) * ((2 * PI) / PHI_ZERO);
+      e.value = -(iObj.transSim.prstep / 2) * ((2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO);
       mElements.push_back(e);
       components.phaseJJ.back().gLarge =
           components.phaseJJ.back().iC /
@@ -3002,18 +3007,18 @@ void Matrix::create_A_phase(Input &iObj)
           1 / components.phaseJJ.back().rN +
           ((2 * components.phaseJJ.back().C) / iObj.transSim.prstep);
       components.phaseJJ.back().Del0 =
-          1.76 * BOLTZMANN * components.phaseJJ.back().tC;
+          1.76 * JoSIM::Constants::BOLTZMANN * components.phaseJJ.back().tC;
       components.phaseJJ.back().Del =
           components.phaseJJ.back().Del0 *
           sqrt(cos(
-              (PI / 2) *
+              (JoSIM::Constants::PI / 2) *
               (components.phaseJJ.back().T / components.phaseJJ.back().tC) *
               (components.phaseJJ.back().T / components.phaseJJ.back().tC)));
       components.phaseJJ.back().rNCalc =
-          ((PI * components.phaseJJ.back().Del) /
-           (2 * EV * components.phaseJJ.back().iC)) *
+          ((JoSIM::Constants::PI * components.phaseJJ.back().Del) /
+           (2 * JoSIM::Constants::EV * components.phaseJJ.back().iC)) *
           tanh(components.phaseJJ.back().Del /
-               (2 * BOLTZMANN * components.phaseJJ.back().T));
+               (2 * JoSIM::Constants::BOLTZMANN * components.phaseJJ.back().T));
       components.phaseJJ.back().iS =
           -components.phaseJJ.back().iC * sin(components.phaseJJ.back().phi0);
     }
@@ -3329,8 +3334,8 @@ void Matrix::create_A_phase(Input &iObj)
           relXInd.end())
         relXInd.push_back(e.rowIndex);
       e.value =
-          -(PI * iObj.transSim.prstep * components.txPhase.back().value) /
-          (PHI_ZERO);
+          -(JoSIM::Constants::PI * iObj.transSim.prstep * components.txPhase.back().value) /
+          (JoSIM::Constants::PHI_ZERO);
       mElements.push_back(e);
       e.label = label;
       components.txPhase.back().curN2Col = e.colIndex = columnMap.at(cName2);
@@ -3339,8 +3344,8 @@ void Matrix::create_A_phase(Input &iObj)
           relXInd.end())
         relXInd.push_back(e.rowIndex);
       e.value =
-          -(PI * iObj.transSim.prstep * components.txPhase.back().value) /
-          (PHI_ZERO);
+          -(JoSIM::Constants::PI * iObj.transSim.prstep * components.txPhase.back().value) /
+          (JoSIM::Constants::PHI_ZERO);
       mElements.push_back(e);
     }
     /******************/
@@ -3514,13 +3519,13 @@ void Matrix::create_A_phase(Input &iObj)
     e.label = label;
     e.colIndex = components.phaseInd.at(index2).curNCol;
     e.rowIndex = components.phaseInd.at(index1).curNRow;
-    e.value = -(mutualL * 2 * PI) / PHI_ZERO;
+    e.value = -(mutualL * 2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO;
     components.phaseInd.at(index1).mutPtr = mElements.size();
     mElements.push_back(e);
     e.label = label;
     e.colIndex = components.phaseInd.at(index1).curNCol;
     e.rowIndex = components.phaseInd.at(index2).curNRow;
-    e.value = -(mutualL * 2 * PI) / PHI_ZERO;
+    e.value = -(mutualL * 2 * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO;
     components.phaseInd.at(index2).mutPtr = mElements.size();
     mElements.push_back(e);
   }

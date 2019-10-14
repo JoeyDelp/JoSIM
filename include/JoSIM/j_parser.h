@@ -3,9 +3,10 @@
 #ifndef JOSIM_J_PARSER_H
 #define JOSIM_J_PARSER_H
 
-#include "./j_input.h"
 #include "./j_misc.h"
 #include "./j_std_include.h"
+#include "./Input.hpp"
+
 
 #include "./ParameterName.hpp"
 

@@ -2,12 +2,12 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_COMPONENTS_H
 #define JOSIM_J_COMPONENTS_H
-#include "j_errors.h"
-#include "j_input.h"
 #include "j_misc.h"
 #include "j_parser.h"
 #include "j_std_include.h"
-
+#include "./Constants.hpp"
+#include "./Input.hpp"
+#include "./Errors.hpp"
 
 class device {
 public:
@@ -18,14 +18,23 @@ public:
   int negNRow, negNCol;
   int ppPtr, nnPtr, pnPtr, npPtr;
   double value;
-  device() {
-    label = "NOTHING";
-    posNodeR = posNodeC = "NONE";
-    negNodeR = negNodeC = "NONE";
-    posNRow = posNCol = -1;
-    negNRow = negNCol = -1;
-    ppPtr = nnPtr = pnPtr = npPtr = -1;
-    value = 0;
+  device() : 
+    label("NOTHING"),
+    posNodeR("NONE"),
+    posNodeC("NONE"),
+    negNodeR("NONE"),
+    negNodeC("NONE"),
+    posNRow(-1),
+    posNCol(-1),
+    negNRow(-1),
+    negNCol(-1),
+    ppPtr(-1),
+    nnPtr(-1),
+    pnPtr(-1),
+    npPtr(-1),
+    value(0)
+  {
+
   }
 };
 
@@ -84,7 +93,7 @@ public:
     rN = 5;
     C = 2.5E-12;
     iC = 1E-3;
-    iCFact = PI / 4;
+    iCFact = JoSIM::Constants::PI / 4;
     iT = iS = gLarge = 0.0;
     T = 4.2;
     tC = 9.1;
@@ -205,7 +214,7 @@ public:
     rN = 5;
     C = 2.5E-12;
     iC = 1E-3;
-    iCFact = PI / 4;
+    iCFact = JoSIM::Constants::PI / 4;
     iT = iS = gLarge = 0.0;
     T = 4.2;
     tC = 9.1;
