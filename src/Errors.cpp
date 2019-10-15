@@ -3,657 +3,529 @@
 #include "JoSIM/Errors.hpp"
 
 void Errors::cli_errors(int errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Command Line Interface\n";
   switch (errorCode) {
-  case NO_OUTPUT:
-    std::cerr << "W: No output file name specified. Using default (output.csv)."
-              << std::endl;
-    std::cerr << "W: This file will be stored in the current working directory."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(CLIErrors::NO_OUTPUT):
+    formattedMessage += "No output file name specified. Using default (output.csv).\n";
+    formattedMessage += "This file will be stored in the current working directory.";
+    warning_message(formattedMessage);
     break;
-  case NO_INPUT:
-    std::cerr << "E: No input file was specified. Simulator cannot continue."
-              << std::endl;
-    std::cerr << "E: Please specify input and try again." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
-  case UNKNOWN_SWITCH:
-    std::cerr << "W: Unknown option " << whatPart
-              << " specified. Please refer to the help menu." << std::endl;
+  case static_cast<int>(static_cast<int>(CLIErrors::NO_INPUT)):
+    formattedMessage += "No input file was specified. Simulator cannot continue.\n";
+    formattedMessage += "Please specify input and try again.";
+    error_message(formattedMessage);
+  case static_cast<int>(CLIErrors::UNKNOWN_SWITCH):
+    formattedMessage += "Unknown option " + whatPart + " specified. Please refer to the help menu.";
+    warning_message(formattedMessage);
     break;
-  case TOO_FEW_ARGUMENTS:
-    std::cerr << "E: Missing input arguments" << std::endl;
-    std::cerr << "E: Usage: josim [options] input_netlist" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "I: For further help use the -h switch" << std::endl;
-    exit(-1);
-  case INVALID_ANALYSIS:
-    std::cerr << "E: Invalid analysis type specified. 0 - Voltage, 1 - Phase."
-              << std::endl;
-    std::cerr << "E: Usage: josim [options] input_netlist" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "I: For further help use the -h switch" << std::endl;
-    exit(-1);
-  case NO_ANALYSIS:
-    std::cerr
-        << "W: No analysis was specified. Reverting to default (0 - Voltage)."
-        << std::endl;
-    std::cerr << "W: Please refer to the help menu (-h) or manual for further "
-                 "information."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(CLIErrors::TOO_FEW_ARGUMENTS):
+    formattedMessage += "Missing input arguments\n";
+    formattedMessage += "Usage: josim [options] input_netlist\n\n";
+    formattedMessage += "For further help use the -h switch";
+    error_message(formattedMessage);
+  case static_cast<int>(CLIErrors::INVALID_ANALYSIS):
+    formattedMessage += "Invalid analysis type specified. 0 - Voltage, 1 - Phase.\n";
+    formattedMessage += "Usage: josim [options] input_netlist\n\n";
+    formattedMessage += "For further help use the -h switch";
+    error_message(formattedMessage);
+  case static_cast<int>(CLIErrors::NO_ANALYSIS):
+    formattedMessage += "No analysis was specified. Reverting to default (0 - Voltage).\n";
+    formattedMessage += "Please refer to the help menu (-h) or manual for further information.";
+    warning_message(formattedMessage);
     break;
-  case INVALID_CONVENTION:
-    std::cerr
-        << "E: Invalid subcircuit convention specified. 0 - JSIM, 1 - WRspice."
-        << std::endl;
-    std::cerr << "E: Usage: josim [options] input_netlist" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "I: For further help use the -h switch" << std::endl;
-    exit(-1);
-  case NO_CONVENTION:
-    std::cerr
-        << "W: No convention was specified. Reverting to default (0 - JSIM)."
-        << std::endl;
-    std::cerr << "W: Please refer to the help menu (-h) or manual for further "
-                 "information."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(CLIErrors::INVALID_CONVENTION):
+    formattedMessage += "Invalid subcircuit convention specified. 0 - JSIM, 1 - WRspice.\n";
+    formattedMessage += "Usage: josim [options] input_netlist\n\n";
+    formattedMessage += "For further help use the -h switch";
+    error_message(formattedMessage);
+  case static_cast<int>(CLIErrors::NO_CONVENTION):
+    formattedMessage += "No convention was specified. Reverting to default (0 - JSIM).\n";
+    formattedMessage += "Please refer to the help menu (-h) or manual for further information.";
+    warning_message(formattedMessage);
     break;
   default:
-    std::cerr << "E: Unknown handling error." << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown handling error.\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 void Errors::input_errors(int errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Input\n";
   switch (errorCode) {
-  case CANNOT_OPEN_FILE:
-    std::cerr << "E: Input file " << whatPart << " cannot be found or opened."
-              << std::endl;
-    std::cerr << "E: Please ensure that the file exists and can be opened."
-              << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "I: For further help use the -h switch" << std::endl;
-    exit(-1);
-  case MISSING_SUBCKT_IO:
-    std::cerr << "E: Missing subcircuit io." << std::endl;
-    std::cerr << "E: Please recheck the netlist and try again." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
-  case MISSING_SUBCKT_NAME:
-    std::cerr << "E: Missing subcircuit name." << std::endl;
-    std::cerr << "E: Please recheck the netlist and try again." << std::endl;
-    exit(-1);
-  case SUBCKT_CONTROLS:
-    std::cerr << "W: Subcircuit " << whatPart << " contains controls."
-              << std::endl;
-    std::cerr << "W: Controls are reserved for the main design." << std::endl;
-    std::cerr << "W: These controls will be ignored." << std::endl;
+  case static_cast<int>(InputErrors::CANNOT_OPEN_FILE):
+    formattedMessage += "Input file " + whatPart + " cannot be found or opened.\n";
+    formattedMessage += "Please ensure that the file exists and can be opened.\n\n";
+    formattedMessage += "For further help use the -h switch";
+    error_message(formattedMessage);
+  case static_cast<int>(InputErrors::MISSING_SUBCKT_IO):
+    formattedMessage += "Missing subcircuit io.\n";
+    formattedMessage += "Please recheck the netlist and try again.";
+    error_message(formattedMessage);
+  case static_cast<int>(InputErrors::MISSING_SUBCKT_NAME):
+    formattedMessage += "Missing subcircuit name.\n";
+    formattedMessage += "Please recheck the netlist and try again.";
+    error_message(formattedMessage);
+  case static_cast<int>(InputErrors::SUBCKT_CONTROLS):
+    formattedMessage += "Subcircuit " + whatPart + "contains controls.\n";
+    formattedMessage += "Controls are reserved for the main design.\n";
+    formattedMessage += "These controls will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case MISSING_MAIN:
-    std::cerr << "E: Missing main design in netlist." << std::endl;
-    std::cerr << "E: This design will not simulate without a main design."
-              << std::endl;
-    exit(-1);
-  case UNKNOWN_SUBCKT:
-    std::cerr << "E: The subcircuit named " << whatPart
-              << " was not found in the netlist." << std::endl;
-    std::cerr
-        << "E: Please ensure all subcircuits exist and are correctly named."
-        << std::endl;
-    exit(-1);
+  case static_cast<int>(InputErrors::MISSING_MAIN):
+    formattedMessage += "Missing main design in netlist.\n";
+    formattedMessage += "This design will not simulate without a main design.";
+    error_message(formattedMessage);
+  case static_cast<int>(InputErrors::UNKNOWN_SUBCKT):
+    formattedMessage += "The subcircuit named " + whatPart + "was not found in the netlist.\n";
+    formattedMessage += "Please ensure all subcircuits exist and are correctly named.";
+    error_message(formattedMessage);
+  case static_cast<int>(InputErrors::EMPTY_FILE):
+    formattedMessage += "The file \"" + whatPart + "\" contains no readable lines.\n";
+    formattedMessage += "Please check the input file and ensure that the file is not empty."
+    error_message(formattedMessage);
   }
 }
 
 void Errors::invalid_component_errors(int errorCode,
                                       const std::string &whatPart) {
+  std::string formattedMessage = "Components\n";
   switch (errorCode) {
-  case RES_ERROR:
-    std::cerr << "E: Resistor value error" << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case CAP_ERROR:
-    std::cerr << "E: Capacitor value error" << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case IND_ERROR:
-    std::cerr << "E: Inductor value error" << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case LABEL_ERROR:
-    std::cout << "Invalid component label: " << whatPart << std::endl;
-    exit(-1);
-  case MISSING_LABEL:
-    std::cerr << "E: No component label. This should not happen." << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer as this is possibly a bug."
-              << std::endl;
-    exit(-1);
-  case MISSING_PNODE:
-    std::cerr << "E: No positive node. This should not happen." << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer as this is possibly a bug."
-              << std::endl;
-    exit(-1);
-  case MISSING_NNODE:
-    std::cerr << "E: No negative node. This should not happen." << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer as this is possibly a bug."
-              << std::endl;
-    exit(-1);
-  case MISSING_JJMODEL:
-    std::cerr << "E: No junction model is specified for junction " << whatPart
-              << std::endl;
-    exit(-1);
-  case MODEL_NOT_DEFINED:
-    std::cerr << "W: The specified model " << whatPart << " is not defined"
-              << std::endl;
-    std::cerr << "W: Using default model as specified in the manual."
-              << std::endl;
+  case static_cast<int>(ComponentErrors::RES_ERROR):
+    formattedMessage += "Resistor value error\n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::CAP_ERROR):
+    formattedMessage += "Capacitor value error\n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::IND_ERROR):
+    formattedMessage += "Inductor value error\n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::LABEL_ERROR):
+    formattedMessage += "Invalid component label: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MISSING_LABEL):
+    formattedMessage += "No component label. This should not happen.\n";
+    formattedMessage += "Infringing line: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer as this is possibly a bug.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MISSING_PNODE):
+    formattedMessage += "No positive node. This should not happen.\n";
+    formattedMessage += "Infringing line: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer as this is possibly a bug.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MISSING_NNODE):
+    formattedMessage += "No negative node. This should not happen.\n";
+    formattedMessage += "Infringing line: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer as this is possibly a bug.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MISSING_JJMODEL):
+    formattedMessage += "No junction model is specified for junction " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED):
+    formattedMessage += "The specified model " + whatPart + " is not defined";
+    formattedMessage += "Using default model as specified in the manual.";
+    warning_message(formattedMessage);
     break;
-  case MODEL_AREA_NOT_GIVEN:
-    std::cerr << "W: No area specified for junction " << whatPart << std::endl;
-    std::cerr << "W: Using default: AREA=1.0" << std::endl;
+  case static_cast<int>(ComponentErrors::MODEL_AREA_NOT_GIVEN):
+    formattedMessage += "No area specified for junction " + whatPart + "\n";
+    formattedMessage += "Using default: AREA=1.0";
+    warning_message(formattedMessage);
     break;
-  case DUPLICATE_LABEL:
-    std::cerr << "E: Duplicate label " << whatPart << " detected." << std::endl;
-    std::cout
-        << "E: The program will now terminate. Please recheck the netlist."
-        << std::endl;
-    exit(-1);
-  case INVALID_SUBCIRCUIT_NODES:
-    std::cerr << "E: The nodes for label " << whatPart
-              << " does not match the required nodes of the subcicuit."
-              << std::endl;
-    std::cerr << "E: Please recheck the nodes required by the subcircuit and "
-                 "try again."
-              << std::endl;
-    exit(-1);
-  case TIME_ERROR:
-    std::cerr << "E: Time delay value error" << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case MISSING_SUBCIRCUIT_NAME:
-    std::cerr << "E: The subcircuit for " << whatPart
-              << " does not match any of the subcircuits found in the file."
-              << std::endl;
-    std::cerr << "E: Please recheck the subcircuit name and try again."
-              << std::endl;
-    exit(-1);
-  case MUT_ERROR:
-    std::cerr << "E: Missing mutual coupling factor. " << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case INVALID_EXPR:
-    std::cerr << "E: Invalid expression statement found. " << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case INVALID_TX_DEFINED:
-    std::cerr << "E: Invalid definition for transmission line found. "
-              << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
-  case MISSING_INDUCTOR:
-    std::cerr << "E: Invalid mutual coupling defined. Missing inductor "
-              << whatPart << std::endl;
-    std::cerr << "E: Please ensure that " << whatPart << " exists."
-              << std::endl;
-    exit(-1);
-  case UNKNOWN_DEVICE_TYPE:
-    std::cerr << "E: Unkown device type " 
-              << whatPart << std::endl;
-    std::cerr << "E: Please refer to the syntax guide for a list of available device types."
-              << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
-  case SPECIAL_CHARS:
-    std::cerr << "W: Label " << whatPart << " contains special characters."
-              << std::endl;
-    std::cerr << "W: The use of special characters in label names is not "
-                  "advised."
-              << std::endl;
-    std::cerr << "W: This might produce unexpected results." << std::endl;
-    std::cerr << "W: Continuing operation." << std::endl;
+  case static_cast<int>(ComponentErrors::DUPLICATE_LABEL):
+    formattedMessage += "Duplicate label " + whatPart + " detected.\n";
+    formattedMessage += "The program will now terminate. Please recheck the netlist.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::INVALID_SUBCIRCUIT_NODES):
+    formattedMessage += "The nodes for label " + whatPart + " does not match the required nodes of the subcicuit.\n";
+    formattedMessage += "Please recheck the nodes required by the subcircuit and try again.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::TIME_ERROR):
+    formattedMessage += "Time delay value error\n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MISSING_SUBCIRCUIT_NAME):
+    formattedMessage += "The subcircuit for " + whatPart + " does not match any of the subcircuits found in the file.\n";
+    formattedMessage += "Please recheck the subcircuit name and try again.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MUT_ERROR):
+    formattedMessage += "Missing mutual coupling factor. \n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::INVALID_EXPR):
+    formattedMessage += "Invalid expression statement found. \n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::INVALID_TX_DEFINED):
+    formattedMessage += "Invalid definition for transmission line found.\n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::MISSING_INDUCTOR):
+    formattedMessage += "Invalid mutual coupling defined. Missing inductor " + whatPart + "\n";
+    formattedMessage += "Please ensure that " + whatPart + " exists.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::UNKNOWN_DEVICE_TYPE):
+    formattedMessage += "Unkown device type " + whatPart + "\n";
+    formattedMessage += "Please refer to the syntax guide for a list of available device types.";
+    error_message(formattedMessage);
+  case static_cast<int>(ComponentErrors::SPECIAL_CHARS):
+    formattedMessage += "Label " + whatPart + " contains special characters.\n";
+    formattedMessage += "The use of special characters in label names is not advised.\n";
+    formattedMessage += "This might produce unexpected results.\n";
+    formattedMessage += "Continuing operation.";
+    warning_message(formattedMessage);
     break;
   default:
-    std::cerr << "E: Unknown invalid component error." << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown invalid component error.\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 void Errors::control_errors(int errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Controls\n";
   switch (errorCode) {
-  case TRANS_ERROR:
-    std::cerr << "W: Invalid transient analysis specified. " << whatPart
-              << std::endl;
-    std::cerr << "W: Substituting default parameters. " << std::endl;
-    std::cerr << "W: Defaults: TSTEP=1PS TSTOP=1000PS TSTART=0PS MAXTSTEP=1PS"
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::TRANS_ERROR):
+    formattedMessage += "Invalid transient analysis specified. " + whatPart + "\n";
+    formattedMessage += "Substituting default parameters.\n";
+    formattedMessage += "Defaults: TSTEP=1PS TSTOP=1000PS TSTART=0PS MAXTSTEP=1PS";
+    warning_message(formattedMessage);
     break;
-  case PRINT_TOO_MANY_ARGS:
-    std::cerr << "W: Print request for device current has too many arguments."
-              << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: Ignoring the extra argument." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::PRINT_TOO_MANY_ARGS):
+    formattedMessage += "Print request for device current has too many arguments.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "Ignoring the extra argument.";
+    warning_message(formattedMessage);
     break;
-  case PRINT_ERROR:
-    exit(-1);
-  case PLOT_ERROR:
-    exit(-1);
-  case INV_CONTROL:
-    exit(-1);
-  case DC_ERROR:
-    exit(-1);
-  case AC_ERROR:
-    exit(-1);
-  case PHASE_ERROR:
-    exit(-1);
-  case NO_SIM:
-    std::cerr << "E: No simulation type specified. Nothing will be simulated."
-              << std::endl;
-    exit(-1);
-  case UNKNOWN_DEVICE:
-    std::cerr << "W: Unknown device " << whatPart << std::endl;
-    std::cerr << "W: Cannot print results for this device." << std::endl;
-    std::cerr << "W: Ignoring this print request." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::PRINT_ERROR):
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::PLOT_ERROR):
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::INV_CONTROL):
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::DC_ERROR):
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::AC_ERROR):
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::PHASE_ERROR):
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::NO_SIM):
+    formattedMessage += "No simulation type specified. Nothing will be simulated.";
+    error_message(formattedMessage);
+  case static_cast<int>(ControlErrors::UNKNOWN_DEVICE):
+    formattedMessage += "Unknown device " + whatPart + "\n";
+    formattedMessage += "Cannot print results for this device.\n";
+    formattedMessage += "Ignoring this print request.";
+    warning_message(formattedMessage);
     break;
-  case CURRENT_THROUGH_VOLT:
-    std::cerr << "W: Requesting current through a voltage source." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This is invalid and the request will be ignored."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::CURRENT_THROUGH_VOLT):
+    formattedMessage += "Requesting current through a voltage source.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This is invalid and the request will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case VOLT_WHEN_PHASE:
-    std::cerr << "W: Request to print voltage for device " << whatPart
-              << std::endl;
-    std::cerr << "W: Phase mode simulation performed." << std::endl;
-    std::cerr << "W: Printing device phase instead." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::VOLT_WHEN_PHASE):
+    formattedMessage += "Request to print voltage for device " + whatPart + "\n";
+    formattedMessage += "Phase mode simulation performed.\n";
+    formattedMessage += "Printing device phase instead.";
+    warning_message(formattedMessage);
     break;
-  case VOLT_ACROSS_CURRENT:
-    std::cerr << "W: Requesting voltage across a current source." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This is invalid and the request will be ignored."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::VOLT_ACROSS_CURRENT):
+    formattedMessage += "Requesting voltage across a current source.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This is invalid and the request will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case NODEVOLT_WHEN_PHASE:
-    std::cerr << "W: Request to print nodal voltage for " << whatPart
-              << std::endl;
-    std::cerr << "W: Phase mode simulation performed." << std::endl;
-    std::cerr << "W: Printing nodal phase instead." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::NODEVOLT_WHEN_PHASE):
+    formattedMessage += "Request to print nodal voltage for " + whatPart + "\n";
+    formattedMessage += "Phase mode simulation performed.\n";
+    formattedMessage += "Printing nodal phase instead.";
+    warning_message(formattedMessage);
     break;
-  case UNKNOWN_NODE:
-    std::cerr << "W: Node " << whatPart << " was not found in the circuit."
-              << std::endl;
-    std::cerr << "W: This request for print will be ignored." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::UNKNOWN_NODE):
+    formattedMessage += "Node " + whatPart + " was not found in the circuit.\n";
+    formattedMessage += "This request for print will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case NODEPHASE_WHEN_VOLT:
-    std::cerr << "W: Request to print nodal phase for " << whatPart
-              << std::endl;
-    std::cerr << "W: Voltage mode simulation performed." << std::endl;
-    std::cerr << "W: Printing nodal voltage instead." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::NODEPHASE_WHEN_VOLT):
+    formattedMessage += "Request to print nodal phase for " + whatPart + "\n";
+    formattedMessage += "Voltage mode simulation performed.\n";
+    formattedMessage += "Printing nodal voltage instead.";
+    warning_message(formattedMessage);
     break;
-  case INVALID_NODEV:
-    std::cerr << "W: Invalid node voltage request found." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This request for print will be ignored." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::INVALID_NODEV):
+    formattedMessage += "Invalid node voltage request found.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This request for print will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case INVALID_NODEP:
-    std::cerr << "W: Invalid node phase request found." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This request for print will be ignored." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::INVALID_NODEP):
+    formattedMessage += "Invalid node phase request found.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This request for print will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case PHASE_WHEN_VOLT:
-    std::cerr << "W: Requesting phase in a voltage simulation." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This request will be ignored." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::PHASE_WHEN_VOLT):
+    formattedMessage += "Requesting phase in a voltage simulation.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This request will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case PHASE_OF_VOLT:
-    std::cerr << "W: Requesting phase of a voltage source." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This is invalid and the request will be ignored."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::PHASE_OF_VOLT):
+    formattedMessage += "Requesting phase of a voltage source.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This is invalid and the request will be ignored.\n";
+    warning_message(formattedMessage);
     break;
-  case PHASE_OF_CURRENT:
-    std::cerr << "W: Requesting phase of a current source." << std::endl;
-    std::cerr << "W: Line: " << whatPart << std::endl;
-    std::cerr << "W: This is invalid and the request will be ignored."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::PHASE_OF_CURRENT):
+    formattedMessage += "Requesting phase of a current source.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
+    formattedMessage += "This is invalid and the request will be ignored.";
+    warning_message(formattedMessage);
     break;
-  case INVALID_CURRENT:
-    std::cerr << "W: Invalid request to plot current." << std::endl;
-    std::cerr << "W: Infringing line: " << whatPart << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::INVALID_CURRENT):
+    formattedMessage += "Invalid request to plot current.";
+    formattedMessage += "Infringing line: " + whatPart;
+    warning_message(formattedMessage);
     break;
-  case MATHOPS:
-    std::cerr
-        << "W: Mathematical operations on output vectors are not yet supported."
-        << std::endl;
-    std::cerr << "W: Ignoring plotting of " << whatPart << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::MATHOPS):
+    formattedMessage += "Mathematical operations on output vectors are not yet supported.\n";
+    formattedMessage += "Ignoring plotting of " + whatPart;
+    warning_message(formattedMessage);
     break;
-  case UNKNOWN_PLOT:
-    std::cerr << "W: Unknown plot type " << whatPart << std::endl;
-    std::cerr << "W: Ignoring request to plot." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::UNKNOWN_PLOT):
+    formattedMessage += "Unknown plot type " + whatPart + "\n";
+    formattedMessage += "Ignoring request to plot.";
+    warning_message(formattedMessage);
     break;
-  case INVALID_OUTPUT_COMMAND:
-    std::cerr << "W: Invalid request for output found." << std::endl;
-    std::cerr << "W: Line:" << whatPart << std::endl;
-    std::cerr << "W: Ignoring request and continuing." << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ControlErrors::INVALID_OUTPUT_COMMAND):
+    formattedMessage += "Invalid request for output found.\n";
+    formattedMessage += "Line:" + whatPart + "\n";
+    formattedMessage += "Ignoring request and continuing.";
+    warning_message(formattedMessage);
     break;
   default:
-    std::cerr << "E: Unknown control error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown control error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 [[noreturn]] void Errors::model_errors(int errorCode,
                                        const std::string &whatPart) {
+  std::string formattedMessage = "Model\n";                                         
   switch (errorCode) {
-  case PARAM_TYPE_ERROR:
-    std::cerr << "E: Unknown model parameter " << whatPart << " specified."
-              << std::endl;
-    exit(-1);
-  case UNKNOWN_MODEL_TYPE:
-    std::cerr << "E: Unknown model type " << whatPart << " specified."
-              << std::endl;
-    exit(-1);
-  case BAD_MODEL_DEFINITION:
-    std::cerr << "E: Bad model definition found." << std::endl;
-    std::cerr << "E: Infringing line: " << whatPart << std::endl;
-    exit(-1);
+  case static_cast<int>(ModelErrors::PARAM_TYPE_ERROR):
+    formattedMessage += "Unknown model parameter " + whatPart + " specified.";
+    error_message(formattedMessage);
+  case static_cast<int>(ModelErrors::UNKNOWN_MODEL_TYPE):
+    formattedMessage += "Unknown model type " + whatPart + " specified.";
+    error_message(formattedMessage);
+  case static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION):
+    formattedMessage += "Bad model definition found.\n";
+    formattedMessage += "Infringing line: " + whatPart;
+    error_message(formattedMessage);
   default:
-    std::cerr << "E: Unknown model error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown model error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 void Errors::matrix_errors(int errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Matrix\n";                                         
   switch (errorCode) {
-  case NON_SQUARE:
-    std::cerr << "E: Matrix is not square. Dimensions are " << whatPart
-              << std::endl;
-    std::cerr << "E: Please contact the developer as this is potentially a bug."
-              << std::endl;
-    exit(-1);
+  case static_cast<int>(MatrixErrors::NON_SQUARE):
+    formattedMessage += "Matrix is not square. Dimensions are " + whatPart + "\n";
+    formattedMessage += "Please contact the developer as this is potentially a bug.";
+    error_message(formattedMessage);
   default:
-    std::cerr << "E: Unknown matrix error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
+    formattedMessage += "Unknown matrix error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 [[noreturn]] void Errors::misc_errors(int errorCode,
                                       const std::string &whatPart) {
+  std::string formattedMessage = "Miscellaneous\n";                                                                                 
   switch (errorCode) {
-  case STOD_ERROR:
-    std::cerr << "E: Cannot convert string to double: " << whatPart
-              << std::endl;
-    exit(-1);
+  case static_cast<int>(MiscErrors::STOD_ERROR):
+    formattedMessage += "Cannot convert string to double: " + whatPart;
+    error_message(formattedMessage);
   default:
-    std::cerr << "E: Unknown misc error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown misc error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 void Errors::function_errors(int errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Function\n";                                         
   switch (errorCode) {
-  case INITIAL_VALUES:
-    std::cerr << "E: Invalid PWL definition found. The value of " << whatPart
-              << " is expected to be 0" << std::endl;
-    std::cerr << "E: Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 "
-                 "... Tn Vn)"
-              << std::endl;
-    exit(-1);
-  case TOO_FEW_TIMESTEPS:
-    std::cout
-        << "E: Total timesteps specified do not match the values specified."
-        << whatPart << " specified." << std::endl;
-    std::cerr << "E: Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 "
-                 "... Tn Vn)"
-              << std::endl;
-    exit(-1);
-  case TOO_FEW_VALUES:
-    std::cout
-        << "E: Total values specified do not match the timesteps specified."
-        << whatPart << " specified." << std::endl;
-    std::cerr << "E: Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 "
-                 "... Tn Vn)"
-              << std::endl;
-    exit(-1);
-  case INITIAL_PULSE_VALUE:
-    std::cerr << "E: Invalid PULSE definition found. The value of " << whatPart
-              << " is expected to be 0" << std::endl;
-    std::cerr << "E: Please refer to the PULSE definition: PULSE(0 V2 TD TR "
-                 "TF PW PER)"
-              << std::endl;
-    exit(-1);
-  case PULSE_TOO_FEW_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for PULSE. "
-        << whatPart << " specified." << std::endl;
-    std::cerr << "E: Please refer to the PULSE definition: PULSE(0 V2 TD TR "
-                 "TF PW PER)"
-              << std::endl;
-    exit(-1);
-  case PULSE_VPEAK_ZERO:
-    std::cout
-        << "W: PULSE peak voltage is 0.0, this renders the function redundant."
-        << std::endl;
-    std::cerr << "W: Program will continue but PULSE command is redundant."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::INITIAL_VALUES):
+    formattedMessage += "Invalid PWL definition found. The value of " + whatPart + " is expected to be 0\n";
+    formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS):
+    formattedMessage += "Total timesteps specified do not match the values specified." + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::TOO_FEW_VALUES):
+    formattedMessage += "Total values specified do not match the timesteps specified." + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::INITIAL_PULSE_VALUE):
+    formattedMessage += "Invalid PULSE definition found. The value of " + whatPart + " is expected to be 0";
+    formattedMessage += "Please refer to the PULSE definition: PULSE(0 V2 TD TR TF PW PER)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for PULSE. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the PULSE definition: PULSE(0 V2 TD TR TF PW PER)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::PULSE_VPEAK_ZERO):
+    formattedMessage += "PULSE peak voltage is 0.0, this renders the function redundant.\n";
+    formattedMessage += "Program will continue but PULSE command is redundant.";
+    warning_message(formattedMessage);
     break;
-  case PULSE_WIDTH_ZERO:
-    std::cerr << "W: PULSE width is 0.0, this renders the function redundant."
-              << std::endl;
-    std::cerr << "W: Program will continue but PULSE command is redundant."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::PULSE_WIDTH_ZERO):
+    formattedMessage += "PULSE width is 0.0, this renders the function redundant.\n";
+    formattedMessage += "Program will continue but PULSE command is redundant.";
+    warning_message(formattedMessage);
     break;
-  case PULSE_REPEAT:
-    std::cout << "W: PULSE repeat rate is 0.0, this is effectively a DC source."
-              << std::endl;
-    std::cerr << "W: Program will continue, but this is most likely unwanted."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::PULSE_REPEAT):
+    formattedMessage += "PULSE repeat rate is 0.0, this is effectively a DC source.\n";
+    formattedMessage += "Program will continue, but this is most likely unwanted.";
+    warning_message(formattedMessage);
     break;
-  case SIN_TOO_FEW_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for SIN. "
-        << whatPart << " specified." << std::endl;
-    std::cerr
-        << "E: Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)"
-        << std::endl;
-    exit(-1);
-  case SIN_TOO_MANY_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for SIN. "
-        << whatPart << " specified." << std::endl;
-    std::cerr
-        << "E: Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)"
-        << std::endl;
-    exit(-1);
-  case SIN_VA_ZERO:
-    std::cout << "W: SIN amplitude is 0.0, this renders the function redundant."
-              << std::endl;
-    std::cerr << "W: Program will continue but SIN command is redundant."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::SIN_TOO_FEW_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for SIN. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::SIN_TOO_MANY_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for SIN. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::SIN_VA_ZERO):
+    formattedMessage += "SIN amplitude is 0.0, this renders the function redundant.\n";
+    formattedMessage += "Program will continue but SIN command is redundant.";
+    warning_message(formattedMessage);
     break;
-  case CUS_TOO_FEW_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for CUS. "
-        << whatPart << " specified." << std::endl;
-    std::cerr << "E: Please refer to the CUS definition: CUS(WaveFile.dat TS "
-                 "SF IM <TD PER>)"
-              << std::endl;
+  case static_cast<int>(FunctionErrors::CUS_TOO_FEW_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for CUS. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the CUS definition: CUS(WaveFile.dat TS SF IM <TD PER>)";
+    warning_message(formattedMessage);
     break;
-  case CUS_TOO_MANY_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for CUS. "
-        << whatPart << " specified." << std::endl;
-    std::cerr << "E: Please refer to the CUS definition: CUS(WaveFile.dat TS "
-                 "SF IM <TD PER>)"
-              << std::endl;
+  case static_cast<int>(FunctionErrors::CUS_TOO_MANY_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for CUS. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the CUS definition: CUS(WaveFile.dat TS SF IM <TD PER>)";
+    warning_message(formattedMessage);
     break;
-  case CUS_SF_ZERO:
-    std::cout
-        << "W: CUS scale factor is 0.0, this renders the function redundant."
-        << std::endl;
-    std::cerr << "W: Program will continue but SIN command is redundant."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::CUS_SF_ZERO):
+    formattedMessage += "CUS scale factor is 0.0, this renders the function redundant.\n";
+    formattedMessage += "Program will continue but SIN command is redundant.";
+    warning_message(formattedMessage);
     break;
-  case CUS_WF_NOT_FOUND:
-    std::cout << "W: CUS waveform file was not found." << whatPart
-              << " specified." << std::endl;
-    std::cerr << "W: Program will terminate." << std::endl;
-    exit(-1);
-  case NOISE_TOO_FEW_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for NOISE. "
-        << whatPart << " specified." << std::endl;
-    std::cerr
-        << "E: Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)"
-        << std::endl;
-    exit(-1);
-  case NOISE_TOO_MANY_ARGUMENTS:
-    std::cout
-        << "E: Total arguments specified do not match the required for NOISE. "
-        << whatPart << " specified." << std::endl;
-    std::cerr
-        << "E: Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)"
-        << std::endl;
-    exit(-1);
-  case NOISE_VO_ZERO:
-    std::cout << "E: NOISE initial value is not 0.0, this needs to be zero."
-              << std::endl;
-    std::cerr << "E: Program will continue but NOISE command is redundant."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::CUS_WF_NOT_FOUND):
+    formattedMessage += "CUS waveform file was not found." + whatPart + " specified.\n";
+    formattedMessage += "Program will terminate.";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for NOISE. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::NOISE_TOO_MANY_ARGUMENTS):
+    formattedMessage += "Total arguments specified do not match the required for NOISE. " + whatPart + " specified.\n";
+    formattedMessage += "Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)";
+    error_message(formattedMessage);
+  case static_cast<int>(FunctionErrors::NOISE_VO_ZERO):
+    formattedMessage += "NOISE initial value is not 0.0, this needs to be zero.\n";
+    formattedMessage += "Program will continue but NOISE command is redundant.";
+    warning_message(formattedMessage);
     break;
-  case NOISE_VA_ZERO:
-    std::cout << "W: NOISE amplitude is 0.0, this renders the function redundant."
-              << std::endl;
-    std::cerr << "W: Program will continue but NOISE command is redundant."
-              << std::endl;
+  case static_cast<int>(FunctionErrors::NOISE_VA_ZERO):
+    formattedMessage += "NOISE amplitude is 0.0, this renders the function redundant.\n";
+    formattedMessage += "Program will continue but NOISE command is redundant.";
+    warning_message(formattedMessage);
     break;
   default:
-    std::cerr << "E: Unknown function error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown function error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 [[noreturn]] void Errors::simulation_errors(int errorCode,
                                             const std::string &whatPart) {
+  std::string formattedMessage = "Simulation\n";                                         
   switch (errorCode) {
-  case JJCAP_NOT_FOUND:
-    std::cerr << "E: Capacitor value for " << whatPart << " could not be found."
-              << std::endl;
-    std::cerr << "E: This is a bug and the developer should be contacted. "
-                 "The program will abort."
-              << std::endl;
-    exit(-1);
-  case JJICRIT_NOT_FOUND:
-    std::cerr << "E: Critical current value for " << whatPart
-              << " could not be found." << std::endl;
-    std::cerr << "E: This is a bug and the developer should be contacted. "
-                 "The program will abort."
-              << std::endl;
-    exit(-1);
-  case JJPHASE_NODE_NOT_FOUND:
-    std::cerr << "E: Junction phase node not found for " << whatPart << "."
-              << std::endl;
-    std::cerr << "E: This is a bug and the developer should be contacted. "
-                 "The program will abort."
-              << std::endl;
-    exit(-1);
-  case INDUCTOR_CURRENT_NOT_FOUND:
-    std::cerr << "E: Inductor current not defined for " << whatPart
-              << ". Matrix will have no solution." << std::endl;
-    std::cerr << "E: This is a bug and the developer should be contacted. "
-                 "The program will abort."
-              << std::endl;
-    exit(-1);
-  case MATRIX_SINGULAR:
-    std::cerr << "E: Matrix is singular. Matrix will have no solution."
-              << std::endl;
-    std::cerr << "E: Please check the components in the netlist. "
-                 "The program will abort."
-              << std::endl;
-    exit(-1);
+  case static_cast<int>(SimulationErrors::JJCAP_NOT_FOUND):
+    formattedMessage += "Capacitor value for " + whatPart + " could not be found.\n";
+    formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
+    error_message(formattedMessage);
+  case static_cast<int>(SimulationErrors::JJICRIT_NOT_FOUND):
+    formattedMessage += "Critical current value for " + whatPart + " could not be found.\n";
+    formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
+    error_message(formattedMessage);
+  case static_cast<int>(SimulationErrors::JJPHASE_NODE_NOT_FOUND):
+    formattedMessage += "Junction phase node not found for " + whatPart + ".\n";
+    formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
+    error_message(formattedMessage);
+  case static_cast<int>(SimulationErrors::INDUCTOR_CURRENT_NOT_FOUND):
+    formattedMessage += "Inductor current not defined for " + whatPart + ". Matrix will have no solution.\n";
+    formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
+    error_message(formattedMessage);
+  case static_cast<int>(SimulationErrors::MATRIX_SINGULAR):
+    formattedMessage += "Matrix is singular. Matrix will have no solution.\n";
+    formattedMessage += "Please check the components in the netlist. The program will abort.";
+    error_message(formattedMessage);
   default:
-    std::cerr << "E: Unknown simulation error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown simulation error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
 }
 
 void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Parsing\n";                                         
   switch (errorCode) {
-  case EXPRESSION_ARLEADY_DEFINED:
-    std::cerr << "W: Expression for " << whatPart
-              << " has already been defined. Overwriting previous expression."
-              << std::endl;
-    std::cerr << "W: If this was unintentional, please revise netlist."
-              << std::endl;
-    std::cerr << std::endl;
+  case static_cast<int>(ParsingErrors::EXPRESSION_ARLEADY_DEFINED):
+    formattedMessage += "Expression for " + whatPart + " has already been defined. Overwriting previous expression.\n";
+    formattedMessage += "If this was unintentional, please revise netlist.";
+    warning_message(formattedMessage);
     break;
-  case UNIDENTIFIED_PART:
-    std::cerr << "E: Unknown function/variable defined. What is " << whatPart
-              << "?" << std::endl;
-    std::cerr << "E: Please ensure variables are declared before being used."
-              << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
-  case MISMATCHED_PARENTHESIS:
-    std::cerr << "E: Mismatched parenthesis in expression: " << whatPart
-              << std::endl;
-    std::cerr << "E: Please correct the expression before trying again."
-              << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
-  case INVALID_RPN:
-    std::cerr << "E: Invalid RPN detected. This might be an algorithm fault "
-                 "or an incorrect expression parse."
-              << std::endl;
-    std::cerr << "E: The expression in question: " << whatPart << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
-  case INVALID_DECLARATION:
-    std::cerr << "E: Missing parameter declaration in: " << whatPart
-                << std::endl;
-    std::cerr << "E: Please ensure that a valid .PARAM definition is declared."
-              << std::endl;
-    exit(-1);
+  case static_cast<int>(ParsingErrors::UNIDENTIFIED_PART):
+    formattedMessage += "Unknown function/variable defined. What is " + whatPart + "?\n";
+    formattedMessage += "Please ensure variables are declared before being used.";
+    error_message(formattedMessage);
+  case static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS):
+    formattedMessage += "Mismatched parenthesis in expression: " + whatPart + "\n";
+    formattedMessage += "Please correct the expression before trying again.";
+    error_message(formattedMessage);
+  case static_cast<int>(ParsingErrors::INVALID_RPN):
+    formattedMessage += "Invalid RPN detected. This might be an algorithm fault or an incorrect expression parse.\n";
+    formattedMessage += "The expression in question: " + whatPart;
+    error_message(formattedMessage);
+  case static_cast<int>(ParsingErrors::INVALID_DECLARATION):
+    formattedMessage += "Missing parameter declaration in: " + whatPart + "\n";
+    formattedMessage += "Please ensure that a valid .PARAM definition is declared.";
+    error_message(formattedMessage);
   default:
-    std::cerr << "E: Unknown parsing error: " << whatPart << std::endl;
-    std::cerr << "E: Please contact the developer." << std::endl;
-    std::cerr << std::endl;
-    exit(-1);
+    formattedMessage += "Unknown parsing error: " + whatPart + "\n";
+    formattedMessage += "Please contact the developer.";
+    error_message(formattedMessage);
   }
+}
+
+[[noreturn]] void error_message (std::string &formattedMessage) {
+  std::cerr << "E: " << formattedMessage << std::endl;
+  std::cerr << std::endl;
+  exit(-1);
+}
+
+void warning_message (std::string &formattedMessage) {
+  std::cerr << "W: " << formattedMessage << std::endl;
+  std::cerr << std::endl;
 }

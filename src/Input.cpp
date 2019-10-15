@@ -23,9 +23,9 @@ void Input::read_input_file(std::string &fileName,
       }
       if (fileLines.empty()) throw;
     } else
-      Errors::input_errors(CANNOT_OPEN_FILE, fileName);
+      Errors::input_errors(static_cast<int>(InputErrors::CANNOT_OPEN_FILE), fileName);
   } catch(...) {
-    Errors::input_errors()
+    Errors::input_errors(static_cast<int>(InputErrors::CANNOT_OPEN_FILE), fileName);
   }
 }
 
@@ -51,9 +51,9 @@ void Input::split_netlist(std::vector<std::string> &fileLines,
               netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
             }
           } else
-            Errors::input_errors(MISSING_SUBCKT_IO);
+            Errors::input_errors(static_cast<int>(InputErrors::MISSING_SUBCKT_IO));
         } else
-          Errors::input_errors(MISSING_SUBCKT_NAME);
+          Errors::input_errors(static_cast<int>(InputErrors::MISSING_SUBCKT_NAME));
         // If parameter, add to unparsed parameters list
       } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
         if (subckt)
@@ -84,7 +84,7 @@ void Input::split_netlist(std::vector<std::string> &fileLines,
         if (!subckt)
           controls.push_back(fileLines.at(i));
         else
-          Errors::input_errors(SUBCKT_CONTROLS, subcktName);
+          Errors::input_errors(static_cast<int>(InputErrors::SUBCKT_CONTROLS), subcktName);
       }
       // If control section flag set
     } else if (control) {
@@ -109,7 +109,7 @@ void Input::split_netlist(std::vector<std::string> &fileLines,
         if (!subckt)
           controls.push_back(fileLines.at(i));
         else
-          Errors::input_errors(SUBCKT_CONTROLS, subcktName);
+          Errors::input_errors(static_cast<int>(InputErrors::SUBCKT_CONTROLS), subcktName);
       }
       // If not a control, normal device line
     } else {
@@ -124,7 +124,7 @@ void Input::split_netlist(std::vector<std::string> &fileLines,
   }
   // If main is empty, complain
   if (netlist.maindesign.empty())
-    Errors::input_errors(MISSING_MAIN);
+    Errors::input_errors(static_cast<int>(InputErrors::MISSING_MAIN));
 }
 
 void Input::expand_subcircuits() {
@@ -205,7 +205,7 @@ void Input::expand_subcircuits() {
                 netlist.subcircuits.at(i.first).containsSubckt = false;
             }
           } else
-            Errors::input_errors(UNKNOWN_SUBCKT, subcktName);
+            Errors::input_errors(static_cast<int>(InputErrors::UNKNOWN_SUBCKT), subcktName);
         }
       }
     }
@@ -267,8 +267,39 @@ void Input::expand_maindesign() {
                           moddedLines.end());
         moddedLines.clear();
       } else
-        Errors::input_errors(UNKNOWN_SUBCKT, subcktName);
+        Errors::input_errors(static_cast<int>(InputErrors::UNKNOWN_SUBCKT), subcktName);
     } else
       expNetlist.push_back(std::make_pair(netlist.maindesign.at(i), ""));
   }
+}
+
+std::vector<std::string> read_file(const std::string &fileName){
+  try{
+    std::string line;
+    std::fstream ifile(fileName);
+    std::vector<std::string> fileLines;
+    if (ifile.is_open()) {
+      while (!ifile.eof()) {
+        getline(ifile, line);
+        std::transform(line.begin(), line.end(), line.begin(), toupper);
+        if (!line.empty() && line.back() == '\r')
+          line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+        if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#')) {
+          if(Misc::starts_with(line, '+')) 
+            fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
+          else 
+            fileLines.emplace_back(line);
+        }
+      }
+      if (fileLines.empty()) throw;
+      else return fileLines;
+    } else
+      Errors::input_errors(static_cast<int>(InputErrors::CANNOT_OPEN_FILE), fileName);
+  } catch(...) {
+    Errors::input_errors(static_cast<int>(InputErrors::EMPTY_FILE), fileName);
+  }
+}
+
+void parse_file(std::string &fileName) {
+  std::vector<std::string> fileLines = read_file(fileName);
 }

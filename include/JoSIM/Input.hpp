@@ -106,4 +106,7 @@ public:
   void expand_maindesign();
 };
 
+std::vector<std::string> read_file(const std::string &fileName);
+void parse_file(std::string &fileName);
+
 #endif

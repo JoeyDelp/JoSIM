@@ -24,7 +24,7 @@ void Simulation::identify_simulation(const std::vector<std::string> &controls,
       simtokens = Misc::tokenize_delimeter(i, " ,");
       if (simtokens.at(0).find("TRAN") != std::string::npos) {
         if (simtokens.size() < 2) {
-          Errors::control_errors(TRANS_ERROR, "Too few parameters: " + i);
+          Errors::control_errors(static_cast<int>(ControlErrors::TRANS_ERROR), "Too few parameters: " + i);
           maxtstep = 1E-12;
           tstop = 1E-9;
           tstart = 0;
@@ -52,7 +52,7 @@ void Simulation::identify_simulation(const std::vector<std::string> &controls,
     }
   }
   if (!transFound) {
-    Errors::control_errors(NO_SIM, "");
+    Errors::control_errors(static_cast<int>(ControlErrors::NO_SIM), "");
   }
 }
 
@@ -305,7 +305,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
     ok =
         klu_tsolve(Symbolic, Numeric, mObj.Nsize, 1, &LHS_PRE.front(), &Common);
     if (!ok)
-      Errors::simulation_errors(MATRIX_SINGULAR, "");
+      Errors::simulation_errors(static_cast<int>(SimulationErrors::MATRIX_SINGULAR), "");
 
     lhsValues = LHS_PRE;
     if(!saveAll) {

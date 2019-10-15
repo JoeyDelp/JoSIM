@@ -56,7 +56,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
               break;
             }
           } else {
-            Errors::control_errors(UNKNOWN_DEVICE, tokens2.at(0));
+            Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
           }
       } else if (j.at(0) == 'C' || j.at(0) == 'I') { //////////////////// CURRENT - C() /////////////////
         tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
@@ -66,7 +66,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           traces.back().calcData.reserve(iObj.transSim.simsize());
           handle_current(tokens2, traces.back(), iObj, mObj, sObj);
         } else {
-          Errors::control_errors(UNKNOWN_DEVICE, tokens2.at(0));
+          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
         }
       } else if (j.at(0) == 'P') { //////////////////// PHASE - P() /////////////////
         tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
@@ -76,7 +76,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           traces.back().calcData.reserve(iObj.transSim.simsize());
           handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
         } else {
-          Errors::control_errors(UNKNOWN_DEVICE, tokens2.at(0));
+          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
         }
       } else if (j.at(0) == 'V') { //////////////////// VOLTAGE - P() /////////////////
         tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
@@ -86,7 +86,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           traces.back().calcData.reserve(iObj.transSim.simsize());
           handle_voltage(tokens2, traces.back(), iObj, mObj, sObj);
         } else {
-          Errors::control_errors(UNKNOWN_DEVICE, tokens2.at(0));
+          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
         }
       } else if (j.at(0) == 'N') { //////////////////// NODEV - NODEP /////////////////
         tokens2.clear();
@@ -105,7 +105,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             break;
           }
         } else {
-          Errors::control_errors(UNKNOWN_DEVICE, tokens2.at(0));
+          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
         }
       } else if (j.at(0) == '@') {
         traces.emplace_back(Trace());
@@ -118,7 +118,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
                 tokens2 = Misc::tokenize_delimeter(t, ",");
                 handle_current(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
-              Errors::control_errors(UNKNOWN_DEVICE, t);
+              Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
             }
           } else if(t.at(t.size() - 2) == 'V') {
             t = t.substr(1, t.size() - 4);
@@ -127,7 +127,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
                 tokens2 = Misc::tokenize_delimeter(t, ",");
                 handle_voltage(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
-              Errors::control_errors(UNKNOWN_DEVICE, t);
+              Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
             }
           } else if(t.at(t.size() - 2) == 'P') {
             t = t.substr(1, t.size() - 4);
@@ -136,7 +136,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
                 tokens2 = Misc::tokenize_delimeter(t, ",");
                 handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
-              Errors::control_errors(UNKNOWN_DEVICE, t);
+              Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
             }
           }
         }

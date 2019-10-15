@@ -15,7 +15,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
   std::string argument;
   // If zero arguments are specified: complain
   if (argc <= 1) {
-    Errors::cli_errors(TOO_FEW_ARGUMENTS);
+    Errors::cli_errors(static_cast<int>(CLIErrors::TOO_FEW_ARGUMENTS));
     // If arguments are specified
   } else {
     // Loop through the arguments
@@ -43,7 +43,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             else if (argument == "1")
               out.analysis_type = AnalysisType::Phase;
             else
-              Errors::cli_errors(INVALID_ANALYSIS);
+              Errors::cli_errors(static_cast<int>(CLIErrors::INVALID_ANALYSIS));
           } else {
             if (i != argc - 1) {
               if (argv[i + 1][0] != '-') {
@@ -52,12 +52,12 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
                 else if (std::strcmp(argv[i + 1], "1") == 0)
                   out.analysis_type = AnalysisType::Phase;
                 else
-                  Errors::cli_errors(INVALID_ANALYSIS);
+                  Errors::cli_errors(static_cast<int>(CLIErrors::INVALID_ANALYSIS));
                 i++;
               } else
-                Errors::cli_errors(NO_ANALYSIS);
+                Errors::cli_errors(static_cast<int>(CLIErrors::NO_ANALYSIS));
             } else
-              Errors::cli_errors(NO_ANALYSIS);
+              Errors::cli_errors(static_cast<int>(CLIErrors::NO_ANALYSIS));
           }
           break;
         // Convention switch
@@ -71,7 +71,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             else if (argument == "1")
               out.input_type = InputType::WrSpice;
             else
-              Errors::cli_errors(INVALID_CONVENTION);
+              Errors::cli_errors(static_cast<int>(CLIErrors::INVALID_CONVENTION));
           } else {
             if (i != argc - 1) {
               if (argv[i + 1][0] != '-') {
@@ -80,12 +80,12 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
                 else if (std::strcmp(argv[i + 1], "1") == 0)
                   out.input_type = InputType::WrSpice;
                 else
-                  Errors::cli_errors(INVALID_CONVENTION);
+                  Errors::cli_errors(static_cast<int>(CLIErrors::INVALID_CONVENTION));
                 i++;
               } else
-                Errors::cli_errors(NO_CONVENTION);
+                Errors::cli_errors(static_cast<int>(CLIErrors::NO_CONVENTION));
             } else
-              Errors::cli_errors(NO_CONVENTION);
+              Errors::cli_errors(static_cast<int>(CLIErrors::NO_CONVENTION));
           }
           break;
         // Help switch
@@ -150,14 +150,14 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
                 std::cout << "Output file: " << out.output_file_name
                           << std::endl;
                 std::cout << std::endl;
-                Errors::cli_errors(NO_OUTPUT);
+                Errors::cli_errors(static_cast<int>(CLIErrors::NO_OUTPUT));
               }
             } else {
               out.output_file_type = FileOutputType::Csv;
               out.output_file_name = "output.csv";
               std::cout << "Output file: " << out.output_file_name << std::endl;
               std::cout << std::endl;
-              Errors::cli_errors(NO_OUTPUT);
+              Errors::cli_errors(static_cast<int>(CLIErrors::NO_OUTPUT));
             }
           }
           break;
@@ -182,7 +182,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             else if (argument.find("verbose") != std::string::npos)
               out.verbose = true;
             else
-              Errors::cli_errors(UNKNOWN_SWITCH, argument);
+              Errors::cli_errors(static_cast<int>(CLIErrors::UNKNOWN_SWITCH), argument);
             break;
           } else
             exit(0);
@@ -201,7 +201,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
   }
 
   if (out.cir_file_name.empty())
-    Errors::cli_errors(NO_INPUT);
+    Errors::cli_errors(static_cast<int>(CLIErrors::NO_INPUT));
 
   return out;
 }

@@ -79,7 +79,7 @@ double Parser::parse_param(
           (opStack.back().find_first_of("([{") != std::string::npos))
         opStack.pop_back();
       else
-        Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
+        Errors::parsing_errors(static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS), expr);
     } else throw std::logic_error(partToEval);
       //Errors::parsing_errors(UNIDENTIFIED_PART, partToEval);
     if (opLoc == 0)
@@ -92,7 +92,7 @@ double Parser::parse_param(
   if (expToEval.empty())
     while (!opStack.empty()) {
       if (opStack.back().find_first_of("([{") != std::string::npos)
-        Errors::parsing_errors(MISMATCHED_PARENTHESIS, expr);
+        Errors::parsing_errors(static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS), expr);
       else {
         rpnQueue.push_back(opStack.back());
         qType.push_back('O');
@@ -108,7 +108,7 @@ double Parser::parse_param(
         qTypeCopy.push_back('V');
       } else if (qType[i] == 'O') {
         if (i == 0)
-          Errors::parsing_errors(INVALID_RPN, expr);
+          Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_RPN), expr);
         else if (i < 2) {
           rpnQueueCopy.pop_back();
           rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
@@ -246,9 +246,9 @@ void Parser::parse_parameters(Parameters &parameters) {
             parsedParams[JoSIM::ParameterName(tokens.at(0), i.first)] = value;
           }
         } catch (const std::out_of_range& oor) {
-          Errors::parsing_errors(INVALID_DECLARATION, i.second);
+          Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_DECLARATION), i.second);
         } catch (int e) {
-          Errors::parsing_errors(INVALID_DECLARATION, i.second);
+          Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_DECLARATION), i.second);
         } catch (const std::logic_error& le) {
           return false;
         }

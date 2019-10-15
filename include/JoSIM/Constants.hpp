@@ -5,7 +5,6 @@
 
 namespace JoSIM {
   namespace Constants {
-  public:
     static constexpr double PI = 3.141592653589793238463;
     static constexpr double PHI_ZERO = 2.067833831170082E-15;
     static constexpr double BOLTZMANN = 1.38064852E-23;
