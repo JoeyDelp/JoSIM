@@ -7,7 +7,8 @@
 #include "JoSIM/j_components.h"
 #include "JoSIM/j_matrix.h"
 #include "JoSIM/Constants.hpp"
-#include "klu.h"
+
+#include "suitesparse/klu.h"
 
 #include <cassert>
 #include <cmath>

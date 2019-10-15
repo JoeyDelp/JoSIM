@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project(JoSIM VERSION 2.3)
 
-include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
@@ -20,9 +20,6 @@ if(MAKING_STATIC_BUILD)
   set(CMAKE_BUILD_SHARED OFF)
 endif()
 
-# CMake utils
-include(${PROJECT_SOURCE_DIR}/cmake/suitesparse.cmake)
-
 # JoSIM library
 # -------------
 
@@ -37,6 +34,9 @@ add_library(josim
             src/j_components.cpp
             src/j_parser.cpp
             src/j_verbose.cpp)
+
+# Alias for projects including JoSIM
+add_library(josim::josim ALIAS josim)
 
 # Include directories
 target_include_directories(josim PUBLIC
