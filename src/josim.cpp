@@ -14,10 +14,11 @@
 
 int main(int argc, const char **argv) {
 
-
+  // Before anything. Display versioning info.
   JoSIM::CliOptions::version_info();
+  // Parse input arguments for command line interface
   auto cli_options = JoSIM::CliOptions::parse(argc, argv);
-
+  // Generate input object based on cli arguements
   Input iObj(cli_options.analysis_type, 
              cli_options.input_type,
              cli_options.verbose);
@@ -26,13 +27,24 @@ int main(int argc, const char **argv) {
   Simulation sObj;
   Output oObj;
 
-  iObj.read_input_file(cli_options.cir_file_name, iObj.fileLines);
-  iObj.split_netlist(iObj.fileLines, iObj.controls, iObj.parameters,
+  // Parse the input file
+  iObj.read_input_file(cli_options.cir_file_name, 
+                       iObj.fileLines);
+  // Split the parsed input file into different sub-sections
+  iObj.split_netlist(iObj.fileLines, 
+                     iObj.controls, 
+                     iObj.parameters,
                      iObj.netlist);
+  // Parse any identified parameter values
   if (iObj.parameters.unparsedParams.size() > 0)
     Parser::parse_parameters(iObj.parameters);
+  
+  // Expand nested subcircuits
   iObj.expand_subcircuits();
+  // Expand main design using expanded subcircuits
   iObj.expand_maindesign();
+
+
   if (iObj.argVerb)
     Verbose::print_expanded_netlist(iObj.expNetlist);
   sObj.identify_simulation(iObj.controls, iObj.transSim.prstep,
