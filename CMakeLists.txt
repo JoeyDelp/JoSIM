@@ -37,7 +37,8 @@ add_library(josim
             src/Parser.cpp
             src/Verbose.cpp
             src/Netlist.cpp
-            src/Parameters.cpp)
+            src/Parameters.cpp
+            src/Transient.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

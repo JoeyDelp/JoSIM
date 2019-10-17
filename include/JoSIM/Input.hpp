@@ -9,27 +9,10 @@
 #include "./Errors.hpp"
 #include "./Netlist.hpp"
 #include "./Misc.hpp"
+#include "./Transient.hpp"
 
 #include <string>
 #include <vector>
-
-
-class Transient {
-public:
-  double prstep;
-  double tstop;
-  double tstart;
-  double maxtstep;
-  Transient() :
-    prstep(1E-12),
-    tstop(0.0),
-    tstart(0.0),
-    maxtstep(1E-12)
-  {
-
-  };
-  std::size_t simsize() { return (tstop - tstart) / prstep; };
-};
 
 class Input {
 public:
@@ -61,9 +44,6 @@ public:
 };
 
 std::vector<std::string> read_file(const std::string &fileName);
-void parse_file(std::string &fileName, 
-                std::vector<std::string> &controls, 
-                Parameters &parameters,
-                Netlist &netlist);
+void parse_file(std::string &fileName, Input &iObj);
 
 #endif

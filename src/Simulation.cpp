@@ -13,54 +13,11 @@
 #include <cmath>
 #include <iostream>
 
-void Simulation::identify_simulation(const std::vector<std::string> &controls,
-                                     double &prstep, double &tstop,
-                                     double &tstart, double &maxtstep) {
-  std::vector<std::string> simtokens;
-  bool transFound = false;
-  for (const auto &i : controls) {
-    if (i.find("TRAN") != std::string::npos) {
-      transFound = true;
-      simtokens = Misc::tokenize_delimeter(i, " ,");
-      if (simtokens.at(0).find("TRAN") != std::string::npos) {
-        if (simtokens.size() < 2) {
-          Errors::control_errors(static_cast<int>(ControlErrors::TRANS_ERROR), "Too few parameters: " + i);
-          maxtstep = 1E-12;
-          tstop = 1E-9;
-          tstart = 0;
-        } else {
-          prstep = Misc::modifier(simtokens[1]);
-          if (simtokens.size() > 2) {
-            tstop = Misc::modifier(simtokens[2]);
-            if (simtokens.size() > 3) {
-              tstart = Misc::modifier(simtokens[3]);
-              if (simtokens.size() > 4) {
-                maxtstep = Misc::modifier(simtokens[4]);
-              } else
-                maxtstep = 1E-12;
-            } else {
-              tstart = 0;
-              maxtstep = 1E-12;
-            }
-          } else {
-            tstop = 1E-9;
-            tstart = 0;
-            maxtstep = 1E-12;
-          }
-        }
-      }
-    }
-  }
-  if (!transFound) {
-    Errors::control_errors(static_cast<int>(ControlErrors::NO_SIM), "");
-  }
-}
-
 template<JoSIM::AnalysisType AnalysisTypeValue>
 void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
   std::vector<double> lhsValues(mObj.Nsize, 0.0),
       RHS(mObj.Nsize, 0.0), LHS_PRE(mObj.Nsize, 0.0);
-  int simSize = iObj.transSim.simsize();
+  int simSize = iObj.transSim.get_simsize();
   int saveAll = false;
   if(mObj.relevantToStore.size() == 0) saveAll = true;
   if (!saveAll) {
@@ -70,7 +27,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
     for (int m = 0; m < mObj.rowDesc.size(); m++)
       results.xVect.emplace_back(std::vector<double>(simSize, 0.0));
   }
-  double hn_2_2e_hbar = (iObj.transSim.prstep / 2) * (2 * JoSIM::Constants::PI / JoSIM::Constants::PHI_ZERO);
+  double hn_2_2e_hbar = (iObj.transSim.get_prstep() / 2) * (2 * JoSIM::Constants::PI / JoSIM::Constants::PHI_ZERO);
   double RHSvalue = 0.0;
   int ok, jjcount, rowCounter = 0;
   int fqtr, sqtr, tqtr;
@@ -135,7 +92,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
             RHSvalue = (lhsValues.at(mObj.components.voltInd.at(j.index).posNRow) 
               - lhsValues.at(mObj.components.voltInd.at(j.index).negNRow));
           RHSvalue = ((-2 * mObj.components.voltInd.at(j.index).value /
-              iObj.transSim.prstep) * lhsValues.at(mObj.components.voltInd.at(j.index).curNRow)) - RHSvalue;
+              iObj.transSim.get_prstep()) * lhsValues.at(mObj.components.voltInd.at(j.index).curNRow)) - RHSvalue;
           for (const auto &m : mObj.components.voltInd.at(j.index).mut) {
             RHSvalue -= (m.second * lhsValues.at(mObj.components.voltInd.at(m.first).curNRow));
           }
@@ -255,18 +212,18 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
           else if (presis.negNRow == -1) presis.pn1 = lhsValues.at(presis.posNRow);
           else presis.pn1 = lhsValues.at(presis.posNRow) - lhsValues.at(presis.negNRow);
           presis.IRn1 = lhsValues.at(presis.curNRow);
-          RHS.at(rowCounter) = ((JoSIM::Constants::PI * presis.value * iObj.transSim.prstep) / JoSIM::Constants::PHI_ZERO) * presis.IRn1 + presis.pn1;
+          RHS.at(rowCounter) = ((JoSIM::Constants::PI * presis.value * iObj.transSim.get_prstep()) / JoSIM::Constants::PHI_ZERO) * presis.IRn1 + presis.pn1;
           break; }
         case RowDescriptor::Type::PhaseJJ:
           RHS.at(rowCounter) = mObj.components.phaseJJ.at(j.index).pn1 + hn_2_2e_hbar * mObj.components.phaseJJ.at(j.index).vn1;
           break;
         case RowDescriptor::Type::PhaseCapacitor:
           RHS.at(rowCounter) = 
-            -((2 * JoSIM::Constants::PI * iObj.transSim.prstep * iObj.transSim.prstep) /
+            -((2 * JoSIM::Constants::PI * iObj.transSim.get_prstep() * iObj.transSim.get_prstep()) /
               (4 * JoSIM::Constants::PHI_ZERO * mObj.components.phaseCap.at(j.index).value)) *
                 mObj.components.phaseCap.at(j.index).ICn1 -
             mObj.components.phaseCap.at(j.index).pn1 -
-            (iObj.transSim.prstep * mObj.components.phaseCap.at(j.index).dPn1);
+            (iObj.transSim.get_prstep() * mObj.components.phaseCap.at(j.index).dPn1);
           break;
         case RowDescriptor::Type::PhaseVS: {
           auto &pvs = mObj.components.phaseVs.at(j.index);
@@ -274,25 +231,25 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
           else if (pvs.negNRow == -1.0) pvs.pn1 = lhsValues.at(pvs.posNRow);
           else pvs.pn1 = lhsValues.at(pvs.posNRow) - lhsValues.at(pvs.negNRow);
           if (i >= 1) 
-            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.prstep * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO) *
+            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.get_prstep() * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO) *
               (mObj.sources.at(pvs.sourceDex).at(i) + mObj.sources.at(pvs.sourceDex).at(i - 1));
           else if (i == 0)
-            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.prstep * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO) *
+            RHS.at(rowCounter) = pvs.pn1 + ((iObj.transSim.get_prstep() * JoSIM::Constants::PI) / JoSIM::Constants::PHI_ZERO) *
               mObj.sources.at(pvs.sourceDex).at(i);
           break; }
         case RowDescriptor::Type::PhaseTX1: {
           const auto &txline = mObj.components.txPhase.at(j.index);
           if (i > txline.k)
-            RHS.at(rowCounter) = ((iObj.transSim.prstep * JoSIM::Constants::PI * txline.value) / JoSIM::Constants::PHI_ZERO) *
+            RHS.at(rowCounter) = ((iObj.transSim.get_prstep() * JoSIM::Constants::PI * txline.value) / JoSIM::Constants::PHI_ZERO) *
               results.xVect.at(mObj.relToXMap.at(txline.curNode2R)).at(i - txline.k) +
-              txline.p1n1 + (iObj.transSim.prstep / 2) * (txline.dP1n1 + txline.dP2nk);
+              txline.p1n1 + (iObj.transSim.get_prstep() / 2) * (txline.dP1n1 + txline.dP2nk);
           break; }
         case RowDescriptor::Type::PhaseTX2: {
           const auto &txline = mObj.components.txPhase.at(j.index);
           if (i > txline.k)
-            RHS.at(rowCounter) = ((iObj.transSim.prstep * JoSIM::Constants::PI * txline.value) / JoSIM::Constants::PHI_ZERO) *
+            RHS.at(rowCounter) = ((iObj.transSim.get_prstep() * JoSIM::Constants::PI * txline.value) / JoSIM::Constants::PHI_ZERO) *
               results.xVect.at(mObj.relToXMap.at(txline.curNode1R)).at(i - txline.k) +
-              txline.p2n1 + (iObj.transSim.prstep / 2) * (txline.dP2n1 + txline.dP1nk);
+              txline.p2n1 + (iObj.transSim.get_prstep() / 2) * (txline.dP2n1 + txline.dP1nk);
           break; }
         default:
           break;
@@ -335,9 +292,9 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       // Prevent initial large derivitive when V_n-1 = 0
       // Otherwise: trapezoidal find dV_n-1
       if (i <= 3) jj.dVn1 = 0;
-      else jj.dVn1 = (2 / iObj.transSim.prstep) * (jj.vn1 - jj.vn2) - jj.dVn2;
+      else jj.dVn1 = (2 / iObj.transSim.get_prstep()) * (jj.vn1 - jj.vn2) - jj.dVn2;
       // Guess voltage (V0)
-      jj.v0 = jj.vn1 + iObj.transSim.prstep * jj.dVn1;
+      jj.v0 = jj.vn1 + iObj.transSim.get_prstep() * jj.dVn1;
       // Handle Rtype=1
       if (jj.rType == 1) {
         if (fabs(jj.v0) < jj.lowerB) {
@@ -467,7 +424,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
               (sin(jj.phi0) / sqrt(1 - jj.D * (sin(jj.phi0 / 2) *
                 sin(jj.phi0 / 2)))) * tanh((jj.Del) / (2 * JoSIM::Constants::BOLTZMANN * jj.T) *
                 sqrt(1 - jj.D * (sin(jj.phi0 / 2) * sin(jj.phi0 / 2)))) +
-              (((2 * jj.C) / iObj.transSim.prstep) * jj.vn1) + (jj.C * jj.dVn1) - jj.iT;
+              (((2 * jj.C) / iObj.transSim.get_prstep()) * jj.vn1) + (jj.C * jj.dVn1) - jj.iT;
       // Set previous values
       jj.vn2 = jj.vn1;
       jj.dVn2 = jj.dVn1;
@@ -483,7 +440,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       else if (c.negNRow == -1) c.pn1 = (lhsValues.at(c.posNRow));
       else c.pn1 = lhsValues.at(c.posNRow) - lhsValues.at(c.negNRow);
       c.ICn1 = lhsValues.at(c.curNRow);
-      c.dPn1 = (2 / iObj.transSim.prstep) * (c.pn1 - c.pn2) - c.dPn2;
+      c.dPn1 = (2 / iObj.transSim.get_prstep()) * (c.pn1 - c.pn2) - c.dPn2;
       c.dPn2 = c.dPn1;
     }
 
@@ -498,11 +455,11 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       else if (tl.negN2Row == -1) tl.p2n1 = lhsValues.at(tl.posN2Row);
       else tl.p2n1 = lhsValues.at(tl.posN2Row) - lhsValues.at(tl.negN2Row);
 
-      tl.dP1n1 = (2 / iObj.transSim.prstep) * (tl.p1n1 - tl.p1n2) - tl.dP1n2;
+      tl.dP1n1 = (2 / iObj.transSim.get_prstep()) * (tl.p1n1 - tl.p1n2) - tl.dP1n2;
       tl.p1n2 = tl.p1n1;
       tl.dP1n2 = tl.dP1n1;
 
-      tl.dP2n1 = (2 / iObj.transSim.prstep) * (tl.p2n1 - tl.p2n2) - tl.dP2n2;
+      tl.dP2n1 = (2 / iObj.transSim.get_prstep()) * (tl.p2n1 - tl.p2n2) - tl.dP2n2;
       tl.p2n2 = tl.p2n1;
       tl.dP2n2 = tl.dP2n1;
       
@@ -517,11 +474,11 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
         else tl.p1nk = results.xVect.at(mObj.relToXMap.at(tl.posNode2R)).at(i - tl.k)
           - results.xVect.at(mObj.relToXMap.at(tl.negNode2R)).at(i - tl.k);
 
-        tl.dP1nk = (2 / iObj.transSim.prstep) * (tl.p1nk - tl.p1nk1) - tl.dP1nk1;
+        tl.dP1nk = (2 / iObj.transSim.get_prstep()) * (tl.p1nk - tl.p1nk1) - tl.dP1nk1;
         tl.p1nk1 = tl.p1nk;
         tl.dP1nk1 = tl.dP1nk;
 
-        tl.dP2nk = (2 / iObj.transSim.prstep) * (tl.p2nk - tl.p2nk1) - tl.dP2nk1;
+        tl.dP2nk = (2 / iObj.transSim.get_prstep()) * (tl.p2nk - tl.p2nk1) - tl.dP2nk1;
         tl.p2nk1 = tl.p2nk;
         tl.dP2nk1 = tl.dP2nk;
       }
@@ -535,7 +492,7 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
       needsLU = false;
     }
 
-    results.timeAxis.push_back(i * iObj.transSim.prstep);
+    results.timeAxis.push_back(i * iObj.transSim.get_prstep());
   }
   std::cout << "100%" << std::endl;
   klu_free_symbolic(&Symbolic, &Common);

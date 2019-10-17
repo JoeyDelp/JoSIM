@@ -70,7 +70,7 @@ void Errors::input_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "Please recheck the netlist and try again.";
     throw formattedMessage;
   case static_cast<int>(InputErrors::SUBCKT_CONTROLS):
-    formattedMessage += "Subcircuit " + whatPart + "contains controls.\n";
+    formattedMessage += "Subcircuit " + whatPart + " contains controls.\n";
     formattedMessage += "Controls are reserved for the main design.\n";
     formattedMessage += "These controls will be ignored.";
     warning_message(formattedMessage);
@@ -80,7 +80,7 @@ void Errors::input_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "This design will not simulate without a main design.";
     throw formattedMessage;
   case static_cast<int>(InputErrors::UNKNOWN_SUBCKT):
-    formattedMessage += "The subcircuit named " + whatPart + "was not found in the netlist.\n";
+    formattedMessage += "The subcircuit named " + whatPart + " was not found in the netlist.\n";
     formattedMessage += "Please ensure all subcircuits exist and are correctly named.";
     throw formattedMessage;
   case static_cast<int>(InputErrors::EMPTY_FILE):
@@ -128,7 +128,7 @@ void Errors::invalid_component_errors(int errorCode,
     formattedMessage += "No junction model is specified for junction " + whatPart;
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED):
-    formattedMessage += "The specified model " + whatPart + " is not defined";
+    formattedMessage += "The specified model " + whatPart + " is not defined.\n";
     formattedMessage += "Using default model as specified in the manual.";
     warning_message(formattedMessage);
     break;
@@ -154,11 +154,11 @@ void Errors::invalid_component_errors(int errorCode,
     formattedMessage += "Please recheck the subcircuit name and try again.";
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::MUT_ERROR):
-    formattedMessage += "Missing mutual coupling factor. \n";
+    formattedMessage += "Missing mutual coupling factor.\n";
     formattedMessage += "Infringing line: " + whatPart;
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::INVALID_EXPR):
-    formattedMessage += "Invalid expression statement found. \n";
+    formattedMessage += "Invalid expression statement found.\n";
     formattedMessage += "Infringing line: " + whatPart;
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::INVALID_TX_DEFINED):
@@ -279,7 +279,7 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(ControlErrors::PHASE_OF_VOLT):
     formattedMessage += "Requesting phase of a voltage source.\n";
     formattedMessage += "Line: " + whatPart + "\n";
-    formattedMessage += "This is invalid and the request will be ignored.\n";
+    formattedMessage += "This is invalid and the request will be ignored.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::PHASE_OF_CURRENT):
@@ -289,7 +289,7 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::INVALID_CURRENT):
-    formattedMessage += "Invalid request to plot current.";
+    formattedMessage += "Invalid request to plot current.\n";
     formattedMessage += "Infringing line: " + whatPart;
     warning_message(formattedMessage);
     break;
@@ -381,7 +381,7 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
     throw formattedMessage;
   case static_cast<int>(FunctionErrors::INITIAL_PULSE_VALUE):
-    formattedMessage += "Invalid PULSE definition found. The value of " + whatPart + " is expected to be 0";
+    formattedMessage += "Invalid PULSE definition found. The value of " + whatPart + " is expected to be 0\n";
     formattedMessage += "Please refer to the PULSE definition: PULSE(0 V2 TD TR TF PW PER)";
     throw formattedMessage;
   case static_cast<int>(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS):

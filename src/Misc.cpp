@@ -204,7 +204,7 @@ std::string Misc::substring_before(const std::string &str,
 
 std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
                                          const std::string &subckt) {
-  std::vector<double> functionOfT(iObj.transSim.simsize(), 0.0);
+  std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
   std::string posVarName; // subckt = "";
   tokens = tokenize_space(str);
@@ -243,25 +243,25 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       Errors::function_errors(
           static_cast<int>(FunctionErrors::TOO_FEW_VALUES), std::to_string(timesteps.size()) + " timesteps & " +
                               std::to_string(timesteps.size()) + " values");
-    if ((timesteps.back() > iObj.transSim.tstop) &&
+    if ((timesteps.back() > iObj.transSim.get_tstop()) &&
         (values.back() > values.at(values.size() - 2))) {
-      values.at(values.size() - 1) = (iObj.transSim.tstop / timesteps.back()) *
+      values.at(values.size() - 1) = (iObj.transSim.get_tstop() / timesteps.back()) *
                                   (values.back() - values.at(values.size() - 2));
-      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
-    } else if ((timesteps.back() > iObj.transSim.tstop) &&
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.get_tstop();
+    } else if ((timesteps.back() > iObj.transSim.get_tstop()) &&
                (values.back() == values.at(values.size() - 2))) {
-      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.get_tstop();
     }
     if (values.at(values.size() - 1) != 0.0) {
       std::fill(functionOfT.begin() +
-                    timesteps.at(timesteps.size() - 1) / iObj.transSim.prstep,
+                    timesteps.at(timesteps.size() - 1) / iObj.transSim.get_prstep(),
                 functionOfT.end(), values.at(values.size() - 1));
     }
     double startpoint, endpoint, value = 0.0;
-    if((timesteps.back() / iObj.transSim.prstep) > iObj.transSim.simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.prstep)), 0.0);
+    if((timesteps.back() / iObj.transSim.get_prstep()) > iObj.transSim.get_simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.get_prstep())), 0.0);
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
         if (values.at(i - 1) < values.at(i))
@@ -301,32 +301,32 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     if (pulseRepeat == 0.0)
       if (iObj.argVerb)
         Errors::function_errors(static_cast<int>(FunctionErrors::PULSE_REPEAT), tokens.at(6));
-    int PR = pulseRepeat / iObj.transSim.prstep;
-    int TD = timeDelay / iObj.transSim.prstep;
+    int PR = pulseRepeat / iObj.transSim.get_prstep();
+    int TD = timeDelay / iObj.transSim.get_prstep();
     std::vector<double> timesteps, values;
     double timestep;
-    for (int i = 0; i < ((iObj.transSim.simsize() - TD) / PR); i++) {
+    for (int i = 0; i < ((iObj.transSim.get_simsize() - TD) / PR); i++) {
       timestep = timeDelay + (pulseRepeat * i);
-      if (timestep < iObj.transSim.tstop)
+      if (timestep < iObj.transSim.get_tstop())
         timesteps.push_back(timestep);
       else
         break;
       values.push_back(0.0);
       timestep = timeDelay + (pulseRepeat * i) + timeRise;
-      if (timestep < iObj.transSim.tstop)
+      if (timestep < iObj.transSim.get_tstop())
         timesteps.push_back(timestep);
       else
         break;
       values.push_back(vPeak);
       timestep = timeDelay + (pulseRepeat * i) + timeRise + pulseWidth;
-      if (timestep < iObj.transSim.tstop)
+      if (timestep < iObj.transSim.get_tstop())
         timesteps.push_back(timestep);
       else
         break;
       values.push_back(vPeak);
       timestep =
           timeDelay + (pulseRepeat * i) + timeRise + pulseWidth + timeFall;
-      if (timestep < iObj.transSim.tstop)
+      if (timestep < iObj.transSim.get_tstop())
         timesteps.push_back(timestep);
       else
         break;
@@ -334,8 +334,8 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     }
     double startpoint, endpoint, value = 0;
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
         if (values.at(i - 1) < values.at(i))
@@ -365,7 +365,7 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     if (tokens.size() > 5)
       Errors::function_errors(static_cast<int>(FunctionErrors::SIN_TOO_MANY_ARGUMENTS),
                               std::to_string(tokens.size()));
-    double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1 / iObj.transSim.tstop,
+    double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1 / iObj.transSim.get_tstop(),
            THETA = 0.0;
     VO = modifier(tokens.at(0));
     VA = modifier(tokens.at(1));
@@ -384,11 +384,11 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     }
     double currentTimestep, value;
     int beginTime;
-    beginTime = TD / iObj.transSim.prstep;
+    beginTime = TD / iObj.transSim.get_prstep();
 
-    assert(iObj.transSim.simsize() == functionOfT.size());
-    for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
-      currentTimestep = i * iObj.transSim.prstep;
+    assert(iObj.transSim.get_simsize() == functionOfT.size());
+    for (int i = beginTime; i < iObj.transSim.get_simsize(); i++) {
+      currentTimestep = i * iObj.transSim.get_prstep();
       value = VO + VA * sin(2 * JoSIM::Constants::PI * FREQ * (currentTimestep - TD)) *
                        exp(-THETA * (currentTimestep - TD));
       functionOfT.at(i) = value;
@@ -429,9 +429,9 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       values.push_back(modifier(WF.at(i)) * SF);
       timesteps.push_back(TD + i * TS);
     }
-    if (TS < iObj.transSim.prstep)
-      TS = iObj.transSim.prstep;
-    double functionSize = (iObj.transSim.tstop - TD) / TS;
+    if (TS < iObj.transSim.get_prstep())
+      TS = iObj.transSim.get_prstep();
+    double functionSize = (iObj.transSim.get_tstop() - TD) / TS;
     if (PER == 1) {
       double repeats = functionSize / values.size();
       for (int j = 0; j < repeats; j++) {
@@ -444,8 +444,8 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
     }
     double startpoint, endpoint, value = 0.0;
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
         if (values.at(i - 1) < values.at(i))
@@ -491,12 +491,12 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
           Errors::function_errors(static_cast<int>(FunctionErrors::NOISE_VA_ZERO), tokens.at(1));
       TD = modifier(tokens.at(2));
     }
-    TSTEP = iObj.transSim.prstep;
+    TSTEP = iObj.transSim.get_prstep();
     int beginTime;
     double currentTimestep, value;
-    beginTime = TD / iObj.transSim.prstep;
-    for (int i = beginTime; i < iObj.transSim.simsize(); i++) {
-      currentTimestep = i * iObj.transSim.prstep;
+    beginTime = TD / iObj.transSim.get_prstep();
+    for (int i = beginTime; i < iObj.transSim.get_simsize(); i++) {
+      currentTimestep = i * iObj.transSim.get_prstep();
       value = VA * grand() / sqrt(2.0 * TSTEP);
       functionOfT.at(i) = value;
     }
@@ -532,25 +532,25 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       Errors::function_errors(
           static_cast<int>(FunctionErrors::TOO_FEW_VALUES), std::to_string(timesteps.size()) + " timesteps & " +
                               std::to_string(timesteps.size()) + " values");
-    if ((timesteps.back() > iObj.transSim.tstop) &&
+    if ((timesteps.back() > iObj.transSim.get_tstop()) &&
         (values.back() > values.at(values.size() - 2))) {
-      values.at(values.size() - 1) = (iObj.transSim.tstop / timesteps.back()) *
+      values.at(values.size() - 1) = (iObj.transSim.get_tstop() / timesteps.back()) *
                                   (values.back() - values.at(values.size() - 2));
-      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
-    } else if ((timesteps.back() > iObj.transSim.tstop) &&
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.get_tstop();
+    } else if ((timesteps.back() > iObj.transSim.get_tstop()) &&
                (values.back() == values.at(values.size() - 2))) {
-      timesteps.at(timesteps.size() - 1) = iObj.transSim.tstop;
+      timesteps.at(timesteps.size() - 1) = iObj.transSim.get_tstop();
     }
     if (values.at(values.size() - 1) != 0.0) {
       std::fill(functionOfT.begin() +
-                    timesteps.at(timesteps.size() - 1) / iObj.transSim.prstep,
+                    timesteps.at(timesteps.size() - 1) / iObj.transSim.get_prstep(),
                 functionOfT.end(), values.at(values.size() - 1));
     }
     double startpoint, endpoint, value, period, ba = 0.0;
-    if((timesteps.back() / iObj.transSim.prstep) > iObj.transSim.simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.prstep)), 0.0);
+    if((timesteps.back() / iObj.transSim.get_prstep()) > iObj.transSim.get_simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.get_prstep())), 0.0);
     for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.prstep);
-      endpoint = floor(timesteps.at(i) / iObj.transSim.prstep);
+      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       period = (endpoint - startpoint) * 2;
       functionOfT.at(startpoint) = values.at(i - 1);
       for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {

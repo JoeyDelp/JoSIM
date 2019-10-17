@@ -10,6 +10,7 @@
 #include "JoSIM/CliOptions.hpp"
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/Transient.hpp"
 
 
 int main(int argc, const char **argv) {
@@ -37,9 +38,7 @@ int main(int argc, const char **argv) {
     //                   iObj.parameters,
     //                   iObj.netlist);
     parse_file(cli_options.cir_file_name,
-                iObj.controls, 
-                iObj.parameters,
-                iObj.netlist);
+                iObj);
     // Parse any identified parameter values
     if (iObj.parameters.unparsedParams.size() > 0)
       Parser::parse_parameters(iObj.parameters);
@@ -49,12 +48,13 @@ int main(int argc, const char **argv) {
     // Expand main design using expanded subcircuits
     iObj.netlist.expand_maindesign();
 
+    identify_simulation(iObj.controls, iObj.transSim);
 
     if (iObj.argVerb)
       Verbose::print_expanded_netlist(iObj.netlist.expNetlist);
-    sObj.identify_simulation(iObj.controls, iObj.transSim.prstep,
-                            iObj.transSim.tstop, iObj.transSim.tstart,
-                            iObj.transSim.maxtstep);
+    // sObj.identify_simulation(iObj.controls, iObj.transSim.prstep,
+    //                         iObj.transSim.tstop, iObj.transSim.tstart,
+    //                         iObj.transSim.maxtstep);
     mObj.find_relevant_x(iObj);
     mObj.create_matrix(iObj);
     if (cli_options.analysis_type == JoSIM::AnalysisType::Voltage)

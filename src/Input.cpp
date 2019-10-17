@@ -157,13 +157,10 @@ std::vector<std::string> read_file(const std::string &fileName){
   return {};
 }
 
-void parse_file(std::string &fileName, 
-                std::vector<std::string> &controls, 
-                Parameters &parameters,
-                Netlist &netlist) {
+void parse_file(std::string &fileName, Input &iObj) {
   std::vector<std::string> fileLines = read_file(fileName);
 
-   bool subckt = false;
+  bool subckt = false;
   bool control = false;
   std::string subcktName = "";
   std::vector<std::string> tokens;
@@ -173,13 +170,13 @@ void parse_file(std::string &fileName,
     if (fileLines.at(i)[0] == '.') {
       if (fileLines.at(i).find(".SUBCKT") != std::string::npos) {
         subckt = true;
-        netlist.containsSubckt = true;
+        iObj.netlist.containsSubckt = true;
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (tokens.size() > 1) {
           if (tokens.size() > 2) {
             subcktName = tokens.at(1);
             for (int j = 2; j < tokens.size(); j++) {
-              netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
+              iObj.netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
             }
           } else
             Errors::input_errors(static_cast<int>(InputErrors::MISSING_SUBCKT_IO));
@@ -188,10 +185,10 @@ void parse_file(std::string &fileName,
         // If parameter, add to unparsed parameters list
       } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
         if (subckt)
-          parameters.unparsedParams.push_back(
+          iObj.parameters.unparsedParams.push_back(
               std::make_pair(subcktName, fileLines.at(i)));
         else
-          parameters.unparsedParams.push_back(
+          iObj.parameters.unparsedParams.push_back(
               std::make_pair("", fileLines.at(i)));
         // If control, set flag as start of controls
       } else if (fileLines.at(i).find(".CONTROL") != std::string::npos)
@@ -206,14 +203,14 @@ void parse_file(std::string &fileName,
       else if (fileLines.at(i).find(".MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
-          netlist.models[std::make_pair(tokens[1], subcktName)] =
+          iObj.netlist.models[std::make_pair(tokens[1], subcktName)] =
               fileLines.at(i);
         else
-          netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
+          iObj.netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
         // If neither of these, normal control, add to controls list
       } else {
         if (!subckt)
-          controls.push_back(fileLines.at(i));
+          iObj.controls.push_back(fileLines.at(i));
         else
           Errors::input_errors(static_cast<int>(InputErrors::SUBCKT_CONTROLS), subcktName);
       }
@@ -222,23 +219,23 @@ void parse_file(std::string &fileName,
       // If parameter, add to unparsed parameter list
       if (fileLines.at(i).find("PARAM") != std::string::npos) {
         if (subckt)
-          parameters.unparsedParams.push_back(
+          iObj.parameters.unparsedParams.push_back(
               std::make_pair(subcktName, fileLines.at(i)));
         else
-          parameters.unparsedParams.push_back(
+          iObj.parameters.unparsedParams.push_back(
               std::make_pair("", fileLines.at(i)));
         // If model, add to models list
       } else if (fileLines.at(i).find("MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
-          netlist.models[std::make_pair(tokens[1], subcktName)] =
+          iObj.netlist.models[std::make_pair(tokens[1], subcktName)] =
               fileLines.at(i);
         else
-          netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
+          iObj.netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
         // If neither, add to controls list
       } else {
         if (!subckt)
-          controls.push_back(fileLines.at(i));
+          iObj.controls.push_back(fileLines.at(i));
         else
           Errors::input_errors(static_cast<int>(InputErrors::SUBCKT_CONTROLS), subcktName);
       }
@@ -246,14 +243,14 @@ void parse_file(std::string &fileName,
     } else {
       // If subcircuit flag, add line to relevant subcircuit
       if (subckt)
-        netlist.subcircuits[subcktName].lines.push_back(
+        iObj.netlist.subcircuits[subcktName].lines.push_back(
             std::make_pair(fileLines.at(i), subcktName));
       // If not, add line to main design
       else
-        netlist.maindesign.push_back(fileLines.at(i));
+        iObj.netlist.maindesign.push_back(fileLines.at(i));
     }
   }
   // If main is empty, complain
-  if (netlist.maindesign.empty())
+  if (iObj.netlist.maindesign.empty())
     Errors::input_errors(static_cast<int>(InputErrors::MISSING_MAIN));
 }
