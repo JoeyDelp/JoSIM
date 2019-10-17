@@ -1,9 +1,11 @@
+// Copyright (c) 2019 Johannes Delport
+// This code is licensed under MIT license (see LICENSE for details)
+
 #include "JoSIM/CliOptions.hpp"
-
 #include "JoSIM/Errors.hpp"
-#include "JoSIM/j_std_include.h"
 
-#include <cstring>
+#include <iostream>
+#include <iomanip>
 
 using namespace JoSIM;
 

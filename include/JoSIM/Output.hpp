@@ -2,10 +2,10 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_OUTPUT_H
 #define JOSIM_J_OUTPUT_H
-#include "j_matrix.h"
-#include "j_misc.h"
-#include "j_simulation.h"
-#include "j_std_include.h"
+
+#include "./Matrix.hpp"
+#include "./Misc.hpp"
+#include "./Simulation.hpp"
 #include "./Input.hpp"
 
 class Trace {

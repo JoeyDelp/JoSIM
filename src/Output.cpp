@@ -1,17 +1,19 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "JoSIM/j_output.h"
+
+#include "JoSIM/Output.hpp"
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Input.hpp"
-#include "JoSIM/j_simulation.h"
+#include "JoSIM/Simulation.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Errors.hpp"
-
 
 #include <algorithm>
 #include <cassert>
 #include <functional>
 #include <iterator>
+#include <fstream>
+#include <iostream>
 
 void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
 {

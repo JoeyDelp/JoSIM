@@ -1,6 +1,9 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "JoSIM/j_parser.h"
+
+#include "JoSIM/Parser.hpp"
+
+#include <iostream>
 
 // Possible functions that can be called
 std::unordered_map<std::string, double> consts = {{"C", 299792458},

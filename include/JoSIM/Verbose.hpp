@@ -2,7 +2,9 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_VERBOSE_H
 #define JOSIM_J_VERBOSE_H
-#include "j_std_include.h"
+
+#include <string>
+#include <vector>
 
 class Verbose {
 public:

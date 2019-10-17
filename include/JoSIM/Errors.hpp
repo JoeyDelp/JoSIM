@@ -2,7 +2,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_ERRORS_H
 #define JOSIM_J_ERRORS_H
-#include "j_std_include.h"
+
+#include <string>
 
 enum class CLIErrors : int { 
   NO_ANALYSIS,

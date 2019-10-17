@@ -1,6 +1,9 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
+
 #include "JoSIM/Errors.hpp"
+
+#include <iostream>
 
 void Errors::cli_errors(int errorCode, const std::string &whatPart) {
   std::string formattedMessage = "Command Line Interface\n";
@@ -13,7 +16,7 @@ void Errors::cli_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(static_cast<int>(CLIErrors::NO_INPUT)):
     formattedMessage += "No input file was specified. Simulator cannot continue.\n";
     formattedMessage += "Please specify input and try again.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(CLIErrors::UNKNOWN_SWITCH):
     formattedMessage += "Unknown option " + whatPart + " specified. Please refer to the help menu.";
     warning_message(formattedMessage);
@@ -22,12 +25,12 @@ void Errors::cli_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "Missing input arguments\n";
     formattedMessage += "Usage: josim [options] input_netlist\n\n";
     formattedMessage += "For further help use the -h switch";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(CLIErrors::INVALID_ANALYSIS):
     formattedMessage += "Invalid analysis type specified. 0 - Voltage, 1 - Phase.\n";
     formattedMessage += "Usage: josim [options] input_netlist\n\n";
     formattedMessage += "For further help use the -h switch";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(CLIErrors::NO_ANALYSIS):
     formattedMessage += "No analysis was specified. Reverting to default (0 - Voltage).\n";
     formattedMessage += "Please refer to the help menu (-h) or manual for further information.";
@@ -37,7 +40,7 @@ void Errors::cli_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "Invalid subcircuit convention specified. 0 - JSIM, 1 - WRspice.\n";
     formattedMessage += "Usage: josim [options] input_netlist\n\n";
     formattedMessage += "For further help use the -h switch";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(CLIErrors::NO_CONVENTION):
     formattedMessage += "No convention was specified. Reverting to default (0 - JSIM).\n";
     formattedMessage += "Please refer to the help menu (-h) or manual for further information.";
@@ -46,7 +49,7 @@ void Errors::cli_errors(int errorCode, const std::string &whatPart) {
   default:
     formattedMessage += "Unknown handling error.\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -57,15 +60,15 @@ void Errors::input_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "Input file " + whatPart + " cannot be found or opened.\n";
     formattedMessage += "Please ensure that the file exists and can be opened.\n\n";
     formattedMessage += "For further help use the -h switch";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(InputErrors::MISSING_SUBCKT_IO):
     formattedMessage += "Missing subcircuit io.\n";
     formattedMessage += "Please recheck the netlist and try again.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(InputErrors::MISSING_SUBCKT_NAME):
     formattedMessage += "Missing subcircuit name.\n";
     formattedMessage += "Please recheck the netlist and try again.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(InputErrors::SUBCKT_CONTROLS):
     formattedMessage += "Subcircuit " + whatPart + "contains controls.\n";
     formattedMessage += "Controls are reserved for the main design.\n";
@@ -75,15 +78,15 @@ void Errors::input_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(InputErrors::MISSING_MAIN):
     formattedMessage += "Missing main design in netlist.\n";
     formattedMessage += "This design will not simulate without a main design.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(InputErrors::UNKNOWN_SUBCKT):
     formattedMessage += "The subcircuit named " + whatPart + "was not found in the netlist.\n";
     formattedMessage += "Please ensure all subcircuits exist and are correctly named.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(InputErrors::EMPTY_FILE):
     formattedMessage += "The file \"" + whatPart + "\" contains no readable lines.\n";
-    formattedMessage += "Please check the input file and ensure that the file is not empty."
-    error_message(formattedMessage);
+    formattedMessage += "Please check the input file and ensure that the file is not empty.";
+    throw formattedMessage;
   }
 }
 
@@ -94,36 +97,36 @@ void Errors::invalid_component_errors(int errorCode,
   case static_cast<int>(ComponentErrors::RES_ERROR):
     formattedMessage += "Resistor value error\n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::CAP_ERROR):
     formattedMessage += "Capacitor value error\n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::IND_ERROR):
     formattedMessage += "Inductor value error\n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::LABEL_ERROR):
     formattedMessage += "Invalid component label: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MISSING_LABEL):
     formattedMessage += "No component label. This should not happen.\n";
     formattedMessage += "Infringing line: " + whatPart + "\n";
     formattedMessage += "Please contact the developer as this is possibly a bug.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MISSING_PNODE):
     formattedMessage += "No positive node. This should not happen.\n";
     formattedMessage += "Infringing line: " + whatPart + "\n";
     formattedMessage += "Please contact the developer as this is possibly a bug.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MISSING_NNODE):
     formattedMessage += "No negative node. This should not happen.\n";
     formattedMessage += "Infringing line: " + whatPart + "\n";
     formattedMessage += "Please contact the developer as this is possibly a bug.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MISSING_JJMODEL):
     formattedMessage += "No junction model is specified for junction " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED):
     formattedMessage += "The specified model " + whatPart + " is not defined";
     formattedMessage += "Using default model as specified in the manual.";
@@ -137,39 +140,39 @@ void Errors::invalid_component_errors(int errorCode,
   case static_cast<int>(ComponentErrors::DUPLICATE_LABEL):
     formattedMessage += "Duplicate label " + whatPart + " detected.\n";
     formattedMessage += "The program will now terminate. Please recheck the netlist.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::INVALID_SUBCIRCUIT_NODES):
     formattedMessage += "The nodes for label " + whatPart + " does not match the required nodes of the subcicuit.\n";
     formattedMessage += "Please recheck the nodes required by the subcircuit and try again.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::TIME_ERROR):
     formattedMessage += "Time delay value error\n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MISSING_SUBCIRCUIT_NAME):
     formattedMessage += "The subcircuit for " + whatPart + " does not match any of the subcircuits found in the file.\n";
     formattedMessage += "Please recheck the subcircuit name and try again.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MUT_ERROR):
     formattedMessage += "Missing mutual coupling factor. \n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::INVALID_EXPR):
     formattedMessage += "Invalid expression statement found. \n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::INVALID_TX_DEFINED):
     formattedMessage += "Invalid definition for transmission line found.\n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::MISSING_INDUCTOR):
     formattedMessage += "Invalid mutual coupling defined. Missing inductor " + whatPart + "\n";
     formattedMessage += "Please ensure that " + whatPart + " exists.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::UNKNOWN_DEVICE_TYPE):
     formattedMessage += "Unkown device type " + whatPart + "\n";
     formattedMessage += "Please refer to the syntax guide for a list of available device types.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::SPECIAL_CHARS):
     formattedMessage += "Label " + whatPart + " contains special characters.\n";
     formattedMessage += "The use of special characters in label names is not advised.\n";
@@ -180,7 +183,7 @@ void Errors::invalid_component_errors(int errorCode,
   default:
     formattedMessage += "Unknown invalid component error.\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -200,20 +203,20 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::PRINT_ERROR):
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::PLOT_ERROR):
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::INV_CONTROL):
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::DC_ERROR):
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::AC_ERROR):
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::PHASE_ERROR):
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::NO_SIM):
     formattedMessage += "No simulation type specified. Nothing will be simulated.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ControlErrors::UNKNOWN_DEVICE):
     formattedMessage += "Unknown device " + whatPart + "\n";
     formattedMessage += "Cannot print results for this device.\n";
@@ -309,7 +312,7 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
   default:
     formattedMessage += "Unknown control error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -319,18 +322,18 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
   switch (errorCode) {
   case static_cast<int>(ModelErrors::PARAM_TYPE_ERROR):
     formattedMessage += "Unknown model parameter " + whatPart + " specified.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ModelErrors::UNKNOWN_MODEL_TYPE):
     formattedMessage += "Unknown model type " + whatPart + " specified.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION):
     formattedMessage += "Bad model definition found.\n";
     formattedMessage += "Infringing line: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   default:
     formattedMessage += "Unknown model error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -340,11 +343,11 @@ void Errors::matrix_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(MatrixErrors::NON_SQUARE):
     formattedMessage += "Matrix is not square. Dimensions are " + whatPart + "\n";
     formattedMessage += "Please contact the developer as this is potentially a bug.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   default:
     formattedMessage += "Unknown matrix error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -354,11 +357,11 @@ void Errors::matrix_errors(int errorCode, const std::string &whatPart) {
   switch (errorCode) {
   case static_cast<int>(MiscErrors::STOD_ERROR):
     formattedMessage += "Cannot convert string to double: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   default:
     formattedMessage += "Unknown misc error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -368,23 +371,23 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(FunctionErrors::INITIAL_VALUES):
     formattedMessage += "Invalid PWL definition found. The value of " + whatPart + " is expected to be 0\n";
     formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS):
     formattedMessage += "Total timesteps specified do not match the values specified." + whatPart + " specified.\n";
     formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::TOO_FEW_VALUES):
     formattedMessage += "Total values specified do not match the timesteps specified." + whatPart + " specified.\n";
     formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::INITIAL_PULSE_VALUE):
     formattedMessage += "Invalid PULSE definition found. The value of " + whatPart + " is expected to be 0";
     formattedMessage += "Please refer to the PULSE definition: PULSE(0 V2 TD TR TF PW PER)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS):
     formattedMessage += "Total arguments specified do not match the required for PULSE. " + whatPart + " specified.\n";
     formattedMessage += "Please refer to the PULSE definition: PULSE(0 V2 TD TR TF PW PER)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::PULSE_VPEAK_ZERO):
     formattedMessage += "PULSE peak voltage is 0.0, this renders the function redundant.\n";
     formattedMessage += "Program will continue but PULSE command is redundant.";
@@ -403,11 +406,11 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(FunctionErrors::SIN_TOO_FEW_ARGUMENTS):
     formattedMessage += "Total arguments specified do not match the required for SIN. " + whatPart + " specified.\n";
     formattedMessage += "Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::SIN_TOO_MANY_ARGUMENTS):
     formattedMessage += "Total arguments specified do not match the required for SIN. " + whatPart + " specified.\n";
     formattedMessage += "Please refer to the SIN definition: SIN(VO VA FREQ TD THETA)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::SIN_VA_ZERO):
     formattedMessage += "SIN amplitude is 0.0, this renders the function redundant.\n";
     formattedMessage += "Program will continue but SIN command is redundant.";
@@ -431,15 +434,15 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(FunctionErrors::CUS_WF_NOT_FOUND):
     formattedMessage += "CUS waveform file was not found." + whatPart + " specified.\n";
     formattedMessage += "Program will terminate.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS):
     formattedMessage += "Total arguments specified do not match the required for NOISE. " + whatPart + " specified.\n";
     formattedMessage += "Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::NOISE_TOO_MANY_ARGUMENTS):
     formattedMessage += "Total arguments specified do not match the required for NOISE. " + whatPart + " specified.\n";
     formattedMessage += "Please refer to the NOISE definition: NOISE(0 VA TSTEP TD)";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(FunctionErrors::NOISE_VO_ZERO):
     formattedMessage += "NOISE initial value is not 0.0, this needs to be zero.\n";
     formattedMessage += "Program will continue but NOISE command is redundant.";
@@ -453,7 +456,7 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
   default:
     formattedMessage += "Unknown function error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -464,27 +467,27 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(SimulationErrors::JJCAP_NOT_FOUND):
     formattedMessage += "Capacitor value for " + whatPart + " could not be found.\n";
     formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(SimulationErrors::JJICRIT_NOT_FOUND):
     formattedMessage += "Critical current value for " + whatPart + " could not be found.\n";
     formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(SimulationErrors::JJPHASE_NODE_NOT_FOUND):
     formattedMessage += "Junction phase node not found for " + whatPart + ".\n";
     formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(SimulationErrors::INDUCTOR_CURRENT_NOT_FOUND):
     formattedMessage += "Inductor current not defined for " + whatPart + ". Matrix will have no solution.\n";
     formattedMessage += "This is a bug and the developer should be contacted. The program will abort.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(SimulationErrors::MATRIX_SINGULAR):
     formattedMessage += "Matrix is singular. Matrix will have no solution.\n";
     formattedMessage += "Please check the components in the netlist. The program will abort.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   default:
     formattedMessage += "Unknown simulation error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 
@@ -499,23 +502,23 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(ParsingErrors::UNIDENTIFIED_PART):
     formattedMessage += "Unknown function/variable defined. What is " + whatPart + "?\n";
     formattedMessage += "Please ensure variables are declared before being used.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS):
     formattedMessage += "Mismatched parenthesis in expression: " + whatPart + "\n";
     formattedMessage += "Please correct the expression before trying again.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ParsingErrors::INVALID_RPN):
     formattedMessage += "Invalid RPN detected. This might be an algorithm fault or an incorrect expression parse.\n";
     formattedMessage += "The expression in question: " + whatPart;
-    error_message(formattedMessage);
+    throw formattedMessage;
   case static_cast<int>(ParsingErrors::INVALID_DECLARATION):
     formattedMessage += "Missing parameter declaration in: " + whatPart + "\n";
     formattedMessage += "Please ensure that a valid .PARAM definition is declared.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   default:
     formattedMessage += "Unknown parsing error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
-    error_message(formattedMessage);
+    throw formattedMessage;
   }
 }
 

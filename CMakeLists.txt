@@ -7,6 +7,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
 
+add_definitions(-DVERSION="${CMAKE_PROJECT_VERSION}")
+
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -25,15 +27,17 @@ endif()
 
 add_library(josim
             src/CliOptions.cpp
-            src/j_simulation.cpp
-            src/j_output.cpp
-            src/j_misc.cpp
-            src/j_matrix.cpp
+            src/Simulation.cpp
+            src/Output.cpp
+            src/Misc.cpp
+            src/Matrix.cpp
             src/Input.cpp
             src/Errors.cpp
-            src/j_components.cpp
-            src/j_parser.cpp
-            src/j_verbose.cpp)
+            src/Components.cpp
+            src/Parser.cpp
+            src/Verbose.cpp
+            src/Netlist.cpp
+            src/Parameters.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

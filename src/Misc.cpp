@@ -1,9 +1,11 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "JoSIM/j_misc.h"
+
+#include "JoSIM/Misc.hpp"
 #include "JoSIM/Constants.hpp"
 
 #include <cassert>
+#include <fstream>
 
 std::string Misc::file_from_path(const std::string &path) {
   auto posLastSlash = path.find_last_of("/\\");

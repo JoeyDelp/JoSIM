@@ -2,12 +2,14 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_COMPONENTS_H
 #define JOSIM_J_COMPONENTS_H
-#include "j_misc.h"
-#include "j_parser.h"
-#include "j_std_include.h"
+
+#include "./Misc.hpp"
+#include "./Parser.hpp"
 #include "./Constants.hpp"
 #include "./Input.hpp"
 #include "./Errors.hpp"
+
+#include <unordered_map>
 
 class device {
 public:

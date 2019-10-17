@@ -1,10 +1,10 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "JoSIM/j_matrix.h"
-#include "JoSIM/j_misc.h"
+
+#include "JoSIM/Matrix.hpp"
+#include "JoSIM/Misc.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Errors.hpp"
-
 
 #include <algorithm>
 #include <string>
@@ -117,7 +117,7 @@ void Matrix::create_A_volt(Input &iObj)
   int rowCounter, colCounter, expStart, expEnd, nodeCounter;
   bool pGND, nGND, relevantDevice = false;
   rowCounter = colCounter = nodeCounter = 0;
-  for (auto i : iObj.expNetlist) {
+  for (auto i : iObj.netlist.expNetlist) {
     devicetokens = Misc::tokenize_space(i.first);
     subckt = i.second;
     // Parse {} expressions
@@ -1892,7 +1892,7 @@ void Matrix::create_A_phase(Input &iObj)
   bool pGND, nGND, relevantDevice = false;
   rowCounter = colCounter = nodeCounter = 0;
   /* Main circuit node identification */
-  for (auto i : iObj.expNetlist) {
+  for (auto i : iObj.netlist.expNetlist) {
     devicetokens = Misc::tokenize_space(i.first);
     subckt = i.second;
     // Patse {} expression

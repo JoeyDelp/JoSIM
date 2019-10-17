@@ -1,17 +1,17 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#include "JoSIM/j_simulation.h"
 
-// Linear algebra include
+#include "JoSIM/Simulation.hpp"
 #include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/j_components.h"
-#include "JoSIM/j_matrix.h"
+#include "JoSIM/Components.hpp"
+#include "JoSIM/Matrix.hpp"
 #include "JoSIM/Constants.hpp"
 
 #include "suitesparse/klu.h"
 
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 void Simulation::identify_simulation(const std::vector<std::string> &controls,
                                      double &prstep, double &tstop,

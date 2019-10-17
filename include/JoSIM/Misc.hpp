@@ -2,10 +2,14 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_MISC_H
 #define JOSIM_J_MISC_H
-#include "j_parser.h"
-#include "j_std_include.h"
+
+#include "./Parser.hpp"
 #include "./Input.hpp"
 
+#include <unordered_map>
+#include <map>
+#include <sstream>
+#include <iomanip>
 
 class Input;
 
