@@ -4,7 +4,7 @@
 #define JOSIM_J_COMPONENTS_H
 
 #include "./Misc.hpp"
-#include "./Parser.hpp"
+#include "./Parameters.hpp"
 #include "./Constants.hpp"
 #include "./Input.hpp"
 #include "./Errors.hpp"

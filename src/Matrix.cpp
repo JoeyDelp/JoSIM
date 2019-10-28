@@ -139,8 +139,8 @@ void Matrix::create_A_volt(Input &iObj)
         devicetokens.at(expStart) = devicetokens.at(expStart).substr(
             0, devicetokens.at(expStart).find('}'));
         devicetokens.at(expStart) = Misc::precise_to_string(
-            Parser::parse_param(devicetokens.at(expStart),
-                                iObj.parameters.parsedParams, i.second),
+            Parameters::parse_param(devicetokens.at(expStart),
+                                iObj.parameters.parameters, i.second),
             25);
       } else if (expStart != -1 && expEnd != -1) {
         int d = expStart + 1;
@@ -155,8 +155,8 @@ void Matrix::create_A_volt(Input &iObj)
         devicetokens.at(expStart) = devicetokens.at(expStart).substr(
             0, devicetokens.at(expStart).find('}'));
         devicetokens.at(expStart) = Misc::precise_to_string(
-            Parser::parse_param(devicetokens.at(expStart),
-                                iObj.parameters.parsedParams, i.second),
+            Parameters::parse_param(devicetokens.at(expStart),
+                                iObj.parameters.parameters, i.second),
             25);
       }
     // End of parse {} expressions
@@ -201,12 +201,12 @@ void Matrix::create_A_volt(Input &iObj)
 
       try {
         auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-        if (iObj.parameters.parsedParams.count(parameter_name) != 0) {
-          value = iObj.parameters.parsedParams.at(parameter_name);
+        if (iObj.parameters.parameters.count(parameter_name) != 0) {
+          value = iObj.parameters.parameters.at(parameter_name).get_value().value();
         } else {
           parameter_name = ParameterName(devicetokens.at(3), "");
-          if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-            value = iObj.parameters.parsedParams.at(parameter_name);
+          if (iObj.parameters.parameters.count(parameter_name) != 0)
+            value = iObj.parameters.parameters.at(parameter_name).get_value().value();
           else
             value = Misc::modifier(devicetokens.at(3));
         }
@@ -369,12 +369,12 @@ void Matrix::create_A_volt(Input &iObj)
       deviceLabelIndex[label].index = components.voltCap.size() - 1;
       try {
         auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-        if (iObj.parameters.parsedParams.count(parameter_name) != 0) {
-          value = iObj.parameters.parsedParams.at(parameter_name);
+        if (iObj.parameters.parameters.count(parameter_name) != 0) {
+          value = iObj.parameters.parameters.at(parameter_name).get_value().value();
         } else {
           parameter_name = ParameterName(devicetokens.at(3), "");
-          if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-            value = iObj.parameters.parsedParams.at(parameter_name);
+          if (iObj.parameters.parameters.count(parameter_name) != 0)
+            value = iObj.parameters.parameters.at(parameter_name).get_value().value();
           else
             value = Misc::modifier(devicetokens.at(3));
         }
@@ -568,12 +568,12 @@ void Matrix::create_A_volt(Input &iObj)
 
       try {
         auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-        if (iObj.parameters.parsedParams.count(parameter_name) != 0) {
-          value = iObj.parameters.parsedParams.at(parameter_name);
+        if (iObj.parameters.parameters.count(parameter_name) != 0) {
+          value = iObj.parameters.parameters.at(parameter_name).get_value().value();
         } else {
           parameter_name = ParameterName(devicetokens.at(3), "");
-          if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-            value = iObj.parameters.parsedParams.at(parameter_name);
+          if (iObj.parameters.parameters.count(parameter_name) != 0)
+            value = iObj.parameters.parameters.at(parameter_name).get_value().value();
           else
             value = Misc::modifier(devicetokens.at(3));
         }
@@ -1310,15 +1310,15 @@ void Matrix::create_A_volt(Input &iObj)
       double z0 = 10, tD = 0.0;
       for (int t = 5; t < devicetokens.size(); t++) {
         if (devicetokens[t].find("TD") != std::string::npos)
-          tD = Parser::parse_param(
+          tD = Parameters::parse_param(
               devicetokens[t].substr(devicetokens[t].find("TD=") + 3,
                                      devicetokens[t].size() - 1),
-              iObj.parameters.parsedParams, i.second);
+              iObj.parameters.parameters, i.second);
         else if (devicetokens[t].find("Z0") != std::string::npos)
-          z0 = Parser::parse_param(
+          z0 = Parameters::parse_param(
               devicetokens[t].substr(devicetokens[t].find("Z0=") + 3,
                                      devicetokens[t].size() - 1),
-              iObj.parameters.parsedParams, i.second);
+              iObj.parameters.parameters, i.second);
         else if (devicetokens[t].find("LOSSLESS") != std::string::npos) {
         } else
           Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_TX_DEFINED), i.first);
@@ -1829,8 +1829,8 @@ void Matrix::create_A_volt(Input &iObj)
     }
     try {
       auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-      if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-        cf = iObj.parameters.parsedParams.at(parameter_name);
+      if (iObj.parameters.parameters.count(parameter_name) != 0)
+        cf = iObj.parameters.parameters.at(parameter_name).get_value().value();
       else
         cf = Misc::modifier(devicetokens.at(3));
     } catch (std::exception &e) {
@@ -1914,8 +1914,8 @@ void Matrix::create_A_phase(Input &iObj)
         devicetokens[expStart] =
             devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
         devicetokens[expStart] = Misc::precise_to_string(
-            Parser::parse_param(devicetokens[expStart],
-                                iObj.parameters.parsedParams, i.second),
+            Parameters::parse_param(devicetokens[expStart],
+                                iObj.parameters.parameters, i.second),
             25);
       } else if (expStart != -1 && expEnd != -1) {
         int d = expStart + 1;
@@ -1930,8 +1930,8 @@ void Matrix::create_A_phase(Input &iObj)
         devicetokens[expStart] =
             devicetokens[expStart].substr(0, devicetokens[expStart].find('}'));
         devicetokens[expStart] = Misc::precise_to_string(
-            Parser::parse_param(devicetokens[expStart],
-                                iObj.parameters.parsedParams, i.second),
+            Parameters::parse_param(devicetokens[expStart],
+                                iObj.parameters.parameters, i.second),
             25);
       }
     // End of parse {} expressions
@@ -1975,12 +1975,12 @@ void Matrix::create_A_phase(Input &iObj)
 
       try {
         auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-        if (iObj.parameters.parsedParams.count(parameter_name) != 0) {
-          value = iObj.parameters.parsedParams.at(parameter_name);
+        if (iObj.parameters.parameters.count(parameter_name) != 0) {
+          value = iObj.parameters.parameters.at(parameter_name).get_value().value();
         } else {
           parameter_name = ParameterName(devicetokens.at(3), "");
-          if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-            value = iObj.parameters.parsedParams.at(parameter_name);
+          if (iObj.parameters.parameters.count(parameter_name) != 0)
+            value = iObj.parameters.parameters.at(parameter_name).get_value().value();
           else
             value = Misc::modifier(devicetokens.at(3));
         }
@@ -2165,12 +2165,12 @@ void Matrix::create_A_phase(Input &iObj)
       deviceLabelIndex[label].index = components.phaseCap.size() - 1;
       try {
         auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-        if (iObj.parameters.parsedParams.count(parameter_name) != 0) {
-          value = iObj.parameters.parsedParams.at(parameter_name);
+        if (iObj.parameters.parameters.count(parameter_name) != 0) {
+          value = iObj.parameters.parameters.at(parameter_name).get_value().value();
         } else {
           parameter_name = ParameterName(devicetokens.at(3), "");
-          if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-            value = iObj.parameters.parsedParams.at(parameter_name);
+          if (iObj.parameters.parameters.count(parameter_name) != 0)
+            value = iObj.parameters.parameters.at(parameter_name).get_value().value();
           else
             value = Misc::modifier(devicetokens.at(3));
         }
@@ -2351,12 +2351,12 @@ void Matrix::create_A_phase(Input &iObj)
 
       try {
         auto parameter_name = ParameterName(devicetokens.at(3), i.second);
-        if (iObj.parameters.parsedParams.count(parameter_name) != 0) {
-          value = iObj.parameters.parsedParams.at(parameter_name);
+        if (iObj.parameters.parameters.count(parameter_name) != 0) {
+          value = iObj.parameters.parameters.at(parameter_name).get_value().value();
         } else {
           parameter_name = ParameterName(devicetokens.at(3), "");
-          if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-            value = iObj.parameters.parsedParams.at(parameter_name);
+          if (iObj.parameters.parameters.count(parameter_name) != 0)
+            value = iObj.parameters.parameters.at(parameter_name).get_value().value();
           else
             value = Misc::modifier(devicetokens.at(3));
         }
@@ -3500,8 +3500,8 @@ void Matrix::create_A_phase(Input &iObj)
     }
     try {
       ParameterName parameter_name = ParameterName(devicetokens.at(3), i.second);
-      if (iObj.parameters.parsedParams.count(parameter_name) != 0)
-        cf = iObj.parameters.parsedParams.at(parameter_name);
+      if (iObj.parameters.parameters.count(parameter_name) != 0)
+        cf = iObj.parameters.parameters.at(parameter_name).get_value().value();
       else
         cf = Misc::modifier(devicetokens.at(3));
     } catch (std::exception &e) {

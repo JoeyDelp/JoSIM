@@ -3,7 +3,7 @@
 #ifndef JOSIM_J_MISC_H
 #define JOSIM_J_MISC_H
 
-#include "./Parser.hpp"
+#include "./Parameters.hpp"
 #include "./Input.hpp"
 
 #include <unordered_map>

@@ -4,7 +4,7 @@
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Output.hpp"
-#include "JoSIM/Parser.hpp"
+#include "JoSIM/Parameters.hpp"
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/Verbose.hpp"
 #include "JoSIM/CliOptions.hpp"
@@ -29,19 +29,11 @@ int main(int argc, const char **argv) {
     Simulation sObj;
     Output oObj;
 
-    // // Parse the input file
-    // iObj.read_input_file(cli_options.cir_file_name, 
-    //                     iObj.fileLines);
-    // // Split the parsed input file into different sub-sections
-    // iObj.split_netlist(iObj.fileLines, 
-    //                   iObj.controls, 
-    //                   iObj.parameters,
-    //                   iObj.netlist);
-    parse_file(cli_options.cir_file_name,
-                iObj);
+    parse_file(cli_options.cir_file_name, iObj);
     // Parse any identified parameter values
-    if (iObj.parameters.unparsedParams.size() > 0)
-      Parser::parse_parameters(iObj.parameters);
+    if (iObj.parameters.parameters.size() > 0) {
+      iObj.parameters.parse_parameters();
+    }
     
     // Expand nested subcircuits
     iObj.netlist.expand_subcircuits();

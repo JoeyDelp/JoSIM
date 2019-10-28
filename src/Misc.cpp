@@ -214,25 +214,29 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
   tokens = tokenize_delimeter(params, " ,");
   /* PWL(0 0 T1 V1 T2 V2 ... TN VN) */
   if (str.find("PWL") != std::string::npos) {
-    if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0)
-      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_VALUES), tokens.at(0) + " & " + tokens.at(1));
     std::vector<double> timesteps, values;
+    if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
+      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_VALUES), tokens.at(0) + " & " + tokens.at(1));
+    } else {
+      timesteps.push_back(0.0);
+      values.push_back(0.0);
+    }
     for (int i = 0; i < tokens.size(); i = i + 2) {
       timesteps.push_back(modifier(tokens.at(i)));
     }
     for (int i = 1; i < tokens.size(); i = i + 2) {
-      if (iObj.parameters.parsedParams.count(
+      if (iObj.parameters.parameters.count(
               JoSIM::ParameterName(tokens.at(i), subckt)) != 0)
-        values.push_back(iObj.parameters.parsedParams.at(
-            JoSIM::ParameterName(tokens.at(i), subckt)));
-      else if (iObj.parameters.parsedParams.count(
+        values.push_back(iObj.parameters.parameters.at(
+            JoSIM::ParameterName(tokens.at(i), subckt)).get_value().value());
+      else if (iObj.parameters.parameters.count(
               JoSIM::ParameterName(tokens.at(i), "")) != 0)
-        values.push_back(iObj.parameters.parsedParams.at(
-            JoSIM::ParameterName(tokens.at(i), "")));
+        values.push_back(iObj.parameters.parameters.at(
+            JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
       else
         // values.push_back(modifier(tokens.at(i)));
-        values.push_back(Parser::parse_param(
-            tokens.at(i), iObj.parameters.parsedParams, subckt));
+        values.push_back(Parameters::parse_param(
+            tokens.at(i), iObj.parameters.parameters, subckt));
     }
     if (timesteps.size() < values.size())
       Errors::function_errors(static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS),
@@ -503,25 +507,29 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
   }
   /* PWS(0 0 T1 V1 T2 V2 .. TN VN) */
   else if (str.find("PWS") != std::string::npos) {
-    if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0)
-      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_VALUES), tokens.at(0) + " & " + tokens.at(1));
     std::vector<double> timesteps, values;
+    if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
+      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_VALUES), tokens.at(0) + " & " + tokens.at(1));
+    } else {
+      timesteps.push_back(0.0);
+      values.push_back(0.0);
+    }
     for (int i = 0; i < tokens.size(); i = i + 2) {
       timesteps.push_back(modifier(tokens.at(i)));
     }
     for (int i = 1; i < tokens.size(); i = i + 2) {
-      if (iObj.parameters.parsedParams.count(
+      if (iObj.parameters.parameters.count(
               JoSIM::ParameterName(tokens.at(i), subckt)) != 0)
-        values.push_back(iObj.parameters.parsedParams.at(
-            JoSIM::ParameterName(tokens.at(i), subckt)));
-      else if (iObj.parameters.parsedParams.count(
+        values.push_back(iObj.parameters.parameters.at(
+            JoSIM::ParameterName(tokens.at(i), subckt)).get_value().value());
+      else if (iObj.parameters.parameters.count(
               JoSIM::ParameterName(tokens.at(i), "")) != 0)
-        values.push_back(iObj.parameters.parsedParams.at(
-            JoSIM::ParameterName(tokens.at(i), "")));
+        values.push_back(iObj.parameters.parameters.at(
+            JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
       else
         // values.push_back(modifier(tokens.at(i)));
-        values.push_back(Parser::parse_param(
-            tokens.at(i), iObj.parameters.parsedParams, subckt));
+        values.push_back(Parameters::parse_param(
+            tokens.at(i), iObj.parameters.parameters, subckt));
     }
     if (timesteps.size() < values.size())
       Errors::function_errors(static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS),

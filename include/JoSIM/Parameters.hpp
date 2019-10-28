@@ -8,24 +8,40 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <optional>
 
 class Parameter {
   private:
-    std::string parameterName;
-    std::string expression;
-    std::string subcircuit;
-    double value;
+    std::string expression_;
+    std::optional<double> value_;
+
   public:
-    Parameter() :
-      subcircuit(""),
-      value(0.0)
-      { };
+    Parameter() {};
+
+    void set_expression(const std::string &s) { expression_ = s; };
+    void set_value(const double &v) { value_ = v; };
+
+    std::string get_expression() const { return expression_; };
+    std::optional<double> get_value() const { return value_; };
 };
 
 class Parameters {
 public:
-  std::vector<std::pair<std::string, std::string>> unparsedParams;
-  std::unordered_map<JoSIM::ParameterName, double> parsedParams;
+  std::unordered_map<JoSIM::ParameterName, Parameter> parameters;
+
+  void create_parameter(const std::pair<std::string, std::string> &s);
+
+  static double parse_param(
+      const std::string &expr,
+      const std::unordered_map<JoSIM::ParameterName, Parameter> &params,
+      const std::string &subckt = "");
+
+  static int prec_lvl(const std::string &op);
+
+  static double parse_operator(const std::string &op, double val1, double val2,
+                              int &popCount);
+
+  void parse_parameters();
 };
 
 #endif

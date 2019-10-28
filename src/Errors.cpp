@@ -371,7 +371,8 @@ void Errors::function_errors(int errorCode, const std::string &whatPart) {
   case static_cast<int>(FunctionErrors::INITIAL_VALUES):
     formattedMessage += "Invalid PWL definition found. The value of " + whatPart + " is expected to be 0\n";
     formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
-    throw formattedMessage;
+    warning_message(formattedMessage);
+    break;
   case static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS):
     formattedMessage += "Total timesteps specified do not match the values specified." + whatPart + " specified.\n";
     formattedMessage += "Please refer to the PWL definition: PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
@@ -495,10 +496,9 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
   std::string formattedMessage = "Parsing\n";                                         
   switch (errorCode) {
   case static_cast<int>(ParsingErrors::EXPRESSION_ARLEADY_DEFINED):
-    formattedMessage += "Expression for " + whatPart + " has already been defined. Overwriting previous expression.\n";
-    formattedMessage += "If this was unintentional, please revise netlist.";
-    warning_message(formattedMessage);
-    break;
+    formattedMessage += "Expression duplication: " + whatPart + "\n";
+    formattedMessage += "Please revise netlist.";
+    throw formattedMessage;
   case static_cast<int>(ParsingErrors::UNIDENTIFIED_PART):
     formattedMessage += "Unknown function/variable defined. What is " + whatPart + "?\n";
     formattedMessage += "Please ensure variables are declared before being used.";

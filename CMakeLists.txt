@@ -34,7 +34,6 @@ add_library(josim
             src/Input.cpp
             src/Errors.cpp
             src/Components.cpp
-            src/Parser.cpp
             src/Verbose.cpp
             src/Netlist.cpp
             src/Parameters.cpp

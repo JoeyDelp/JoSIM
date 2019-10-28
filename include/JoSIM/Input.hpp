@@ -29,18 +29,12 @@ public:
     argConv(input_type), 
     argVerb(verbose) 
     {
-
+      netlist.argConv = argConv;
     };
 
   JoSIM::AnalysisType argAnal;
   JoSIM::InputType argConv;
   bool argVerb = false;
-
-  // void read_input_file(std::string &fileName,
-  //                      std::vector<std::string> &fileLines);
-  // void split_netlist(std::vector<std::string> &fileLines,
-  //                    std::vector<std::string> &controls, Parameters &parameters,
-  //                    Netlist &netlist);
 };
 
 std::vector<std::string> read_file(const std::string &fileName);
