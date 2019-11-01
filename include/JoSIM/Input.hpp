@@ -17,10 +17,10 @@
 class Input {
 public:
   Netlist netlist;
-  Parameters parameters;
   Transient transSim;
   std::vector<std::string> fileLines, controls;
   std::vector<std::string> relevantX;
+  std::unordered_map<JoSIM::ParameterName, Parameter> parameters;
 
   Input(JoSIM::AnalysisType analysis_type,
         JoSIM::InputType input_type = JoSIM::InputType::Jsim,
@@ -35,9 +35,9 @@ public:
   JoSIM::AnalysisType argAnal;
   JoSIM::InputType argConv;
   bool argVerb = false;
-};
 
-std::vector<std::string> read_file(const std::string &fileName);
-void parse_file(std::string &fileName, Input &iObj);
+  static std::vector<std::string> read_file(const std::string &fileName);
+  static void parse_file(std::string &fileName, Input &iObj);
+};
 
 #endif

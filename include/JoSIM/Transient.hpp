@@ -33,8 +33,8 @@ public:
   void set_tstart(double value) { tstart = value; }
   void set_maxtstep(double value) { maxtstep = value; }
   void set_simsize() { simsize = ((tstop - tstart) / prstep); }
-};
 
-void identify_simulation(const std::vector<std::string> &controls, Transient &tObj);
+  static void identify_simulation(const std::vector<std::string> &controls, Transient &tObj);
+};
 
 #endif

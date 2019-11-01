@@ -8,6 +8,13 @@
 #include "./Constants.hpp"
 #include "./Input.hpp"
 #include "./Errors.hpp"
+#include "./Resistor.hpp"
+#include "./Inductor.hpp"
+#include "./Capacitor.hpp"
+#include "./JJ.hpp"
+#include "./VoltageSource.hpp"
+#include "./PhaseSource.hpp"
+#include "./CurrentSource.hpp"
 
 #include <unordered_map>
 
@@ -316,5 +323,16 @@ public:
   void jj_model_phase(std::string &modelstring, std::string &area,
                       const int &jjIndex, Input &iObj,
                       const std::string &subckt = "");
+};
+
+class Components_new {
+  public:
+    std::vector<Resistor> resistors;
+    std::vector<Inductor> inductors;
+    std::vector<Capacitor> capacitors;
+    std::vector<JJ> jjs;
+    std::vector<VoltageSource> voltagesources;
+    std::vector<PhaseSource> phasesources;
+    std::vector<CurrentSource> currentsources;
 };
 #endif

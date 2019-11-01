@@ -5,7 +5,7 @@
 
 #include <fstream>
 
-std::vector<std::string> read_file(const std::string &fileName){
+std::vector<std::string> Input::read_file(const std::string &fileName){
   try{
     std::string line;
     std::fstream ifile(fileName);
@@ -33,8 +33,8 @@ std::vector<std::string> read_file(const std::string &fileName){
   return {};
 }
 
-void parse_file(std::string &fileName, Input &iObj) {
-  std::vector<std::string> fileLines = read_file(fileName);
+void Input::parse_file(std::string &fileName, Input &iObj) {
+  std::vector<std::string> fileLines = Input::read_file(fileName);
 
   bool subckt = false;
   bool control = false;
@@ -61,9 +61,9 @@ void parse_file(std::string &fileName, Input &iObj) {
         // If parameter, add to unparsed parameters list
       } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
         if (subckt) {
-          iObj.parameters.create_parameter(std::make_pair(subcktName, fileLines.at(i)));
+          Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
         } else {
-          iObj.parameters.create_parameter(std::make_pair("", fileLines.at(i)));
+          Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
         }
         // If control, set flag as start of controls
       } else if (fileLines.at(i).find(".CONTROL") != std::string::npos)
@@ -94,9 +94,9 @@ void parse_file(std::string &fileName, Input &iObj) {
       // If parameter, add to unparsed parameter list
       if (fileLines.at(i).find("PARAM") != std::string::npos) {
         if (subckt) {
-          iObj.parameters.create_parameter(std::make_pair(subcktName, fileLines.at(i)));
+          Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
         } else {
-          iObj.parameters.create_parameter(std::make_pair("", fileLines.at(i)));
+          Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
         }
         // If model, add to models list
       } else if (fileLines.at(i).find("MODEL") != std::string::npos) {

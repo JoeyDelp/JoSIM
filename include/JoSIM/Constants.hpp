@@ -3,6 +3,8 @@
 #ifndef JOSIM_CONSTANTS_HPP
 #define JOSIM_CONSTANTS_HPP
 
+#include <string>
+
 namespace JoSIM {
   namespace Constants {
     static constexpr double PI = 3.141592653589793238463;
@@ -13,18 +15,7 @@ namespace JoSIM {
     static constexpr double C = 299792458;
     static constexpr double MU0 = 12.566370614E-7;
     static constexpr double EPS0 = 8.854187817E-12;
-
-    static double string_constant(std::string &s) {
-      if (s == "PI") return PI;
-      else if (s == "PHI_ZERO") return PHI_ZERO;
-      else if (s == "BOLTZMANN") return BOLTZMANN;
-      else if (s == "EV") return EV;
-      else if (s == "HBAR") return HBAR;
-      else if (s == "C") return C;
-      else if (s == "MU0") return MU0;
-      else if (s == "EPS0") return EPS0;
-      return 0.0;
-    };
+    static constexpr double SIGMA = 3.291059757e-16;
   }
 }
 

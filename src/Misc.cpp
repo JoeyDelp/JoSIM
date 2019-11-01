@@ -7,6 +7,19 @@
 #include <cassert>
 #include <fstream>
 
+double Misc::string_constant(std::string &s) {
+  if (s == "PI") return JoSIM::Constants::PI;
+  else if (s == "PHI_ZERO") return JoSIM::Constants::PHI_ZERO;
+  else if (s == "BOLTZMANN") return JoSIM::Constants::BOLTZMANN;
+  else if (s == "EV") return JoSIM::Constants::EV;
+  else if (s == "HBAR") return JoSIM::Constants::HBAR;
+  else if (s == "C") return JoSIM::Constants::C;
+  else if (s == "MU0") return JoSIM::Constants::MU0;
+  else if (s == "EPS0") return JoSIM::Constants::EPS0;
+  else if (s == "SIGMA") return JoSIM::Constants::SIGMA;
+  return 0.0;
+}
+
 std::string Misc::file_from_path(const std::string &path) {
   auto posLastSlash = path.find_last_of("/\\");
   if (posLastSlash == std::string::npos) {
@@ -202,7 +215,7 @@ std::string Misc::substring_before(const std::string &str,
     return str;
 }
 
-std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
+std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
                                          const std::string &subckt) {
   std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
@@ -225,18 +238,18 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       timesteps.push_back(modifier(tokens.at(i)));
     }
     for (int i = 1; i < tokens.size(); i = i + 2) {
-      if (iObj.parameters.parameters.count(
+      if (iObj.parameters.count(
               JoSIM::ParameterName(tokens.at(i), subckt)) != 0)
-        values.push_back(iObj.parameters.parameters.at(
+        values.push_back(iObj.parameters.at(
             JoSIM::ParameterName(tokens.at(i), subckt)).get_value().value());
-      else if (iObj.parameters.parameters.count(
+      else if (iObj.parameters.count(
               JoSIM::ParameterName(tokens.at(i), "")) != 0)
-        values.push_back(iObj.parameters.parameters.at(
+        values.push_back(iObj.parameters.at(
             JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
       else
         // values.push_back(modifier(tokens.at(i)));
         values.push_back(Parameters::parse_param(
-            tokens.at(i), iObj.parameters.parameters, subckt));
+            tokens.at(i), iObj.parameters, subckt));
     }
     if (timesteps.size() < values.size())
       Errors::function_errors(static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS),
@@ -518,18 +531,18 @@ std::vector<double> Misc::parse_function(std::string &str, Input &iObj,
       timesteps.push_back(modifier(tokens.at(i)));
     }
     for (int i = 1; i < tokens.size(); i = i + 2) {
-      if (iObj.parameters.parameters.count(
+      if (iObj.parameters.count(
               JoSIM::ParameterName(tokens.at(i), subckt)) != 0)
-        values.push_back(iObj.parameters.parameters.at(
+        values.push_back(iObj.parameters.at(
             JoSIM::ParameterName(tokens.at(i), subckt)).get_value().value());
-      else if (iObj.parameters.parameters.count(
+      else if (iObj.parameters.count(
               JoSIM::ParameterName(tokens.at(i), "")) != 0)
-        values.push_back(iObj.parameters.parameters.at(
+        values.push_back(iObj.parameters.at(
             JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
       else
         // values.push_back(modifier(tokens.at(i)));
         values.push_back(Parameters::parse_param(
-            tokens.at(i), iObj.parameters.parameters, subckt));
+            tokens.at(i), iObj.parameters, subckt));
     }
     if (timesteps.size() < values.size())
       Errors::function_errors(static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS),

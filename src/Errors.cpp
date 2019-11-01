@@ -94,6 +94,20 @@ void Errors::invalid_component_errors(int errorCode,
                                       const std::string &whatPart) {
   std::string formattedMessage = "Components\n";
   switch (errorCode) {
+  case static_cast<int>(ComponentErrors::INVALID_COMPONENT_DECLARATION):
+    formattedMessage += "Invalid component declaration detected.\n";
+    formattedMessage += "Infringing line: " + whatPart + "\n";
+    formattedMessage += "Please refer to the documentation for the correct notation.";
+    throw formattedMessage;
+  case static_cast<int>(ComponentErrors::BOTH_GROUND):
+    formattedMessage += "Both nodes are grounded for the following component.\n";
+    formattedMessage += "Component: " + whatPart;
+    warning_message(formattedMessage);
+    break;
+  case static_cast<int>(ComponentErrors::GROUNDED_VOLTAGE_SOURCE):
+    formattedMessage += "Both nodes are grounded for the following source.\n";
+    formattedMessage += "Component: " + whatPart;
+    throw formattedMessage;
   case static_cast<int>(ComponentErrors::RES_ERROR):
     formattedMessage += "Resistor value error\n";
     formattedMessage += "Infringing line: " + whatPart;
@@ -500,8 +514,9 @@ void Errors::parsing_errors(int errorCode, const std::string &whatPart) {
     formattedMessage += "Please revise netlist.";
     throw formattedMessage;
   case static_cast<int>(ParsingErrors::UNIDENTIFIED_PART):
-    formattedMessage += "Unknown function/variable defined. What is " + whatPart + "?\n";
-    formattedMessage += "Please ensure variables are declared before being used.";
+    formattedMessage += "The following variables were not found/defined.\n";
+    formattedMessage += "Please ensure that these variables exist within the netlist.\n";
+    formattedMessage += "Variables: \n" + whatPart;
     throw formattedMessage;
   case static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS):
     formattedMessage += "Mismatched parenthesis in expression: " + whatPart + "\n";

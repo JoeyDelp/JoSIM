@@ -15,6 +15,8 @@ class Input;
 
 class Misc {
 public:
+  static double string_constant(std::string &s);
+
   static std::string file_from_path(const std::string &path);
 
   static bool has_suffix(const std::string &str, const std::string &suffix);
@@ -49,7 +51,7 @@ public:
   static std::string substring_before(const std::string &str,
                                       const std::string &whatpart);
 
-  static std::vector<double> parse_function(std::string &str, Input &iObj,
+  static std::vector<double> parse_function(const std::string &str, Input &iObj,
                                             const std::string &subckt = "");
 
   static bool findX(const std::vector<std::string> &segment,

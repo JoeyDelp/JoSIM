@@ -109,6 +109,10 @@ public:
   std::unordered_map<std::string, LabelNodes> labelNodes;
   int Nsize, Msize;
 
+  Components_new components_new;
+  std::unordered_map<std::string, int> nm;
+  std::vector<int> nc;
+  
   Matrix(){};
   void create_matrix(Input &iObj);
 

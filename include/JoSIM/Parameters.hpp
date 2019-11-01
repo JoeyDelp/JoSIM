@@ -27,9 +27,8 @@ class Parameter {
 
 class Parameters {
 public:
-  std::unordered_map<JoSIM::ParameterName, Parameter> parameters;
-
-  void create_parameter(const std::pair<std::string, std::string> &s);
+  static void create_parameter(const std::pair<std::string, std::string> &s,
+                              std::unordered_map<JoSIM::ParameterName, Parameter> &parameters);
 
   static double parse_param(
       const std::string &expr,
@@ -41,7 +40,7 @@ public:
   static double parse_operator(const std::string &op, double val1, double val2,
                               int &popCount);
 
-  void parse_parameters();
+  static void parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters);
 };
 
 #endif

@@ -1,7 +1,7 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.4 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
 ##### Stable: v2.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
@@ -48,6 +48,7 @@ JoSIM requires the following:
 - Conan
 - [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html)
   
+
 Since the instructions on how to install these for the intended host system vary quite significantly they will not be covered here.
 
 Download or clone the repository to a local directory:

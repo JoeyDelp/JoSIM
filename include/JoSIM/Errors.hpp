@@ -27,6 +27,9 @@ enum class InputErrors : int {
 };
 
 enum class ComponentErrors : int {
+  INVALID_COMPONENT_DECLARATION,
+  BOTH_GROUND,
+  GROUNDED_VOLTAGE_SOURCE,
   CAP_ERROR,
   IND_ERROR,
   RES_ERROR,

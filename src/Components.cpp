@@ -22,7 +22,7 @@ void Components::jj_model(std::string &modelstring, std::string &area,
       paramTokens.erase(paramTokens.begin() + i + 1);
     } else if ((itemToken.size() == 1) && (i != paramTokens.size() - 1))
       Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), modelstring);
-    value = Parameters::parse_param(itemToken.at(1), iObj.parameters.parameters,
+    value = Parameters::parse_param(itemToken.at(1), iObj.parameters,
                                 subckt);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
       jj.vG = value;
@@ -52,7 +52,7 @@ void Components::jj_model(std::string &modelstring, std::string &area,
   if (area == "")
     value = 1.0;
   else
-    value = Parameters::parse_param(area, iObj.parameters.parameters, subckt);
+    value = Parameters::parse_param(area, iObj.parameters, subckt);
   jj.C = jj.C * value;
   jj.rN = jj.rN / value;
   jj.r0 = jj.r0 / value;
@@ -79,7 +79,7 @@ void Components::jj_model_phase(std::string &modelstring, std::string &area,
       paramTokens.erase(paramTokens.begin() + i + 1);
     } else if ((itemToken.size() == 1) && (i != paramTokens.size() - 1))
       Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), modelstring);
-    value = Parameters::parse_param(itemToken.at(1), iObj.parameters.parameters,
+    value = Parameters::parse_param(itemToken.at(1), iObj.parameters,
                                 subckt);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
       jj.vG = value;
@@ -109,7 +109,7 @@ void Components::jj_model_phase(std::string &modelstring, std::string &area,
   if (area == "")
     value = 1.0;
   else
-    value = Parameters::parse_param(area, iObj.parameters.parameters, subckt);
+    value = Parameters::parse_param(area, iObj.parameters, subckt);
   jj.C = jj.C * value;
   jj.rN = jj.rN / value;
   jj.r0 = jj.r0 / value;

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-project(JoSIM VERSION 2.3)
+project(JoSIM VERSION 2.4)
 
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
@@ -37,7 +37,13 @@ add_library(josim
             src/Verbose.cpp
             src/Netlist.cpp
             src/Parameters.cpp
-            src/Transient.cpp)
+            src/Transient.cpp
+            src/Resistor.cpp
+            src/Inductor.cpp
+            src/Capacitor.cpp
+            src/JJ.cpp
+            src/VoltageSource.cpp
+            src/CurrentSource.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

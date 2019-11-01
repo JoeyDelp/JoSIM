@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-void identify_simulation(const std::vector<std::string> &controls, Transient &tObj) {
+void Transient::identify_simulation(const std::vector<std::string> &controls, Transient &tObj) {
   std::vector<std::string> simtokens;
   bool transFound = false;
   for (const auto &i : controls) {

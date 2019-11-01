@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Johannes Delport
+// This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_FILEOUTPUTTYPE_HPP
 #define JOSIM_FILEOUTPUTTYPE_HPP
 

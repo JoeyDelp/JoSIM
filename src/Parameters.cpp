@@ -10,7 +10,8 @@
 #include <limits>
 #include <cmath>
 
-void Parameters::create_parameter(const std::pair<std::string, std::string> &s) {
+void Parameters::create_parameter(const std::pair<std::string, std::string> &s,
+                                  std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
   Parameter temp;
   std::vector<std::string> tokens;
 
@@ -106,8 +107,8 @@ double Parameters::parse_param(
     } else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end()) {
       opStack.push_back(partToEval);
     // If not a function, check if it is not a defined constant
-    } else if (JoSIM::Constants::string_constant(partToEval) != 0.0) {
-      rpnQueue.push_back(Misc::precise_to_string(JoSIM::Constants::string_constant(partToEval)));
+    } else if (Misc::string_constant(partToEval) != 0.0) {
+      rpnQueue.push_back(Misc::precise_to_string(Misc::string_constant(partToEval)));
       qType.push_back('V');
     // If not a constant, check if it is an operator in the operator list
     } else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
@@ -271,7 +272,7 @@ double Parameters::parse_operator(const std::string &op, double val1, double val
   return 0.0;
 }
 
-void Parameters::parse_parameters() {
+void Parameters::parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
   double value;
   int parsedCounter = 0;
 
@@ -286,5 +287,16 @@ void Parameters::parse_parameters() {
         }
       }
     }
+    if (previous_counter == parsedCounter) {
+      std::string unknownParams = "";
+      for (auto &i : parameters) {
+        if (!i.second.get_value()) {
+          unknownParams += i.first.name() + " " + i.first.subcircuit() + "\n";
+        }
+      }
+      Errors::parsing_errors(static_cast<int>(ParsingErrors::UNIDENTIFIED_PART), unknownParams);
+    }
   }
+
 }
+
