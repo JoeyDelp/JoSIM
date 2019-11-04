@@ -31,7 +31,7 @@ class JJ {
         const int &antyp,
         const double &timestep);
     void set_label(const std::string &l) { label_ = l; }
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::string &s, std::vector<int> &nc);
+    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, std::vector<int> &nc);
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<int> &nc);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_variableIndex(const int &vc) { variableIndex_ = vc; }

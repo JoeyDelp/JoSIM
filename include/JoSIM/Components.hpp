@@ -15,6 +15,7 @@
 #include "./VoltageSource.hpp"
 #include "./PhaseSource.hpp"
 #include "./CurrentSource.hpp"
+#include "./TransmissionLine.hpp"
 
 #include <unordered_map>
 
@@ -334,5 +335,6 @@ class Components_new {
     std::vector<VoltageSource> voltagesources;
     std::vector<PhaseSource> phasesources;
     std::vector<CurrentSource> currentsources;
+    std::vector<TransmissionLine> transmissionlines;
 };
 #endif

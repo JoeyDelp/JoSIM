@@ -43,7 +43,9 @@ add_library(josim
             src/Capacitor.cpp
             src/JJ.cpp
             src/VoltageSource.cpp
-            src/CurrentSource.cpp)
+            src/PhaseSource.cpp
+            src/CurrentSource.cpp
+            src/TransmissionLine.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)
