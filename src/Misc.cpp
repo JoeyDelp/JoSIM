@@ -79,7 +79,7 @@ std::vector<std::string> Misc::tokenize_space_once(const std::string &c) {
   return tokens;
 }
 
-std::vector<std::string> Misc::tokenize_delimeter(const std::string &c,
+std::vector<std::string> Misc::tokenize_delimiter(const std::string &c,
                                                   const std::string &d) {
   std::vector<std::string> tokens;
   std::stringstream stringStream(c);
@@ -224,7 +224,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   auto first = str.find('(') + 1;
   auto last = str.find(')');
   std::string params = str.substr(first, last - first);
-  tokens = tokenize_delimeter(params, " ,");
+  tokens = tokenize_delimiter(params, " ,");
   /* PWL(0 0 T1 V1 T2 V2 ... TN VN) */
   if (str.find("PWL") != std::string::npos) {
     std::vector<double> timesteps, values;
@@ -440,7 +440,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     else
       Errors::function_errors(static_cast<int>(FunctionErrors::CUS_WF_NOT_FOUND), WFline);
     wffile.close();
-    WF = tokenize_delimeter(WFline, " ,;");
+    WF = tokenize_delimiter(WFline, " ,;");
     std::vector<double> timesteps, values;
     for (int i = 0; i < WF.size(); i++) {
       values.push_back(modifier(WF.at(i)) * SF);

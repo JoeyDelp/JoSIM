@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_J_COMPONENTS_H
-#define JOSIM_J_COMPONENTS_H
+#ifndef JOSIM_COMPONENTS_H
+#define JOSIM_COMPONENTS_H
 
 #include "./Misc.hpp"
 #include "./Parameters.hpp"
@@ -16,6 +16,7 @@
 #include "./PhaseSource.hpp"
 #include "./CurrentSource.hpp"
 #include "./TransmissionLine.hpp"
+#include "./MutualInductance.hpp"
 
 #include <unordered_map>
 
@@ -336,5 +337,6 @@ class Components_new {
     std::vector<PhaseSource> phasesources;
     std::vector<CurrentSource> currentsources;
     std::vector<TransmissionLine> transmissionlines;
+    std::vector<std::pair<std::string, std::string>> mutualinductances;
 };
 #endif

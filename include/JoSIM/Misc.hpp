@@ -27,7 +27,7 @@ public:
 
   static std::vector<std::string> tokenize_space_once(const std::string &c);
 
-  static std::vector<std::string> tokenize_delimeter(const std::string &c,
+  static std::vector<std::string> tokenize_delimiter(const std::string &c,
                                                      const std::string &d);
 
   static void ltrim(std::string &s);

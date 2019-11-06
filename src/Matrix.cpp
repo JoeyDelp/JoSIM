@@ -41,7 +41,7 @@ void Matrix::find_relevant_x(Input &iObj) {
     for (auto &j : tokens) {
       for (auto &l : tokens) {
         if (l.find('_') != std::string::npos) {
-          tokens2 = Misc::tokenize_delimeter(l, "_");
+          tokens2 = Misc::tokenize_delimiter(l, "_");
           l = tokens2.back();
           tokens2.pop_back();
           for (int k = tokens2.size() - 1; k >= 0; k--)
@@ -57,7 +57,7 @@ void Matrix::find_relevant_x(Input &iObj) {
           relevantToStore.emplace_back(tokens.at(1));
           break;
       } else if (j.at(0) == 'C' || j.at(0) == 'P' || j.at(0) == 'V') {
-        tokens2 = Misc::tokenize_delimeter(j, "(),");
+        tokens2 = Misc::tokenize_delimiter(j, "(),");
         if(tokens2.size() == 2) {
           if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") relevantToStore.emplace_back(tokens2.at(1));
         } else if (tokens2.size() == 3) {
@@ -98,20 +98,23 @@ void Matrix::create_matrix(Input &iObj)
 {
   int nodeCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
-    std::vector<std::string> tokens = Misc::tokenize_space(i.first);
-    // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
-    if(tokens.size() < 4) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_COMPONENT_DECLARATION), i.first);
-    }
-    if(tokens.at(1).find("GND") != std::string::npos || tokens.at(1) != "0") {
-      if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
-    }
-    if(tokens.at(2).find("GND") != std::string::npos || tokens.at(2) != "0") {
-      if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
+    if(i.first.at(0) != 'K' && i.first.at(0) != 'T') {
+      std::vector<std::string> tokens = Misc::tokenize_space(i.first);
+      // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
+      if(tokens.size() < 4) {
+        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_COMPONENT_DECLARATION), i.first);
+      }
+      if(tokens.at(1).find("GND") != std::string::npos || tokens.at(1) != "0") {
+        if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
+      }
+      if(tokens.at(2).find("GND") != std::string::npos || tokens.at(2) != "0") {
+        if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
+      }
     }
   }
 
   nc.assign(nm.size(), 0);
+  branchIndex = nm.size();
 
   for (const auto &i : iObj.netlist.expNetlist) {
     switch(i.first.at(0)){
@@ -120,38 +123,38 @@ void Matrix::create_matrix(Input &iObj)
             components_new.resistors, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep());
+            iObj.transSim.get_prstep(), branchIndex);
         break;
       case 'L':
         Inductor::create_inductor(i, 
             components_new.inductors, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep());
+            iObj.transSim.get_prstep(), branchIndex);
         break;
       case 'C':
         Capacitor::create_capacitor(i, 
             components_new.capacitors, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep());
+            iObj.transSim.get_prstep(), branchIndex);
         break;
       case 'B':
         JJ::create_jj(i, 
             components_new.jjs, 
-            nm, nc, iObj.parameters, 
+            nm, nc, iObj.parameters, iObj.netlist.models_new, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep());
+            iObj.transSim.get_prstep(), branchIndex);
         break;
       case 'V':
         VoltageSource::create_voltagesource(i, 
-            components_new.voltagesources, nm, nc);
+            components_new.voltagesources, nm, nc, branchIndex);
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         components_new.voltagesources.back().set_sourceIndex(sources.size() - 1);
         break;
       case 'P':
         PhaseSource::create_phasesource(i, 
-            components_new.phasesources, nm, nc);
+            components_new.phasesources, nm, nc, branchIndex);
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         components_new.phasesources.back().set_sourceIndex(sources.size() - 1);
         break;
@@ -165,10 +168,21 @@ void Matrix::create_matrix(Input &iObj)
         TransmissionLine::create_transmissionline(i, 
             components_new.transmissionlines, nm, nc, 
             iObj.parameters, static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep());
+            iObj.transSim.get_prstep(), branchIndex);
         break;
+      case 'K':
+        components_new.mutualinductances.emplace_back(i);
     }
   }
+
+  for (const auto &i : components_new.mutualinductances) {
+    MutualInductance::create_mutualinductance(i,
+        components_new.inductors, iObj.parameters,
+        static_cast<int>(iObj.argAnal), 
+        iObj.transSim.get_prstep());
+  }
+
+  create_csr();
 
   analysisType = iObj.argAnal;
 
@@ -3634,4 +3648,50 @@ void Matrix::create_CSR()
     }
     rowptr.push_back(rowptr.back() + i.size());
   }
+}
+
+void Matrix::create_csr() {
+  create_nz();
+  create_ci();
+}
+
+void Matrix::create_nz() {
+  nz.clear();
+  auto add_nonzeros = [this](const auto& typed_components) {
+    for(const auto &it : typed_components) {
+      const std::vector<double> nonZeros = it.get_nonZeros();
+      nz.insert(nz.end(), nonZeros.begin(), nonZeros.end());
+    }
+  };
+
+  add_nonzeros(components_new.resistors);
+  add_nonzeros(components_new.inductors);
+  add_nonzeros(components_new.capacitors);
+  add_nonzeros(components_new.jjs);
+  add_nonzeros(components_new.voltagesources);
+  add_nonzeros(components_new.phasesources);
+  add_nonzeros(components_new.transmissionlines);
+}
+
+void Matrix::create_ci() {
+  ci.clear();
+  auto add_columnindices = [this](const auto& typed_components) {
+    for(const auto &it : typed_components) {
+      const std::vector<int> columnIndex = it.get_columnIndex();
+      ci.insert(ci.end(), columnIndex.begin(), columnIndex.end());
+    }
+  };
+
+  add_columnindices(components_new.resistors);
+  add_columnindices(components_new.inductors);
+  add_columnindices(components_new.capacitors);
+  add_columnindices(components_new.jjs);
+  add_columnindices(components_new.voltagesources);
+  add_columnindices(components_new.phasesources);
+  add_columnindices(components_new.transmissionlines);
+}
+
+void Matrix::create_rp() {
+  rp.clear();
+
 }

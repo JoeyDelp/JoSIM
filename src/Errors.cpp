@@ -142,7 +142,8 @@ void Errors::invalid_component_errors(int errorCode,
     formattedMessage += "No junction model is specified for junction " + whatPart;
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED):
-    formattedMessage += "The specified model " + whatPart + " is not defined.\n";
+    formattedMessage += "The specified model is not defined.\n";
+    formattedMessage += "Missing model: " + whatPart + "\n";
     formattedMessage += "Using default model as specified in the manual.";
     warning_message(formattedMessage);
     break;
@@ -168,7 +169,7 @@ void Errors::invalid_component_errors(int errorCode,
     formattedMessage += "Please recheck the subcircuit name and try again.";
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::MUT_ERROR):
-    formattedMessage += "Missing mutual coupling factor.\n";
+    formattedMessage += "Invalid mutual coupling definition found.\n";
     formattedMessage += "Infringing line: " + whatPart;
     throw formattedMessage;
   case static_cast<int>(ComponentErrors::INVALID_EXPR):
@@ -335,10 +336,13 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
   std::string formattedMessage = "Model\n";                                         
   switch (errorCode) {
   case static_cast<int>(ModelErrors::PARAM_TYPE_ERROR):
-    formattedMessage += "Unknown model parameter " + whatPart + " specified.";
+    formattedMessage += "Unknown model parameter specified.\n";
+    formattedMessage += "Model line: " + whatPart + "\n";
+    formattedMessage += "Please refer to the model definition in the documentation";
     throw formattedMessage;
   case static_cast<int>(ModelErrors::UNKNOWN_MODEL_TYPE):
-    formattedMessage += "Unknown model type " + whatPart + " specified.";
+    formattedMessage += "Unknown model type specified.\n";
+    formattedMessage += "Model line: " + whatPart;
     throw formattedMessage;
   case static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION):
     formattedMessage += "Bad model definition found.\n";

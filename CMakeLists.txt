@@ -36,6 +36,7 @@ add_library(josim
             src/Components.cpp
             src/Verbose.cpp
             src/Netlist.cpp
+            src/Model.cpp
             src/Parameters.cpp
             src/Transient.cpp
             src/Resistor.cpp
@@ -45,7 +46,8 @@ add_library(josim
             src/VoltageSource.cpp
             src/PhaseSource.cpp
             src/CurrentSource.cpp
-            src/TransmissionLine.cpp)
+            src/TransmissionLine.cpp
+            src/MutualInductance.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

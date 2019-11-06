@@ -25,7 +25,7 @@ void Parameters::create_parameter(const std::pair<std::string, std::string> &s,
     Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_DECLARATION), s.second);
   }
   // Split into parameter name and expression
-  tokens = Misc::tokenize_delimeter(tokens.at(1), "=");
+  tokens = Misc::tokenize_delimiter(tokens.at(1), "=");
   // Trim trailing and leading white spaces
   Misc::rtrim(tokens.at(0));
   Misc::ltrim(tokens.at(1));

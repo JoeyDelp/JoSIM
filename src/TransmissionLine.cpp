@@ -19,7 +19,8 @@ void TransmissionLine::create_transmissionline(
     std::vector<int> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const int &antyp,
-    const double &timestep) {
+    const double &timestep,
+    int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   // Ensure the device has at least 6 parts: LABEL PNODE1 NNODE1 PNODE2 NNODE2 VALUE
   if(tokens.size() < 6) {
@@ -71,17 +72,17 @@ void TransmissionLine::create_transmissionline(
   }
   temp.set_value(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
   temp.set_timestepDelay(std::make_pair(timeDelayValue, s.second), p, timestep);
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, nc);
+  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc);
-  temp.set_currentIndex1(nc.size() - 1);
-  temp.set_currentIndex2(nc.size());
+  temp.set_currentIndex1(branchIndex - 1);
+  temp.set_currentIndex2(branchIndex);
   transmissionlines.emplace_back(temp);
 }
 
 void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
         const std::pair<std::string, std::string> &n2,
         const std::unordered_map<std::string, int> &nm, 
-        const std::string &s, std::vector<int> &nc) {
+        const std::string &s, int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   // 0
@@ -94,55 +95,63 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
           Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(1);
+          rowPointer_.emplace_back(1);
+          branchIndex++;
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(1);
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 1);
+          rowPointer_.emplace_back(1);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 1);
         // 0 0 0 1
         } else {
           Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(1);
+          rowPointer_.emplace_back(1);
+          branchIndex++;
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
-          columnIndex_.emplace_back(nc.size() - 1);
-          columnIndex_.emplace_back(nc.size() - 2);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 1);
+          columnIndex_.emplace_back(branchIndex - 2);
           columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(nc.size() - 1);
+          columnIndex_.emplace_back(branchIndex - 1);
         }
       // 0 0 1 0  
       } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
         Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(1);
+        rowPointer_.emplace_back(1);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
-        columnIndex_.emplace_back(nc.size() - 1);
-        columnIndex_.emplace_back(nc.size() - 2);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 1);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       // 0 0 1 1
       } else {
         Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(1);
+        rowPointer_.emplace_back(1);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
-        columnIndex_.emplace_back(nc.size() - 1);
-        columnIndex_.emplace_back(nc.size() - 1);
-        columnIndex_.emplace_back(nc.size() - 2);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
         columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       }
     // 0 1  
     } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
@@ -154,29 +163,33 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(1);
-          columnIndex_.emplace_back(nc.size() - 2);
+          rowPointer_.emplace_back(1);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 2);
           columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 1);
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 1);
         // 0 1 0 1
         } else {
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 1);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 1);
           columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(nc.size() - 2);
+          columnIndex_.emplace_back(branchIndex - 2);
           columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(nc.size() - 1);
+          columnIndex_.emplace_back(branchIndex - 1);
         }
       // 0 1 1 0  
       } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
@@ -184,16 +197,18 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 1);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 1);
         columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nc.size() - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       // 0 1 1 1
       } else {
         nonZeros_.emplace_back(-1);
@@ -201,19 +216,21 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 1);
-        columnIndex_.emplace_back(nc.size() - 1);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
         columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nc.size() - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
         columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       }
     }
   // 1
@@ -231,16 +248,18 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 1);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 1);
           columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(nc.size() - 2);
+          columnIndex_.emplace_back(branchIndex - 2);
           columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(nc.size() - 1);
+          columnIndex_.emplace_back(branchIndex - 1);
         }
       // 1 0 1 0  
       } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
@@ -248,16 +267,18 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 1);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 1);
         columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nc.size() - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       // 1 0 1 1
       } else {
         nonZeros_.emplace_back(1);
@@ -265,19 +286,21 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(2);
+        rowPointer_.emplace_back(2);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 1);
-        columnIndex_.emplace_back(nc.size() - 1);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
         columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nc.size() - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
         columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       }
     // 1 1  
     } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
@@ -291,15 +314,17 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
           nonZeros_.emplace_back(1);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(3);
+          rowPointer_.emplace_back(3);
+          branchIndex++;
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(1);
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 2);
+          rowPointer_.emplace_back(1);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 2);
           columnIndex_.emplace_back(nm.at(n1.first));
           columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 1);
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 1);
         // 1 1 0 1
         } else {
           nonZeros_.emplace_back(1);
@@ -308,18 +333,20 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
           nonZeros_.emplace_back(1);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(3);
+          rowPointer_.emplace_back(3);
+          branchIndex++;
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
-          nc.emplace_back(2);
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 2);
-          columnIndex_.emplace_back(nc.size() - 1);
+          rowPointer_.emplace_back(2);
+          branchIndex++;
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 2);
+          columnIndex_.emplace_back(branchIndex - 1);
           columnIndex_.emplace_back(nm.at(n1.first));
           columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(nc.size() - 2);
+          columnIndex_.emplace_back(branchIndex - 2);
           columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(nc.size() - 1);
+          columnIndex_.emplace_back(branchIndex - 1);
         }
       // 1 1 1 0  
       } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
@@ -329,18 +356,20 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 1);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 1);
         columnIndex_.emplace_back(nm.at(n1.first));
         columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nc.size() - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       // 1 1 1 1
       } else {
         nonZeros_.emplace_back(1);
@@ -350,21 +379,23 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-1);
         nonZeros_.emplace_back(-value_);
-        nc.emplace_back(3);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 2);
-        columnIndex_.emplace_back(nc.size() - 1);
-        columnIndex_.emplace_back(nc.size() - 1);
+        rowPointer_.emplace_back(3);
+        branchIndex++;
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
+        columnIndex_.emplace_back(branchIndex - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
         columnIndex_.emplace_back(nm.at(n1.first));
         columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nc.size() - 2);
+        columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(nm.at(n2.first));
         columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(nc.size() - 1);
+        columnIndex_.emplace_back(branchIndex - 1);
       }
     }
   }

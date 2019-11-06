@@ -27,7 +27,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
     for (auto &j : tokens) {
       for (auto &k : tokens) {
         if (k.find('_') != std::string::npos) {
-          tokens2 = Misc::tokenize_delimeter(k, "_");
+          tokens2 = Misc::tokenize_delimiter(k, "_");
           k = tokens2.back();
           tokens2.pop_back();
           for (int l = tokens2.size() - 1; l >= 0; l--)
@@ -61,7 +61,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
           }
       } else if (j.at(0) == 'C' || j.at(0) == 'I') { //////////////////// CURRENT - C() /////////////////
-        tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
+        tokens2 = Misc::tokenize_delimiter(j.substr(1), "(),");
         if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), tokens2.at(0)) != mObj.rowNames.end()
             || mObj.labelNodes.count(tokens2.at(0)) != 0) {
           traces.emplace_back(Trace());
@@ -71,7 +71,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
         }
       } else if (j.at(0) == 'P') { //////////////////// PHASE - P() /////////////////
-        tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
+        tokens2 = Misc::tokenize_delimiter(j.substr(1), "(),");
         if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), tokens2.at(0)) != mObj.rowNames.end()
             || mObj.labelNodes.count(tokens2.at(0)) != 0) {
           traces.emplace_back(Trace());
@@ -81,7 +81,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
         }
       } else if (j.at(0) == 'V') { //////////////////// VOLTAGE - P() /////////////////
-        tokens2 = Misc::tokenize_delimeter(j.substr(1), "(),");
+        tokens2 = Misc::tokenize_delimiter(j.substr(1), "(),");
         if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), tokens2.at(0)) != mObj.rowNames.end()
             || mObj.labelNodes.count(tokens2.at(0)) != 0) {
           traces.emplace_back(Trace());
@@ -117,7 +117,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             t = t.substr(1, t.size() - 4);
             if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), t) != mObj.rowNames.end()
               || mObj.labelNodes.count(t) != 0) {
-                tokens2 = Misc::tokenize_delimeter(t, ",");
+                tokens2 = Misc::tokenize_delimiter(t, ",");
                 handle_current(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
               Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
@@ -126,7 +126,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             t = t.substr(1, t.size() - 4);
             if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), t) != mObj.rowNames.end()
               || mObj.labelNodes.count(t) != 0) {
-                tokens2 = Misc::tokenize_delimeter(t, ",");
+                tokens2 = Misc::tokenize_delimiter(t, ",");
                 handle_voltage(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
               Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
@@ -135,7 +135,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             t = t.substr(1, t.size() - 4);
             if(std::find(mObj.rowNames.begin(),mObj.rowNames.end(), t) != mObj.rowNames.end()
               || mObj.labelNodes.count(t) != 0) {
-                tokens2 = Misc::tokenize_delimeter(t, ",");
+                tokens2 = Misc::tokenize_delimiter(t, ",");
                 handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
               Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
@@ -800,7 +800,7 @@ void Output::write_wr_data(std::string &outname)
       for (int i = 0; i < traces.size(); i++) {
         if (traces.at(i).type == 'V') {
           if (traces.at(i).name.substr(0, 5) == "NODEV") {
-            tokens = Misc::tokenize_delimeter(traces.at(i).name, "_");
+            tokens = Misc::tokenize_delimiter(traces.at(i).name, "_");
             if (tokens.size() > 2)
               outfile << " " << i + 1 << " v(" << tokens[1] << "," << tokens[2]
                       << ") V\n";
@@ -810,7 +810,7 @@ void Output::write_wr_data(std::string &outname)
             outfile << " " << i + 1 << " " << traces.at(i).name << " V\n";
         } else if (traces.at(i).type == 'P') {
           if (traces.at(i).name.substr(0, 5) == "NODEP" || traces.at(i).name.substr(0, 5) == "PHASE") {
-            tokens = Misc::tokenize_delimeter(traces.at(i).name, "_");
+            tokens = Misc::tokenize_delimiter(traces.at(i).name, "_");
             if (tokens.size() > 2)
               outfile << " " << i + 1 << " p(" << tokens[1] << "," << tokens[2]
                       << ") P\n";

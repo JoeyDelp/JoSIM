@@ -11,6 +11,7 @@
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Transient.hpp"
+#include "JoSIM/Model.hpp"
 
 
 int main(int argc, const char **argv) {
@@ -29,6 +30,10 @@ int main(int argc, const char **argv) {
     // Parse any identified parameter values
     if (iObj.parameters.size() > 0) {
       Parameters::parse_parameters(iObj.parameters);
+    }
+    // Parse any identified models
+    for (const auto &i : iObj.netlist.models) {
+      Model::parse_model(std::make_pair(i.second, i.first.second), iObj.netlist.models_new, iObj.parameters);
     }
     // Expand nested subcircuits
     iObj.netlist.expand_subcircuits();

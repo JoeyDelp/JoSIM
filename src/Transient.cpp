@@ -13,7 +13,7 @@ void Transient::identify_simulation(const std::vector<std::string> &controls, Tr
   for (const auto &i : controls) {
     if (i.find("TRAN") != std::string::npos) {
       transFound = true;
-      simtokens = Misc::tokenize_delimeter(i, " ,");
+      simtokens = Misc::tokenize_delimiter(i, " ,");
       if (simtokens.at(0).find("TRAN") != std::string::npos) {
         if (simtokens.size() < 2) {
           Errors::control_errors(static_cast<int>(ControlErrors::TRANS_ERROR), "Too few parameters: " + i);

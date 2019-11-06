@@ -15,6 +15,7 @@ class TransmissionLine {
     std::string label_;
     std::vector<double> nonZeros_;
     std::vector<int> columnIndex_;
+    std::vector<int> rowPointer_;
     std::optional<int> posIndex1_, negIndex1_;
     std::optional<int> posIndex2_, negIndex2_;
     int currentIndex1_;
@@ -31,12 +32,13 @@ class TransmissionLine {
         std::vector<int> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const int &antyp,
-        const double &timestep);
+        const double &timestep,
+        int &branchIndex);
     void set_label(const std::string &l) { label_ = l; }
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
         const std::pair<std::string, std::string> &n2,
         const std::unordered_map<std::string, int> &nm, 
-        const std::string &s, std::vector<int> &nc);
+        const std::string &s, int &branchIndex);
     void set_indices(const std::pair<std::string, std::string> &n1, 
         const std::pair<std::string, std::string> &n2, 
         const std::unordered_map<std::string, int> &nm, std::vector<int> &nc);
@@ -49,17 +51,17 @@ class TransmissionLine {
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const double &timestep);
 
-    std::string get_label() const { return label_; }
-    std::vector<double> get_nonZeros() const { return nonZeros_; }
-    std::vector<int> get_columnIndex() const { return columnIndex_; }
-    std::optional<int> get_posIndex1() const { return posIndex1_; }
-    std::optional<int> get_negIndex1() const { return negIndex1_; }
-    std::optional<int> get_posIndex2() const { return posIndex2_; }
-    std::optional<int> get_negIndex2() const { return negIndex2_; }
-    int get_currentIndex1() const { return currentIndex1_; }
-    int get_currentIndex2() const { return currentIndex2_; }
-    double get_value() const { return value_; }
-    int get_timestepDelay() const { return timestepDelay_; }
+    const std::string& get_label() const { return label_; }
+    const std::vector<double>& get_nonZeros() const { return nonZeros_; }
+    const std::vector<int>& get_columnIndex() const { return columnIndex_; }
+    const std::optional<int>& get_posIndex1() const { return posIndex1_; }
+    const std::optional<int>& get_negIndex1() const { return negIndex1_; }
+    const std::optional<int>& get_posIndex2() const { return posIndex2_; }
+    const std::optional<int>& get_negIndex2() const { return negIndex2_; }
+    const int& get_currentIndex1() const { return currentIndex1_; }
+    const int& get_currentIndex2() const { return currentIndex2_; }
+    const double& get_value() const { return value_; }
+    const int& get_timestepDelay() const { return timestepDelay_; }
 
 };
 

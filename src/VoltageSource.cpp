@@ -12,7 +12,8 @@ void VoltageSource::create_voltagesource(
     const std::pair<std::string, std::string> &s,
     std::vector<VoltageSource> &voltagesources, 
     const std::unordered_map<std::string, int> &nm, 
-    std::vector<int> &nc) {
+    std::vector<int> &nc,
+    int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   // Ensure no device duplication occurs
   for(auto &i : voltagesources) {
@@ -22,13 +23,13 @@ void VoltageSource::create_voltagesource(
   }
   VoltageSource temp;
   temp.set_label(tokens.at(0));
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, nc);
+  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc);
-  temp.set_currentIndex(nc.size());
+  temp.set_currentIndex(branchIndex);
   voltagesources.emplace_back(temp);
 }
 
-void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, std::vector<int> &nc) {
+void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
@@ -39,16 +40,18 @@ void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, st
     } else {
       nonZeros_.emplace_back(1);
       nonZeros_.emplace_back(1);
-      nc.emplace_back(1);
-      columnIndex_.emplace_back(nc.size() - 1);
+      rowPointer_.emplace_back(1);
+      branchIndex++;
+      columnIndex_.emplace_back(branchIndex - 1);
       columnIndex_.emplace_back(nm.at(n.first));
     }
   // 0 1
   } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
       nonZeros_.emplace_back(-1);
       nonZeros_.emplace_back(-1);
-      nc.emplace_back(1);
-      columnIndex_.emplace_back(nc.size() - 1);
+      rowPointer_.emplace_back(1);
+      branchIndex++;
+      columnIndex_.emplace_back(branchIndex - 1);
       columnIndex_.emplace_back(nm.at(n.second));
   // 1 1
   } else {
@@ -56,9 +59,10 @@ void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, st
     nonZeros_.emplace_back(-1);
     nonZeros_.emplace_back(1);
     nonZeros_.emplace_back(-1);
-    nc.emplace_back(2);
-    columnIndex_.emplace_back(nc.size() - 1);
-    columnIndex_.emplace_back(nc.size() - 1);
+    rowPointer_.emplace_back(2);
+    branchIndex++;
+    columnIndex_.emplace_back(branchIndex - 1);
+    columnIndex_.emplace_back(branchIndex - 1);
     columnIndex_.emplace_back(nm.at(n.first));
     columnIndex_.emplace_back(nm.at(n.second));
   }

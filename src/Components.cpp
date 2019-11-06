@@ -12,11 +12,11 @@ void Components::jj_model(std::string &modelstring, std::string &area,
   double value = 0.0;
   params = modelstring;
   params = params.substr(params.find_first_of('('), params.size());
-  paramTokens = Misc::tokenize_delimeter(params, "(), ");
+  paramTokens = Misc::tokenize_delimiter(params, "(), ");
   for (int i = 0; i < paramTokens.size(); i++) {
-    itemToken = Misc::tokenize_delimeter(paramTokens.at(i), "=");
+    itemToken = Misc::tokenize_delimiter(paramTokens.at(i), "=");
     if ((itemToken.size() == 1) && (i != paramTokens.size() - 1)) {
-      tempToken = Misc::tokenize_delimeter(paramTokens.at(i + 1), "=");
+      tempToken = Misc::tokenize_delimiter(paramTokens.at(i + 1), "=");
       if (tempToken.size() == 1)
         itemToken.push_back(tempToken.at(0));
       paramTokens.erase(paramTokens.begin() + i + 1);
@@ -69,11 +69,11 @@ void Components::jj_model_phase(std::string &modelstring, std::string &area,
   double value = 0.0;
   params = modelstring;
   params = params.substr(params.find_first_of('('), params.size());
-  paramTokens = Misc::tokenize_delimeter(params, "(), ");
+  paramTokens = Misc::tokenize_delimiter(params, "(), ");
   for (int i = 0; i < paramTokens.size(); i++) {
-    itemToken = Misc::tokenize_delimeter(paramTokens.at(i), "=");
+    itemToken = Misc::tokenize_delimiter(paramTokens.at(i), "=");
     if ((itemToken.size() == 1) && (i != paramTokens.size() - 1)) {
-      tempToken = Misc::tokenize_delimeter(paramTokens.at(i + 1), "=");
+      tempToken = Misc::tokenize_delimiter(paramTokens.at(i + 1), "=");
       if (tempToken.size() == 1)
         itemToken.push_back(tempToken.at(0));
       paramTokens.erase(paramTokens.begin() + i + 1);
