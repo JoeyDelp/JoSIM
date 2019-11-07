@@ -111,7 +111,7 @@ public:
 
   Components_new components_new;
   std::unordered_map<std::string, int> nm;
-  std::vector<int> nc;
+  std::vector<std::vector<std::pair<int, int>>> nc;
   int branchIndex;
   std::vector<double> nz;
   std::vector<int> ci, rp;

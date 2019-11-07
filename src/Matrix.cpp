@@ -113,7 +113,7 @@ void Matrix::create_matrix(Input &iObj)
     }
   }
 
-  nc.assign(nm.size(), 0);
+  nc.resize(nm.size());
   branchIndex = nm.size();
 
   for (const auto &i : iObj.netlist.expNetlist) {
@@ -3653,10 +3653,18 @@ void Matrix::create_CSR()
 void Matrix::create_csr() {
   create_nz();
   create_ci();
+  create_rp();
 }
 
 void Matrix::create_nz() {
   nz.clear();
+
+  for(const auto &it : nc) {
+    for (const auto &ti : it) {
+      nz.emplace_back(ti.first);
+    }
+  }
+
   auto add_nonzeros = [this](const auto& typed_components) {
     for(const auto &it : typed_components) {
       const std::vector<double> nonZeros = it.get_nonZeros();
@@ -3675,6 +3683,13 @@ void Matrix::create_nz() {
 
 void Matrix::create_ci() {
   ci.clear();
+
+  for(const auto &it : nc) {
+    for (const auto &ti : it) {
+      ci.emplace_back(ti.second);
+    }
+  }
+
   auto add_columnindices = [this](const auto& typed_components) {
     for(const auto &it : typed_components) {
       const std::vector<int> columnIndex = it.get_columnIndex();
@@ -3693,5 +3708,28 @@ void Matrix::create_ci() {
 
 void Matrix::create_rp() {
   rp.clear();
+
+  rp.emplace_back(0);
+
+  for (const auto &it : nc) {
+    rp.emplace_back(rp.back() + it.size());
+  }
+
+  auto add_rowpointer = [this](const auto& typed_components) {
+    for(const auto &it : typed_components) {
+      const std::vector<int> rowPointer = it.get_rowPointer();
+      for (const auto &ti : rowPointer) {
+        rp.emplace_back(rp.back() + ti);
+      }
+    }
+  };
+
+  add_rowpointer(components_new.resistors);
+  add_rowpointer(components_new.inductors);
+  add_rowpointer(components_new.capacitors);
+  add_rowpointer(components_new.jjs);
+  add_rowpointer(components_new.voltagesources);
+  add_rowpointer(components_new.phasesources);
+  add_rowpointer(components_new.transmissionlines);
 
 }

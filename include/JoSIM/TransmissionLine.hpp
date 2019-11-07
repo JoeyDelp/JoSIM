@@ -29,7 +29,7 @@ class TransmissionLine {
         const std::pair<std::string, std::string> &s,
         std::vector<TransmissionLine> &transmissionlines, 
         const std::unordered_map<std::string, int> &nm, 
-        std::vector<int> &nc,
+        std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const int &antyp,
         const double &timestep,
@@ -41,7 +41,7 @@ class TransmissionLine {
         const std::string &s, int &branchIndex);
     void set_indices(const std::pair<std::string, std::string> &n1, 
         const std::pair<std::string, std::string> &n2, 
-        const std::unordered_map<std::string, int> &nm, std::vector<int> &nc);
+        const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex1(const int &cc) { currentIndex1_ = cc; }
     void set_currentIndex2(const int &cc) { currentIndex2_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
@@ -54,6 +54,7 @@ class TransmissionLine {
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
+    const std::vector<int>& get_rowPointer() const { return rowPointer_;}
     const std::optional<int>& get_posIndex1() const { return posIndex1_; }
     const std::optional<int>& get_negIndex1() const { return negIndex1_; }
     const std::optional<int>& get_posIndex2() const { return posIndex2_; }

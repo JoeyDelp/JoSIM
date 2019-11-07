@@ -27,17 +27,18 @@ class PhaseSource {
         const std::pair<std::string, std::string> &s,
         std::vector<PhaseSource> &phasesources, 
         const std::unordered_map<std::string, int> &nm, 
-        std::vector<int> &nc,
+        std::vector<std::vector<std::pair<int, int>>> &nc,
         int &branchIndex);
     void set_label(const std::string &l) { label_ = l; }
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<int> &nc);
+    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_sourceIndex(const int &i) { sourceIndex_ = i; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
+    const std::vector<int>& get_rowPointer() const { return rowPointer_;}
     const std::optional<int>& get_posIndex() const { return posIndex_; }
     const std::optional<int>& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }

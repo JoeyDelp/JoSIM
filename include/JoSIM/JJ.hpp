@@ -39,7 +39,7 @@ class JJ {
         const std::pair<std::string, std::string> &s,
         std::vector<JJ> &jjs, 
         const std::unordered_map<std::string, int> &nm, 
-        std::vector<int> &nc,
+        std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const std::vector<std::pair<Model, std::string>> &models,
         const int &antyp,
@@ -49,7 +49,7 @@ class JJ {
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
         const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex,
         const int &antyp, const double &timestep);
-    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<int> &nc);
+    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_variableIndex(const int &vc) { variableIndex_ = vc; }
     void set_area(const std::pair<std::string, std::string> &s, 
@@ -65,6 +65,7 @@ class JJ {
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
+    const std::vector<int>& get_rowPointer() const { return rowPointer_;}
     const std::optional<int>& get_posIndex() const { return posIndex_; }
     const std::optional<int>& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }

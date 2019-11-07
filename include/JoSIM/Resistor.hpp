@@ -26,14 +26,14 @@ class Resistor {
         const std::pair<std::string, std::string> &s,
         std::vector<Resistor> &resistors, 
         const std::unordered_map<std::string, int> &nm, 
-        std::vector<int> &nc,
+        std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const int &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &l) { label_ = l; }
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<int> &nc);
+    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,

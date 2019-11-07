@@ -10,7 +10,7 @@ void JJ::create_jj(
     const std::pair<std::string, std::string> &s,
     std::vector<JJ> &jjs, 
     const std::unordered_map<std::string, int> &nm, 
-    std::vector<int> &nc,
+    std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const std::vector<std::pair<Model, std::string>> &models,
     const int &antyp,
@@ -37,7 +37,7 @@ void JJ::create_jj(
   temp.set_phaseConst(timestep, antyp);
 
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex, antyp, timestep);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc);
+  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
   temp.set_variableIndex(branchIndex - 1);
   temp.set_currentIndex(branchIndex);
   jjs.emplace_back(temp);
@@ -72,7 +72,6 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
     // 1 0
     } else {
       nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(1);
       nonZeros_.emplace_back(-phaseConst_);
       rowPointer_.emplace_back(2);
       branchIndex++;
@@ -80,7 +79,6 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
       nonZeros_.emplace_back(-value_);
       rowPointer_.emplace_back(2);
       branchIndex++;
-      columnIndex_.emplace_back(branchIndex - 1);
       columnIndex_.emplace_back(nm.at(n.first));
       columnIndex_.emplace_back(branchIndex - 2);
       if(antyp == 0) { 
@@ -93,7 +91,6 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
   // 0 1
   } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
       nonZeros_.emplace_back(-1);
-      nonZeros_.emplace_back(-1);
       nonZeros_.emplace_back(-phaseConst_); 
       rowPointer_.emplace_back(2);
       branchIndex++;
@@ -105,7 +102,6 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
       nonZeros_.emplace_back(-value_);
       rowPointer_.emplace_back(2);
       branchIndex++;
-      columnIndex_.emplace_back(branchIndex - 1);
       columnIndex_.emplace_back(nm.at(n.second));
       columnIndex_.emplace_back(branchIndex - 2);
       if(antyp == 0) { 
@@ -116,8 +112,6 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
       columnIndex_.emplace_back(branchIndex - 1);
   // 1 1
   } else {
-    nonZeros_.emplace_back(1);
-    nonZeros_.emplace_back(-1);
     nonZeros_.emplace_back(1);
     nonZeros_.emplace_back(-1);
     nonZeros_.emplace_back(-phaseConst_);
@@ -132,8 +126,6 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
     nonZeros_.emplace_back(-value_);
     rowPointer_.emplace_back(3);
     branchIndex++;
-    columnIndex_.emplace_back(branchIndex - 1);
-    columnIndex_.emplace_back(branchIndex - 1);
     columnIndex_.emplace_back(nm.at(n.first));
     columnIndex_.emplace_back(nm.at(n.second));
     columnIndex_.emplace_back(branchIndex - 2);
@@ -147,18 +139,18 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
   }
 }
 
-void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<int> &nc) {
+void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex) {
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
-    ++nc.at(nm.at(n.first));
+    nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
   } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
     negIndex_ = nm.at(n.second);
-    ++nc.at(nm.at(n.second));
+    nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
   } else {
     posIndex_ = nm.at(n.first);
     negIndex_ = nm.at(n.second);
-    ++nc.at(nm.at(n.first));
-    ++nc.at(nm.at(n.second));
+    nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
+    nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
   }
 }
 
