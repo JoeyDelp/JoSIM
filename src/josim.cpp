@@ -47,20 +47,25 @@ int main(int argc, const char **argv) {
 
     Matrix mObj;
 
+    // Find the relevant x indices to store
     mObj.find_relevant_x(iObj);
+    // Create the matrix in csr format
     mObj.create_matrix(iObj);
 
+    // Find the relevant traces to store
+    RelevantTrace::find_relevant_trace(iObj.controls, mObj);
+    
     Simulation sObj;
-
+    
+    // Do a simulation dependent on what analysis needs to be performed
     if (cli_options.analysis_type == JoSIM::AnalysisType::Voltage)
       sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
-      //sObj.transient_voltage_simulation(iObj, mObj);
     else if (cli_options.analysis_type == JoSIM::AnalysisType::Phase)
       sObj.trans_sim<JoSIM::AnalysisType::Phase>(iObj, mObj);
-      // sObj.transient_phase_simulation(iObj, mObj);
     
     Output oObj;
 
+    // Fish out the relevant traces from the x vector
     oObj.relevant_traces(iObj, mObj, sObj);
 
     if (cli_options.output_to_file) {

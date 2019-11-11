@@ -14,9 +14,8 @@ class CurrentSource {
     int sourceIndex_;
   
   public:
-    static void create_currentsource(
+    static CurrentSource create_currentsource(
         const std::pair<std::string, std::string> &s,
-        std::vector<CurrentSource> &currentsource, 
         const std::unordered_map<std::string, int> &nm);
     void set_label(const std::string &l) { label_ = l; }
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm);

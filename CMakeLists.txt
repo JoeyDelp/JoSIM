@@ -47,7 +47,7 @@ add_library(josim
             src/PhaseSource.cpp
             src/CurrentSource.cpp
             src/TransmissionLine.cpp
-            src/MutualInductance.cpp)
+            src/RelevantTrace.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

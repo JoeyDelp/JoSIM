@@ -23,9 +23,8 @@ class Inductor {
   public:
     Inductor() {};
     
-    static void create_inductor(
+    static Inductor create_inductor(
         const std::pair<std::string, std::string> &s,
-        std::vector<Inductor> &inductors, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,

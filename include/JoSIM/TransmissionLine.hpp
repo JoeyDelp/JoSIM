@@ -25,9 +25,8 @@ class TransmissionLine {
   public:
     TransmissionLine() {};
     
-    static void create_transmissionline(
+    static TransmissionLine create_transmissionline(
         const std::pair<std::string, std::string> &s,
-        std::vector<TransmissionLine> &transmissionlines, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,

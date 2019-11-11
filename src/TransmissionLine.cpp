@@ -12,9 +12,8 @@
 #include <locale>
 #include <functional>
 
-void TransmissionLine::create_transmissionline(
+TransmissionLine TransmissionLine::create_transmissionline(
     const std::pair<std::string, std::string> &s,
-    std::vector<TransmissionLine> &transmissionlines, 
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
@@ -26,12 +25,7 @@ void TransmissionLine::create_transmissionline(
   if(tokens.size() < 6) {
     Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_COMPONENT_DECLARATION), s.first);
   }
-  // Ensure no device duplication occurs
-  for(auto &i : transmissionlines) {
-    if(i.get_label() == tokens.at(0)) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), tokens.at(0));
-    }
-  }
+
   TransmissionLine temp;
   temp.set_label(tokens.at(0));
   std::string strippedLine = s.first;
@@ -74,9 +68,9 @@ void TransmissionLine::create_transmissionline(
   temp.set_timestepDelay(std::make_pair(timeDelayValue, s.second), p, timestep);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
-  temp.set_currentIndex1(branchIndex - 1);
-  temp.set_currentIndex2(branchIndex);
-  transmissionlines.emplace_back(temp);
+  temp.set_currentIndex1(branchIndex - 2);
+  temp.set_currentIndex2(branchIndex - 1);
+  return temp;
 }
 
 void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 

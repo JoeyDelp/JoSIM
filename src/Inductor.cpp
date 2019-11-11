@@ -8,9 +8,8 @@
 
 #include <utility>
 
-void Inductor::create_inductor(
+Inductor Inductor::create_inductor(
     const std::pair<std::string, std::string> &s,
-    std::vector<Inductor> &inductors, 
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
@@ -18,12 +17,7 @@ void Inductor::create_inductor(
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-  // Ensure no device duplication occurs
-  for(auto &i : inductors) {
-    if(i.get_label() == tokens.at(0)) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), tokens.at(0));
-    }
-  }
+
   Inductor temp;
   temp.set_label(tokens.at(0));
   if(s.first.find("{") != std::string::npos) {
@@ -37,8 +31,8 @@ void Inductor::create_inductor(
   temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
-  temp.set_currentIndex(branchIndex);
-  inductors.emplace_back(temp);
+  temp.set_currentIndex(branchIndex - 1);
+  return temp;
 }
 
 void Inductor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {

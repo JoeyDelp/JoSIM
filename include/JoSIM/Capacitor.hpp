@@ -22,9 +22,8 @@ class Capacitor {
   public:
     Capacitor() {};
     
-    static void create_capacitor(
+    static Capacitor create_capacitor(
         const std::pair<std::string, std::string> &s,
-        std::vector<Capacitor> &capacitors, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,

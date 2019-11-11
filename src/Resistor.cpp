@@ -8,9 +8,8 @@
 
 #include <utility>
 
-void Resistor::create_resistor(
+Resistor Resistor::create_resistor(
     const std::pair<std::string, std::string> &s,
-    std::vector<Resistor> &resistors, 
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
@@ -18,12 +17,7 @@ void Resistor::create_resistor(
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-  // Ensure no device duplication occurs
-  for(auto &i : resistors) {
-    if(i.get_label() == tokens.at(0)) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), tokens.at(0));
-    }
-  }
+  
   Resistor temp;
   temp.set_label(tokens.at(0));
   if(s.first.find("{") != std::string::npos) {
@@ -36,8 +30,8 @@ void Resistor::create_resistor(
   temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
-  temp.set_currentIndex(branchIndex);
-  resistors.emplace_back(temp);
+  temp.set_currentIndex(branchIndex - 1);
+  return temp;
 }
 
 void Resistor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {

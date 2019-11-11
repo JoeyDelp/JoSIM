@@ -22,9 +22,8 @@ class Resistor {
   public:
     Resistor() {};
     
-    static void create_resistor(
+    static Resistor create_resistor(
         const std::pair<std::string, std::string> &s,
-        std::vector<Resistor> &resistors, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,

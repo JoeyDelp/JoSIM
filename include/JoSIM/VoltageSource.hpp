@@ -23,9 +23,8 @@ class VoltageSource {
   public:
     VoltageSource() {};
     
-    static void create_voltagesource(
+    static VoltageSource create_voltagesource(
         const std::pair<std::string, std::string> &s,
-        std::vector<VoltageSource> &voltagesources, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         int &branchIndex);

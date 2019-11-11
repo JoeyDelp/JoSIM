@@ -23,9 +23,8 @@ class PhaseSource {
   public:
     PhaseSource() {};
     
-    static void create_phasesource(
+    static PhaseSource create_phasesource(
         const std::pair<std::string, std::string> &s,
-        std::vector<PhaseSource> &phasesources, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         int &branchIndex);

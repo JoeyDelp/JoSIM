@@ -32,9 +32,7 @@ void Matrix::find_relevant_x(Input &iObj) {
         iObj.relevantX.push_back(i);
     }
   }
-  //std::sort(iObj.relevantX.begin(), iObj.relevantX.end());
-  //auto last = std::unique(iObj.relevantX.begin(), iObj.relevantX.end());
-  //iObj.relevantX.erase(last, iObj.relevantX.end());
+
   iObj.relevantX.erase(uniquify(iObj.relevantX.begin(), iObj.relevantX.end()), iObj.relevantX.end());
   for (const auto &i : iObj.relevantX) {
     tokens = Misc::tokenize_space(i.substr(i.find_first_of(" \t") + 1));
@@ -87,9 +85,7 @@ void Matrix::find_relevant_x(Input &iObj) {
       }
     }
   }
-  // std::sort(relevantToStore.begin(), relevantToStore.end());
-  // last = std::unique(relevantToStore.begin(), relevantToStore.end());
-  // relevantToStore.erase(last, relevantToStore.end());
+
   relevantToStore.erase(uniquify(relevantToStore.begin(), relevantToStore.end()), relevantToStore.end());
 
 }
@@ -117,69 +113,109 @@ void Matrix::create_matrix(Input &iObj)
   branchIndex = nm.size();
 
   for (const auto &i : iObj.netlist.expNetlist) {
+    // Ensure no device duplication occurs
+    for(auto &j : components_new.devices) {
+      std::vector<std::string> tokens = Misc::tokenize_space(i.first);
+
+      const auto& label = std::visit([](const auto& device) noexcept -> const std::string& {
+        return device.get_label();
+      }, j);
+
+      if(label == tokens.at(0)) {
+        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), tokens.at(0));
+      }
+    }
     switch(i.first.at(0)){
       case 'R':
-        Resistor::create_resistor(i, 
-            components_new.resistors, 
+        components_new.devices.emplace_back(Resistor::create_resistor(i, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep(), branchIndex);
+            iObj.transSim.get_prstep(), branchIndex));
         break;
       case 'L':
-        Inductor::create_inductor(i, 
-            components_new.inductors, 
+        components_new.devices.emplace_back(Inductor::create_inductor(i, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep(), branchIndex);
+            iObj.transSim.get_prstep(), branchIndex));
         break;
       case 'C':
-        Capacitor::create_capacitor(i, 
-            components_new.capacitors, 
+        components_new.devices.emplace_back(Capacitor::create_capacitor(i, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep(), branchIndex);
+            iObj.transSim.get_prstep(), branchIndex));
         break;
       case 'B':
-        JJ::create_jj(i, 
-            components_new.jjs, 
+        components_new.devices.emplace_back(JJ::create_jj(i, 
             nm, nc, iObj.parameters, iObj.netlist.models_new, 
             static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep(), branchIndex);
+            iObj.transSim.get_prstep(), branchIndex));
         break;
       case 'V':
-        VoltageSource::create_voltagesource(i, 
-            components_new.voltagesources, nm, nc, branchIndex);
+        components_new.devices.emplace_back(VoltageSource::create_voltagesource(i, 
+            nm, nc, branchIndex));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
-        components_new.voltagesources.back().set_sourceIndex(sources.size() - 1);
+        std::get<VoltageSource>(components_new.devices.back()).set_sourceIndex(sources.size() - 1);
         break;
       case 'P':
-        PhaseSource::create_phasesource(i, 
-            components_new.phasesources, nm, nc, branchIndex);
+        components_new.devices.emplace_back(PhaseSource::create_phasesource(i, 
+            nm, nc, branchIndex));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
-        components_new.phasesources.back().set_sourceIndex(sources.size() - 1);
+        std::get<PhaseSource>(components_new.devices.back()).set_sourceIndex(sources.size() - 1);
         break;
       case 'I':
-        CurrentSource::create_currentsource(i, 
-            components_new.currentsources, nm);
+        components_new.currentsources.emplace_back(CurrentSource::create_currentsource(i, nm));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         components_new.currentsources.back().set_sourceIndex(sources.size() - 1);
         break;
       case 'T':
-        TransmissionLine::create_transmissionline(i, 
-            components_new.transmissionlines, nm, nc, 
+        components_new.devices.emplace_back(TransmissionLine::create_transmissionline(i, 
+            nm, nc, 
             iObj.parameters, static_cast<int>(iObj.argAnal), 
-            iObj.transSim.get_prstep(), branchIndex);
+            iObj.transSim.get_prstep(), branchIndex));
         break;
       case 'K':
         components_new.mutualinductances.emplace_back(i);
     }
   }
 
-  for (const auto &i : components_new.mutualinductances) {
-    MutualInductance::create_mutualinductance(i,
-        components_new.inductors, iObj.parameters,
-        static_cast<int>(iObj.argAnal), 
-        iObj.transSim.get_prstep());
+  for (const auto &s : components_new.mutualinductances) {
+    std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+    if(tokens.size() < 4) {
+      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MUT_ERROR), s.first);
+    }
+
+    std::optional<int> ind1Index, ind2Index;
+    for (int i = 0; i < components_new.devices.size(); ++i) {
+      const auto& label = std::visit([](const auto& device) noexcept -> const std::string& {
+        return device.get_label();
+      }, components_new.devices.at(i));
+      if(label == tokens.at(1)) {
+        ind1Index = i;
+      }
+    }
+    if(!ind1Index) {
+      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_INDUCTOR), tokens.at(1));
+    }
+
+    for (int i = 0; i < components_new.devices.size(); ++i) {
+      const auto& label = std::visit([](const auto& device) noexcept -> const std::string& {
+        return device.get_label();
+      }, components_new.devices.at(i));
+      if(label == tokens.at(2)) {
+        ind2Index = i;
+      }
+    }
+    if(!ind2Index) {
+      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_INDUCTOR), tokens.at(2));
+    }
+
+    double cf = Parameters::parse_param(tokens.at(3), iObj.parameters, s.second);
+    double mutual = cf * std::sqrt(std::get<Inductor>(components_new.devices.at(ind1Index.value())).get_inductance() 
+                                  * std::get<Inductor>(components_new.devices.at(ind2Index.value())).get_inductance());
+
+    std::get<Inductor>(components_new.devices.at(ind1Index.value())).add_mutualinductance(mutual, static_cast<int>(iObj.argAnal), iObj.transSim.get_prstep());
+    std::get<Inductor>(components_new.devices.at(ind2Index.value())).add_mutualinductance(mutual, static_cast<int>(iObj.argAnal), iObj.transSim.get_prstep());
+
   }
 
   create_csr();
@@ -3665,20 +3701,13 @@ void Matrix::create_nz() {
     }
   }
 
-  auto add_nonzeros = [this](const auto& typed_components) {
-    for(const auto &it : typed_components) {
-      const std::vector<double> nonZeros = it.get_nonZeros();
-      nz.insert(nz.end(), nonZeros.begin(), nonZeros.end());
-    }
-  };
+  for (auto &i : components_new.devices) {
+    const auto& nonZeros = std::visit([](const auto& device) noexcept -> const std::vector<double>& {
+          return device.get_nonZeros();
+        }, i);
 
-  add_nonzeros(components_new.resistors);
-  add_nonzeros(components_new.inductors);
-  add_nonzeros(components_new.capacitors);
-  add_nonzeros(components_new.jjs);
-  add_nonzeros(components_new.voltagesources);
-  add_nonzeros(components_new.phasesources);
-  add_nonzeros(components_new.transmissionlines);
+    nz.insert(nz.end(), nonZeros.begin(), nonZeros.end());
+  }
 }
 
 void Matrix::create_ci() {
@@ -3690,20 +3719,13 @@ void Matrix::create_ci() {
     }
   }
 
-  auto add_columnindices = [this](const auto& typed_components) {
-    for(const auto &it : typed_components) {
-      const std::vector<int> columnIndex = it.get_columnIndex();
-      ci.insert(ci.end(), columnIndex.begin(), columnIndex.end());
-    }
-  };
+  for (auto &i : components_new.devices) {
+    const auto& columnIndices = std::visit([](const auto& device) noexcept -> const std::vector<int>& {
+          return device.get_columnIndex();
+        }, i);
 
-  add_columnindices(components_new.resistors);
-  add_columnindices(components_new.inductors);
-  add_columnindices(components_new.capacitors);
-  add_columnindices(components_new.jjs);
-  add_columnindices(components_new.voltagesources);
-  add_columnindices(components_new.phasesources);
-  add_columnindices(components_new.transmissionlines);
+    ci.insert(ci.end(), columnIndices.begin(), columnIndices.end());
+  }
 }
 
 void Matrix::create_rp() {
@@ -3715,21 +3737,12 @@ void Matrix::create_rp() {
     rp.emplace_back(rp.back() + it.size());
   }
 
-  auto add_rowpointer = [this](const auto& typed_components) {
-    for(const auto &it : typed_components) {
-      const std::vector<int> rowPointer = it.get_rowPointer();
-      for (const auto &ti : rowPointer) {
-        rp.emplace_back(rp.back() + ti);
-      }
+  for (auto &i : components_new.devices) {
+    const auto& rowPointer = std::visit([](const auto& device) noexcept -> const std::vector<int>& {
+          return device.get_rowPointer();
+        }, i);
+    for (const auto &ti : rowPointer) {
+      rp.emplace_back(rp.back() + ti);
     }
-  };
-
-  add_rowpointer(components_new.resistors);
-  add_rowpointer(components_new.inductors);
-  add_rowpointer(components_new.capacitors);
-  add_rowpointer(components_new.jjs);
-  add_rowpointer(components_new.voltagesources);
-  add_rowpointer(components_new.phasesources);
-  add_rowpointer(components_new.transmissionlines);
-
+  }
 }

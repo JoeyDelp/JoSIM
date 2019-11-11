@@ -16,7 +16,7 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
         std::transform(line.begin(), line.end(), line.begin(), toupper);
         if (!line.empty() && line.back() == '\r')
           line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-        if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#')) {
+        if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
           if(Misc::starts_with(line, '+')) 
             fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
           else 

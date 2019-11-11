@@ -16,9 +16,9 @@
 #include "./PhaseSource.hpp"
 #include "./CurrentSource.hpp"
 #include "./TransmissionLine.hpp"
-#include "./MutualInductance.hpp"
 
 #include <unordered_map>
+#include <variant>
 
 class device {
 public:
@@ -329,14 +329,14 @@ public:
 
 class Components_new {
   public:
-    std::vector<Resistor> resistors;
-    std::vector<Inductor> inductors;
-    std::vector<Capacitor> capacitors;
-    std::vector<JJ> jjs;
-    std::vector<VoltageSource> voltagesources;
-    std::vector<PhaseSource> phasesources;
+    std::vector<std::variant<Resistor, 
+                             Inductor, 
+                             Capacitor,
+                             JJ,
+                             VoltageSource,
+                             PhaseSource,
+                             TransmissionLine>> devices; 
     std::vector<CurrentSource> currentsources;
-    std::vector<TransmissionLine> transmissionlines;
     std::vector<std::pair<std::string, std::string>> mutualinductances;
 };
 #endif

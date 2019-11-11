@@ -35,9 +35,8 @@ class JJ {
       area_(1)
       {};
     
-    static void create_jj(
+    static JJ create_jj(
         const std::pair<std::string, std::string> &s,
-        std::vector<JJ> &jjs, 
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,

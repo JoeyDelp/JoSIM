@@ -14,6 +14,12 @@
 #define PHASE 3
 #define NONE_SPECIFIED 4
 
+namespace JoSIM {
+  enum class StorageType : int { Voltage = 0, Phase = 1, Current = 2};
+}
+
+
+
 class Results {
 public:
   std::vector<std::vector<double>> xVect;

@@ -6,9 +6,8 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
 
-void JJ::create_jj(
+JJ JJ::create_jj(
     const std::pair<std::string, std::string> &s,
-    std::vector<JJ> &jjs, 
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
@@ -17,12 +16,7 @@ void JJ::create_jj(
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-  // Ensure no device duplication occurs
-  for(auto &i : jjs) {
-    if(i.get_label() == tokens.at(0)) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), tokens.at(0));
-    }
-  }
+
   JJ temp;
   temp.set_label(tokens.at(0));
   // Junction line has potential to have up to 6 parts, identifying the last 3 can be tricky.
@@ -38,9 +32,9 @@ void JJ::create_jj(
 
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex, antyp, timestep);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
-  temp.set_variableIndex(branchIndex - 1);
-  temp.set_currentIndex(branchIndex);
-  jjs.emplace_back(temp);
+  temp.set_variableIndex(branchIndex - 2);
+  temp.set_currentIndex(branchIndex - 1);
+  return temp;
 }
 
 void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
