@@ -131,36 +131,43 @@ void Matrix::create_matrix(Input &iObj)
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
             iObj.transSim.get_prstep(), branchIndex));
+        components_new.resistorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'L':
         components_new.devices.emplace_back(Inductor::create_inductor(i, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
             iObj.transSim.get_prstep(), branchIndex));
+        components_new.inductorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'C':
         components_new.devices.emplace_back(Capacitor::create_capacitor(i, 
             nm, nc, iObj.parameters, 
             static_cast<int>(iObj.argAnal), 
             iObj.transSim.get_prstep(), branchIndex));
+        components_new.capacitorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'B':
         components_new.devices.emplace_back(JJ::create_jj(i, 
             nm, nc, iObj.parameters, iObj.netlist.models_new, 
             static_cast<int>(iObj.argAnal), 
             iObj.transSim.get_prstep(), branchIndex));
+        components_new.junctionIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'V':
         components_new.devices.emplace_back(VoltageSource::create_voltagesource(i, 
             nm, nc, branchIndex));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         std::get<VoltageSource>(components_new.devices.back()).set_sourceIndex(sources.size() - 1);
+        components_new.vsIndices.emplace_back(components_new.devices.size() - 1);
+
         break;
       case 'P':
         components_new.devices.emplace_back(PhaseSource::create_phasesource(i, 
             nm, nc, branchIndex));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         std::get<PhaseSource>(components_new.devices.back()).set_sourceIndex(sources.size() - 1);
+        components_new.psIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'I':
         components_new.currentsources.emplace_back(CurrentSource::create_currentsource(i, nm));
@@ -172,6 +179,7 @@ void Matrix::create_matrix(Input &iObj)
             nm, nc, 
             iObj.parameters, static_cast<int>(iObj.argAnal), 
             iObj.transSim.get_prstep(), branchIndex));
+        components_new.txIndices.emplace_back(components_new.devices.size() - 1);        
         break;
       case 'K':
         components_new.mutualinductances.emplace_back(i);

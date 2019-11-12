@@ -19,8 +19,13 @@ class Capacitor {
     std::optional<int> posIndex_, negIndex_;
     int currentIndex_;
     double value_;
+    double pn1_;
+    double dpn1_;
   public:
-    Capacitor() {};
+    Capacitor() : 
+      pn1_(0.0),
+      dpn1_(0.0)
+      {};
     
     static Capacitor create_capacitor(
         const std::pair<std::string, std::string> &s,
@@ -37,6 +42,8 @@ class Capacitor {
     void set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const int &antyp, const double &timestep);
+    void set_pn1(const double &v) { pn1_ = v; }
+    void set_dpn1(const double &v) { dpn1_ = v; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -46,6 +53,8 @@ class Capacitor {
     const std::optional<int>& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }
     const double& get_value() const { return value_; }
+    const double& get_pn1() const { return pn1_; }
+    const double& get_dpn1() const { return dpn1_; }
 
 };
 

@@ -84,7 +84,8 @@ public:
   int branchIndex;
   std::vector<double> nz;
   std::vector<int> ci, rp;
-  std::vector<RelevantTrace> savedDevices;
+  std::vector<RelevantTrace> relevantTraces;
+  std::vector<int> relevantIndices;
   
   Matrix(){};
   void create_matrix(Input &iObj);

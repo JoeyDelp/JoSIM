@@ -8,6 +8,10 @@
 
 class Matrix;
 
+namespace JoSIM {
+  enum class StorageType : int { Voltage = 0, Phase = 1, Current = 2};
+}
+
 struct target_less
 {
     template<class It>
@@ -52,10 +56,9 @@ class RelevantTrace {
       device(false)
     {};
 
-    static void find_relevant_trace(const std::vector<std::string> &c, Matrix &mObj);
-    void handle_current();
-    void handle_voltage();
-    void handle_phase();
+    static void find_relevant_traces(const std::vector<std::string> &c, Matrix &mObj);
+    static void handle_current(const std::string &s, Matrix &mObj);
+    static void handle_voltage_or_phase(const std::string &s, bool voltage, Matrix &mObj);
 
 };
 

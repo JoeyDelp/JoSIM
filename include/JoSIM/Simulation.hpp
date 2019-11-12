@@ -14,17 +14,13 @@
 #define PHASE 3
 #define NONE_SPECIFIED 4
 
-namespace JoSIM {
-  enum class StorageType : int { Voltage = 0, Phase = 1, Current = 2};
-}
-
-
-
 class Results {
 public:
   std::vector<std::vector<double>> xVect;
+  std::vector<std::optional<std::vector<double>>> xVector_new;
   std::vector<double> timeAxis;
   std::unordered_map<std::string, std::vector<double>> junctionCurrents;
+
 };
 
 class Simulation {
@@ -36,11 +32,10 @@ public:
                            double &prstep, double &tstop, double &tstart,
                            double &maxtstep);
 
-  void transient_voltage_simulation(Input &iObj, Matrix &mObj);
-
-  void transient_phase_simulation(Input &iObj, Matrix &mObj);
-
   template<JoSIM::AnalysisType AnalysisTypeValue = JoSIM::AnalysisType::Voltage>
   void trans_sim(Input &iObj, Matrix &mObj);
+
+  template<JoSIM::AnalysisType AnalysisTypeValue = JoSIM::AnalysisType::Voltage>
+  void trans_sim_new(Input &iObj, Matrix &mObj);
 };
 #endif

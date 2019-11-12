@@ -82,7 +82,8 @@ enum class ControlErrors : int {
   INVALID_CURRENT,
   MATHOPS,
   UNKNOWN_PLOT,
-  INVALID_OUTPUT_COMMAND
+  INVALID_OUTPUT_COMMAND,
+  NODECURRENT
 };
 
 enum class ModelErrors : int {

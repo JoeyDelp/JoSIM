@@ -53,7 +53,7 @@ int main(int argc, const char **argv) {
     mObj.create_matrix(iObj);
 
     // Find the relevant traces to store
-    RelevantTrace::find_relevant_trace(iObj.controls, mObj);
+    RelevantTrace::find_relevant_traces(iObj.controls, mObj);
     
     Simulation sObj;
     

@@ -337,6 +337,7 @@ class Components_new {
                              PhaseSource,
                              TransmissionLine>> devices; 
     std::vector<CurrentSource> currentsources;
+    std::vector<int> junctionIndices, resistorIndices, inductorIndices, capacitorIndices, vsIndices, psIndices, txIndices;
     std::vector<std::pair<std::string, std::string>> mutualinductances;
 };
 #endif

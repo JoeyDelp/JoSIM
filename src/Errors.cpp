@@ -234,8 +234,8 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
     throw formattedMessage;
   case static_cast<int>(ControlErrors::UNKNOWN_DEVICE):
     formattedMessage += "Unknown device " + whatPart + "\n";
-    formattedMessage += "Cannot print results for this device.\n";
-    formattedMessage += "Ignoring this print request.";
+    formattedMessage += "Cannot store results for this device.\n";
+    formattedMessage += "Ignoring this store request.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::CURRENT_THROUGH_VOLT):
@@ -245,9 +245,9 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::VOLT_WHEN_PHASE):
-    formattedMessage += "Request to print voltage for device " + whatPart + "\n";
+    formattedMessage += "Request to store voltage for device " + whatPart + "\n";
     formattedMessage += "Phase mode simulation performed.\n";
-    formattedMessage += "Printing device phase instead.";
+    formattedMessage += "Storing device phase instead.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::VOLT_ACROSS_CURRENT):
@@ -257,32 +257,37 @@ void Errors::control_errors(int errorCode, const std::string &whatPart) {
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::NODEVOLT_WHEN_PHASE):
-    formattedMessage += "Request to print nodal voltage for " + whatPart + "\n";
+    formattedMessage += "Request to store nodal voltage for " + whatPart + "\n";
     formattedMessage += "Phase mode simulation performed.\n";
-    formattedMessage += "Printing nodal phase instead.";
+    formattedMessage += "Storing nodal phase instead.";
+    warning_message(formattedMessage);
+    break;
+  case static_cast<int>(ControlErrors::NODECURRENT):
+    formattedMessage += "Request to store nodal current for " + whatPart + "\n";
+    formattedMessage += "Cannot store current of a node.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::UNKNOWN_NODE):
     formattedMessage += "Node " + whatPart + " was not found in the circuit.\n";
-    formattedMessage += "This request for print will be ignored.";
+    formattedMessage += "This request for store will be ignored.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::NODEPHASE_WHEN_VOLT):
-    formattedMessage += "Request to print nodal phase for " + whatPart + "\n";
+    formattedMessage += "Request to store nodal phase for " + whatPart + "\n";
     formattedMessage += "Voltage mode simulation performed.\n";
-    formattedMessage += "Printing nodal voltage instead.";
+    formattedMessage += "Storing nodal voltage instead.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::INVALID_NODEV):
     formattedMessage += "Invalid node voltage request found.\n";
     formattedMessage += "Line: " + whatPart + "\n";
-    formattedMessage += "This request for print will be ignored.";
+    formattedMessage += "This request for store will be ignored.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::INVALID_NODEP):
     formattedMessage += "Invalid node phase request found.\n";
     formattedMessage += "Line: " + whatPart + "\n";
-    formattedMessage += "This request for print will be ignored.";
+    formattedMessage += "This request for store will be ignored.";
     warning_message(formattedMessage);
     break;
   case static_cast<int>(ControlErrors::PHASE_WHEN_VOLT):

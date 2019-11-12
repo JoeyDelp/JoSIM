@@ -54,11 +54,11 @@ class TransmissionLine {
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
     const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const std::optional<int>& get_posIndex1() const { return posIndex1_; }
-    const std::optional<int>& get_negIndex1() const { return negIndex1_; }
+    const std::optional<int>& get_posIndex() const { return posIndex1_; }
+    const std::optional<int>& get_negIndex() const { return negIndex1_; }
     const std::optional<int>& get_posIndex2() const { return posIndex2_; }
     const std::optional<int>& get_negIndex2() const { return negIndex2_; }
-    const int& get_currentIndex1() const { return currentIndex1_; }
+    const int& get_currentIndex() const { return currentIndex1_; }
     const int& get_currentIndex2() const { return currentIndex2_; }
     const double& get_value() const { return value_; }
     const int& get_timestepDelay() const { return timestepDelay_; }
