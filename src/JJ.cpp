@@ -27,9 +27,19 @@ JJ JJ::create_jj(
     }
   }
   temp.set_model(std::make_pair(tokens.back(), s.second), models);
-  temp.set_value(timestep);
+  temp.set_subCond((temp.get_model().get_subgapResistance() * timestep) / (timestep + 2 * temp.get_model().get_subgapResistance() * temp.get_model().get_capacitance()));
+  temp.set_transCond((temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV() * timestep) 
+                     / (temp.get_model().get_criticalCurrent() * timestep 
+                     + 2 * temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV() * temp.get_model().get_capacitance()));
+  temp.set_normalCond((temp.get_model().get_normalResistance() * timestep) / (timestep + 2 * temp.get_model().get_normalResistance() * temp.get_model().get_capacitance()));
+  temp.set_value(temp.get_subCond());
+  temp.set_del0(1.76 * JoSIM::Constants::BOLTZMANN * temp.get_model().get_criticalTemperature());
+  temp.set_del(temp.get_del0() * sqrt(cos((JoSIM::Constants::PI / 2) 
+               * (temp.get_model().get_temperature() / temp.get_model().get_criticalTemperature())
+               * (temp.get_model().get_temperature() / temp.get_model().get_criticalTemperature()))));
+  temp.set_rncalc(((JoSIM::Constants::PI * temp.get_del()) / (2 * JoSIM::Constants::EV * temp.get_model().get_criticalCurrent()))
+                  * tanh(temp.get_del() / (2 * JoSIM::Constants::BOLTZMANN * temp.get_model().get_temperature())));
   temp.set_phaseConst(timestep, antyp);
-
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex, antyp, timestep);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
   temp.set_variableIndex(branchIndex - 2);
@@ -178,13 +188,56 @@ void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vect
   model_.set_normalResistance(model_.get_normalResistance() / area_);
   model_.set_subgapResistance(model_.get_subgapResistance() / area_);
   model_.set_criticalCurrent(model_.get_criticalCurrent() * area_);
-}
 
-void JJ::set_value(const double &timestep) {
-  value_ = (model_.get_subgapResistance() * timestep) / (timestep + 2 * model_.get_subgapResistance() * model_.get_capacitance());
+  lowerB_ = model_.get_voltageGap() - 0.5 * model_.get_deltaV();
+  upperB_ = model_.get_voltageGap() + 0.5 * model_.get_deltaV();
 }
 
 void JJ::set_phaseConst(const double &timestep, const int &antyp){
   if(antyp == 0) phaseConst_ = JoSIM::Constants::HBAR / (timestep * JoSIM::Constants::EV);
   else if (antyp == 1) phaseConst_ = (timestep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR;
+}
+
+// Update the value based on the matrix entry based on the current voltage value
+bool JJ::update_value(const double &v) {
+  if(abs(v) < lowerB_) {
+    transitionCurrent_ = 0.0;
+    if(nonZeros_.back() != subCond_) {
+      nonZeros_.back() = subCond_;
+      return true;
+    } else {
+      return false;
+    }
+  } else if (abs(v) < upperB_) {
+    if (v < 0) {
+      transitionCurrent_ = -lowerB_ * ((1 / model_.get_subgapResistance()) 
+                           - (model_.get_criticalCurrent()/(model_.get_criticalToNormalRatio() * model_.get_deltaV())));
+    } else {
+      transitionCurrent_ = lowerB_ * ((1 / model_.get_subgapResistance()) 
+                           - (model_.get_criticalCurrent()/(model_.get_criticalToNormalRatio() * model_.get_deltaV())));
+    }
+    if(nonZeros_.back() != transCond_) {
+      nonZeros_.back() = transCond_;
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    if (v < 0) {
+      transitionCurrent_ = -(model_.get_criticalCurrent() / model_.get_criticalToNormalRatio() 
+                           + model_.get_voltageGap() * (1 / model_.get_subgapResistance()) 
+                           - lowerB_ * (1 / model_.get_normalResistance()));
+    } else { 
+      transitionCurrent_ = (model_.get_criticalCurrent() / model_.get_criticalToNormalRatio() 
+                           + model_.get_voltageGap() * (1 / model_.get_subgapResistance()) 
+                           - lowerB_ * (1 / model_.get_normalResistance()));
+    }
+    if(nonZeros_.back() != normalCond_) {
+      nonZeros_.back() = normalCond_;
+      return true;
+    } else {
+      return false;
+    }
+  }
+  return false;
 }

@@ -62,6 +62,8 @@ int main(int argc, const char **argv) {
       sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
     else if (cli_options.analysis_type == JoSIM::AnalysisType::Phase)
       sObj.trans_sim<JoSIM::AnalysisType::Phase>(iObj, mObj);
+
+    sObj.trans_sim_new(iObj, mObj);
     
     Output oObj;
 

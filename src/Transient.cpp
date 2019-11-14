@@ -43,6 +43,7 @@ void Transient::identify_simulation(const std::vector<std::string> &controls, Tr
       }
     }
   }
+  tObj.set_simsize();
   if (!transFound) {
     Errors::control_errors(static_cast<int>(ControlErrors::NO_SIM), "");
   }

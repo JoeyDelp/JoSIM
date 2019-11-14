@@ -500,7 +500,6 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
   klu_free_numeric(&Numeric, &Common);
 }
 
-template<JoSIM::AnalysisType AnalysisTypeValue>
 void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
   std::vector<double> lhsValues(mObj.rp.size() - 1, 0.0),
       RHS(mObj.rp.size() - 1, 0.0), LHS_PRE(mObj.rp.size() - 1, 0.0);
@@ -543,16 +542,15 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
     // Handle resistors
     for (const auto &i : mObj.components_new.resistorIndices) {
       const auto &temp = std::get<Resistor>(mObj.components_new.devices.at(i));
-      const auto &prevNode = [temp, LHS_PRE](const double& i) {
-                                            if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return LHS_PRE.at(temp.get_posIndex().value());
-                                            } else if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return -LHS_PRE.at(temp.get_negIndex().value());
-                                            } else {
-                                              return LHS_PRE.at(temp.get_posIndex().value())
-                                                     - LHS_PRE.at(temp.get_negIndex().value());
-                                            }
-                                          };
+      double prevNode;
+      if(temp.get_posIndex() && !temp.get_negIndex()) {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
+      } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+        prevNode = (-LHS_PRE.at(temp.get_negIndex().value()));
+      } else {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value())
+                - LHS_PRE.at(temp.get_negIndex().value()));
+      }
       if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
       } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
         // Rh/2σ Ip + φp
@@ -563,44 +561,42 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
     // Handle inductors
     for (const auto &i : mObj.components_new.inductorIndices) {
       const auto &temp = std::get<Inductor>(mObj.components_new.devices.at(i));
-      const auto &prevNode = [temp, LHS_PRE](const double& i) {
-                                            if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return LHS_PRE.at(temp.get_posIndex().value());
-                                            } else if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return -LHS_PRE.at(temp.get_negIndex().value());
-                                            } else {
-                                              return LHS_PRE.at(temp.get_posIndex().value())
-                                                     - LHS_PRE.at(temp.get_negIndex().value());
-                                            }
-                                          };
+      double prevNode;
+      if(temp.get_posIndex() && !temp.get_negIndex()) {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
+      } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+        prevNode = (-LHS_PRE.at(temp.get_negIndex().value()));
+      } else {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value())
+                - LHS_PRE.at(temp.get_negIndex().value()));
+      }
       if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
         // -2L/h Ip - Vp
-        RHS.at(temp.get_currentIndex()) = -((temp.get_value() * 2) / (iObj.transSim.get_prstep()) 
+        RHS.at(temp.get_currentIndex()) = -(temp.get_value() * 2) / (iObj.transSim.get_prstep()) 
                                           * LHS_PRE.at(temp.get_currentIndex()) - prevNode;
       }
     }
     // Handle capacitors
     for (const auto &i : mObj.components_new.capacitorIndices) {
       auto &temp = std::get<Capacitor>(mObj.components_new.devices.at(i));
-      const auto &prevNode = [temp, LHS_PRE](const double& i) {
-                                            if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return LHS_PRE.at(temp.get_posIndex().value());
-                                            } else if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return -LHS_PRE.at(temp.get_negIndex().value());
-                                            } else {
-                                              return LHS_PRE.at(temp.get_posIndex().value())
-                                                     - LHS_PRE.at(temp.get_negIndex().value());
-                                            }
-                                          };
+      double prevNode;
+      if(temp.get_posIndex() && !temp.get_negIndex()) {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
+      } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+        prevNode = (-LHS_PRE.at(temp.get_negIndex().value()));
+      } else {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value())
+                - LHS_PRE.at(temp.get_negIndex().value()));
+      }
       if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
         // h/2C Ip + Vp
-        RHS.at(temp.get_currentIndex()) = ((iObj.transSim.get_prstep() / (temp.get_value() * 2))
+        RHS.at(temp.get_currentIndex()) = (iObj.transSim.get_prstep() / (temp.get_value() * 2))
                                           * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
       } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
         double pn2 = temp.get_pn1();
         temp.set_pn1(prevNode);
         double dpn2 = temp.get_dpn1();
-        temp.set_dpn1((2 / iObj.transSim.get_prstep()) * (temp.get_pn1() - pn2) - dpn2) 
+        temp.set_dpn1((2 / iObj.transSim.get_prstep()) * (temp.get_pn1() - pn2) - dpn2); 
         // h/2C Ip - φp - h Δφp
         RHS.at(temp.get_currentIndex()) = ((iObj.transSim.get_prstep() * iObj.transSim.get_prstep()) / (4 * temp.get_value() * JoSIM::Constants::SIGMA)) 
                                           * LHS_PRE.at(temp.get_currentIndex()) + prevNode + iObj.transSim.get_prstep() * temp.get_dpn1();
@@ -610,16 +606,15 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
     for (const auto &i : mObj.components_new.junctionIndices) {
       auto &temp = std::get<JJ>(mObj.components_new.devices.at(i));
       const auto &model = temp.get_model();
-      const auto &prevNode = [temp, LHS_PRE](const double& i) {
-                                            if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return LHS_PRE.at(temp.get_posIndex().value());
-                                            } else if(temp.get_posIndex() && !temp.get_negIndex()) {
-                                              return -LHS_PRE.at(temp.get_negIndex().value());
-                                            } else {
-                                              return LHS_PRE.at(temp.get_posIndex().value())
-                                                     - LHS_PRE.at(temp.get_negIndex().value());
-                                            }
-                                          };
+      double prevNode;
+      if(temp.get_posIndex() && !temp.get_negIndex()) {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
+      } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+        prevNode = (-LHS_PRE.at(temp.get_negIndex().value()));
+      } else {
+        prevNode = (LHS_PRE.at(temp.get_posIndex().value())
+                - LHS_PRE.at(temp.get_negIndex().value()));
+      }
       double vn2 = temp.get_vn1();
       double dvn2 = temp.get_dvn1();
       if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
@@ -630,235 +625,43 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
         temp.set_pn1(prevNode);
       }
       if (i <= 3) temp.set_dvn1(0);
-      else temp.set_dvn1((2 / iObj.transSim.get_prstep()) * (temp.get_vn1() - vn2) - dVn2);
+      else temp.set_dvn1((2 / iObj.transSim.get_prstep()) * (temp.get_vn1() - vn2) - dvn2);
       // Guess voltage (V0)
       double v0 = temp.get_vn1() + iObj.transSim.get_prstep() * temp.get_dvn1();
+      // Update junction transition
+      needsLU = temp.update_value(v0);
       // Phase guess (P0)
-      double phi0 = temp.get_pn1() + (1 / hn_2_2e_hbar) * (temp.get_vn1 + v0);
+      double phi0 = temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0);
       // (hR / h + 2RC) * (Ic sin φ0 - 2C / h Vp - C ΔVp)
-      RHS.at(temp.get_currentIndex()) = temp.get_value() * (model.get_criticalCurrent() * sin(temp.get_p0()) 
-                                        + (2 * model.get_capacitance() / iObj.transSim.get_prstep()) * prevNode
-                                        + model.get_capacitance() * temp.get_vn1())
+      RHS.at(temp.get_currentIndex()) = -((JoSIM::Constants::PI * temp.get_del()) / (2 * JoSIM::Constants::EV * temp.get_rncalc())) *
+                                        (sin(phi0) / sqrt(1 - temp.get_model().get_transparency() * (sin(phi0 / 2) *
+                                          sin(phi0 / 2)))) * tanh((temp.get_del()) / (2 * JoSIM::Constants::BOLTZMANN * temp.get_model().get_temperature()) *
+                                          sqrt(1 - temp.get_model().get_transparency() * (sin(phi0 / 2) * sin(phi0 / 2)))) +
+                                        (((2 * temp.get_model().get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
+                                        + (temp.get_model().get_capacitance() * temp.get_dvn1()) - temp.get_transitionCurrent();
       // (hbar / h * e) φp - Vp 
-      RHS.at(temp.get_variableIndex()) = hbar_he * temp.get_pn1() - temp.get_vn1;
+      RHS.at(temp.get_variableIndex()) = hbar_he * temp.get_pn1() - temp.get_vn1();
     }
 
     LHS_PRE = RHS;
 
     ok =
         klu_tsolve(Symbolic, Numeric, mObj.Nsize, 1, &LHS_PRE.front(), &Common);
-    if (!ok)
+    if (!ok) {
       Errors::simulation_errors(static_cast<int>(SimulationErrors::MATRIX_SINGULAR), "");
+    }
 
     lhsValues = LHS_PRE;
     if(!saveAll) {
-      for (int m = 0; m < mObj.relXInd.size(); m++)
-        results.xVect.at(m).at(i) = lhsValues.at(mObj.relXInd.at(m));
+      for (int m = 0; m < mObj.relevantIndices.size(); m++) {
+        results.xVector_new.at(m).value().emplace_back(lhsValues.at(mObj.relevantIndices.at(m)));
+      }
     } else {
-      for (int m = 0; m < mObj.rowDesc.size(); m++)
-        results.xVect.at(m).at(i) = lhsValues.at(m);
+      for (int m = 0; m < mObj.rowDesc.size(); m++) {
+        results.xVector_new.at(m).value().emplace_back(lhsValues.at(m));
+      }
     }
     
-    for (int j = 0; j < jj_vector.size(); j++) {
-      auto &jj = jj_vector.at(j);
-      // V_n-1 or P_n-1
-      if(jj.posNRow == -1) {
-        if(AnalysisTypeValue == JoSIM::AnalysisType::Voltage) jj.vn1 = -lhsValues.at(jj.negNRow);
-        else jj.pn1 = -lhsValues.at(jj.negNRow);
-      } else if (jj.negNRow == -1) {
-        if(AnalysisTypeValue == JoSIM::AnalysisType::Voltage) jj.vn1 = lhsValues.at(jj.posNRow);
-        else jj.pn1 = lhsValues.at(jj.posNRow);
-      } else {
-        if(AnalysisTypeValue == JoSIM::AnalysisType::Voltage) jj.vn1 = lhsValues.at(jj.posNRow) - lhsValues.at(jj.negNRow);
-        else jj.pn1 = lhsValues.at(jj.posNRow) - lhsValues.at(jj.negNRow);
-      }
-      // Phase_n-1 or V_n-1
-      if(AnalysisTypeValue == JoSIM::AnalysisType::Voltage) jj.pn1 = lhsValues.at(jj.phaseNRow);
-      else jj.vn1 = lhsValues.at(jj.voltNRow);
-      // Prevent initial large derivitive when V_n-1 = 0
-      // Otherwise: trapezoidal find dV_n-1
-      if (i <= 3) jj.dVn1 = 0;
-      else jj.dVn1 = (2 / iObj.transSim.get_prstep()) * (jj.vn1 - jj.vn2) - jj.dVn2;
-      // Guess voltage (V0)
-      jj.v0 = jj.vn1 + iObj.transSim.get_prstep() * jj.dVn1;
-      // Handle Rtype=1
-      if (jj.rType == 1) {
-        if (fabs(jj.v0) < jj.lowerB) {
-          jj.iT = 0.0;
-          if (jj.ppPtr != -1) {
-            if (mObj.mElements.at(jj.ppPtr).value != jj.subCond) {
-              mObj.mElements.at(jj.ppPtr).value = jj.subCond;
-              needsLU = true;
-            }
-          }
-          if (jj.nnPtr != -1) {
-            if (mObj.mElements.at(jj.nnPtr).value != jj.subCond) {
-              mObj.mElements.at(jj.nnPtr).value = jj.subCond;
-              needsLU = true;
-            }
-          }
-          if (jj.pnPtr != -1) {
-            if (mObj.mElements.at(jj.pnPtr).value != -jj.subCond) {
-              mObj.mElements.at(jj.pnPtr).value = -jj.subCond;
-              needsLU = true;
-            }
-          }
-          if (jj.npPtr != -1) {
-            if (mObj.mElements.at(jj.npPtr).value != -jj.subCond) {
-              mObj.mElements.at(jj.npPtr).value = -jj.subCond;
-              needsLU = true;
-            }
-          }
-          if (jj.pPtr != -1) {
-            if (mObj.mElements.at(jj.pPtr).value != jj.subCond) {
-              mObj.mElements.at(jj.pPtr).value = jj.subCond;
-              needsLU = true;
-            }
-          }
-          if (jj.nPtr != -1) {
-            if (mObj.mElements.at(jj.nPtr).value != -jj.subCond) {
-              mObj.mElements.at(jj.nPtr).value = -jj.subCond;
-              needsLU = true;
-            }
-          }
-        } else if (fabs(jj.v0) < jj.upperB) {
-          if (jj.v0 < 0) jj.iT = -jj.lowerB * ((1 / jj.r0) - jj.gLarge);
-          else jj.iT = jj.lowerB * ((1 / jj.r0) - jj.gLarge);
-          if (jj.ppPtr != -1) {
-            if (mObj.mElements.at(jj.ppPtr).value != jj.transCond) {
-              mObj.mElements.at(jj.ppPtr).value = jj.transCond;
-              needsLU = true;
-            }
-          }
-          if (jj.nnPtr != -1) {
-            if (mObj.mElements.at(jj.nnPtr).value != jj.transCond) {
-              mObj.mElements.at(jj.nnPtr).value = jj.transCond;
-              needsLU = true;
-            }
-          }
-          if (jj.pnPtr != -1) {
-            if (mObj.mElements.at(jj.pnPtr).value != jj.transCond) {
-              mObj.mElements.at(jj.pnPtr).value = -jj.transCond;
-              needsLU = true;
-            }
-          }
-          if (jj.npPtr != -1) {
-            if (mObj.mElements.at(jj.npPtr).value != jj.transCond) {
-              mObj.mElements.at(jj.npPtr).value = -jj.transCond;
-              needsLU = true;
-            }
-          }
-          if (jj.pPtr != -1) {
-            if (mObj.mElements.at(jj.pPtr).value != jj.transCond) {
-              mObj.mElements.at(jj.pPtr).value = jj.transCond;
-              needsLU = true;
-            }
-          }
-          if (jj.nPtr != -1) {
-            if (mObj.mElements.at(jj.pnPtr).value != -jj.transCond) {
-              mObj.mElements.at(jj.pnPtr).value = -jj.transCond;
-              needsLU = true;
-            }
-          }
-        } else {
-          if (jj.v0 < 0) 
-            jj.iT = -(jj.iC / jj.iCFact + jj.vG * (1 / jj.r0) - jj.lowerB * (1 / jj.rN));
-          else 
-            jj.iT = (jj.iC / jj.iCFact + jj.vG * (1 / jj.r0) - jj.lowerB * (1 / jj.rN));
-          if (jj.ppPtr != -1) {
-            if (mObj.mElements.at(jj.ppPtr).value != jj.normalCond) {
-              mObj.mElements.at(jj.ppPtr).value = jj.normalCond;
-              needsLU = true;
-            }
-          }
-          if (jj.nnPtr != -1) {
-            if (mObj.mElements.at(jj.nnPtr).value != jj.normalCond) {
-              mObj.mElements.at(jj.nnPtr).value = jj.normalCond;
-              needsLU = true;
-            }
-          }
-          if (jj.pnPtr != -1) {
-            if (mObj.mElements.at(jj.pnPtr).value != jj.normalCond) {
-              mObj.mElements.at(jj.pnPtr).value = -jj.normalCond;
-              needsLU = true;
-            }
-          }
-          if (jj.npPtr != -1) {
-            if (mObj.mElements.at(jj.npPtr).value != jj.normalCond) {
-              mObj.mElements.at(jj.npPtr).value = -jj.normalCond;
-              needsLU = true;
-            }
-          }
-          if (jj.pPtr != -1) {
-            if (mObj.mElements.at(jj.pPtr).value != jj.normalCond) {
-              mObj.mElements.at(jj.pPtr).value = jj.normalCond;
-              needsLU = true;
-            }
-          }
-          if (jj.nPtr != -1) {
-            if (mObj.mElements.at(jj.nPtr).value != -jj.normalCond) {
-              mObj.mElements.at(jj.nPtr).value = -jj.normalCond;
-              needsLU = true;
-            }
-          }
-        }
-      }
-      // Phase guess (P0)
-      jj.phi0 = jj.pn1 + (hn_2_2e_hbar) * (jj.vn1 + jj.v0);
-      // Junction current (Is)
-      jj.iS = -((JoSIM::Constants::PI * jj.Del) / (2 * JoSIM::Constants::EV * jj.rNCalc)) *
-              (sin(jj.phi0) / sqrt(1 - jj.D * (sin(jj.phi0 / 2) *
-                sin(jj.phi0 / 2)))) * tanh((jj.Del) / (2 * JoSIM::Constants::BOLTZMANN * jj.T) *
-                sqrt(1 - jj.D * (sin(jj.phi0 / 2) * sin(jj.phi0 / 2)))) +
-              (((2 * jj.C) / iObj.transSim.get_prstep()) * jj.vn1) + (jj.C * jj.dVn1) - jj.iT;
-      // Set previous values
-      jj.vn2 = jj.vn1;
-      jj.dVn2 = jj.dVn1;
-      jj.pn2 = jj.pn1;
-      // Store current
-      if(jj.storeCurrent) jj.jjCur.push_back(jj.iS);
-    }
-
-    for (int j = 0; j < mObj.components.txPhase.size(); j++) {
-      tx_phase &tl = mObj.components.txPhase.at(j);
-       
-      if (tl.posNRow == -1) tl.p1n1 = -lhsValues.at(tl.negNRow);
-      else if (tl.negNRow == -1) tl.p1n1 = lhsValues.at(tl.posNRow);
-      else tl.p1n1 = lhsValues.at(tl.posNRow) - lhsValues.at(tl.negNRow);
-      
-      if (tl.posN2Row == -1) tl.p2n1 = -lhsValues.at(tl.negN2Row);
-      else if (tl.negN2Row == -1) tl.p2n1 = lhsValues.at(tl.posN2Row);
-      else tl.p2n1 = lhsValues.at(tl.posN2Row) - lhsValues.at(tl.negN2Row);
-
-      tl.dP1n1 = (2 / iObj.transSim.get_prstep()) * (tl.p1n1 - tl.p1n2) - tl.dP1n2;
-      tl.p1n2 = tl.p1n1;
-      tl.dP1n2 = tl.dP1n1;
-
-      tl.dP2n1 = (2 / iObj.transSim.get_prstep()) * (tl.p2n1 - tl.p2n2) - tl.dP2n2;
-      tl.p2n2 = tl.p2n1;
-      tl.dP2n2 = tl.dP2n1;
-      
-      if (i >= tl.k) {
-        if (tl.posNRow == -1) tl.p1nk = -results.xVect.at(mObj.relToXMap.at(tl.negNodeR)).at(i - tl.k);
-        else if (tl.negNRow == -1) tl.p1nk = results.xVect.at(mObj.relToXMap.at(tl.posNodeR)).at(i - tl.k);
-        else tl.p1nk = results.xVect.at(mObj.relToXMap.at(tl.posNodeR)).at(i - tl.k)
-          - results.xVect.at(mObj.relToXMap.at(tl.negNodeR)).at(i - tl.k);
-
-        if (tl.posN2Row == -1) tl.p1nk = -results.xVect.at(mObj.relToXMap.at(tl.negNode2R)).at(i - tl.k);
-        else if (tl.negN2Row == -1) tl.p1nk = results.xVect.at(mObj.relToXMap.at(tl.posNode2R)).at(i - tl.k);
-        else tl.p1nk = results.xVect.at(mObj.relToXMap.at(tl.posNode2R)).at(i - tl.k)
-          - results.xVect.at(mObj.relToXMap.at(tl.negNode2R)).at(i - tl.k);
-
-        tl.dP1nk = (2 / iObj.transSim.get_prstep()) * (tl.p1nk - tl.p1nk1) - tl.dP1nk1;
-        tl.p1nk1 = tl.p1nk;
-        tl.dP1nk1 = tl.dP1nk;
-
-        tl.dP2nk = (2 / iObj.transSim.get_prstep()) * (tl.p2nk - tl.p2nk1) - tl.dP2nk1;
-        tl.p2nk1 = tl.p2nk;
-        tl.dP2nk1 = tl.dP2nk;
-      }
-    }
-
     if (needsLU) {
       mObj.create_nz();
       klu_free_numeric(&Numeric, &Common);

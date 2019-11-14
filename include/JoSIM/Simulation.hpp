@@ -35,7 +35,6 @@ public:
   template<JoSIM::AnalysisType AnalysisTypeValue = JoSIM::AnalysisType::Voltage>
   void trans_sim(Input &iObj, Matrix &mObj);
 
-  template<JoSIM::AnalysisType AnalysisTypeValue = JoSIM::AnalysisType::Voltage>
   void trans_sim_new(Input &iObj, Matrix &mObj);
 };
 #endif
