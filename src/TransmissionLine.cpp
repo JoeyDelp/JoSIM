@@ -17,13 +17,13 @@ TransmissionLine TransmissionLine::create_transmissionline(
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const int &antyp,
+    const JoSIM::AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   // Ensure the device has at least 6 parts: LABEL PNODE1 NNODE1 PNODE2 NNODE2 VALUE
   if(tokens.size() < 6) {
-    Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_COMPONENT_DECLARATION), s.first);
+    Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, s.first);
   }
 
   TransmissionLine temp;
@@ -35,11 +35,11 @@ TransmissionLine TransmissionLine::create_transmissionline(
 							)), strippedLine.end());
   auto impedance = strippedLine.find("Z0=");
   if(impedance == std::string::npos) {
-    Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_TX_DEFINED), s.first);
+    Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED, s.first);
   }
   auto timeDelay = strippedLine.find("TD=");
   if(timeDelay == std::string::npos) {
-    Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_TX_DEFINED), s.first);
+    Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED, s.first);
   }
   std::string impedanceValue;
   std::string timeDelayValue;
@@ -54,14 +54,14 @@ TransmissionLine TransmissionLine::create_transmissionline(
     if(impedanceValue.find("}") != std::string::npos) {
       impedanceValue = impedanceValue.substr(impedanceValue.find("{")+1, impedanceValue.find("}") - impedanceValue.find("{"));
     } else {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), s.first);
+      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
   if(timeDelayValue.find("{") != std::string::npos) {
     if(timeDelayValue.find("}") != std::string::npos) {
       timeDelayValue = timeDelayValue.substr(timeDelayValue.find("{")+1, timeDelayValue.find("}") - timeDelayValue.find("{"));
     } else {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), s.first);
+      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
   temp.set_value(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
@@ -87,7 +87,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
       if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
         // 0 0 0 0  
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
           nonZeros_.emplace_back(-value_);
           rowPointer_.emplace_back(1);
           branchIndex++;
@@ -98,7 +98,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
           columnIndex_.emplace_back(branchIndex - 1);
         // 0 0 0 1
         } else {
-          Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
           nonZeros_.emplace_back(-value_);
           rowPointer_.emplace_back(1);
           branchIndex++;
@@ -112,7 +112,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         }
       // 0 0 1 0  
       } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+        Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
         nonZeros_.emplace_back(-value_);
         rowPointer_.emplace_back(1);
         branchIndex++;
@@ -125,7 +125,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
         columnIndex_.emplace_back(branchIndex - 1);
       // 0 0 1 1
       } else {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+        Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
         nonZeros_.emplace_back(-value_);
         rowPointer_.emplace_back(1);
         branchIndex++;
@@ -145,7 +145,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
       if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
         // 0 1 0 0  
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
           rowPointer_.emplace_back(2);
@@ -211,7 +211,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
       if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
         // 1 0 0 0  
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
         // 1 0 0 1
         } else {
           nonZeros_.emplace_back(1);
@@ -264,7 +264,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
       if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
         // 1 1 0 0  
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
           nonZeros_.emplace_back(1);
           nonZeros_.emplace_back(-1);
           nonZeros_.emplace_back(-value_);
@@ -364,9 +364,9 @@ void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1
 
 void TransmissionLine::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp, const double &timestep) {
-  if (antyp == 0) value_ = Parameters::parse_param(s.first, p, s.second);
-  else if (antyp == 1) value_ = (timestep * Parameters::parse_param(s.first, p, s.second)) / (2 * JoSIM::Constants::SIGMA);
+        const JoSIM::AnalysisType &antyp, const double &timestep) {
+  if (antyp == JoSIM::AnalysisType::Voltage) value_ = Parameters::parse_param(s.first, p, s.second);
+  else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep * Parameters::parse_param(s.first, p, s.second)) / (2 * JoSIM::Constants::SIGMA);
 }
 
 void TransmissionLine::set_timestepDelay(const std::pair<std::string, std::string> &s, 

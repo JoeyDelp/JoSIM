@@ -26,9 +26,9 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
       if (fileLines.empty()) throw;
       else return fileLines;
     } else
-      Errors::input_errors(static_cast<int>(InputErrors::CANNOT_OPEN_FILE), fileName);
+      Errors::input_errors(InputErrors::CANNOT_OPEN_FILE, fileName);
   } catch(...) {
-    Errors::input_errors(static_cast<int>(InputErrors::EMPTY_FILE), fileName);
+    Errors::input_errors(InputErrors::EMPTY_FILE, fileName);
   }
   return {};
 }
@@ -55,9 +55,9 @@ void Input::parse_file(std::string &fileName, Input &iObj) {
               iObj.netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
             }
           } else
-            Errors::input_errors(static_cast<int>(InputErrors::MISSING_SUBCKT_IO));
+            Errors::input_errors(InputErrors::MISSING_SUBCKT_IO);
         } else
-          Errors::input_errors(static_cast<int>(InputErrors::MISSING_SUBCKT_NAME));
+          Errors::input_errors(InputErrors::MISSING_SUBCKT_NAME);
         // If parameter, add to unparsed parameters list
       } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
         if (subckt) {
@@ -87,7 +87,7 @@ void Input::parse_file(std::string &fileName, Input &iObj) {
         if (!subckt)
           iObj.controls.push_back(fileLines.at(i));
         else
-          Errors::input_errors(static_cast<int>(InputErrors::SUBCKT_CONTROLS), subcktName);
+          Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subcktName);
       }
       // If control section flag set
     } else if (control) {
@@ -111,7 +111,7 @@ void Input::parse_file(std::string &fileName, Input &iObj) {
         if (!subckt)
           iObj.controls.push_back(fileLines.at(i));
         else
-          Errors::input_errors(static_cast<int>(InputErrors::SUBCKT_CONTROLS), subcktName);
+          Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subcktName);
       }
       // If not a control, normal device line
     } else {
@@ -126,5 +126,5 @@ void Input::parse_file(std::string &fileName, Input &iObj) {
   }
   // If main is empty, complain
   if (iObj.netlist.maindesign.empty())
-    Errors::input_errors(static_cast<int>(InputErrors::MISSING_MAIN));
+    Errors::input_errors(InputErrors::MISSING_MAIN);
 }

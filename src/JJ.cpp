@@ -12,7 +12,7 @@ JJ JJ::create_jj(
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const std::vector<std::pair<Model, std::string>> &models,
-    const int &antyp,
+    const JoSIM::AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -27,6 +27,7 @@ JJ JJ::create_jj(
     }
   }
   temp.set_model(std::make_pair(tokens.back(), s.second), models);
+  temp.set_pn1(temp.get_model().get_phaseOffset());
   temp.set_subCond((temp.get_model().get_subgapResistance() * timestep) / (timestep + 2 * temp.get_model().get_subgapResistance() * temp.get_model().get_capacitance()));
   temp.set_transCond((temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV() * timestep) 
                      / (temp.get_model().get_criticalCurrent() * timestep 
@@ -49,22 +50,22 @@ JJ JJ::create_jj(
 
 void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
     const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex, 
-    const int &antyp, const double &timestep) {
+    const JoSIM::AnalysisType &antyp, const double &timestep) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     // 0 0
     if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
       nonZeros_.emplace_back(-phaseConst_);
       rowPointer_.emplace_back(1);
-      if(antyp == 0) { 
+      if(antyp == JoSIM::AnalysisType::Voltage) { 
         nonZeros_.emplace_back(-value_); 
         rowPointer_.emplace_back(1);
         branchIndex++;
         columnIndex_.emplace_back(branchIndex - 2);
         columnIndex_.emplace_back(branchIndex - 1);
-      } else if (antyp == 1) {
+      } else if (antyp == JoSIM::AnalysisType::Phase) {
         nonZeros_.emplace_back(1);
         nonZeros_.emplace_back(-value_); 
         rowPointer_.emplace_back(2);
@@ -85,9 +86,9 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
       branchIndex++;
       columnIndex_.emplace_back(nm.at(n.first));
       columnIndex_.emplace_back(branchIndex - 2);
-      if(antyp == 0) { 
+      if(antyp == JoSIM::AnalysisType::Voltage) { 
         columnIndex_.emplace_back(nm.at(n.first));
-      } else if(antyp == 1) {
+      } else if(antyp == JoSIM::AnalysisType::Phase) {
         columnIndex_.emplace_back(branchIndex - 2);
       }
       columnIndex_.emplace_back(branchIndex - 1);
@@ -98,9 +99,9 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
       nonZeros_.emplace_back(-phaseConst_); 
       rowPointer_.emplace_back(2);
       branchIndex++;
-      if(antyp == 0) { 
+      if(antyp == JoSIM::AnalysisType::Voltage) { 
         nonZeros_.emplace_back(-1);
-      } else if(antyp == 1) {
+      } else if(antyp == JoSIM::AnalysisType::Phase) {
         nonZeros_.emplace_back(1);
       }
       nonZeros_.emplace_back(-value_);
@@ -108,9 +109,9 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
       branchIndex++;
       columnIndex_.emplace_back(nm.at(n.second));
       columnIndex_.emplace_back(branchIndex - 2);
-      if(antyp == 0) { 
+      if(antyp == JoSIM::AnalysisType::Voltage) { 
         columnIndex_.emplace_back(nm.at(n.second));
-      } else if(antyp == 1) {
+      } else if(antyp == JoSIM::AnalysisType::Phase) {
         columnIndex_.emplace_back(branchIndex - 2);
       }
       columnIndex_.emplace_back(branchIndex - 1);
@@ -121,10 +122,10 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
     nonZeros_.emplace_back(-phaseConst_);
     rowPointer_.emplace_back(3);
     branchIndex++;
-    if(antyp == 0) {
+    if(antyp == JoSIM::AnalysisType::Voltage) {
       nonZeros_.emplace_back(1);
       nonZeros_.emplace_back(-1);
-    } else if(antyp == 1) {
+    } else if(antyp == JoSIM::AnalysisType::Phase) {
       nonZeros_.emplace_back(1);
     }
     nonZeros_.emplace_back(-value_);
@@ -133,10 +134,10 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
     columnIndex_.emplace_back(nm.at(n.first));
     columnIndex_.emplace_back(nm.at(n.second));
     columnIndex_.emplace_back(branchIndex - 2);
-    if(antyp == 0) {
+    if(antyp == JoSIM::AnalysisType::Voltage) {
       columnIndex_.emplace_back(nm.at(n.first));
       columnIndex_.emplace_back(nm.at(n.second));
-    } else if(antyp == 1) {
+    } else if(antyp == JoSIM::AnalysisType::Phase) {
       columnIndex_.emplace_back(branchIndex - 2);
     }
     columnIndex_.emplace_back(branchIndex - 1);
@@ -181,7 +182,7 @@ void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vect
     }
   }
   if(!found) {
-    Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED), s.first);
+    Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED, s.first);
   }
 
   model_.set_capacitance(model_.get_capacitance() * area_);
@@ -193,17 +194,17 @@ void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vect
   upperB_ = model_.get_voltageGap() + 0.5 * model_.get_deltaV();
 }
 
-void JJ::set_phaseConst(const double &timestep, const int &antyp){
-  if(antyp == 0) phaseConst_ = JoSIM::Constants::HBAR / (timestep * JoSIM::Constants::EV);
-  else if (antyp == 1) phaseConst_ = (timestep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR;
+void JJ::set_phaseConst(const double &timestep, const JoSIM::AnalysisType &antyp){
+  if(antyp == JoSIM::AnalysisType::Voltage) phaseConst_ = JoSIM::Constants::HBAR / (timestep * JoSIM::Constants::EV);
+  else if (antyp == JoSIM::AnalysisType::Phase) phaseConst_ = (timestep * JoSIM::Constants::EV) / JoSIM::Constants::HBAR;
 }
 
 // Update the value based on the matrix entry based on the current voltage value
 bool JJ::update_value(const double &v) {
   if(abs(v) < lowerB_) {
     transitionCurrent_ = 0.0;
-    if(nonZeros_.back() != subCond_) {
-      nonZeros_.back() = subCond_;
+    if(nonZeros_.back() != -subCond_) {
+      nonZeros_.back() = -subCond_;
       return true;
     } else {
       return false;
@@ -216,8 +217,8 @@ bool JJ::update_value(const double &v) {
       transitionCurrent_ = lowerB_ * ((1 / model_.get_subgapResistance()) 
                            - (model_.get_criticalCurrent()/(model_.get_criticalToNormalRatio() * model_.get_deltaV())));
     }
-    if(nonZeros_.back() != transCond_) {
-      nonZeros_.back() = transCond_;
+    if(nonZeros_.back() != -transCond_) {
+      nonZeros_.back() = -transCond_;
       return true;
     } else {
       return false;
@@ -232,8 +233,8 @@ bool JJ::update_value(const double &v) {
                            + model_.get_voltageGap() * (1 / model_.get_subgapResistance()) 
                            - lowerB_ * (1 / model_.get_normalResistance()));
     }
-    if(nonZeros_.back() != normalCond_) {
-      nonZeros_.back() = normalCond_;
+    if(nonZeros_.back() != -normalCond_) {
+      nonZeros_.back() = -normalCond_;
       return true;
     } else {
       return false;

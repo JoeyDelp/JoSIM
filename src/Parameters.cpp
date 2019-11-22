@@ -17,12 +17,12 @@ void Parameters::create_parameter(const std::pair<std::string, std::string> &s,
 
   // Validity check: Check to see if '=' exists
   if(s.second.find_first_of('=') == std::string::npos) {
-    Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_DECLARATION), s.second);
+    Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, s.second);
   }
   // Remove ".PARAM" prefix and ensure valid declaration
   tokens = Misc::tokenize_space_once(s.second);
   if(tokens.size() < 2) {
-    Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_DECLARATION), s.second);
+    Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, s.second);
   }
   // Split into parameter name and expression
   tokens = Misc::tokenize_delimiter(tokens.at(1), "=");
@@ -35,7 +35,7 @@ void Parameters::create_parameter(const std::pair<std::string, std::string> &s,
   if(parameters.count(JoSIM::ParameterName(tokens.at(0), s.first)) == 0) {
     parameters.insert({JoSIM::ParameterName(tokens.at(0), s.first), temp});
   } else {
-    Errors::parsing_errors(static_cast<int>(ParsingErrors::EXPRESSION_ARLEADY_DEFINED), s.second);
+    Errors::parsing_errors(ParsingErrors::EXPRESSION_ARLEADY_DEFINED, s.second);
   }
 }
 
@@ -137,7 +137,7 @@ double Parameters::parse_param(
           (opStack.back().find_first_of("([{") != std::string::npos)) {
         opStack.pop_back();
       } else {
-        Errors::parsing_errors(static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS), expr);
+        Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr);
       }
     // If it is none of the above then the function is not valid or a parameter is used which has not been parsed
     } else {
@@ -154,7 +154,7 @@ double Parameters::parse_param(
   if (expToEval.empty())
     while (!opStack.empty()) {
       if (opStack.back().find_first_of("([{") != std::string::npos)
-        Errors::parsing_errors(static_cast<int>(ParsingErrors::MISMATCHED_PARENTHESIS), expr);
+        Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr);
       else {
         rpnQueue.push_back(opStack.back());
         qType.push_back('O');
@@ -170,7 +170,7 @@ double Parameters::parse_param(
         qTypeCopy.push_back('V');
       } else if (qType[i] == 'O') {
         if (i == 0)
-          Errors::parsing_errors(static_cast<int>(ParsingErrors::INVALID_RPN), expr);
+          Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr);
         else if (i < 2) {
           rpnQueueCopy.pop_back();
           rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
@@ -294,7 +294,7 @@ void Parameters::parse_parameters(std::unordered_map<JoSIM::ParameterName, Param
           unknownParams += i.first.name() + " " + i.first.subcircuit() + "\n";
         }
       }
-      Errors::parsing_errors(static_cast<int>(ParsingErrors::UNIDENTIFIED_PART), unknownParams);
+      Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, unknownParams);
     }
   }
 

@@ -58,7 +58,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
               break;
             }
           } else {
-            Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
+            Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens2.at(0));
           }
       } else if (j.at(0) == 'C' || j.at(0) == 'I') { //////////////////// CURRENT - C() /////////////////
         tokens2 = Misc::tokenize_delimiter(j.substr(1), "(),");
@@ -68,7 +68,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           traces.back().calcData.reserve(iObj.transSim.get_simsize());
           handle_current(tokens2, traces.back(), iObj, mObj, sObj);
         } else {
-          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
+          Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens2.at(0));
         }
       } else if (j.at(0) == 'P') { //////////////////// PHASE - P() /////////////////
         tokens2 = Misc::tokenize_delimiter(j.substr(1), "(),");
@@ -78,7 +78,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           traces.back().calcData.reserve(iObj.transSim.get_simsize());
           handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
         } else {
-          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
+          Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens2.at(0));
         }
       } else if (j.at(0) == 'V') { //////////////////// VOLTAGE - P() /////////////////
         tokens2 = Misc::tokenize_delimiter(j.substr(1), "(),");
@@ -88,7 +88,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
           traces.back().calcData.reserve(iObj.transSim.get_simsize());
           handle_voltage(tokens2, traces.back(), iObj, mObj, sObj);
         } else {
-          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
+          Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens2.at(0));
         }
       } else if (j.at(0) == 'N') { //////////////////// NODEV - NODEP /////////////////
         tokens2.clear();
@@ -107,7 +107,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
             break;
           }
         } else {
-          Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), tokens2.at(0));
+          Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens2.at(0));
         }
       } else if (j.at(0) == '@') {
         traces.emplace_back(Trace());
@@ -120,7 +120,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
                 tokens2 = Misc::tokenize_delimiter(t, ",");
                 handle_current(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
-              Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
+              Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, t);
             }
           } else if(t.at(t.size() - 2) == 'V') {
             t = t.substr(1, t.size() - 4);
@@ -129,7 +129,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
                 tokens2 = Misc::tokenize_delimiter(t, ",");
                 handle_voltage(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
-              Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
+              Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, t);
             }
           } else if(t.at(t.size() - 2) == 'P') {
             t = t.substr(1, t.size() - 4);
@@ -138,7 +138,7 @@ void Output::relevant_traces(Input &iObj, Matrix &mObj, Simulation &sObj)
                 tokens2 = Misc::tokenize_delimiter(t, ",");
                 handle_phase(tokens2, traces.back(), iObj, mObj, sObj);
             } else {
-              Errors::control_errors(static_cast<int>(ControlErrors::UNKNOWN_DEVICE), t);
+              Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, t);
             }
           }
         }
@@ -906,5 +906,190 @@ void Output::write_cout(const Matrix &mObj, const Simulation &sObj)
                 << sObj.results.xVect.at(sObj.results.xVect.size() - 1).at(i)
                 << "\n";
     }
+  }
+}
+
+std::vector<std::vector<std::string>> Output::write_output(const Input &iObj, const Matrix &mObj, const Simulation &sObj) {
+  std::vector<std::vector<std::string>> unformattedOutput = {{"time"}};
+  unformattedOutput.resize(sObj.results.timeAxis.size() + 1);
+  std::ostringstream fstring;
+  for (int i = 0; i < sObj.results.timeAxis.size(); ++i) {
+    fstring.str("");
+    fstring << std::fixed << std::scientific << std::setprecision(16) << sObj.results.timeAxis.at(i);
+    unformattedOutput.at(i+1).emplace_back(fstring.str());
+  }
+  if(mObj.relevantTraces.size() != 0){
+    for (const auto &i : mObj.relevantTraces) {
+      if(i.storageType == JoSIM::StorageType::Voltage) {
+        unformattedOutput.at(0).emplace_back(i.deviceLabel.value());
+        double voltN1 = 0;
+        for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+          double value;
+          if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+            if(!i.index2) {
+              value = sObj.results.xVector_new.at(i.index1.value()).value().at(j);
+            } else if (!i.index1) {
+              value = -sObj.results.xVector_new.at(i.index2.value()).value().at(j);
+            } else {
+              value = sObj.results.xVector_new.at(i.index1.value()).value().at(j) 
+                      - sObj.results.xVector_new.at(i.index2.value()).value().at(j);
+            }
+          } else {
+            if(!i.index2) {
+              if (j == 0) {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
+                        * sObj.results.xVector_new.at(i.index1.value()).value().at(j);
+                voltN1 = value;
+              } else {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * (sObj.results.xVector_new.at(i.index1.value()).value().at(j)
+                        -  sObj.results.xVector_new.at(i.index1.value()).value().at(j - 1)) - voltN1;
+                voltN1 = value;
+              }
+            } else if (!i.index1) {
+              if (j == 0) {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * (-sObj.results.xVector_new.at(i.index2.value()).value().at(j));
+                voltN1 = value;
+              } else {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * ((-sObj.results.xVector_new.at(i.index2.value()).value().at(j))
+                        -  (-sObj.results.xVector_new.at(i.index2.value()).value().at(j - 1))) - voltN1;
+                voltN1 = value;
+              }
+            } else {
+              if (j == 0) {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * (sObj.results.xVector_new.at(i.index1.value()).value().at(j)
+                        - sObj.results.xVector_new.at(i.index2.value()).value().at(j));
+                voltN1 = value;
+              } else {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * ((sObj.results.xVector_new.at(i.index1.value()).value().at(j) 
+                        - sObj.results.xVector_new.at(i.index2.value()).value().at(j))
+                        -  (sObj.results.xVector_new.at(i.index1.value()).value().at(j - 1) 
+                        - sObj.results.xVector_new.at(i.index2.value()).value().at(j - 1))) - voltN1;
+                voltN1 = value;
+              }
+            }
+          }
+          fstring.str("");
+          fstring << std::fixed << std::scientific << std::setprecision(16) << value;
+          unformattedOutput.at(j+1).emplace_back(fstring.str());
+        }
+      } else if(i.storageType == JoSIM::StorageType::Phase) {
+        unformattedOutput.at(0).emplace_back(i.deviceLabel.value());
+        double phaseN1 = 0;
+        for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+          double value;
+          if(i.deviceLabel.value().at(3) == 'B' || i.deviceLabel.value().at(3) == 'P') {
+            value = sObj.results.xVector_new.at(i.index1.value()).value().at(j);
+          } else {
+            if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+              if(!i.index2) {
+                value = sObj.results.xVector_new.at(i.index1.value()).value().at(j);
+              } else if (!i.index1) {
+                value = -sObj.results.xVector_new.at(i.index2.value()).value().at(j);
+              } else {
+                value = sObj.results.xVector_new.at(i.index1.value()).value().at(j) 
+                        - sObj.results.xVector_new.at(i.index2.value()).value().at(j);
+              }
+            } else {
+              if(!i.index2) {
+                if (j == 0) {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
+                          * sObj.results.xVector_new.at(i.index1.value()).value().at(j);
+                  phaseN1 = value;
+                } else {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                          * (sObj.results.xVector_new.at(i.index1.value()).value().at(j)
+                          +  sObj.results.xVector_new.at(i.index1.value()).value().at(j - 1)) + phaseN1;
+                  phaseN1 = value;
+                }
+              } else if (!i.index1) {
+                if (j == 0) {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                          * (-sObj.results.xVector_new.at(i.index2.value()).value().at(j));
+                  phaseN1 = value;
+                } else {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
+                          * ((-sObj.results.xVector_new.at(i.index2.value()).value().at(j))
+                          +  (-sObj.results.xVector_new.at(i.index2.value()).value().at(j - 1))) + phaseN1;
+                  phaseN1 = value;
+                }
+              } else {
+                if (j == 0) {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
+                          * (sObj.results.xVector_new.at(i.index1.value()).value().at(j)
+                          - sObj.results.xVector_new.at(i.index2.value()).value().at(j));
+                  phaseN1 = value;
+                } else {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
+                          * ((sObj.results.xVector_new.at(i.index1.value()).value().at(j) 
+                          - sObj.results.xVector_new.at(i.index2.value()).value().at(j))
+                          +  (sObj.results.xVector_new.at(i.index1.value()).value().at(j - 1) 
+                          - sObj.results.xVector_new.at(i.index2.value()).value().at(j - 1))) + phaseN1;
+                  phaseN1 = value;
+                }
+              }
+            }
+          }
+          fstring.str("");
+          fstring << std::fixed << std::scientific << std::setprecision(16) << value;
+          unformattedOutput.at(j+1).emplace_back(fstring.str());
+        }
+      } else if(i.storageType == JoSIM::StorageType::Current) {
+        unformattedOutput.at(0).emplace_back(i.deviceLabel.value());
+        for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+          double value = sObj.results.xVector_new.at(i.index1.value()).value().at(j);
+          fstring.str("");
+          fstring << std::fixed << std::scientific << std::setprecision(16) << value;
+          unformattedOutput.at(j+1).emplace_back(fstring.str());
+        }
+      }
+    }
+  } else {
+    for (const auto &i : mObj.nm) {
+      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+        unformattedOutput.at(0).emplace_back("V(" + i.first + ")");
+      } else {
+        unformattedOutput.at(0).emplace_back("P(" + i.first + ")");
+      }
+      for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+        fstring.str("");
+        fstring << std::fixed << std::scientific << std::setprecision(16) << sObj.results.xVector_new.at(i.second).value().at(j);
+        unformattedOutput.at(j+1).emplace_back(fstring.str());
+      }
+    }
+  }
+
+  return unformattedOutput;
+}
+
+void Output::format_csv_or_dat(const std::string &filename, const std::vector<std::vector<std::string>> &output, const char &delimiter) {
+  std::ofstream outfile(filename + "_new");
+  if (outfile.is_open()) {
+    for (const auto &i : output) {
+      for (int j = 0; j < i.size() - 1; ++j) {
+        outfile << i.at(j) << delimiter;
+      }
+      outfile << i.back();
+      outfile << "\n";
+    }
+  } else {
+    Errors::output_errors(OutputErrors::CANNOT_OPEN_FILE, filename + "_new");
+  }
+}
+
+void Output::format_raw(const std::string &filename, const std::vector<std::vector<std::string>> &output) {
+
+}
+
+void Output::format_cout(const std::vector<std::vector<std::string>> &output) {
+  for (const auto &i : output) {
+    for (const auto &j : i) {
+      std::cout << j << " ";
+    }
+    std::cout << "\n";
   }
 }

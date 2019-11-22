@@ -13,7 +13,7 @@ Inductor Inductor::create_inductor(
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const int &antyp,
+    const JoSIM::AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -24,7 +24,7 @@ Inductor Inductor::create_inductor(
     if(s.first.find("}") != std::string::npos) {
       tokens.at(3) = s.first.substr(s.first.find("{")+1, s.first.find("}") - s.first.find("{"));
     } else {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), s.first);
+      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
 
@@ -41,7 +41,7 @@ void Inductor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::st
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     // 0 0
     if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
       nonZeros_.emplace_back(-value_);
       rowPointer_.emplace_back(1);
       branchIndex++;
@@ -94,18 +94,18 @@ void Inductor::set_indices(const std::pair<std::string, std::string> &n, const s
 
 void Inductor::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp, const double &timestep) {
+        const JoSIM::AnalysisType &antyp, const double &timestep) {
           inductance_ = Parameters::parse_param(s.first, p, s.second);
-          if (antyp == 0) value_ = (2 / timestep) * inductance_;
-          else if (antyp == 1) value_ = inductance_ / JoSIM::Constants::SIGMA;
+          if (antyp == JoSIM::AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
+          else if (antyp == JoSIM::AnalysisType::Phase) value_ = inductance_ / JoSIM::Constants::SIGMA;
 }
 
-void Inductor::add_mutualinductance(const double &m, const int &antyp, const double &timestep) {
-  if(antyp == 0) {
-    nonZeros_.emplace_back((2*m) / timestep);
-  } else if(antyp == 1) {
-    nonZeros_.emplace_back(m/JoSIM::Constants::SIGMA);
+void Inductor::add_mutualInductance(const double &m, const JoSIM::AnalysisType &antyp, const double &timestep, const int &columnIndex) {
+  if(antyp == JoSIM::AnalysisType::Voltage) {
+    nonZeros_.emplace_back(-(2*m) / timestep);
+  } else if(antyp == JoSIM::AnalysisType::Phase) {
+    nonZeros_.emplace_back(-m/JoSIM::Constants::SIGMA);
   }
-  columnIndex_.emplace_back(columnIndex_.back());
+  columnIndex_.emplace_back(columnIndex);
   rowPointer_.back()++;
 }

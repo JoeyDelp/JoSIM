@@ -29,7 +29,7 @@ void PhaseSource::set_nonZeros_and_columnIndex(const std::pair<std::string, std:
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     // 0 0
     if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::GROUNDED_VOLTAGE_SOURCE), s);
+      Errors::invalid_component_errors(ComponentErrors::GROUNDED_VOLTAGE_SOURCE, s);
     // 1 0
     } else {
       nonZeros_.emplace_back(1);

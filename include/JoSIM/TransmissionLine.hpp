@@ -5,6 +5,7 @@
 
 #include "./ParameterName.hpp"
 #include "./Parameters.hpp"
+#include "./AnalysisType.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -21,16 +22,25 @@ class TransmissionLine {
     int currentIndex1_;
     int currentIndex2_;
     double value_;
+    std::vector<double> v1_;
+    std::vector<double> v2_;
+    std::vector<double> current1_;
+    std::vector<double> current2_;
+    double dv1n1_, dv1n2_, dv2n1_, dv2n2_;
+    double dv1nk_, dv1nk1_, dv2nk_, dv2nk1_;
     int timestepDelay_;
   public:
-    TransmissionLine() {};
+    TransmissionLine() :
+    dv1n1_(0), dv1n2_(0), dv2n1_(0), dv2n2_(0),
+    dv1nk_(0), dv1nk1_(0), dv2nk_(0), dv2nk1_(0)
+    {};
     
     static TransmissionLine create_transmissionline(
         const std::pair<std::string, std::string> &s,
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp,
+        const JoSIM::AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &l) { label_ = l; }
@@ -45,10 +55,22 @@ class TransmissionLine {
     void set_currentIndex2(const int &cc) { currentIndex2_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp, const double &timestep);
+        const JoSIM::AnalysisType &antyp, const double &timestep);
     void set_timestepDelay(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const double &timestep);
+    void set_v1(const double &v) { v1_.emplace_back(v); }
+    void set_v2(const double &v) { v2_.emplace_back(v); }
+    void set_current1(const double &v) { current1_.emplace_back(v); }
+    void set_current2(const double &v) { current2_.emplace_back(v); }
+    void set_dv1n1(const double &v) { dv1n1_ = v; }
+    void set_dv1n2(const double &v) { dv1n2_ = v; }
+    void set_dv2n1(const double &v) { dv2n1_ = v; }
+    void set_dv2n2(const double &v) { dv2n2_ = v; }
+    void set_dv1nk(const double &v) { dv1nk_ = v; }
+    void set_dv1nk1(const double &v) { dv1nk1_ = v; }
+    void set_dv2nk(const double &v) { dv2nk_ = v; }
+    void set_dv2nk1(const double &v) { dv2nk1_ = v; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -62,7 +84,18 @@ class TransmissionLine {
     const int& get_currentIndex2() const { return currentIndex2_; }
     const double& get_value() const { return value_; }
     const int& get_timestepDelay() const { return timestepDelay_; }
-
+    const std::vector<double>& get_v1() const { return v1_; }
+    const std::vector<double>& get_v2() const { return v2_; }
+    const std::vector<double>& get_current1() const { return current1_; }
+    const std::vector<double>& get_current2() const { return current2_; }
+    const double& get_dv1n1() const { return dv1n1_; }
+    const double& get_dv1n2() const { return dv1n2_; }
+    const double& get_dv2n1() const { return dv2n1_; }
+    const double& get_dv2n2() const { return dv2n2_; }
+    const double& get_dv1nk() const { return dv1nk_; }
+    const double& get_dv1nk1() const { return dv1nk1_; }
+    const double& get_dv2nk() const { return dv2nk_; }
+    const double& get_dv2nk1() const { return dv2nk1_; }
 };
 
 #endif

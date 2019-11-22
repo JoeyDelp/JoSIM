@@ -85,7 +85,7 @@ void Netlist::expand_subcircuits() {
                 subcircuits.at(i.first).containsSubckt = false;
             }
           } else
-            Errors::input_errors(static_cast<int>(InputErrors::UNKNOWN_SUBCKT), subcktName);
+            Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, subcktName);
         }
       }
     }
@@ -147,7 +147,7 @@ void Netlist::expand_maindesign() {
                           moddedLines.end());
         moddedLines.clear();
       } else
-        Errors::input_errors(static_cast<int>(InputErrors::UNKNOWN_SUBCKT), subcktName);
+        Errors::input_errors(InputErrors::UNKNOWN_SUBCKT), subcktName;
     } else
       expNetlist.push_back(std::make_pair(maindesign.at(i), ""));
   }

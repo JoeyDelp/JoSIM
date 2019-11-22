@@ -12,7 +12,7 @@ time = []
 data = []
 labels = set()
 with open(sys.argv[1], 'r') as csvFile:
-    reader = csv.DictReader(csvFile)
+    reader = csv.DictReader(csvFile, dialect='excel')
     labels = reader.fieldnames
     data.append([])
     for row in reader:

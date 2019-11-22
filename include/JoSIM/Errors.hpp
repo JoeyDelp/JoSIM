@@ -140,31 +140,37 @@ enum class ParsingErrors : int {
   INVALID_DECLARATION
 };
 
+enum class OutputErrors : int {
+  CANNOT_OPEN_FILE
+};
+
 class Errors {
 public:
-  static void cli_errors(int errorCode, const std::string &whatPart = "");
+  static void cli_errors(CLIErrors errorCode, const std::string &whatPart = "");
 
-  static void input_errors(int errorCode, const std::string &whatPart = "");
+  static void input_errors(InputErrors errorCode, const std::string &whatPart = "");
 
-  static void invalid_component_errors(int errorCode,
+  static void invalid_component_errors(ComponentErrors errorCode,
                                        const std::string &componentLabel);
 
-  static void control_errors(int errorCode, const std::string &whatPart);
+  static void control_errors(ControlErrors errorCode, const std::string &whatPart);
 
-  [[noreturn]] static void model_errors(int errorCode,
+  [[noreturn]] static void model_errors(ModelErrors errorCode,
                                         const std::string &whatPart);
 
-  static void matrix_errors(int errorCode, const std::string &whatPart);
+  static void matrix_errors(MatrixErrors errorCode, const std::string &whatPart);
 
-  [[noreturn]] static void misc_errors(int errorCode,
+  [[noreturn]] static void misc_errors(MiscErrors errorCode,
                                        const std::string &whatPart);
 
-  static void function_errors(int errorCode, const std::string &whatPart);
+  static void function_errors(FunctionErrors errorCode, const std::string &whatPart);
 
-  [[noreturn]] static void simulation_errors(int errorCode,
+  [[noreturn]] static void simulation_errors(SimulationErrors errorCode,
                                              const std::string &whatPart);
 
-  static void parsing_errors(int errorCode, const std::string &whatPart);
+  static void parsing_errors(ParsingErrors errorCode, const std::string &whatPart);
+  
+  static void output_errors(OutputErrors errorCode, const std::string &whatPart);
 };
 
 [[noreturn]] void error_message (std::string &formattedMessage);

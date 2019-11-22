@@ -21,7 +21,7 @@ void Components::jj_model(std::string &modelstring, std::string &area,
         itemToken.push_back(tempToken.at(0));
       paramTokens.erase(paramTokens.begin() + i + 1);
     } else if ((itemToken.size() == 1) && (i != paramTokens.size() - 1))
-      Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), modelstring);
+      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, modelstring);
     value = Parameters::parse_param(itemToken.at(1), iObj.parameters,
                                 subckt);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
@@ -78,7 +78,7 @@ void Components::jj_model_phase(std::string &modelstring, std::string &area,
         itemToken.push_back(tempToken.at(0));
       paramTokens.erase(paramTokens.begin() + i + 1);
     } else if ((itemToken.size() == 1) && (i != paramTokens.size() - 1))
-      Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), modelstring);
+      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, modelstring);
     value = Parameters::parse_param(itemToken.at(1), iObj.parameters,
                                 subckt);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")

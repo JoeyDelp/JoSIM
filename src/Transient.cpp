@@ -16,7 +16,7 @@ void Transient::identify_simulation(const std::vector<std::string> &controls, Tr
       simtokens = Misc::tokenize_delimiter(i, " ,");
       if (simtokens.at(0).find("TRAN") != std::string::npos) {
         if (simtokens.size() < 2) {
-          Errors::control_errors(static_cast<int>(ControlErrors::TRANS_ERROR), "Too few parameters: " + i);
+          Errors::control_errors(ControlErrors::TRANS_ERROR, "Too few parameters: " + i);
           tObj.set_maxtstep(1E-12);
           tObj.set_tstop(1E-9);
           tObj.set_tstart(0);
@@ -45,6 +45,6 @@ void Transient::identify_simulation(const std::vector<std::string> &controls, Tr
   }
   tObj.set_simsize();
   if (!transFound) {
-    Errors::control_errors(static_cast<int>(ControlErrors::NO_SIM), "");
+    Errors::control_errors(ControlErrors::NO_SIM, "");
   }
 }

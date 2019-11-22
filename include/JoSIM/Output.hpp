@@ -40,6 +40,14 @@ public:
   void handle_current(const std::vector<std::string> &devToHandle, Trace &result, const Input &iObj, const Matrix &mObj, const Simulation &sObj);
 
   void handle_phase(const std::vector<std::string> &devToHandle, Trace &result, const Input &iObj, const Matrix &mObj, const Simulation &sObj);
+
+  static std::vector<std::vector<std::string>> write_output(const Input &iObj, const Matrix &mObj, const Simulation &sObj);
+
+  static void format_csv_or_dat(const std::string &filename, const std::vector<std::vector<std::string>> &output, const char &delimiter);
+
+  static void format_raw(const std::string &filename, const std::vector<std::vector<std::string>> &output);
+
+  static void format_cout(const std::vector<std::vector<std::string>> &output);
 };
 
 #endif

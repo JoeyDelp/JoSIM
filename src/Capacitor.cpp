@@ -13,7 +13,7 @@ Capacitor Capacitor::create_capacitor(
     const std::unordered_map<std::string, int> &nm, 
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const int &antyp,
+    const JoSIM::AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -23,7 +23,7 @@ Capacitor Capacitor::create_capacitor(
     if(s.first.find("}") != std::string::npos) {
       tokens.at(3) = s.first.substr(s.first.find("{")+1, s.first.find("}") - s.first.find("{"));
     } else {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), s.first);
+      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
   temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
@@ -39,7 +39,7 @@ void Capacitor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::s
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     // 0 0
     if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::BOTH_GROUND), s);
+      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
       nonZeros_.emplace_back(-value_);
       rowPointer_.emplace_back(1);
       branchIndex++;
@@ -92,7 +92,8 @@ void Capacitor::set_indices(const std::pair<std::string, std::string> &n, const 
 
 void Capacitor::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp, const double &timestep) {
-          if (antyp == 0) value_ = (timestep / 2) * (1 / Parameters::parse_param(s.first, p, s.second));
-          else if (antyp == 1) value_ = (timestep * timestep) / (4 * JoSIM::Constants::SIGMA * Parameters::parse_param(s.first, p, s.second));
+        const JoSIM::AnalysisType &antyp, const double &timestep) {
+          capacitance_ = Parameters::parse_param(s.first, p, s.second);
+          if (antyp == JoSIM::AnalysisType::Voltage) value_ = (timestep / 2) * (1 / capacitance_);
+          else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep * timestep) / (4 * JoSIM::Constants::SIGMA * capacitance_);
         }

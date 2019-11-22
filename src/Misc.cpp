@@ -125,10 +125,10 @@ double Misc::modifier(const std::string &value) {
   try {
     number = std::stod(value, &sz);
   } catch (const std::invalid_argument &) {
-    Errors::misc_errors(static_cast<int>(MiscErrors::STOD_ERROR), value);
+    Errors::misc_errors(MiscErrors::STOD_ERROR, value);
     throw;
   } catch (std::exception &e) {
-    Errors::misc_errors(static_cast<int>(MiscErrors::STOD_ERROR), value);
+    Errors::misc_errors(MiscErrors::STOD_ERROR, value);
     throw;
   }
   switch (value.substr(sz)[0]) {
@@ -229,7 +229,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   if (str.find("PWL") != std::string::npos) {
     std::vector<double> timesteps, values;
     if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
-      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_VALUES), tokens.at(0) + " & " + tokens.at(1));
+      Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
     } else {
       timesteps.push_back(0.0);
       values.push_back(0.0);
@@ -252,13 +252,13 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
             tokens.at(i), iObj.parameters, subckt));
     }
     if (timesteps.size() < values.size())
-      Errors::function_errors(static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS),
+      Errors::function_errors(FunctionErrors::TOO_FEW_TIMESTEPS,
                               std::to_string(timesteps.size()) +
                                   " timesteps & " +
                                   std::to_string(timesteps.size()) + " values");
     if (timesteps.size() > values.size())
       Errors::function_errors(
-          static_cast<int>(FunctionErrors::TOO_FEW_VALUES), std::to_string(timesteps.size()) + " timesteps & " +
+          FunctionErrors::TOO_FEW_VALUES, std::to_string(timesteps.size()) + " timesteps & " +
                               std::to_string(timesteps.size()) + " values");
     if ((timesteps.back() > iObj.transSim.get_tstop()) &&
         (values.back() > values.at(values.size() - 2))) {
@@ -298,26 +298,26 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   /* PULSE */
   else if (str.find("PULSE") != std::string::npos) {
     if (std::stod(tokens.at(0)) != 0.0)
-      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_PULSE_VALUE), tokens.at(0));
+      Errors::function_errors(FunctionErrors::INITIAL_PULSE_VALUE, tokens.at(0));
     if (tokens.size() < 7)
-      Errors::function_errors(static_cast<int>(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS,
                               std::to_string(tokens.size()));
     double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
     vPeak = modifier(tokens.at(1));
     if (vPeak == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(static_cast<int>(FunctionErrors::PULSE_VPEAK_ZERO), tokens.at(1));
+        Errors::function_errors(FunctionErrors::PULSE_VPEAK_ZERO, tokens.at(1));
     timeDelay = modifier(tokens.at(2));
     timeRise = modifier(tokens.at(3));
     timeFall = modifier(tokens.at(4));
     pulseWidth = modifier(tokens.at(5));
     if (pulseWidth == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(static_cast<int>(FunctionErrors::PULSE_WIDTH_ZERO), tokens.at(5));
+        Errors::function_errors(FunctionErrors::PULSE_WIDTH_ZERO, tokens.at(5));
     pulseRepeat = modifier(tokens.at(6));
     if (pulseRepeat == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(static_cast<int>(FunctionErrors::PULSE_REPEAT), tokens.at(6));
+        Errors::function_errors(FunctionErrors::PULSE_REPEAT, tokens.at(6));
     int PR = pulseRepeat / iObj.transSim.get_prstep();
     int TD = timeDelay / iObj.transSim.get_prstep();
     std::vector<double> timesteps, values;
@@ -377,10 +377,10 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   /* SIN(VO VA <FREQ <TD <THETA>>>) */
   else if (str.find("SIN") != std::string::npos) {
     if (tokens.size() < 2)
-      Errors::function_errors(static_cast<int>(FunctionErrors::SIN_TOO_FEW_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS,
                               std::to_string(tokens.size()));
     if (tokens.size() > 5)
-      Errors::function_errors(static_cast<int>(FunctionErrors::SIN_TOO_MANY_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::SIN_TOO_MANY_ARGUMENTS,
                               std::to_string(tokens.size()));
     double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1 / iObj.transSim.get_tstop(),
            THETA = 0.0;
@@ -388,7 +388,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     VA = modifier(tokens.at(1));
     if (VA == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(static_cast<int>(FunctionErrors::SIN_VA_ZERO), tokens.at(1));
+        Errors::function_errors(FunctionErrors::SIN_VA_ZERO, tokens.at(1));
     if (tokens.size() == 5) {
       FREQ = modifier(tokens.at(2));
       TD = modifier(tokens.at(3));
@@ -414,10 +414,10 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   /* CUSTOM: CUS(WaveFile.dat TS SF IM <TD PER>) */
   else if (str.find("CUS") != std::string::npos) {
     if (tokens.size() < 2)
-      Errors::function_errors(static_cast<int>(FunctionErrors::CUS_TOO_FEW_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::CUS_TOO_FEW_ARGUMENTS,
                               std::to_string(tokens.size()));
     if (tokens.size() > 5)
-      Errors::function_errors(static_cast<int>(FunctionErrors::CUS_TOO_MANY_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::CUS_TOO_MANY_ARGUMENTS,
                               std::to_string(tokens.size()));
     std::string WFline = tokens.at(0);
     std::vector<std::string> WF;
@@ -427,7 +427,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     SF = modifier(tokens.at(2));
     if (SF == 0.0)
       if (iObj.argVerb)
-        Errors::function_errors(static_cast<int>(FunctionErrors::CUS_SF_ZERO), tokens.at(2));
+        Errors::function_errors(FunctionErrors::CUS_SF_ZERO, tokens.at(2));
     if (tokens.size() == 6) {
       TD = modifier(tokens.at(4));
       PER = stoi(tokens.at(5));
@@ -438,7 +438,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     if (wffile.good())
       getline(wffile, WFline);
     else
-      Errors::function_errors(static_cast<int>(FunctionErrors::CUS_WF_NOT_FOUND), WFline);
+      Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, WFline);
     wffile.close();
     WF = tokenize_delimiter(WFline, " ,;");
     std::vector<double> timesteps, values;
@@ -487,25 +487,25 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   /* NOISE(VO VA TSTEP TD) */
   else if (str.find("NOISE") != std::string::npos) {
     if (tokens.size() < 2)
-      Errors::function_errors(static_cast<int>(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
                               std::to_string(tokens.size()));
     if (tokens.size() > 4)
-      Errors::function_errors(static_cast<int>(FunctionErrors::NOISE_TOO_MANY_ARGUMENTS),
+      Errors::function_errors(FunctionErrors::NOISE_TOO_MANY_ARGUMENTS,
                               std::to_string(tokens.size()));
     double VO = 0.0, VA = 0.0, TD = 0.0, TSTEP = 0.0;
     VO = modifier(tokens.at(0));
     if(VO != 0.0 && tokens.size() == 4) {
-      Errors::function_errors(static_cast<int>(FunctionErrors::NOISE_VO_ZERO), tokens.at(0));
+      Errors::function_errors(FunctionErrors::NOISE_VO_ZERO, tokens.at(0));
       VA = modifier(tokens.at(1));
       if (VA == 0.0)
         if (iObj.argVerb)
-          Errors::function_errors(static_cast<int>(FunctionErrors::NOISE_VA_ZERO), tokens.at(1));
+          Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, tokens.at(1));
       TD = modifier(tokens.at(3));
     } else {
       VA = modifier(tokens.at(0));
       if (VA == 0.0)
         if (iObj.argVerb)
-          Errors::function_errors(static_cast<int>(FunctionErrors::NOISE_VA_ZERO), tokens.at(1));
+          Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, tokens.at(1));
       TD = modifier(tokens.at(2));
     }
     TSTEP = iObj.transSim.get_prstep();
@@ -522,7 +522,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
   else if (str.find("PWS") != std::string::npos) {
     std::vector<double> timesteps, values;
     if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
-      Errors::function_errors(static_cast<int>(FunctionErrors::INITIAL_VALUES), tokens.at(0) + " & " + tokens.at(1));
+      Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
     } else {
       timesteps.push_back(0.0);
       values.push_back(0.0);
@@ -545,13 +545,13 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
             tokens.at(i), iObj.parameters, subckt));
     }
     if (timesteps.size() < values.size())
-      Errors::function_errors(static_cast<int>(FunctionErrors::TOO_FEW_TIMESTEPS),
+      Errors::function_errors(FunctionErrors::TOO_FEW_TIMESTEPS,
                               std::to_string(timesteps.size()) +
                                   " timesteps & " +
                                   std::to_string(timesteps.size()) + " values");
     if (timesteps.size() > values.size())
       Errors::function_errors(
-          static_cast<int>(FunctionErrors::TOO_FEW_VALUES), std::to_string(timesteps.size()) + " timesteps & " +
+          FunctionErrors::TOO_FEW_VALUES, std::to_string(timesteps.size()) + " timesteps & " +
                               std::to_string(timesteps.size()) + " values");
     if ((timesteps.back() > iObj.transSim.get_tstop()) &&
         (values.back() > values.at(values.size() - 2))) {

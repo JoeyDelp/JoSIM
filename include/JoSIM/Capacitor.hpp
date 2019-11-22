@@ -5,6 +5,7 @@
 
 #include "./ParameterName.hpp"
 #include "./Parameters.hpp"
+#include "./AnalysisType.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -19,6 +20,7 @@ class Capacitor {
     std::optional<int> posIndex_, negIndex_;
     int currentIndex_;
     double value_;
+    double capacitance_;
     double pn1_;
     double dpn1_;
   public:
@@ -32,7 +34,7 @@ class Capacitor {
         const std::unordered_map<std::string, int> &nm, 
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp,
+        const JoSIM::AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &l) { label_ = l; }
@@ -41,7 +43,7 @@ class Capacitor {
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const int &antyp, const double &timestep);
+        const JoSIM::AnalysisType &antyp, const double &timestep);
     void set_pn1(const double &v) { pn1_ = v; }
     void set_dpn1(const double &v) { dpn1_ = v; }
 
@@ -53,6 +55,7 @@ class Capacitor {
     const std::optional<int>& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }
     const double& get_value() const { return value_; }
+    const double& get_capacitance() const { return capacitance_; }
     const double& get_pn1() const { return pn1_; }
     const double& get_dpn1() const { return dpn1_; }
 

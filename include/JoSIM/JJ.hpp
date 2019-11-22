@@ -6,6 +6,7 @@
 #include "./ParameterName.hpp"
 #include "./Parameters.hpp"
 #include "./Model.hpp"
+#include "./AnalysisType.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -28,15 +29,17 @@ class JJ {
     double lowerB_, upperB_, subCond_, transCond_, normalCond_;
     double del0_, del_, rncalc_;
     double pn1_;
-    double vn1_;
-    double dvn1_;
+    double vn1_, vn2_;
+    double dvn1_, dvn2_;
     double transitionCurrent_;
     
   public:
     JJ() :
       area_(1),
       vn1_(0),
+      vn2_(0),
       dvn1_(0),
+      dvn2_(0),
       transitionCurrent_(0)
       {};
     
@@ -46,13 +49,13 @@ class JJ {
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const std::vector<std::pair<Model, std::string>> &models,
-        const int &antyp,
+        const JoSIM::AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &l) { label_ = l; }
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
         const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex,
-        const int &antyp, const double &timestep);
+        const JoSIM::AnalysisType &antyp, const double &timestep);
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_variableIndex(const int &vc) { variableIndex_ = vc; }
@@ -60,10 +63,12 @@ class JJ {
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
     void set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<Model, std::string>> &models);
     void set_value(const double &v) { value_ = v; };
-    void set_phaseConst(const double &timestep, const int &antyp);
+    void set_phaseConst(const double &timestep, const JoSIM::AnalysisType &antyp);
     void set_pn1(const double &v) { pn1_ = v; }
     void set_vn1(const double &v) { vn1_ = v; }
+    void set_vn2(const double &v) { vn2_ = v; }
     void set_dvn1(const double &v) { dvn1_ = v; }
+    void set_dvn2(const double &v) { dvn2_ = v; }
     void set_subCond(const double &v) { subCond_ = v; }
     void set_transCond(const double &v) { transCond_ = v; }
     void set_normalCond(const double &v) { normalCond_ = v; }
@@ -84,7 +89,9 @@ class JJ {
     const double& get_value() const { return value_; }
     const double& get_pn1() const { return pn1_; }
     const double& get_vn1() const { return vn1_; }
+    const double& get_vn2() const { return vn2_; }
     const double& get_dvn1() const { return dvn1_; }
+    const double& get_dvn2() const { return dvn2_; }
     const Model& get_model() const { return model_; }
     const double& get_subCond() const { return subCond_; }
     const double& get_transCond() const { return transCond_; }

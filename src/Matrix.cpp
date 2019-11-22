@@ -50,7 +50,7 @@ void Matrix::find_relevant_x(Input &iObj) {
       }
       if(j.at(0) == 'D' || (j.at(0) == 'P' && j.at(1) == 'H')) {
         if (tokens.size() > 2)
-          Errors::control_errors(static_cast<int>(ControlErrors::INVALID_OUTPUT_COMMAND), i);
+          Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
         else
           relevantToStore.emplace_back(tokens.at(1));
           break;
@@ -61,7 +61,7 @@ void Matrix::find_relevant_x(Input &iObj) {
         } else if (tokens2.size() == 3) {
           if(tokens2.at(1) != "0" && tokens2.at(1) != "GND") relevantToStore.emplace_back(tokens2.at(1));
           if(tokens2.at(2) != "0" && tokens2.at(2) != "GND") relevantToStore.emplace_back(tokens2.at(2));
-        } else Errors::control_errors(static_cast<int>(ControlErrors::INVALID_OUTPUT_COMMAND), i);
+        } else Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
       } else if (j.at(0) == 'N') {
         if(tokens.size() == 2) {
           if(tokens.at(1) != "0" && tokens.at(1) != "GND") relevantToStore.emplace_back(tokens.at(1));
@@ -70,10 +70,10 @@ void Matrix::find_relevant_x(Input &iObj) {
           if(tokens.at(1) != "0" && tokens.at(1) != "GND") relevantToStore.emplace_back(tokens.at(1));
           if(tokens.at(2) != "0" && tokens.at(2) != "GND") relevantToStore.emplace_back(tokens.at(2));
           break;
-        } else Errors::control_errors(static_cast<int>(ControlErrors::INVALID_OUTPUT_COMMAND), i);
+        } else Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
       } else if (j.at(0) == '@') {
         if (tokens.size() > 2) {
-          //Errors::control_errors(static_cast<int>(ControlErrors::INVALID_OUTPUT_COMMAND), i);
+          //Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND), i;
           for (auto t : tokens) {
             relevantToStore.emplace_back(t.substr(1, t.find_first_of('[') - 1));
           }
@@ -98,13 +98,31 @@ void Matrix::create_matrix(Input &iObj)
       std::vector<std::string> tokens = Misc::tokenize_space(i.first);
       // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
       if(tokens.size() < 4) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_COMPONENT_DECLARATION), i.first);
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, i.first);
       }
       if(tokens.at(1).find("GND") != std::string::npos || tokens.at(1) != "0") {
         if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
       }
       if(tokens.at(2).find("GND") != std::string::npos || tokens.at(2) != "0") {
         if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
+      }
+    } else if (i.first.at(0) == 'T') {
+      std::vector<std::string> tokens = Misc::tokenize_space(i.first);
+      // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
+      if(tokens.size() < 6) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, i.first);
+      }
+      if(tokens.at(1).find("GND") != std::string::npos || tokens.at(1) != "0") {
+        if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
+      }
+      if(tokens.at(2).find("GND") != std::string::npos || tokens.at(2) != "0") {
+        if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
+      }
+      if(tokens.at(3).find("GND") != std::string::npos || tokens.at(3) != "0") {
+        if(nm.count(tokens.at(3)) == 0) nm[tokens.at(3)] = nodeCounter++;
+      }
+      if(tokens.at(4).find("GND") != std::string::npos || tokens.at(4) != "0") {
+        if(nm.count(tokens.at(4)) == 0) nm[tokens.at(4)] = nodeCounter++;
       }
     }
   }
@@ -122,35 +140,35 @@ void Matrix::create_matrix(Input &iObj)
       }, j);
 
       if(label == tokens.at(0)) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), tokens.at(0));
+        Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, tokens.at(0));
       }
     }
     switch(i.first.at(0)){
       case 'R':
         components_new.devices.emplace_back(Resistor::create_resistor(i, 
             nm, nc, iObj.parameters, 
-            static_cast<int>(iObj.argAnal), 
+            iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.resistorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'L':
         components_new.devices.emplace_back(Inductor::create_inductor(i, 
             nm, nc, iObj.parameters, 
-            static_cast<int>(iObj.argAnal), 
+            iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.inductorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'C':
         components_new.devices.emplace_back(Capacitor::create_capacitor(i, 
             nm, nc, iObj.parameters, 
-            static_cast<int>(iObj.argAnal), 
+            iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.capacitorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'B':
         components_new.devices.emplace_back(JJ::create_jj(i, 
             nm, nc, iObj.parameters, iObj.netlist.models_new, 
-            static_cast<int>(iObj.argAnal), 
+            iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.junctionIndices.emplace_back(components_new.devices.size() - 1);
         break;
@@ -177,7 +195,7 @@ void Matrix::create_matrix(Input &iObj)
       case 'T':
         components_new.devices.emplace_back(TransmissionLine::create_transmissionline(i, 
             nm, nc, 
-            iObj.parameters, static_cast<int>(iObj.argAnal), 
+            iObj.parameters, iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.txIndices.emplace_back(components_new.devices.size() - 1);        
         break;
@@ -189,7 +207,7 @@ void Matrix::create_matrix(Input &iObj)
   for (const auto &s : components_new.mutualinductances) {
     std::vector<std::string> tokens = Misc::tokenize_space(s.first);
     if(tokens.size() < 4) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MUT_ERROR), s.first);
+      Errors::invalid_component_errors(ComponentErrors::MUT_ERROR, s.first);
     }
 
     std::optional<int> ind1Index, ind2Index;
@@ -202,7 +220,7 @@ void Matrix::create_matrix(Input &iObj)
       }
     }
     if(!ind1Index) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_INDUCTOR), tokens.at(1));
+      Errors::invalid_component_errors(ComponentErrors::MISSING_INDUCTOR, tokens.at(1));
     }
 
     for (int i = 0; i < components_new.devices.size(); ++i) {
@@ -214,16 +232,21 @@ void Matrix::create_matrix(Input &iObj)
       }
     }
     if(!ind2Index) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_INDUCTOR), tokens.at(2));
+      Errors::invalid_component_errors(ComponentErrors::MISSING_INDUCTOR, tokens.at(2));
     }
 
+    auto &ind1 = std::get<Inductor>(components_new.devices.at(ind1Index.value()));
+    auto &ind2 = std::get<Inductor>(components_new.devices.at(ind2Index.value()));
+
     double cf = Parameters::parse_param(tokens.at(3), iObj.parameters, s.second);
-    double mutual = cf * std::sqrt(std::get<Inductor>(components_new.devices.at(ind1Index.value())).get_inductance() 
-                                  * std::get<Inductor>(components_new.devices.at(ind2Index.value())).get_inductance());
+    double mutual = cf * std::sqrt(ind1.get_inductance() * ind2.get_inductance());
 
-    std::get<Inductor>(components_new.devices.at(ind1Index.value())).add_mutualinductance(mutual, static_cast<int>(iObj.argAnal), iObj.transSim.get_prstep());
-    std::get<Inductor>(components_new.devices.at(ind2Index.value())).add_mutualinductance(mutual, static_cast<int>(iObj.argAnal), iObj.transSim.get_prstep());
+    
+    ind1.add_mutualInductance(mutual, iObj.argAnal, iObj.transSim.get_prstep(), ind2.get_currentIndex());
+    ind2.add_mutualInductance(mutual, iObj.argAnal, iObj.transSim.get_prstep(), ind1.get_currentIndex());
 
+    ind1.set_mutualInductance(std::make_pair(ind2Index.value(), mutual));
+    ind2.set_mutualInductance(std::make_pair(ind1Index.value(), mutual));
   }
 
   create_csr();
@@ -263,9 +286,9 @@ void Matrix::create_A_volt(Input &iObj)
           expEnd = t;
       }
       if (expStart == -1 && expEnd != -1)
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, i.first);
       else if (expStart != -1 && expEnd == -1)
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, i.first);
       if (expStart != -1 && expStart == expEnd) {
         devicetokens.at(expStart) = devicetokens.at(expStart).substr(
             devicetokens.at(expStart).find('{') + 1,
@@ -298,23 +321,23 @@ void Matrix::create_A_volt(Input &iObj)
     try {
       label = devicetokens.at(0);
       if (std::find(componentLabels.begin(), componentLabels.end(), label) == componentLabels.end()) {
-        if (label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) Errors::invalid_component_errors(static_cast<int>(ComponentErrors::SPECIAL_CHARS), label);
+        if (label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) Errors::invalid_component_errors(ComponentErrors::SPECIAL_CHARS, label);
         componentLabels.push_back(label);
       } else {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), label);
+        Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, label);
       }
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_LABEL), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_LABEL, i.first);
     }
     try {
       nodeP = devicetokens.at(1);
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_PNODE), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_PNODE, i.first);
     }
     try {
       nodeN = devicetokens.at(2);
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_NNODE), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_NNODE, i.first);
     }
     labelNodes[label].negNode = nodeN;
     labelNodes[label].posNode = nodeP;
@@ -345,7 +368,7 @@ void Matrix::create_A_volt(Input &iObj)
             value = Misc::modifier(devicetokens.at(3));
         }
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::RES_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::RES_ERROR, i.first);
       }
 
       components.voltRes.back().label = label;
@@ -513,7 +536,7 @@ void Matrix::create_A_volt(Input &iObj)
             value = Misc::modifier(devicetokens.at(3));
         }
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::CAP_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::CAP_ERROR, i.first);
       }
       components.voltCap.back().label = devicetokens.at(0);
       components.voltCap.back().value = value;
@@ -712,7 +735,7 @@ void Matrix::create_A_volt(Input &iObj)
             value = Misc::modifier(devicetokens.at(3));
         }
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::IND_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::IND_ERROR, i.first);
       }
 
       components.voltInd.back().label = label;
@@ -1194,7 +1217,7 @@ void Matrix::create_A_volt(Input &iObj)
                 iObj.netlist.models.at(std::make_pair(devicetokens[t], ""));
             break;
           } else {
-            Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED),
+            Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED,
                                              devicetokens[t]);
             break;
           }
@@ -1455,7 +1478,7 @@ void Matrix::create_A_volt(Input &iObj)
               iObj.parameters, i.second);
         else if (devicetokens[t].find("LOSSLESS") != std::string::npos) {
         } else
-          Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_TX_DEFINED), i.first);
+          Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED, i.first);
       }
       components.txLine.back().label = label;
       components.txLine.back().k = tD / iObj.transSim.get_prstep();
@@ -1589,14 +1612,14 @@ void Matrix::create_A_volt(Input &iObj)
       try {
         nodeP2 = devicetokens.at(3);
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_PNODE), i.first);
+        Errors::invalid_component_errors(ComponentErrors::MISSING_PNODE, i.first);
       }
       /* Check if negative node exists, if not it's a bad device line definition
        */
       try {
         nodeN2 = devicetokens[4];
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_NNODE), i.first);
+        Errors::invalid_component_errors(ComponentErrors::MISSING_NNODE, i.first);
       }
       if (nodeP2 != "0" && nodeP2.find("GND") == std::string::npos) {
         cNameP2 = "C_NV" + nodeP2;
@@ -1947,7 +1970,7 @@ void Matrix::create_A_volt(Input &iObj)
     /*  UNKNOWN DEVICE TYPE */
     /************************/
     else 
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::UNKNOWN_DEVICE_TYPE), label);
+      Errors::invalid_component_errors(ComponentErrors::UNKNOWN_DEVICE_TYPE, label);
   }
   double mutualL = 0.0, cf = 0.0;
   std::sort(relXInd.begin(), relXInd.end());
@@ -1959,7 +1982,7 @@ void Matrix::create_A_volt(Input &iObj)
     try {
       label = devicetokens.at(0);
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_LABEL), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_LABEL, i.first);
     }
     try {
       auto parameter_name = ParameterName(devicetokens.at(3), i.second);
@@ -1968,7 +1991,7 @@ void Matrix::create_A_volt(Input &iObj)
       else
         cf = Misc::modifier(devicetokens.at(3));
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MUT_ERROR), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MUT_ERROR, i.first);
     }
     std::string ind1, ind2;
     int index1, index2;
@@ -1976,11 +1999,11 @@ void Matrix::create_A_volt(Input &iObj)
     ind1 = devicetokens[1];
     ind2 = devicetokens[2];
     if (deviceLabelIndex.count(ind1) == 0)
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_INDUCTOR), ind1);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_INDUCTOR, ind1);
     else
       index1 = deviceLabelIndex.at(ind1).index;
     if (deviceLabelIndex.count(ind2) == 0)
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_INDUCTOR), ind2);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_INDUCTOR, ind2);
     else
       index2 = deviceLabelIndex.at(ind2).index;
     cf = cf * sqrt(components.voltInd.at(index1).value *
@@ -2038,9 +2061,9 @@ void Matrix::create_A_phase(Input &iObj)
           expEnd = t;
       }
       if (expStart == -1 && expEnd != -1)
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, i.first);
       else if (expStart != -1 && expEnd == -1)
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::INVALID_EXPR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, i.first);
       if (expStart != -1 && expStart == expEnd) {
         devicetokens[expStart] =
             devicetokens[expStart].substr(devicetokens[expStart].find('{') + 1,
@@ -2073,22 +2096,22 @@ void Matrix::create_A_phase(Input &iObj)
     try {
       label = devicetokens.at(0);
       if (std::find(componentLabels.begin(), componentLabels.end(), label) == componentLabels.end()) {
-        if (label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) Errors::invalid_component_errors(static_cast<int>(ComponentErrors::SPECIAL_CHARS), label);
+        if (label.find_first_of("_*!@#$\\/%^&*()") != std::string::npos) Errors::invalid_component_errors(ComponentErrors::SPECIAL_CHARS, label);
         componentLabels.push_back(label);
       } else
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::DUPLICATE_LABEL), label);
+        Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, label);
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_LABEL), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_LABEL, i.first);
     }
     try {
       nodeP = devicetokens[1];
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_PNODE), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_PNODE, i.first);
     }
     try {
       nodeN = devicetokens[2];
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_NNODE), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_NNODE, i.first);
     }
     labelNodes[label].negNode = nodeN;
     labelNodes[label].posNode = nodeP;
@@ -2119,7 +2142,7 @@ void Matrix::create_A_phase(Input &iObj)
             value = Misc::modifier(devicetokens.at(3));
         }
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::RES_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::RES_ERROR, i.first);
       }
 
       components.phaseRes.back().value = value;
@@ -2309,7 +2332,7 @@ void Matrix::create_A_phase(Input &iObj)
             value = Misc::modifier(devicetokens.at(3));
         }
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::CAP_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::CAP_ERROR, i.first);
       }
       components.phaseCap.back().value = value;
       components.phaseCap.back().label = label;
@@ -2495,7 +2518,7 @@ void Matrix::create_A_phase(Input &iObj)
             value = Misc::modifier(devicetokens.at(3));
         }
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::IND_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::IND_ERROR, i.first);
       }
 
       components.phaseInd.back().value = value;
@@ -2954,7 +2977,7 @@ void Matrix::create_A_phase(Input &iObj)
                 iObj.netlist.models.at(std::make_pair(devicetokens[t], ""));
             break;
           } else {
-            Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MODEL_NOT_DEFINED),
+            Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED,
                                              devicetokens[t]);
             break;
           }
@@ -3170,19 +3193,19 @@ void Matrix::create_A_phase(Input &iObj)
       try {
         nodeP2 = devicetokens.at(3);
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_PNODE), i.first);
+        Errors::invalid_component_errors(ComponentErrors::MISSING_PNODE, i.first);
       }
       try {
         nodeN2 = devicetokens[4];
       } catch (std::exception &e) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_NNODE), i.first);
+        Errors::invalid_component_errors(ComponentErrors::MISSING_NNODE, i.first);
       }
       matrix_element e;
       components.txPhase.emplace_back(tx_phase());
       deviceLabelIndex[label].type = RowDescriptor::Type::PhaseTX;
       deviceLabelIndex[label].index = components.txPhase.size() - 1;
       if (devicetokens.size() < 7) {
-        Errors::invalid_component_errors(static_cast<int>(ComponentErrors::TIME_ERROR), i.first);
+        Errors::invalid_component_errors(ComponentErrors::TIME_ERROR, i.first);
       }
       for (size_t l = 5; l < devicetokens.size(); l++) {
         if (devicetokens.back().find("TD") != std::string::npos)
@@ -3618,7 +3641,7 @@ void Matrix::create_A_phase(Input &iObj)
     /*  UNKNOWN DEVICE TYPE */
     /************************/
     else 
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::UNKNOWN_DEVICE_TYPE), label);
+      Errors::invalid_component_errors(ComponentErrors::UNKNOWN_DEVICE_TYPE, label);
   }
   double mutualL = 0.0, cf = 0.0;
   std::sort(relXInd.begin(), relXInd.end());
@@ -3630,7 +3653,7 @@ void Matrix::create_A_phase(Input &iObj)
     try {
       label = devicetokens.at(0);
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MISSING_LABEL), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MISSING_LABEL, i.first);
     }
     try {
       ParameterName parameter_name = ParameterName(devicetokens.at(3), i.second);
@@ -3639,7 +3662,7 @@ void Matrix::create_A_phase(Input &iObj)
       else
         cf = Misc::modifier(devicetokens.at(3));
     } catch (std::exception &e) {
-      Errors::invalid_component_errors(static_cast<int>(ComponentErrors::MUT_ERROR), i.first);
+      Errors::invalid_component_errors(ComponentErrors::MUT_ERROR, i.first);
     }
     std::string ind1, ind2;
     int index1, index2;

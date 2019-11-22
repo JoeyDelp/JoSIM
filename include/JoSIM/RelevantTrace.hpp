@@ -48,7 +48,7 @@ class RelevantTrace {
   public:
     bool device;
     std::optional<std::string> deviceLabel;
-    int storageType;
+    JoSIM::StorageType storageType;
     std::optional<int> index1;
     std::optional<int> index2;
 

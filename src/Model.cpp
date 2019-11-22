@@ -13,7 +13,7 @@ void Model::parse_model(
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   // Ensure the model conforms to correct syntax: .model modelname modeltype(parameters)
   if(tokens.size() < 3) {
-    Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), s.first);
+    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
   }
   Model temp;
 
@@ -23,14 +23,14 @@ void Model::parse_model(
   auto endParam = s.first.find(")");
   if(tokens.at(2).find("JJ") != std::string::npos) {
     if(startParam == std::string::npos) {
-      Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), s.first);
+      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
     } else if(endParam == std::string::npos) {
-      Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), s.first);
+      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
     } else {
       tokens = Misc::tokenize_delimiter(s.first.substr(startParam+1, endParam), "(), \t");
     }
   } else {
-    Errors::model_errors(static_cast<int>(ModelErrors::UNKNOWN_MODEL_TYPE), s.first);
+    Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, s.first);
   }
 
   for (int i = 0; i < tokens.size(); i++) {
@@ -41,7 +41,7 @@ void Model::parse_model(
         itemToken.push_back(tempToken.at(0));
       tokens.erase(tokens.begin() + i + 1);
     } else if ((itemToken.size() == 1) && (i != tokens.size() - 1))
-      Errors::model_errors(static_cast<int>(ModelErrors::BAD_MODEL_DEFINITION), s.first);
+      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
     double value = Parameters::parse_param(itemToken.at(1), p,
                                 s.second);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
