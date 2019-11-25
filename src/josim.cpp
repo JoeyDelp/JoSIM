@@ -70,28 +70,28 @@ int main(int argc, const char **argv) {
     // Fish out the relevant traces from the x vector
     oObj.relevant_traces(iObj, mObj, sObj);
 
-    if (cli_options.output_to_file) {
+    if (cli_options.output_file_name) {
       if (cli_options.output_file_type == JoSIM::FileOutputType::Csv) {
-        oObj.write_data(cli_options.output_file_name, mObj, sObj);
+        oObj.write_data(cli_options.output_file_name.value(), mObj, sObj);
       } else if (cli_options.output_file_type == JoSIM::FileOutputType::Dat) {
-        oObj.write_legacy_data(cli_options.output_file_name, mObj, sObj);
+        oObj.write_legacy_data(cli_options.output_file_name.value(), mObj, sObj);
       } else if (cli_options.output_file_type == JoSIM::FileOutputType::WrSpice) {
-        oObj.write_wr_data(cli_options.output_file_name);
+        oObj.write_wr_data(cli_options.output_file_name.value());
       }
     }
-    if (!cli_options.output_to_file) {
+    if (!cli_options.output_file_name) {
       oObj.write_cout(mObj, sObj);
     }
 
     std::vector<std::vector<std::string>> output = Output::write_output(iObj, mObj, sObj);
 
-    if (cli_options.output_to_file) {
+    if (cli_options.output_file_name) {
       if (cli_options.output_file_type == JoSIM::FileOutputType::Csv) {
-        Output::format_csv_or_dat(cli_options.output_file_name, output, ',');
+        Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ',');
       } else if (cli_options.output_file_type == JoSIM::FileOutputType::Dat) {
-        Output::format_csv_or_dat(cli_options.output_file_name, output, ' ');
+        Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ' ');
       } else if (cli_options.output_file_type == JoSIM::FileOutputType::WrSpice) {
-        Output::format_raw(cli_options.output_file_name, output);
+        Output::format_raw(cli_options.output_file_name.value(), output);
       }
     } else {
       Output::format_cout(output);

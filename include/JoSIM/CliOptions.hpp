@@ -7,6 +7,7 @@
 #include "./FileOutputType.hpp"
 #include "./InputType.hpp"
 
+#include <optional>
 #include <string>
 
 namespace JoSIM {
@@ -18,9 +19,7 @@ struct CliOptions {
   bool verbose = false;
   bool parallel = false;
 
-  // Replace with optional in C++17
-  bool output_to_file = false;
-  std::string output_file_name;
+  std::optional<std::string> output_file_name;
   FileOutputType output_file_type;
 
   // helper functions

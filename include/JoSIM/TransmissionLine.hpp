@@ -22,10 +22,6 @@ class TransmissionLine {
     int currentIndex1_;
     int currentIndex2_;
     double value_;
-    std::vector<double> v1_;
-    std::vector<double> v2_;
-    std::vector<double> current1_;
-    std::vector<double> current2_;
     double dv1n1_, dv1n2_, dv2n1_, dv2n2_;
     double dv1nk_, dv1nk1_, dv2nk_, dv2nk1_;
     int timestepDelay_;
@@ -59,10 +55,6 @@ class TransmissionLine {
     void set_timestepDelay(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const double &timestep);
-    void set_v1(const double &v) { v1_.emplace_back(v); }
-    void set_v2(const double &v) { v2_.emplace_back(v); }
-    void set_current1(const double &v) { current1_.emplace_back(v); }
-    void set_current2(const double &v) { current2_.emplace_back(v); }
     void set_dv1n1(const double &v) { dv1n1_ = v; }
     void set_dv1n2(const double &v) { dv1n2_ = v; }
     void set_dv2n1(const double &v) { dv2n1_ = v; }
@@ -84,10 +76,6 @@ class TransmissionLine {
     const int& get_currentIndex2() const { return currentIndex2_; }
     const double& get_value() const { return value_; }
     const int& get_timestepDelay() const { return timestepDelay_; }
-    const std::vector<double>& get_v1() const { return v1_; }
-    const std::vector<double>& get_v2() const { return v2_; }
-    const std::vector<double>& get_current1() const { return current1_; }
-    const std::vector<double>& get_current2() const { return current2_; }
     const double& get_dv1n1() const { return dv1n1_; }
     const double& get_dv1n2() const { return dv1n2_; }
     const double& get_dv2n1() const { return dv2n1_; }

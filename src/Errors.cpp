@@ -41,6 +41,11 @@ void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
     formattedMessage += "Usage: josim [options] input_netlist\n\n";
     formattedMessage += "For further help use the -h switch";
     throw formattedMessage;
+  case CLIErrors::INPUT_SAME_OUTPUT:
+    formattedMessage += "Output file name is the same as input file name.\n";
+    formattedMessage += "This will cause irreversible changes to input file.\n";
+    formattedMessage += "Please choose a different output file name.";
+    throw formattedMessage;
   case CLIErrors::NO_CONVENTION:
     formattedMessage += "No convention was specified. Reverting to default (0 - JSIM).\n";
     formattedMessage += "Please refer to the help menu (-h) or manual for further information.";

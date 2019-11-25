@@ -96,24 +96,23 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
           exit(0);
         // Output file switch
         case 'o':
-          out.output_to_file = true;
           if (specArg) {
             argument = argv[i];
             if (argument.find('=') != std::string::npos) {
               argument = argument.substr(argument.find('=') + 1);
               out.output_file_name = argument;
-              std::cout << "Output file: " << out.output_file_name << std::endl;
+              std::cout << "Output file: " << out.output_file_name.value() << std::endl;
               std::cout << std::endl;
             } else {
               out.output_file_type = FileOutputType::Csv;
               out.output_file_name = "output.csv";
-              std::cout << "Output file: " << out.output_file_name << std::endl;
+              std::cout << "Output file: " << out.output_file_name.value() << std::endl;
               std::cout << std::endl;
             }
-            if (out.output_file_name.find('.') != std::string::npos) {
-              std::string outExt = out.output_file_name.substr(
-                  out.output_file_name.find_last_of('.'),
-                  out.output_file_name.size() - 1);
+            if (out.output_file_name.value().find('.') != std::string::npos) {
+              std::string outExt = out.output_file_name.value().substr(
+                  out.output_file_name.value().find_last_of('.'),
+                  out.output_file_name.value().size() - 1);
               std::transform(outExt.begin(), outExt.end(), outExt.begin(),
                              toupper);
               if (outExt == ".CSV")
@@ -128,13 +127,13 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             if (i != argc - 1) {
               if (argv[i + 1][0] != '-') {
                 out.output_file_name = argv[i + 1];
-                std::cout << "Output file: " << out.output_file_name
+                std::cout << "Output file: " << out.output_file_name.value()
                           << std::endl;
                 std::cout << std::endl;
-                if (out.output_file_name.find('.') != std::string::npos) {
-                  std::string outExt = out.output_file_name.substr(
-                      out.output_file_name.find_last_of('.'),
-                      out.output_file_name.size() - 1);
+                if (out.output_file_name.value().find('.') != std::string::npos) {
+                  std::string outExt = out.output_file_name.value().substr(
+                      out.output_file_name.value().find_last_of('.'),
+                      out.output_file_name.value().size() - 1);
                   std::transform(outExt.begin(), outExt.end(), outExt.begin(),
                                  toupper);
                   if (outExt == ".CSV")
@@ -149,7 +148,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
               } else {
                 out.output_file_type = FileOutputType::Csv;
                 out.output_file_name = "output.csv";
-                std::cout << "Output file: " << out.output_file_name
+                std::cout << "Output file: " << out.output_file_name.value()
                           << std::endl;
                 std::cout << std::endl;
                 Errors::cli_errors(CLIErrors::NO_OUTPUT);
@@ -157,7 +156,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             } else {
               out.output_file_type = FileOutputType::Csv;
               out.output_file_name = "output.csv";
-              std::cout << "Output file: " << out.output_file_name << std::endl;
+              std::cout << "Output file: " << out.output_file_name.value() << std::endl;
               std::cout << std::endl;
               Errors::cli_errors(CLIErrors::NO_OUTPUT);
             }
@@ -202,8 +201,14 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
     }
   }
 
-  if (out.cir_file_name.empty())
+  if (out.cir_file_name.empty()) {
     Errors::cli_errors(CLIErrors::NO_INPUT);
+  }
+  if (out.output_file_name) {
+    if(out.output_file_name.value() == out.cir_file_name) {
+      Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
+    }
+  }
 
   return out;
 }

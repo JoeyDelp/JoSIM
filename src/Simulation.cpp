@@ -111,50 +111,34 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
           const auto &txline = mObj.components.txLine.at(j.index);
           if (i >= txline.k) {
             if (txline.posN2Row == -1)
-                RHS.at(rowCounter) = -results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.negNode2R)
-                    )
-                  )
-                ).at(i - txline.k);
+              RHS.at(rowCounter) = -results.xVect.at(
+                                      std::distance(mObj.relXInd.begin(),
+                                        std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                          mObj.relToXMap.at(txline.negNode2R)))
+                                    ).at(i - txline.k);
             else if (txline.negN2Row == -1)
               RHS.at(rowCounter) = results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.posNode2R)
-                    )
-                  )
-                ).at(i - txline.k);
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.posNode2R)))
+                                    ).at(i - txline.k);
             else
               RHS.at(rowCounter) = results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.posNode2R)
-                    )
-                  )
-                ).at(i - txline.k)
-                - results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.negNode2R)
-                    )
-                  )
-                ).at(i - txline.k);
-            RHS.at(rowCounter) +=
-                txline.value *
-                    results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.curNode2R)
-                    )
-                  )
-                ).at(i - txline.k);
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.posNode2R)))
+                                    ).at(i - txline.k)
+                                  - results.xVect.at(
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.negNode2R)))
+                                    ).at(i - txline.k);
+            RHS.at(rowCounter) += txline.value 
+                                  * results.xVect.at(
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.curNode2R)))
+                                    ).at(i - txline.k);
           }
           break; }
         case RowDescriptor::Type::VoltageTX2: {
@@ -162,49 +146,33 @@ void Simulation::trans_sim(Input &iObj, Matrix &mObj) {
           if (i >= txline.k) {
             if (txline.posNRow == -1)
               RHS.at(rowCounter) = -results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.negNodeR)
-                    )
-                  )
-                ).at(i - txline.k);
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.negNodeR)))
+                                    ).at(i - txline.k);
             else if (txline.negNRow == -1)
               RHS.at(rowCounter) = results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.posNodeR)
-                    )
-                  )
-                ).at(i - txline.k);
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.posNodeR)))
+                                    ).at(i - txline.k);
             else
               RHS.at(rowCounter) = results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.posNodeR)
-                    )
-                  )
-                ).at(i - txline.k)
-                - results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.negNodeR)
-                    )
-                  )
-                ).at(i - txline.k);
-            RHS.at(rowCounter) +=
-                txline.value *
-                    results.xVect.at(
-                  std::distance(
-                    mObj.relXInd.begin(),
-                    std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
-                      mObj.relToXMap.at(txline.curNode1R)
-                    )
-                  )
-                ).at(i - txline.k);
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.posNodeR)))
+                                    ).at(i - txline.k)
+                                  - results.xVect.at(
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.negNodeR)))
+                                    ).at(i - txline.k);
+            RHS.at(rowCounter) += txline.value *
+                                  results.xVect.at(
+                                    std::distance(mObj.relXInd.begin(),
+                                      std::find(mObj.relXInd.begin(), mObj.relXInd.end(),
+                                        mObj.relToXMap.at(txline.curNode1R)))
+                                  ).at(i - txline.k);
           }
           break; }
         case RowDescriptor::Type::PhaseResistor: {
@@ -714,30 +682,44 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
       if(i >= temp.get_timestepDelay()) {
         double prevNodek, prevNode2k;
         if(temp.get_posIndex() && !temp.get_negIndex()) {
-          prevNodek = results.xVector_new.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay());
+          prevNodek = results.xVector_new.at(
+                          temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay());
         } else if(!temp.get_posIndex() && temp.get_negIndex()) {
-          prevNodek = -results.xVector_new.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
+          prevNodek = -results.xVector_new.at(
+                          temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
         } else {
-          prevNodek = results.xVector_new.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay())
-                  - results.xVector_new.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
+          prevNodek = results.xVector_new.at(
+                          temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay())
+                      - results.xVector_new.at(
+                          temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
         }
 
         if(temp.get_posIndex2() && !temp.get_negIndex2()) {
-          prevNode2k = results.xVector_new.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay());
+          prevNode2k = results.xVector_new.at(
+                          temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay());
         } else if(!temp.get_posIndex2() && temp.get_negIndex2()) {
-          prevNode2k = -results.xVector_new.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
+          prevNode2k = -results.xVector_new.at(
+                          temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
         } else {
-          prevNode2k = results.xVector_new.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay())
-                  - results.xVector_new.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
+          prevNode2k = results.xVector_new.at(
+                          temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay())
+                        - results.xVector_new.at(
+                          temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
         }
 
         if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
           // IT1 = V2(n-k) + Z0 I2(n-k)
-          RHS.at(temp.get_currentIndex()) = prevNode2k;// + temp.get_value() * results.xVector_new.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay());
+          RHS.at(temp.get_currentIndex()) = prevNode2k + temp.get_value() 
+                                            * results.xVector_new.at(
+                                              temp.get_currentIndex2()).value().at(
+                                                i - temp.get_timestepDelay());
           // IT2 = V1(n-k) + Z0 I1(n-k)
-          RHS.at(temp.get_currentIndex2()) = prevNodek;// + temp.get_value() * results.xVector_new.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay());
+          RHS.at(temp.get_currentIndex2()) = prevNodek + temp.get_value() 
+                                            * results.xVector_new.at(
+                                              temp.get_currentIndex()).value().at(
+                                                i - temp.get_timestepDelay());
           
-        } else if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+        } else if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
           double prevNodeN, prevNode2N, prevNodeN1, prevNode2N1, prevNodek1, prevNode2k1;
           if(temp.get_posIndex() && !temp.get_negIndex()) {
             prevNodeN = results.xVector_new.at(temp.get_posIndex().value()).value().at(i);

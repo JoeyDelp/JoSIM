@@ -338,15 +338,15 @@ void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1
         const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     posIndex1_ = nm.at(n1.first);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
+    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 2));
   } else if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
     negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
+    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 2));
   } else {
     posIndex1_ = nm.at(n1.first);
     negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
+    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 2));
+    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 2));
   }
   if(n2.second.find("GND") != std::string::npos || n2.second == "0") {
     posIndex2_ = nm.at(n2.first);

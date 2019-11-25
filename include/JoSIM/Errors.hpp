@@ -13,7 +13,8 @@ enum class CLIErrors : int {
   UNKNOWN_SWITCH,
   TOO_FEW_ARGUMENTS,
   INVALID_ANALYSIS,
-  INVALID_CONVENTION
+  INVALID_CONVENTION,
+  INPUT_SAME_OUTPUT
 };
 
 enum class InputErrors : int {
