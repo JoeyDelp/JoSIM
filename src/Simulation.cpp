@@ -821,6 +821,8 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
     results.timeAxis.emplace_back(i * iObj.transSim.get_prstep());
   }
   std::cout << "100%" << std::endl;
+  std::cout << "\n";
+  
   klu_free_symbolic(&Symbolic, &Common);
   klu_free_numeric(&Numeric, &Common);
 }

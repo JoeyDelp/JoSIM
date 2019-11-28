@@ -10,6 +10,7 @@
 #include "./RelevantTrace.hpp"
 
 #include <unordered_map>
+#include <unordered_set>
 
 class matrix_element {
 public:
@@ -81,6 +82,7 @@ public:
   Components_new components_new;
   std::unordered_map<std::string, int> nm;
   std::vector<std::vector<std::pair<int, int>>> nc;
+  std::unordered_set<std::string> lm;
   int branchIndex;
   std::vector<double> nz;
   std::vector<int> ci, rp;

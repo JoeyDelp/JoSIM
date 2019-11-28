@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <iostream>
 
 using namespace JoSIM;
 
@@ -130,51 +131,50 @@ void Matrix::create_matrix(Input &iObj)
   nc.resize(nm.size());
   branchIndex = nm.size();
 
+  int fqtr, sqtr, tqtr;
+  fqtr = iObj.netlist.expNetlist.size()/4;
+  sqtr = iObj.netlist.expNetlist.size()/2;
+  tqtr = iObj.netlist.expNetlist.size()/4 * 3;
+
+  std::cout << "Matrix Creation Progress:" << std::endl;
+  std::cout << "0%\r" << std::flush;
+  int creationCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
-    // Ensure no device duplication occurs
-    for(auto &j : components_new.devices) {
-      std::vector<std::string> tokens = Misc::tokenize_space(i.first);
-
-      const auto& label = std::visit([](const auto& device) noexcept -> const std::string& {
-        return device.get_label();
-      }, j);
-
-      if(label == tokens.at(0)) {
-        Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, tokens.at(0));
-      }
-    }
+    if(creationCounter == fqtr) std::cout << "25%\r" << std::flush;
+    if(creationCounter == sqtr) std::cout << "50%\r" << std::flush;
+    if(creationCounter == tqtr) std::cout << "75%\r" << std::flush;
     switch(i.first.at(0)){
       case 'R':
         components_new.devices.emplace_back(Resistor::create_resistor(i, 
-            nm, nc, iObj.parameters, 
+            nm, lm, nc, iObj.parameters, 
             iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.resistorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'L':
         components_new.devices.emplace_back(Inductor::create_inductor(i, 
-            nm, nc, iObj.parameters, 
+            nm, lm, nc, iObj.parameters, 
             iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.inductorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'C':
         components_new.devices.emplace_back(Capacitor::create_capacitor(i, 
-            nm, nc, iObj.parameters, 
+            nm, lm, nc, iObj.parameters, 
             iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.capacitorIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'B':
         components_new.devices.emplace_back(JJ::create_jj(i, 
-            nm, nc, iObj.parameters, iObj.netlist.models_new, 
+            nm, lm, nc, iObj.parameters, iObj.netlist.models_new, 
             iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.junctionIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'V':
         components_new.devices.emplace_back(VoltageSource::create_voltagesource(i, 
-            nm, nc, branchIndex));
+            nm, lm, nc, branchIndex));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         std::get<VoltageSource>(components_new.devices.back()).set_sourceIndex(sources.size() - 1);
         components_new.vsIndices.emplace_back(components_new.devices.size() - 1);
@@ -182,19 +182,19 @@ void Matrix::create_matrix(Input &iObj)
         break;
       case 'P':
         components_new.devices.emplace_back(PhaseSource::create_phasesource(i, 
-            nm, nc, branchIndex));
+            nm, lm, nc, branchIndex));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         std::get<PhaseSource>(components_new.devices.back()).set_sourceIndex(sources.size() - 1);
         components_new.psIndices.emplace_back(components_new.devices.size() - 1);
         break;
       case 'I':
-        components_new.currentsources.emplace_back(CurrentSource::create_currentsource(i, nm));
+        components_new.currentsources.emplace_back(CurrentSource::create_currentsource(i, nm, lm));
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         components_new.currentsources.back().set_sourceIndex(sources.size() - 1);
         break;
       case 'T':
         components_new.devices.emplace_back(TransmissionLine::create_transmissionline(i, 
-            nm, nc, 
+            nm, lm, nc, 
             iObj.parameters, iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         components_new.txIndices.emplace_back(components_new.devices.size() - 1);        
@@ -202,6 +202,7 @@ void Matrix::create_matrix(Input &iObj)
       case 'K':
         components_new.mutualinductances.emplace_back(i);
     }
+    creationCounter++;
   }
 
   for (const auto &s : components_new.mutualinductances) {
@@ -250,6 +251,9 @@ void Matrix::create_matrix(Input &iObj)
   }
 
   create_csr();
+
+  std::cout << "100%" << std::endl;
+  std::cout << "\n";
 
   analysisType = iObj.argAnal;
 

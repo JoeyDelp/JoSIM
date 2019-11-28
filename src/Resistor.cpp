@@ -11,6 +11,7 @@
 Resistor Resistor::create_resistor(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
+    std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const JoSIM::AnalysisType &antyp,
@@ -19,7 +20,7 @@ Resistor Resistor::create_resistor(
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
   Resistor temp;
-  temp.set_label(tokens.at(0));
+  temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {
     if(s.first.find("}") != std::string::npos) {
       tokens.at(3) = s.first.substr(s.first.find("{")+1, s.first.find("}") - s.first.find("{"));
@@ -32,6 +33,14 @@ Resistor Resistor::create_resistor(
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
   temp.set_currentIndex(branchIndex - 1);
   return temp;
+}
+
+void Resistor::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
+  if(lm.count(s) != 0) {
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
+  } else {
+    label_ = s;
+  }
 }
 
 void Resistor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {

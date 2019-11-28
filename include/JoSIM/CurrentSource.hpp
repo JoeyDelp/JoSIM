@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 
 class CurrentSource {
@@ -16,8 +17,9 @@ class CurrentSource {
   public:
     static CurrentSource create_currentsource(
         const std::pair<std::string, std::string> &s,
-        const std::unordered_map<std::string, int> &nm);
-    void set_label(const std::string &l) { label_ = l; }
+        const std::unordered_map<std::string, int> &nm,
+        std::unordered_set<std::string> &lm);
+    void set_label(const std::string &s, std::unordered_set<std::string> &lm);
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm);
     void set_sourceIndex(const int &i) { sourceIndex_ = i; }
 

@@ -9,6 +9,7 @@
 JJ JJ::create_jj(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
+    std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const std::vector<std::pair<Model, std::string>> &models,
@@ -18,7 +19,7 @@ JJ JJ::create_jj(
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
 
   JJ temp;
-  temp.set_label(tokens.at(0));
+  temp.set_label(tokens.at(0), lm);
   // Junction line has potential to have up to 6 parts, identifying the last 3 can be tricky.
   for(int i = 0; i < tokens.size(); ++i) {
     if(tokens.at(i).find("AREA=") != std::string::npos) {
@@ -46,6 +47,14 @@ JJ JJ::create_jj(
   temp.set_variableIndex(branchIndex - 2);
   temp.set_currentIndex(branchIndex - 1);
   return temp;
+}
+
+void JJ::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
+  if(lm.count(s) != 0) {
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
+  } else {
+    label_ = s;
+  }
 }
 
 void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 

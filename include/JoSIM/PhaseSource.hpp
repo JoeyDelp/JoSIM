@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <optional>
 
 class PhaseSource {
@@ -26,9 +27,10 @@ class PhaseSource {
     static PhaseSource create_phasesource(
         const std::pair<std::string, std::string> &s,
         const std::unordered_map<std::string, int> &nm, 
+        std::unordered_set<std::string> &lm,
         std::vector<std::vector<std::pair<int, int>>> &nc,
         int &branchIndex);
-    void set_label(const std::string &l) { label_ = l; }
+    void set_label(const std::string &s, std::unordered_set<std::string> &lm);
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }

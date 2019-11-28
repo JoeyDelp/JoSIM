@@ -15,6 +15,7 @@
 TransmissionLine TransmissionLine::create_transmissionline(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
+    std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const JoSIM::AnalysisType &antyp,
@@ -27,7 +28,7 @@ TransmissionLine TransmissionLine::create_transmissionline(
   }
 
   TransmissionLine temp;
-  temp.set_label(tokens.at(0));
+  temp.set_label(tokens.at(0), lm);
   std::string strippedLine = s.first;
   strippedLine.erase(std::remove_if(strippedLine.begin(), strippedLine.end(), std::bind(std::isspace<char>,
 									std::placeholders::_1,
@@ -71,6 +72,14 @@ TransmissionLine TransmissionLine::create_transmissionline(
   temp.set_currentIndex1(branchIndex - 2);
   temp.set_currentIndex2(branchIndex - 1);
   return temp;
+}
+
+void TransmissionLine::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
+  if(lm.count(s) != 0) {
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
+  } else {
+    label_ = s;
+  }
 }
 
 void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 

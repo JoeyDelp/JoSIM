@@ -109,10 +109,10 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
       mObj.relevantIndices.emplace_back(temp.get_negIndex().value());
     }
     if(temp.get_posIndex2()) {
-      mObj.relevantIndices.emplace_back(temp.get_posIndex().value());
+      mObj.relevantIndices.emplace_back(temp.get_posIndex2().value());
     }
     if(temp.get_negIndex2()) {
-      mObj.relevantIndices.emplace_back(temp.get_negIndex().value());
+      mObj.relevantIndices.emplace_back(temp.get_negIndex2().value());
     }
     mObj.relevantIndices.emplace_back(temp.get_currentIndex());
     mObj.relevantIndices.emplace_back(temp.get_currentIndex2());
