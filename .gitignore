@@ -313,3 +313,6 @@ doc/*
 
 # direnv file
 .envrc
+
+# site folder
+site/
