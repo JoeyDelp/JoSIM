@@ -22,7 +22,10 @@ class VoltageSource {
     int sourceIndex_;
 
   public:
-    VoltageSource() {};
+    VoltageSource() :
+      currentIndex_(-1),
+      sourceIndex_(-1)
+      {};
     
     static VoltageSource create_voltagesource(
         const std::pair<std::string, std::string> &s,

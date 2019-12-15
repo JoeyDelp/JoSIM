@@ -22,7 +22,10 @@ class PhaseSource {
     int sourceIndex_;
 
   public:
-    PhaseSource() {};
+    PhaseSource() :
+      currentIndex_(-1),
+      sourceIndex_(-1)
+      {};
     
     static PhaseSource create_phasesource(
         const std::pair<std::string, std::string> &s,

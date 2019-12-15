@@ -36,11 +36,14 @@ class JJ {
     
   public:
     JJ() :
+      currentIndex_(-1),
+      variableIndex_(-1),
       area_(1),
-      vn1_(0),
-      vn2_(0),
-      dvn1_(0),
-      dvn2_(0),
+      value_(0.0),
+      phaseConst_(0),
+      lowerB_(0), upperB_(0), subCond_(0), transCond_(0), normalCond_(0),
+      del0_(0), del_(0), rncalc_(0),
+      pn1_(0), vn1_(0), vn2_(0), dvn1_(0), dvn2_(0),
       transitionCurrent_(0)
       {};
     

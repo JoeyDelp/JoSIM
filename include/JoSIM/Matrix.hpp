@@ -64,8 +64,6 @@ struct LabelNodes {
 class Matrix {
 public:
   JoSIM::AnalysisType analysisType;
-  Components components;
-  std::vector<NodeConnections> nodeConnections;
   std::vector<RowDescriptor> rowDesc;
   std::unordered_map<std::string, RowDescriptor> deviceLabelIndex;
   std::unordered_map<std::string, int> nodeMap, relToXMap;
@@ -79,7 +77,7 @@ public:
   std::unordered_map<std::string, LabelNodes> labelNodes;
   int Nsize, Msize;
 
-  Components_new components_new;
+  Components components;
   std::unordered_map<std::string, int> nm;
   std::vector<std::vector<std::pair<int, int>>> nc;
   std::unordered_set<std::string> lm;
@@ -92,13 +90,13 @@ public:
   Matrix(){};
   void create_matrix(Input &iObj);
 
-  void create_A_volt(Input &iObj);
+  // void create_A_volt(Input &iObj);
 
-  void create_A_phase(Input &iObj);
+  // void create_A_phase(Input &iObj);
 
-  void create_CSR();
+  // void create_CSR();
 
-  void find_relevant_x(Input &iObj);
+  // void find_relevant_x(Input &iObj);
 
   void create_csr();
   void create_nz();

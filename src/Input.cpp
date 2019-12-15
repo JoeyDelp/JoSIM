@@ -33,14 +33,14 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
   return {};
 }
 
-void Input::parse_file(std::string &fileName, Input &iObj) {
+void Input::parse_file(const std::string &fileName, Input &iObj) {
   std::vector<std::string> fileLines = Input::read_file(fileName);
 
   bool subckt = false;
   bool control = false;
   std::string subcktName = "";
   std::vector<std::string> tokens;
-  for (int i = 0; i < fileLines.size(); i++) {
+  for (int i = 0; i < fileLines.size(); ++i) {
     // If line starts with '.' it is a control but could be the start or end
     // of a subcircuit section.
     if (fileLines.at(i)[0] == '.') {
@@ -51,7 +51,7 @@ void Input::parse_file(std::string &fileName, Input &iObj) {
         if (tokens.size() > 1) {
           if (tokens.size() > 2) {
             subcktName = tokens.at(1);
-            for (int j = 2; j < tokens.size(); j++) {
+            for (int j = 2; j < tokens.size(); ++j) {
               iObj.netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
             }
           } else

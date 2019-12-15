@@ -14,13 +14,11 @@ namespace JoSIM {
 
 struct target_less
 {
-    template<class It>
-    bool operator()(It const &a, It const &b) const { return *a < *b; }
+    template<class It> bool operator()(It const &a, It const &b) const { return *a < *b; }
 };
 struct target_equal
 {
-    template<class It>
-    bool operator()(It const &a, It const &b) const { return *a == *b; }
+    template<class It> bool operator()(It const &a, It const &b) const { return *a == *b; }
 };
 template<class It> It uniquify(It begin, It const end)
 {
@@ -51,6 +49,7 @@ class RelevantTrace {
     JoSIM::StorageType storageType;
     std::optional<int> index1;
     std::optional<int> index2;
+    std::optional<int> sourceIndex;
 
     RelevantTrace() :
       device(false)

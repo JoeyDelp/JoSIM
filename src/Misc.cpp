@@ -7,7 +7,7 @@
 #include <cassert>
 #include <fstream>
 
-double Misc::string_constant(std::string &s) {
+double Misc::string_constant(const std::string &s) {
   if (s == "PI") return JoSIM::Constants::PI;
   else if (s == "PHI_ZERO") return JoSIM::Constants::PHI_ZERO;
   else if (s == "BOLTZMANN") return JoSIM::Constants::BOLTZMANN;
@@ -109,16 +109,6 @@ void Misc::rtrim(std::string &s) {
     }).base(), s.end());
 }
 
-int Misc::map_value_count(const std::unordered_map<std::string, int> &map,
-                          int value) {
-  int counter = 0;
-  for (const auto &i : map) {
-    if (i.second == value)
-      counter++;
-  }
-  return counter;
-}
-
 double Misc::modifier(const std::string &value) {
   std::string::size_type sz;
   double number;
@@ -126,10 +116,8 @@ double Misc::modifier(const std::string &value) {
     number = std::stod(value, &sz);
   } catch (const std::invalid_argument &) {
     Errors::misc_errors(MiscErrors::STOD_ERROR, value);
-    throw;
   } catch (std::exception &e) {
     Errors::misc_errors(MiscErrors::STOD_ERROR, value);
-    throw;
   }
   switch (value.substr(sz)[0]) {
     /* mega */
@@ -205,10 +193,9 @@ std::string Misc::substring_after(const std::string &str,
 
 std::string Misc::substring_before(const std::string &str,
                                    const std::string &whatpart) {
-  std::size_t pos = 0;
   std::string substring;
   if (str.find(whatpart) != std::string::npos) {
-    pos = str.find(whatpart);
+    std::size_t pos = str.find(whatpart);
     substring = str.substr(0, pos);
     return substring;
   } else
@@ -219,8 +206,6 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
                                          const std::string &subckt) {
   std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
-  std::string posVarName; // subckt = "";
-  tokens = tokenize_space(str);
   auto first = str.find('(') + 1;
   auto last = str.find(')');
   std::string params = str.substr(first, last - first);
@@ -274,13 +259,13 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
                     timesteps.at(timesteps.size() - 1) / iObj.transSim.get_prstep(),
                 functionOfT.end(), values.at(values.size() - 1));
     }
-    double startpoint, endpoint, value = 0.0;
+    double value = 0.0;
     if((timesteps.back() / iObj.transSim.get_prstep()) > iObj.transSim.get_simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.get_prstep())), 0.0);
-    for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
-      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
+    for (int i = 1; i < timesteps.size(); ++i) {
+      double startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      double endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       functionOfT.at(startpoint) = values.at(i - 1);
-      for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
+      for (int j = (int)startpoint + 1; j < (int)endpoint; ++j) {
         if (values.at(i - 1) < values.at(i))
           value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
                                           (endpoint - startpoint) *
@@ -321,9 +306,8 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     int PR = pulseRepeat / iObj.transSim.get_prstep();
     int TD = timeDelay / iObj.transSim.get_prstep();
     std::vector<double> timesteps, values;
-    double timestep;
-    for (int i = 0; i < ((iObj.transSim.get_simsize() - TD) / PR); i++) {
-      timestep = timeDelay + (pulseRepeat * i);
+    for (int i = 0; i <= ((iObj.transSim.get_simsize() - TD) / PR); ++i) {
+      double timestep = timeDelay + (pulseRepeat * i);
       if (timestep < iObj.transSim.get_tstop())
         timesteps.push_back(timestep);
       else
@@ -349,12 +333,12 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
         break;
       values.push_back(0.0);
     }
-    double startpoint, endpoint, value = 0;
-    for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
-      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
+    double value = 0;
+    for (int i = 1; i < timesteps.size(); ++i) {
+      double startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      double endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       functionOfT.at(startpoint) = values.at(i - 1);
-      for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
+      for (int j = (int)startpoint + 1; j < (int)endpoint; ++j) {
         if (values.at(i - 1) < values.at(i))
           if (values.at(i - 1) < 0)
             value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
@@ -399,14 +383,13 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     } else if (tokens.size() == 3) {
       FREQ = modifier(tokens.at(2));
     }
-    double currentTimestep, value;
     int beginTime;
     beginTime = TD / iObj.transSim.get_prstep();
 
     assert(iObj.transSim.get_simsize() == functionOfT.size());
-    for (int i = beginTime; i < iObj.transSim.get_simsize(); i++) {
-      currentTimestep = i * iObj.transSim.get_prstep();
-      value = VO + VA * sin(2 * JoSIM::Constants::PI * FREQ * (currentTimestep - TD)) *
+    for (int i = beginTime; i < iObj.transSim.get_simsize(); ++i) {
+      double currentTimestep = i * iObj.transSim.get_prstep();
+      double value = VO + VA * sin(2 * JoSIM::Constants::PI * FREQ * (currentTimestep - TD)) *
                        exp(-THETA * (currentTimestep - TD));
       functionOfT.at(i) = value;
     }
@@ -442,7 +425,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     wffile.close();
     WF = tokenize_delimiter(WFline, " ,;");
     std::vector<double> timesteps, values;
-    for (int i = 0; i < WF.size(); i++) {
+    for (int i = 0; i < WF.size(); ++i) {
       values.push_back(modifier(WF.at(i)) * SF);
       timesteps.push_back(TD + i * TS);
     }
@@ -451,20 +434,20 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     double functionSize = (iObj.transSim.get_tstop() - TD) / TS;
     if (PER == 1) {
       double repeats = functionSize / values.size();
-      for (int j = 0; j < repeats; j++) {
+      for (int j = 0; j < repeats; ++j) {
         double lastTimestep = timesteps.back() + TS;
-        for (int i = 0; i < WF.size(); i++) {
+        for (int i = 0; i < WF.size(); ++i) {
           values.push_back(modifier(WF.at(i)) * SF);
           timesteps.push_back(lastTimestep + i * TS);
         }
       }
     }
-    double startpoint, endpoint, value = 0.0;
-    for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
-      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
+    double value = 0.0;
+    for (int i = 1; i < timesteps.size(); ++i) {
+      double startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      double endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       functionOfT.at(startpoint) = values.at(i - 1);
-      for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
+      for (int j = (int)startpoint + 1; j < (int)endpoint; ++j) {
         if (values.at(i - 1) < values.at(i))
           if (values.at(i - 1) < 0)
             value = values.at(i - 1) + (values.at(i) - (values.at(i - 1))) /
@@ -510,11 +493,10 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     }
     TSTEP = iObj.transSim.get_prstep();
     int beginTime;
-    double currentTimestep, value;
     beginTime = TD / iObj.transSim.get_prstep();
-    for (int i = beginTime; i < iObj.transSim.get_simsize(); i++) {
-      currentTimestep = i * iObj.transSim.get_prstep();
-      value = VA * grand() / sqrt(2.0 * TSTEP);
+    for (int i = beginTime; i < iObj.transSim.get_simsize(); ++i) {
+      double currentTimestep = i * iObj.transSim.get_prstep();
+      double value = VA * grand() / sqrt(2.0 * TSTEP);
       functionOfT.at(i) = value;
     }
   }
@@ -567,14 +549,14 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
                     timesteps.at(timesteps.size() - 1) / iObj.transSim.get_prstep(),
                 functionOfT.end(), values.at(values.size() - 1));
     }
-    double startpoint, endpoint, value, period, ba = 0.0;
+    double value, ba;
     if((timesteps.back() / iObj.transSim.get_prstep()) > iObj.transSim.get_simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.get_prstep())), 0.0);
-    for (int i = 1; i < timesteps.size(); i++) {
-      startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
-      endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
-      period = (endpoint - startpoint) * 2;
+    for (int i = 1; i < timesteps.size(); ++i) {
+      double startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
+      double endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
+      double period = (endpoint - startpoint) * 2;
       functionOfT.at(startpoint) = values.at(i - 1);
-      for (int j = (int)startpoint + 1; j < (int)endpoint; j++) {
+      for (int j = (int)startpoint + 1; j < (int)endpoint; ++j) {
         if (values.at(i - 1) < values.at(i)) {
           ba = (values.at(i) - values.at(i - 1)) / 2;
           value = values.at(i - 1) + ba * sin((2 * JoSIM::Constants::PI * (j - (period/4)))/period) + ba;
@@ -593,7 +575,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
 
 bool Misc::findX(const std::vector<std::string> &segment, std::string &theLine,
                  int &linePos) {
-  for (int i = linePos; i < segment.size(); i++) {
+  for (int i = linePos; i < segment.size(); ++i) {
     if (segment.at(i).at(0) == 'X') {
       theLine = segment.at(i);
       if (i < segment.size() - 1)
@@ -618,13 +600,13 @@ int Misc::numDigits(int number) {
 }
 
 double Misc::grand() {
-  double r,v1,v2,fac;
-  r=2;
-  while (r>=1) {
-    v1=(2*((double)rand()/(double)RAND_MAX)-1);
-    v2=(2*((double)rand()/(double)RAND_MAX)-1);
-    r=v1*v1+v2*v2;
+  double r, v2, fac;
+  r = 2;
+  while (r >= 1) {
+    double v1 = (2*((double)rand()/(double)RAND_MAX)-1);
+    v2 = (2*((double)rand()/(double)RAND_MAX)-1);
+    r = v1*v1+v2*v2;
   }
-  fac=sqrt(-2*log(r)/r);
-  return(v2*fac);
+  fac = sqrt(-2*log(r)/r);
+  return (v2*fac);
 }

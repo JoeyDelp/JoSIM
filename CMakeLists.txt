@@ -33,7 +33,6 @@ add_library(josim
             src/Matrix.cpp
             src/Input.cpp
             src/Errors.cpp
-            src/Components.cpp
             src/Verbose.cpp
             src/Netlist.cpp
             src/Model.cpp

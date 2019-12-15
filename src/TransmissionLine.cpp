@@ -44,12 +44,18 @@ TransmissionLine TransmissionLine::create_transmissionline(
   }
   std::string impedanceValue;
   std::string timeDelayValue;
-  if(strippedLine.substr(timeDelay).size() > strippedLine.substr(impedance).size()) {
-    impedanceValue = strippedLine.substr(impedance+3);
-    timeDelayValue = strippedLine.substr(timeDelay+3, impedance);
+  if(timeDelay > impedance) {
+    impedanceValue = strippedLine;
+    impedanceValue.erase(impedanceValue.begin() + timeDelay, impedanceValue.end());
+    impedanceValue.erase(impedanceValue.begin(), impedanceValue.begin() + impedance + 3);
+    timeDelayValue = strippedLine;
+    timeDelayValue.erase(timeDelayValue.begin(), timeDelayValue.begin() + timeDelay + 3);
   } else {
-    timeDelayValue = strippedLine.substr(timeDelay+3);
-    impedanceValue = strippedLine.substr(impedance+3, timeDelay);
+    timeDelayValue = strippedLine;
+    timeDelayValue.erase(timeDelayValue.begin() + impedance, timeDelayValue.end());
+    timeDelayValue.erase(timeDelayValue.begin(), timeDelayValue.begin() + timeDelay + 3);
+    impedanceValue = strippedLine;
+    impedanceValue.erase(impedanceValue.begin(), impedanceValue.begin() + impedance + 3);
   }
   if(impedanceValue.find("{") != std::string::npos) {
     if(impedanceValue.find("}") != std::string::npos) {
@@ -79,6 +85,7 @@ void TransmissionLine::set_label(const std::string &s, std::unordered_set<std::s
     Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
   } else {
     label_ = s;
+    lm.emplace(s);
   }
 }
 

@@ -28,8 +28,11 @@ class TransmissionLine {
     int timestepDelay_;
   public:
     TransmissionLine() :
+    currentIndex1_(-1), currentIndex2_(-1), 
+    value_(0),
     dv1n1_(0), dv1n2_(0), dv2n1_(0), dv2n2_(0),
-    dv1nk_(0), dv1nk1_(0), dv2nk_(0), dv2nk1_(0)
+    dv1nk_(0), dv1nk1_(0), dv2nk_(0), dv2nk1_(0),
+    timestepDelay_(0)
     {};
     
     static TransmissionLine create_transmissionline(

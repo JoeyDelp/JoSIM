@@ -164,7 +164,7 @@ double Parameters::parse_param(
   while (rpnQueue.size() > 1) {
     rpnQueueCopy.clear();
     qTypeCopy.clear();
-    for (int i = 0; i < qType.size(); i++) {
+    for (int i = 0; i < qType.size(); ++i) {
       if (qType[i] == 'V') {
         rpnQueueCopy.push_back(rpnQueue[i]);
         qTypeCopy.push_back('V');
@@ -178,7 +178,7 @@ double Parameters::parse_param(
         } else {
           result = parse_operator(rpnQueue[i], Misc::modifier(rpnQueue[i - 2]),
                                   Misc::modifier(rpnQueue[i - 1]), popCount);
-          for (int k = 0; k < popCount; k++)
+          for (int k = 0; k < popCount; ++k)
             rpnQueueCopy.pop_back();
           if (popCount == 2)
             qTypeCopy.pop_back();

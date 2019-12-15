@@ -33,10 +33,13 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
   storeCommands.erase(uniquify(storeCommands.begin(), storeCommands.end()), storeCommands.end());
 
   for (const auto &i : storeCommands) {
+    // Tokenize each store command using spaces
     std::vector<std::string> tokens = Misc::tokenize_space(i);
-    if(tokens.size() < 3) {
+    // Complain if any of the commands have less than 3 tokens
+    if(tokens.size() < 3 && tokens.at(0) != "SAVE") {
       Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
     }
+    // Fix any naming issues
     for (auto &l : tokens) {
       if (l.find('_') != std::string::npos) {
         tokens2 = Misc::tokenize_delimiter(l, "_");
@@ -48,46 +51,92 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
         std::replace(l.begin(), l.end(), '.', '|');
       }
     }
-    
-    switch(tokens.at(1).back()) {
-      case ')':
-        tokens2 = Misc::tokenize_delimiter(i, ")");
-        tokens2.at(0) = tokens2.at(0).substr(tokens.at(2).find_last_of(" "));
-        for(const auto &j : tokens2) {
-          switch(j.at(0)) {
+    // Remove any "TRAN" tokens. We don't do that here. 
+    for (int j = 0; j < tokens.size(); ++j) {
+      if (tokens.at(j).find("TRAN") != std::string::npos) {
+        tokens.erase(tokens.begin() + j);
+      }
+    }
+    // Determine the type of plot
+    for (int j = 1; j < tokens.size(); ++j) {
+      switch(tokens.at(j).back()) {
+        case ')':
+          switch(tokens.at(j).at(0)) {
             case 'I':
-              handle_current(j, mObj);
+              tokens.at(j).erase(0, 2);
+              tokens.at(j).erase(tokens.at(j).size() - 1, tokens.at(j).size());
+              handle_current(tokens.at(j), mObj);
               break;
             case 'V':
-              handle_voltage_or_phase(j, true, mObj);
+              tokens.at(j).erase(0, 2);
+              tokens.at(j).erase(tokens.at(j).size() - 1, tokens.at(j).size());
+              handle_voltage_or_phase(tokens.at(j), true, mObj);
               break;
             case 'P':
-              handle_voltage_or_phase(j, false, mObj);
+              tokens.at(j).erase(0, 2);
+              tokens.at(j).erase(tokens.at(j).size() - 1, tokens.at(j).size());
+              handle_voltage_or_phase(tokens.at(j), false, mObj);
               break;
           }
-        }
+          break;
+        case 'V':
+          if (tokens.size() < 4) {
+            handle_voltage_or_phase(tokens.at(j+1), true, mObj);
+          } else {
+            handle_voltage_or_phase(tokens.at(j+1) + " " + tokens.at(j+2), true, mObj);
+          }
+          break;
+        case 'E':
+        case 'P':
+          if (tokens.size() < 4) {
+            handle_voltage_or_phase(tokens.at(j+1), false, mObj);
+          } else {
+            handle_voltage_or_phase(tokens.at(j+1) + " " + tokens.at(j+2), false, mObj);
+          }
+          break;
+        case 'I':
+          handle_current(tokens.at(j+1), mObj);
+          break;
+        case 'H':
+          if(tokens.at(j).find("#BRANCH") != std::string::npos) {
+            tokens.at(j) = tokens.at(j).substr(0, tokens.at(j).find("#BRANCH"));
+            handle_current(tokens.at(j), mObj);
+            break;
+          } else {
+            Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, tokens.at(j) + " in line:\n" + i);
+            break;
+          }
+        case ']':
+          if(tokens.at(j).at(0) == '@') { 
+            switch(tokens.at(j).at(tokens.at(j).size() - 2)){
+              case 'C':
+                tokens.at(j).erase(0, 1);
+                tokens.at(j).erase(tokens.at(j).size() - 3, tokens.at(j).size());
+                handle_current(tokens.at(j), mObj);
+                break;
+              case 'V':
+                tokens.at(j).erase(0, 1);
+                tokens.at(j).erase(tokens.at(j).size() - 3, tokens.at(j).size());
+                handle_voltage_or_phase(tokens.at(j+1), true, mObj);
+                break;
+              case 'P':
+                tokens.at(j).erase(0, 1);
+                tokens.at(j).erase(tokens.at(j).size() - 3, tokens.at(j).size());
+                handle_voltage_or_phase(tokens.at(j+1), false, mObj);
+                break;
+            }
+            break;
+          } else {
+            Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, tokens.at(j) + " in line:\n" + i);
+            break;
+          }
+        default:
+          Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, tokens.at(j) + " in line:\n" + i);
+          break;
+      }
+      if(tokens.at(1).find("NODE") != std::string::npos) {
         break;
-      case 'V':
-        if (tokens.size() < 4) {
-          handle_voltage_or_phase(tokens.at(2), true, mObj);
-        } else {
-          handle_voltage_or_phase(tokens.at(2) + " " + tokens.at(3), true, mObj);
-        }
-        break;
-      case 'E':
-      case 'P':
-        if (tokens.size() < 4) {
-          handle_voltage_or_phase(tokens.at(2), false, mObj);
-        } else {
-          handle_voltage_or_phase(tokens.at(2) + " " + tokens.at(3), false, mObj);
-        }
-        break;
-      case 'I':
-        handle_current(tokens.at(2), mObj);
-        break;
-      default:
-        Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
-        break;
+      }
     }
   }
 
@@ -100,8 +149,8 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
     }
   }
 
-  for(const auto &i : mObj.components_new.txIndices) {
-    const auto &temp = std::get<TransmissionLine>(mObj.components_new.devices.at(i));
+  for(const auto &i : mObj.components.txIndices) {
+    const auto &temp = std::get<TransmissionLine>(mObj.components.devices.at(i));
     if(temp.get_posIndex()) {
       mObj.relevantIndices.emplace_back(temp.get_posIndex().value());
     }
@@ -124,23 +173,35 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
 void RelevantTrace::handle_current(const std::string &s, Matrix &mObj) {
   RelevantTrace temp;
   temp.storageType = JoSIM::StorageType::Current;
-  for(int j = 0; j < mObj.components_new.devices.size(); ++j) {
-    const auto& l = std::visit([](const auto& device) noexcept -> const std::string& {
-      return device.get_label();
-    }, mObj.components_new.devices.at(j));
+  if(s.at(0) != 'I'){
+    for(int j = 0; j < mObj.components.devices.size(); ++j) {
+      const auto& l = std::visit([](const auto& device) noexcept -> const std::string& {
+        return device.get_label();
+      }, mObj.components.devices.at(j));
 
-    if(l == s) {
-      temp.deviceLabel = "\"I(" + s + ")\"";
-      temp.device = true;
-      temp.index1 = std::visit([](const auto& device) noexcept -> const int& {
-        return device.get_currentIndex();
-      }, mObj.components_new.devices.at(j));
-      mObj.relevantTraces.emplace_back(temp);
-      break;
+      if(l == s) {
+        temp.deviceLabel = "\"I(" + s + ")\"";
+        temp.device = true;
+        temp.index1 = std::visit([](const auto& device) noexcept -> const int& {
+          return device.get_currentIndex();
+        }, mObj.components.devices.at(j));
+        mObj.relevantTraces.emplace_back(temp);
+        break;
+      }
     }
-  }
-  if(!temp.deviceLabel) {
-    Errors::control_errors(ControlErrors::NODECURRENT, s);
+    if(!temp.deviceLabel) {
+      Errors::control_errors(ControlErrors::NODECURRENT, s);
+    }
+  } else {
+    for (int i = 0; i < mObj.components.currentsources.size(); ++i) {
+      if(s == mObj.components.currentsources.at(i).get_label()) {
+        temp.deviceLabel = "\"I(" + s + ")\"";
+        temp.device = true;
+        temp.sourceIndex = mObj.components.currentsources.at(i).get_sourceIndex();
+        mObj.relevantTraces.emplace_back(temp);
+        break;
+      }
+    }
   }
 }
 
@@ -152,10 +213,10 @@ void RelevantTrace::handle_voltage_or_phase(const std::string &s, bool voltage, 
   } else {
     temp.storageType = JoSIM::StorageType::Phase;
   }
-  for(int j = 0; j < mObj.components_new.devices.size(); ++j) {
+  for(int j = 0; j < mObj.components.devices.size(); ++j) {
     const auto& l = std::visit([](const auto& device) noexcept -> const std::string& {
       return device.get_label();
-    }, mObj.components_new.devices.at(j));
+    }, mObj.components.devices.at(j));
 
     if(l == tokens.at(0)) {
       if(tokens.size() < 1) {
@@ -170,10 +231,10 @@ void RelevantTrace::handle_voltage_or_phase(const std::string &s, bool voltage, 
           temp.device = true;
           temp.index1 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
             return device.get_posIndex();
-          }, mObj.components_new.devices.at(j));
+          }, mObj.components.devices.at(j));
           temp.index2 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
             return device.get_negIndex();
-          }, mObj.components_new.devices.at(j));
+          }, mObj.components.devices.at(j));
           mObj.relevantTraces.emplace_back(temp);
           break;
         } else {
@@ -184,7 +245,7 @@ void RelevantTrace::handle_voltage_or_phase(const std::string &s, bool voltage, 
             }
             temp.device = true;
             try {
-              temp.index1 = std::get<JJ>(mObj.components_new.devices.at(j)).get_variableIndex();
+              temp.index1 = std::get<JJ>(mObj.components.devices.at(j)).get_variableIndex();
               mObj.relevantTraces.emplace_back(temp);
               break;
             } catch (const std::bad_variant_access&) {}

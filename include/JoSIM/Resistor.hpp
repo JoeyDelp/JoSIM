@@ -22,7 +22,10 @@ class Resistor {
     int currentIndex_;
     double value_;
   public:
-    Resistor() {};
+    Resistor() :
+      currentIndex_(-1),
+      value_(0)
+      {};
     
     static Resistor create_resistor(
         const std::pair<std::string, std::string> &s,

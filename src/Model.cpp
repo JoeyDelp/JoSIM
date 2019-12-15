@@ -33,7 +33,7 @@ void Model::parse_model(
     Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, s.first);
   }
 
-  for (int i = 0; i < tokens.size(); i++) {
+  for (int i = 0; i < tokens.size(); ++i) {
     std::vector<std::string> itemToken = Misc::tokenize_delimiter(tokens.at(i), "=");
     if ((itemToken.size() == 1) && (i != tokens.size() - 1)) {
       std::vector<std::string> tempToken = Misc::tokenize_delimiter(tokens.at(i + 1), "=");

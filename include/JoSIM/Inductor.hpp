@@ -24,7 +24,11 @@ class Inductor {
     double inductance_;
     double value_;
   public:
-    Inductor() {};
+    Inductor() :
+      currentIndex_(-1),
+      inductance_(0),
+      value_(0)
+      {};
     
     static Inductor create_inductor(
         const std::pair<std::string, std::string> &s,

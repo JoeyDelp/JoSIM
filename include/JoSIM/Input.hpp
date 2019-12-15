@@ -22,7 +22,7 @@ public:
   std::vector<std::string> relevantX;
   std::unordered_map<JoSIM::ParameterName, Parameter> parameters;
 
-  Input(JoSIM::AnalysisType analysis_type,
+  Input(JoSIM::AnalysisType analysis_type = JoSIM::AnalysisType::Voltage,
         JoSIM::InputType input_type = JoSIM::InputType::Jsim,
         bool verbose = false) : 
     argAnal(analysis_type), 
@@ -37,7 +37,7 @@ public:
   bool argVerb = false;
 
   static std::vector<std::string> read_file(const std::string &fileName);
-  static void parse_file(std::string &fileName, Input &iObj);
+  static void parse_file(const std::string &fileName, Input &iObj);
 };
 
 #endif

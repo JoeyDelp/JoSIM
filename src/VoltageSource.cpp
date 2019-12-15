@@ -29,6 +29,7 @@ void VoltageSource::set_label(const std::string &s, std::unordered_set<std::stri
     Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
   } else {
     label_ = s;
+    lm.emplace(s);
   }
 }
 

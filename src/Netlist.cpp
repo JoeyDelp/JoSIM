@@ -22,7 +22,7 @@ void Netlist::expand_subcircuits() {
   }
   while (nestedSubcktCount != 0) {
     for (const auto &i : subcircuits) {
-      for (int j = 0; j < subcircuits.at(i.first).lines.size(); j++) {
+      for (int j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
         if (subcircuits.at(i.first).lines.at(j).first[0] == 'X') {
           tokens = Misc::tokenize_space(
               subcircuits.at(i.first).lines.at(j).first);
@@ -36,7 +36,7 @@ void Netlist::expand_subcircuits() {
           }
           if (subcircuits.count(subcktName) != 0) {
             if (!subcircuits.at(subcktName).containsSubckt) {
-              for (int k = 0; k < subcircuits.at(subcktName).lines.size(); k++) {
+              for (int k = 0; k < subcircuits.at(subcktName).lines.size(); ++k) {
                 tokens = Misc::tokenize_space(
                     subcircuits.at(subcktName).lines.at(k).first);
                 tokens[0] = tokens[0] + "|" + label;
@@ -67,7 +67,7 @@ void Netlist::expand_subcircuits() {
                 } else if (tokens[2] != "0" && tokens[2] != "GND")
                   tokens[2] = tokens[2] + "|" + label;
                 line = tokens[0];
-                for (int m = 1; m < tokens.size(); m++)
+                for (int m = 1; m < tokens.size(); ++m)
                   line += " " + tokens.at(m);
                 moddedLines.push_back(std::make_pair(
                     line,
@@ -96,7 +96,7 @@ void Netlist::expand_maindesign() {
   std::vector<std::string> tokens, io;
   std::vector<std::pair<std::string, std::string>> moddedLines;
   std::string subcktName, label, line;
-  for (int i = 0; i < maindesign.size(); i++) {
+  for (int i = 0; i < maindesign.size(); ++i) {
     if (maindesign.at(i)[0] == 'X') {
       tokens = Misc::tokenize_space(maindesign.at(i));
       label = tokens.at(0);
@@ -138,7 +138,7 @@ void Netlist::expand_maindesign() {
           } else if (tokens[2] != "0" && tokens[2] != "GND")
             tokens[2] = tokens[2] + "|" + label;
           line = tokens[0];
-          for (int m = 1; m < tokens.size(); m++)
+          for (int m = 1; m < tokens.size(); ++m)
             line += " " + tokens.at(m);
           moddedLines.push_back(std::make_pair(
               line, subcircuits.at(subcktName).lines.at(k).second));

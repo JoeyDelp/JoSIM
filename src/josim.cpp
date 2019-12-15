@@ -46,9 +46,6 @@ int main(int argc, const char **argv) {
       Verbose::print_expanded_netlist(iObj.netlist.expNetlist);
 
     Matrix mObj;
-
-    // Find the relevant x indices to store
-    mObj.find_relevant_x(iObj);
     // Create the matrix in csr format
     mObj.create_matrix(iObj);
 
@@ -56,32 +53,10 @@ int main(int argc, const char **argv) {
     RelevantTrace::find_relevant_traces(iObj.controls, mObj);
     
     Simulation sObj;
-    
-    // Do a simulation dependent on what analysis needs to be performed
-    if (cli_options.analysis_type == JoSIM::AnalysisType::Voltage)
-      sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
-    else if (cli_options.analysis_type == JoSIM::AnalysisType::Phase)
-      sObj.trans_sim<JoSIM::AnalysisType::Phase>(iObj, mObj);
 
     sObj.trans_sim_new(iObj, mObj);
     
     Output oObj;
-
-    // Fish out the relevant traces from the x vector
-    oObj.relevant_traces(iObj, mObj, sObj);
-
-    if (cli_options.output_file_name) {
-      if (cli_options.output_file_type == JoSIM::FileOutputType::Csv) {
-        oObj.write_data(cli_options.output_file_name.value(), mObj, sObj);
-      } else if (cli_options.output_file_type == JoSIM::FileOutputType::Dat) {
-        oObj.write_legacy_data(cli_options.output_file_name.value(), mObj, sObj);
-      } else if (cli_options.output_file_type == JoSIM::FileOutputType::WrSpice) {
-        oObj.write_wr_data(cli_options.output_file_name.value());
-      }
-    }
-    if (!cli_options.output_file_name) {
-      oObj.write_cout(mObj, sObj);
-    }
 
     std::vector<std::vector<std::string>> output = Output::write_output(iObj, mObj, sObj);
 
@@ -99,6 +74,6 @@ int main(int argc, const char **argv) {
 
     return 0;
   } catch(std::string &formattedMessage) {
-      error_message(formattedMessage);
+      Errors::error_message(formattedMessage);
   }
 }

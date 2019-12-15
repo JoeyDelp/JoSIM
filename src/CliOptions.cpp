@@ -11,8 +11,6 @@ using namespace JoSIM;
 
 CliOptions CliOptions::parse(int argc, const char **argv) {
   CliOptions out;
-  char swChar;
-  bool specArg = false;
   int pos = 0;
   std::string argument;
   // If zero arguments are specified: complain
@@ -21,9 +19,11 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
     // If arguments are specified
   } else {
     // Loop through the arguments
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; ++i) {
       // If the argument is a switch
       if (argv[i][0] == '-') {
+        char swChar;
+        bool specArg;
         // If specific argument set tested char to 3rd char
         if (argv[i][1] == '-') {
           swChar = argv[i][2];
@@ -104,7 +104,6 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
               std::cout << "Output file: " << out.output_file_name.value() << std::endl;
               std::cout << std::endl;
             } else {
-              out.output_file_type = FileOutputType::Csv;
               out.output_file_name = "output.csv";
               std::cout << "Output file: " << out.output_file_name.value() << std::endl;
               std::cout << std::endl;
@@ -164,11 +163,11 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
           break;
         // Parallelization switch
         case 'p':
-#ifdef _OPENMP
+          #ifdef _OPENMP
           std::cout << "Parallelization is ENABLED" << std::endl;
-#else
+          #else
           std::cout << "Parallelization is DISABLED" << std::endl;
-#endif
+          #endif
           break;
         // Verbose switch
         case 'V':

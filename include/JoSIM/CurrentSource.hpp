@@ -15,6 +15,10 @@ class CurrentSource {
     int sourceIndex_;
   
   public:
+    CurrentSource() :
+      sourceIndex_(-1)
+      {};
+      
     static CurrentSource create_currentsource(
         const std::pair<std::string, std::string> &s,
         const std::unordered_map<std::string, int> &nm,

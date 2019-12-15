@@ -28,13 +28,6 @@ public:
   Results results;
   bool sOutput = true;
 
-  void identify_simulation(const std::vector<std::string> &controls,
-                           double &prstep, double &tstop, double &tstart,
-                           double &maxtstep);
-
-  template<JoSIM::AnalysisType AnalysisTypeValue = JoSIM::AnalysisType::Voltage>
-  void trans_sim(Input &iObj, Matrix &mObj);
-
   void trans_sim_new(Input &iObj, Matrix &mObj);
 };
 #endif

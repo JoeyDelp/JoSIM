@@ -26,6 +26,9 @@ class Capacitor {
     double dpn1_;
   public:
     Capacitor() : 
+      currentIndex_(-1),
+      value_(0.0),
+      capacitance_(0.0),
       pn1_(0.0),
       dpn1_(0.0)
       {};

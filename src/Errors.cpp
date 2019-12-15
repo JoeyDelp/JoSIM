@@ -268,8 +268,8 @@ void Errors::control_errors(ControlErrors errorCode, const std::string &whatPart
     warning_message(formattedMessage);
     break;
   case ControlErrors::NODECURRENT:
-    formattedMessage += "Request to store nodal current for " + whatPart + "\n";
-    formattedMessage += "Cannot store current of a node.";
+    formattedMessage += "Request to store current for " + whatPart + " is invalid.\n";
+    formattedMessage += "Cannot find device or cannot store current of a node.";
     warning_message(formattedMessage);
     break;
   case ControlErrors::UNKNOWN_NODE:
@@ -330,7 +330,7 @@ void Errors::control_errors(ControlErrors errorCode, const std::string &whatPart
     break;
   case ControlErrors::INVALID_OUTPUT_COMMAND:
     formattedMessage += "Invalid request for output found.\n";
-    formattedMessage += "Line:" + whatPart + "\n";
+    formattedMessage += whatPart + "\n";
     formattedMessage += "Ignoring request and continuing.";
     warning_message(formattedMessage);
     break;
@@ -561,13 +561,13 @@ void Errors::output_errors(OutputErrors errorCode, const std::string &whatPart) 
   }
 }
 
-[[noreturn]] void error_message (std::string &formattedMessage) {
+[[noreturn]] void Errors::error_message(const std::string &formattedMessage) {
   std::cerr << "E: " << formattedMessage << std::endl;
   std::cerr << std::endl;
   exit(-1);
 }
 
-void warning_message (std::string &formattedMessage) {
+void Errors::warning_message(const std::string &formattedMessage) {
   std::cerr << "W: " << formattedMessage << std::endl;
   std::cerr << std::endl;
 }

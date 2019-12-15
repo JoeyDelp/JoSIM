@@ -172,10 +172,10 @@ public:
   static void parsing_errors(ParsingErrors errorCode, const std::string &whatPart);
   
   static void output_errors(OutputErrors errorCode, const std::string &whatPart);
+  
+  [[noreturn]] static void error_message (const std::string &formattedMessage);
+
+  static void warning_message (const std::string &formattedMessage);
 };
-
-[[noreturn]] void error_message (std::string &formattedMessage);
-
-void warning_message (std::string &formattedMessage);
 
 #endif

@@ -15,7 +15,7 @@ class Input;
 
 class Misc {
 public:
-  static double string_constant(std::string &s);
+  static double string_constant(const std::string &s);
 
   static std::string file_from_path(const std::string &path);
 
@@ -33,9 +33,6 @@ public:
   static void ltrim(std::string &s);
 
   static void rtrim(std::string &s);
-
-  static int map_value_count(const std::unordered_map<std::string, int> &map,
-                             int value);
 
   static double modifier(const std::string &value);
 
