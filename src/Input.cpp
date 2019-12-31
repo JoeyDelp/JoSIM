@@ -13,14 +13,20 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
     if (ifile.is_open()) {
       while (!ifile.eof()) {
         getline(ifile, line);
-        std::transform(line.begin(), line.end(), line.begin(), toupper);
-        if (!line.empty() && line.back() == '\r')
-          line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-        if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
-          if(Misc::starts_with(line, '+')) 
-            fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
-          else 
-            fileLines.emplace_back(line);
+        std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
+        if (line.find(".INCLUDE") != std::string::npos) {
+          std::vector<std::string> tempInclude = Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
+          fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
+        } else {
+          std::transform(line.begin(), line.end(), line.begin(), toupper);
+          if (!line.empty() && line.back() == '\r')
+            line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+          if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
+            if(Misc::starts_with(line, '+')) 
+              fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
+            else 
+              fileLines.emplace_back(line);
+          }
         }
       }
       if (fileLines.empty()) throw;
@@ -66,16 +72,16 @@ void Input::parse_file(const std::string &fileName, Input &iObj) {
           Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
         }
         // If control, set flag as start of controls
-      } else if (fileLines.at(i).find(".CONTROL") != std::string::npos)
+      } else if (fileLines.at(i).find(".CONTROL") != std::string::npos) {
         control = true;
-      // End subcircuit, set flag
-      else if (fileLines.at(i).find(".ENDS") != std::string::npos)
+        // End subcircuit, set flag
+      } else if (fileLines.at(i).find(".ENDS") != std::string::npos) {
         subckt = false;
-      // End control section, set flag
-      else if (fileLines.at(i).find(".ENDC") != std::string::npos)
+        // End control section, set flag
+      } else if (fileLines.at(i).find(".ENDC") != std::string::npos) {
         control = false;
-      // If model, add model to models list
-      else if (fileLines.at(i).find(".MODEL") != std::string::npos) {
+        // If model, add model to models list
+      } else if (fileLines.at(i).find(".MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
           iObj.netlist.models[std::make_pair(tokens[1], subcktName)] =
