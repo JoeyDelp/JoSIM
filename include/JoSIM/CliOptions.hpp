@@ -9,6 +9,7 @@
 
 #include <optional>
 #include <string>
+#include <algorithm>
 
 namespace JoSIM {
 

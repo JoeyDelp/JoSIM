@@ -10,6 +10,7 @@ void Model::parse_model(
     std::vector<std::pair<Model,std::string>> &models,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
   
+  // Split keywords using spaces
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   // Ensure the model conforms to correct syntax: .model modelname modeltype(parameters)
   if(tokens.size() < 3) {
@@ -27,21 +28,32 @@ void Model::parse_model(
     } else if(endParam == std::string::npos) {
       Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
     } else {
-      tokens = Misc::tokenize_delimiter(s.first.substr(startParam+1, endParam), "(), \t");
+      tokens = Misc::tokenize_delimiter(s.first.substr(startParam+1, endParam), "();, \t");
     }
   } else {
     Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, s.first);
   }
+  
+  for (int i = 0; i < tokens.size(); i++) {
+    if(tokens.at(i) == "=" && (i-1) >= 0 && (i+1) < tokens.size()) {
+      tokens.at(i-1) += tokens.at(i);
+      tokens.at(i-1) += tokens.at(i+1);
+      tokens.erase(tokens.begin() + i);
+      tokens.erase(tokens.begin() + i);
+    } else if(tokens.at(i).back() == '=' && (i+1) < tokens.size()) {
+      tokens.at(i) += tokens.at(i+1);
+      tokens.erase(tokens.begin() + i + 1);
+    } else if(tokens.at(i).front() == '=' && (i-1) >= 0) {
+      tokens.at(i-1) += tokens.at(i);
+      tokens.erase(tokens.begin() + i);
+    }
+  }
 
   for (int i = 0; i < tokens.size(); ++i) {
     std::vector<std::string> itemToken = Misc::tokenize_delimiter(tokens.at(i), "=");
-    if ((itemToken.size() == 1) && (i != tokens.size() - 1)) {
-      std::vector<std::string> tempToken = Misc::tokenize_delimiter(tokens.at(i + 1), "=");
-      if (tempToken.size() == 1)
-        itemToken.push_back(tempToken.at(0));
-      tokens.erase(tokens.begin() + i + 1);
-    } else if ((itemToken.size() == 1) && (i != tokens.size() - 1))
+    if (itemToken.size() == 1) {
       Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
+    }
     double value = Parameters::parse_param(itemToken.at(1), p,
                                 s.second);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")

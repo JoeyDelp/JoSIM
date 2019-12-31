@@ -15,8 +15,7 @@
 #include <iostream>
 
 void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
-  std::vector<double> lhsValues( mObj.rp.size() - 1, 0.0),
-      LHS_PRE(mObj.rp.size() - 1, 0.0);
+  std::vector<double> lhsValues, LHS_PRE(mObj.rp.size() - 1, 0.0);
   int simSize = iObj.transSim.get_simsize();
   int saveAll = false;
   if(mObj.relevantIndices.size() == 0) saveAll = true;
@@ -31,8 +30,7 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
     }
   }
   double hbar_he = (JoSIM::Constants::HBAR / (iObj.transSim.get_prstep() * JoSIM::Constants::EV));
-  double RHSvalue = 0.0;
-  int ok, jjcount, rowCounter = 0;
+  int ok;
   int fqtr, sqtr, tqtr;
   fqtr = simSize/4;
   sqtr = simSize/2;
@@ -52,7 +50,6 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
   std::cout << "0%\r" << std::flush;
   for(int i = 0; i < simSize; ++i) {
     std::vector<double> RHS(mObj.rp.size() - 1, 0.0);
-    rowCounter = 0;
     if(i == fqtr) std::cout << "25%\r" << std::flush;
     if(i == sqtr) std::cout << "50%\r" << std::flush;
     if(i == tqtr) std::cout << "75%\r" << std::flush;
@@ -267,6 +264,8 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
           
         } else if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
           double prevNodeN, prevNode2N, prevNodeN1, prevNode2N1, prevNodek1, prevNode2k1;
+          prevNodek1 = 0.0;
+          prevNode2k1 = 0.0;
           if(temp.get_posIndex() && !temp.get_negIndex()) {
             prevNodeN = results.xVector_new.at(temp.get_posIndex().value()).value().at(i);
             prevNodeN1 = results.xVector_new.at(temp.get_posIndex().value()).value().at(i - 1);

@@ -158,7 +158,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
     // 0 1  
     } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
       // 0 1 0
-      if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
+      if(n2.first.find("GND") != std::string::npos)  {
         // 0 1 0 0  
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
           Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
@@ -277,7 +277,7 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
     // 1 1  
     } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
       // 1 1 0
-      if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
+      if(n2.first.find("GND") != std::string::npos)  {
         // 1 1 0 0  
         if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
           Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);

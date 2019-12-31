@@ -85,17 +85,23 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
           } else {
             handle_voltage_or_phase(tokens.at(j+1) + " " + tokens.at(j+2), true, mObj);
           }
+          j = tokens.size();
           break;
         case 'E':
+          handle_voltage_or_phase(tokens.at(j+1), false, mObj);
+          j = tokens.size();
+          break;
         case 'P':
           if (tokens.size() < 4) {
             handle_voltage_or_phase(tokens.at(j+1), false, mObj);
           } else {
             handle_voltage_or_phase(tokens.at(j+1) + " " + tokens.at(j+2), false, mObj);
           }
+          j = tokens.size();
           break;
         case 'I':
           handle_current(tokens.at(j+1), mObj);
+          j = tokens.size();
           break;
         case 'H':
           if(tokens.at(j).find("#BRANCH") != std::string::npos) {
@@ -117,12 +123,12 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
               case 'V':
                 tokens.at(j).erase(0, 1);
                 tokens.at(j).erase(tokens.at(j).size() - 3, tokens.at(j).size());
-                handle_voltage_or_phase(tokens.at(j+1), true, mObj);
+                handle_voltage_or_phase(tokens.at(j), true, mObj);
                 break;
               case 'P':
                 tokens.at(j).erase(0, 1);
                 tokens.at(j).erase(tokens.at(j).size() - 3, tokens.at(j).size());
-                handle_voltage_or_phase(tokens.at(j+1), false, mObj);
+                handle_voltage_or_phase(tokens.at(j), false, mObj);
                 break;
             }
             break;
@@ -150,21 +156,21 @@ void RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, Matr
   }
 
   for(const auto &i : mObj.components.txIndices) {
-    const auto &temp = std::get<TransmissionLine>(mObj.components.devices.at(i));
-    if(temp.get_posIndex()) {
-      mObj.relevantIndices.emplace_back(temp.get_posIndex().value());
+    const auto &tempLocal = std::get<TransmissionLine>(mObj.components.devices.at(i));
+    if(tempLocal.get_posIndex()) {
+      mObj.relevantIndices.emplace_back(tempLocal.get_posIndex().value());
     }
-    if(temp.get_negIndex()) {
-      mObj.relevantIndices.emplace_back(temp.get_negIndex().value());
+    if(tempLocal.get_negIndex()) {
+      mObj.relevantIndices.emplace_back(tempLocal.get_negIndex().value());
     }
-    if(temp.get_posIndex2()) {
-      mObj.relevantIndices.emplace_back(temp.get_posIndex2().value());
+    if(tempLocal.get_posIndex2()) {
+      mObj.relevantIndices.emplace_back(tempLocal.get_posIndex2().value());
     }
-    if(temp.get_negIndex2()) {
-      mObj.relevantIndices.emplace_back(temp.get_negIndex2().value());
+    if(tempLocal.get_negIndex2()) {
+      mObj.relevantIndices.emplace_back(tempLocal.get_negIndex2().value());
     }
-    mObj.relevantIndices.emplace_back(temp.get_currentIndex());
-    mObj.relevantIndices.emplace_back(temp.get_currentIndex2());
+    mObj.relevantIndices.emplace_back(tempLocal.get_currentIndex());
+    mObj.relevantIndices.emplace_back(tempLocal.get_currentIndex2());
   }
   
   mObj.relevantIndices.erase(uniquify(mObj.relevantIndices.begin(), mObj.relevantIndices.end()), mObj.relevantIndices.end());

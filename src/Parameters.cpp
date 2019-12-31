@@ -59,13 +59,13 @@ double Parameters::parse_param(
   std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
   std::vector<char> qType, qTypeCopy;
   std::string partToEval;
-  int opLoc, popCount = 0;
-  double result = 0.0;
+  int popCount = 0;
+  double result;
 
   // Evaluate expression piece by piece until it is empy
   while (!expToEval.empty()) {
     // Find the position of the first operator
-    opLoc = expToEval.find_first_of("/*-+(){}[]^");
+    int opLoc = expToEval.find_first_of("/*-+(){}[]^");
     // If the position of the first operator is at the start 
     if (opLoc == -1) {
       partToEval = expToEval;
@@ -144,12 +144,13 @@ double Parameters::parse_param(
       return std::numeric_limits<double>::quiet_NaN();
     }
     // Adjust the next part to be evaluated
-    if (opLoc == 0)
-      expToEval = expToEval.substr(opLoc + 1);
-    else if (opLoc == -1)
+    if (opLoc == 0) {
+      expToEval = expToEval.substr(1);
+    } else if (opLoc == -1) {
       expToEval = "";
-    else
+    } else {
       expToEval = expToEval.substr(opLoc);
+    }
   }
   if (expToEval.empty())
     while (!opStack.empty()) {
