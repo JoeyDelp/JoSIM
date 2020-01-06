@@ -44,7 +44,7 @@ steps:
 
 - script: |
     sudo apt-get -y update
-    sudo apt-get -y install libsuitesparse-dev python3-dev
+    sudo apt-get -y install libsuitesparse-dev python3.7-dev
   displayName: 'Install APT dependencies'
 
 - script: |
