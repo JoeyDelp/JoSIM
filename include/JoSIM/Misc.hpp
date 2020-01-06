@@ -10,6 +10,7 @@
 #include <map>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 class Input;
 
