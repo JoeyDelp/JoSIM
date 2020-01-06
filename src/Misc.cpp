@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <fstream>
+#include <cmath>
 
 double Misc::string_constant(const std::string &s) {
   if (s == "PI") return JoSIM::Constants::PI;
