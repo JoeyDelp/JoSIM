@@ -553,6 +553,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
     double value, ba;
     if((timesteps.back() / iObj.transSim.get_prstep()) > iObj.transSim.get_simsize()) functionOfT.resize(int(floor(timesteps.back() / iObj.transSim.get_prstep())), 0.0);
     for (int i = 1; i < timesteps.size(); ++i) {
+      value = 0.0;
       double startpoint = floor(timesteps.at(i - 1) / iObj.transSim.get_prstep());
       double endpoint = floor(timesteps.at(i) / iObj.transSim.get_prstep());
       double period = (endpoint - startpoint) * 2;
