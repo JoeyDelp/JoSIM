@@ -14,9 +14,9 @@ steps:
 - script: sudo yum -y install suitesparse-devel suitesparse-static python36-devel
   displayName: 'Install YUM dependencies'
 
-- script: source scl_source enable devtoolset-8 && conan install ..
-  displayName: 'Install Conan dependencies'
-  workingDirectory: build
+- #script: source scl_source enable devtoolset-8 && conan install ..
+  #displayName: 'Install Conan dependencies'
+  #workingDirectory: build
 
 - script: source scl_source enable devtoolset-8 && cmake ..
     -DCMAKE_BUILD_TYPE=Release

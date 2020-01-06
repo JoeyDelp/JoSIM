@@ -47,9 +47,9 @@ steps:
     sudo apt-get -y install libsuitesparse-dev python3-dev
   displayName: 'Install APT dependencies'
 
-- script: conan install ..
-  displayName: 'Install Conan dependencies'
-  workingDirectory: build
+- #script: conan install ..
+  #displayName: 'Install Conan dependencies'
+  #workingDirectory: build
 
 - script: cmake ..
   workingDirectory: build
