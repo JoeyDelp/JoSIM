@@ -14,6 +14,10 @@ steps:
 - script: sudo yum -y install suitesparse-devel suitesparse-static python36-devel
   displayName: 'Install YUM dependencies'
 
+- script: |
+    pip3 install cmake --user
+  displayName: 'Install CMake 3.14'
+
 - script: source scl_source enable devtoolset-8 && cmake ..
     -DCMAKE_BUILD_TYPE=Release
     -DMAKING_STATIC_BUILD=ON

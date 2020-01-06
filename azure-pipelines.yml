@@ -47,6 +47,10 @@ steps:
     sudo apt-get -y install libsuitesparse-dev python3-dev
   displayName: 'Install APT dependencies'
 
+- script: |
+    pip3 install cmake --user
+  displayName: 'Install CMake 3.14'
+
 - script: cmake ..
   workingDirectory: build
   displayName: 'Configure'
