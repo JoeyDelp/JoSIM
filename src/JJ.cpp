@@ -6,6 +6,8 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
 
+#include <cmath>
+
 JJ JJ::create_jj(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
