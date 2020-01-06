@@ -20,7 +20,6 @@ X5 10 11 LSmitll_ptlrx
 X6 13 14 LSmitll_DCSFQ
 X7 14 15 LSmitll_ptltx
 .subckt LSmitll_XORT IN_CLK IN_1 IN_2 OUT
-.include LSmitll_XORT_models.inc
 .param Scaling=1.0
 .param B0=1
 .param Ic0=0.0001

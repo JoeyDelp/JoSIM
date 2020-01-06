@@ -6,35 +6,35 @@
 #include <fstream>
 
 std::vector<std::string> Input::read_file(const std::string &fileName){
-  try{
-    std::string line;
-    std::fstream ifile(fileName);
-    std::vector<std::string> fileLines;
-    if (ifile.is_open()) {
-      while (!ifile.eof()) {
-        getline(ifile, line);
-        std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
-        if (line.find(".INCLUDE") != std::string::npos) {
-          std::vector<std::string> tempInclude = Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
-          fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
-        } else {
-          std::transform(line.begin(), line.end(), line.begin(), toupper);
-          if (!line.empty() && line.back() == '\r')
-            line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-          if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
-            if(Misc::starts_with(line, '+')) 
-              fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
-            else 
-              fileLines.emplace_back(line);
-          }
+  std::string line;
+  std::fstream ifile(fileName);
+  std::vector<std::string> fileLines;
+  if (ifile.is_open()) {
+    while (!ifile.eof()) {
+      getline(ifile, line);
+      std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
+      if (line.find(".INCLUDE") != std::string::npos) {
+        std::vector<std::string> tempInclude = Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
+        fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
+      } else {
+        std::transform(line.begin(), line.end(), line.begin(), toupper);
+        if (!line.empty() && line.back() == '\r')
+          line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+        if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
+          if(Misc::starts_with(line, '+')) 
+            fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
+          else 
+            fileLines.emplace_back(line);
         }
       }
-      if (fileLines.empty()) throw;
-      else return fileLines;
-    } else
-      Errors::input_errors(InputErrors::CANNOT_OPEN_FILE, fileName);
-  } catch(...) {
-    Errors::input_errors(InputErrors::EMPTY_FILE, fileName);
+    }
+    if (fileLines.empty()) { 
+      Errors::input_errors(InputErrors::EMPTY_FILE, fileName);
+    } else {
+      return fileLines;
+    }
+  } else {
+    Errors::input_errors(InputErrors::CANNOT_OPEN_FILE, fileName);
   }
   return {};
 }
