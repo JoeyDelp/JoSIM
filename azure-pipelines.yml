@@ -48,8 +48,8 @@ steps:
   displayName: 'Install APT dependencies'
 
 - script: |
-    pip install --upgrade pip
-    pip install --user --force-reinstall --ignore-installed --no-binary :all: cmake
+    sudo pip install --upgrade pip
+    sudo pip install --force-reinstall cmake
   displayName: 'Install CMake 3.14'
 
 - script: cmake ..
