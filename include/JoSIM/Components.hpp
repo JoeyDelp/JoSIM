@@ -16,6 +16,8 @@
 #include "./PhaseSource.hpp"
 #include "./CurrentSource.hpp"
 #include "./TransmissionLine.hpp"
+#include "./VCCS.hpp"
+#include "./CCCS.hpp"
 
 #include <unordered_map>
 #include <variant>
@@ -28,9 +30,11 @@ class Components {
                              JJ,
                              VoltageSource,
                              PhaseSource,
-                             TransmissionLine>> devices; 
+                             TransmissionLine,
+                             VCCS,
+                             CCCS>> devices; 
     std::vector<CurrentSource> currentsources;
-    std::vector<int> junctionIndices, resistorIndices, inductorIndices, capacitorIndices, vsIndices, psIndices, txIndices;
+    std::vector<int> junctionIndices, resistorIndices, inductorIndices, capacitorIndices, vsIndices, psIndices, txIndices, vccsIndices, cccsIndices;
     std::vector<std::pair<std::string, std::string>> mutualinductances;
 };
 #endif

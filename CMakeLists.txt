@@ -46,6 +46,8 @@ add_library(josim
             src/PhaseSource.cpp
             src/CurrentSource.cpp
             src/TransmissionLine.cpp
+            src/VCCS.cpp
+            src/CCCS.cpp
             src/RelevantTrace.cpp)
 
 # Alias for projects including JoSIM

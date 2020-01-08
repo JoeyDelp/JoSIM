@@ -100,7 +100,6 @@ void Matrix::create_matrix(Input &iObj)
         sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
         std::get<VoltageSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
         components.vsIndices.emplace_back(components.devices.size() - 1);
-
         break;
       case 'P':
         components.devices.emplace_back(PhaseSource::create_phasesource(i, 
@@ -123,6 +122,21 @@ void Matrix::create_matrix(Input &iObj)
         break;
       case 'K':
         components.mutualinductances.emplace_back(i);
+        break;
+      case 'G':
+        components.devices.emplace_back(VCCS::create_VCCS(i, 
+            nm, lm, nc, 
+            iObj.parameters, iObj.argAnal, 
+            iObj.transSim.get_prstep(), branchIndex));
+        components.vccsIndices.emplace_back(components.devices.size() - 1);        
+        break;
+      case 'F':
+        components.devices.emplace_back(CCCS::create_CCCS(i, 
+            nm, lm, nc, 
+            iObj.parameters, iObj.argAnal, 
+            iObj.transSim.get_prstep(), branchIndex));
+        components.cccsIndices.emplace_back(components.devices.size() - 1);        
+        break;
     }
     creationCounter++;
   }

@@ -54,7 +54,6 @@ void Resistor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::st
       nonZeros_.emplace_back(-value_);
       rowPointer_.emplace_back(1);
       branchIndex++;
-      columnIndex_.emplace_back(2);
       columnIndex_.emplace_back(branchIndex - 1);
     // 1 0
     } else {
