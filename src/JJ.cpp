@@ -14,7 +14,7 @@ JJ JJ::create_jj(
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const std::vector<std::pair<Model, std::string>> &models,
+    const std::vector<std::pair<JoSIM::Model, std::string>> &models,
     const JoSIM::AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
@@ -173,10 +173,10 @@ void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::un
 
 void JJ::set_area(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
-          area_ = Parameters::parse_param(s.first, p, s.second);
+          area_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
 }
 
-void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<Model, std::string>> &models) {
+void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<JoSIM::Model, std::string>> &models) {
   bool found = false;
   for(auto &i : models) {
     if(i.first.get_modelName() == s.first && i.second == s.second) {

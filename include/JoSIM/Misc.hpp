@@ -12,7 +12,9 @@
 #include <iomanip>
 #include <algorithm>
 
-class Input;
+namespace JoSIM {
+  class Input;
+}
 
 class Misc {
 public:
@@ -49,7 +51,7 @@ public:
   static std::string substring_before(const std::string &str,
                                       const std::string &whatpart);
 
-  static std::vector<double> parse_function(const std::string &str, Input &iObj,
+  static std::vector<double> parse_function(const std::string &str, JoSIM::Input &iObj,
                                             const std::string &subckt = "");
 
   static bool findX(const std::vector<std::string> &segment,

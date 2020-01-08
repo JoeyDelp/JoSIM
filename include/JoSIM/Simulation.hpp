@@ -23,11 +23,13 @@ public:
 
 };
 
+namespace JoSIM{
 class Simulation {
 public:
   Results results;
   bool sOutput = true;
 
-  void trans_sim_new(Input &iObj, Matrix &mObj);
+  void trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj);
 };
+}
 #endif

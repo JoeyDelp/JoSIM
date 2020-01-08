@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_CCCS_HPP
-#define JOSIM_CCCS_HPP
+#ifndef JOSIM_CCVS_HPP
+#define JOSIM_CCVS_HPP
 
 #include "./ParameterName.hpp"
 #include "./Parameters.hpp"
@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include <optional>
 
-class CCCS {
+class CCVS {
   private:
     std::string label_;
     std::vector<double> nonZeros_;
@@ -23,12 +23,12 @@ class CCCS {
     int currentIndex_;
     double value_;
   public:
-    CCCS() :
+    CCVS() :
       currentIndex_(-1),
       value_(1)
       {};
     
-    static CCCS create_CCCS(
+    static CCVS create_CCVS(
         const std::pair<std::string, std::string> &s,
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
@@ -36,9 +36,8 @@ class CCCS {
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         int &branchIndex);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-      const std::pair<std::string, std::string> &n2, const std::unordered_map<std::string, int> &nm, 
-      const std::string &s, int &branchIndex);
+    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
+      const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
     void set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
       const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }

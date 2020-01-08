@@ -6,10 +6,12 @@
 #include <string>
 #include <vector>
 
+namespace JoSIM {
 class Verbose {
 public:
   static void print_expanded_netlist(
       const std::vector<std::pair<std::string, std::string>> &expNetlist);
 };
+}
 
 #endif

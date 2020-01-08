@@ -42,7 +42,7 @@ public:
   std::unordered_map<std::pair<std::string, std::string>, std::string,
                      pair_hash>
       models;
-  std::vector<std::pair<Model, std::string>> models_new;
+  std::vector<std::pair<JoSIM::Model, std::string>> models_new;
   std::unordered_map<std::string, Subcircuit> subcircuits;
   std::unordered_map<std::string, int> subcktLookup;
   std::vector<std::string> maindesign;

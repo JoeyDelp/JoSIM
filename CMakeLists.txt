@@ -48,6 +48,8 @@ add_library(josim
             src/TransmissionLine.cpp
             src/VCCS.cpp
             src/CCCS.cpp
+            src/VCVS.cpp
+            src/CCVS.cpp
             src/RelevantTrace.cpp)
 
 # Alias for projects including JoSIM

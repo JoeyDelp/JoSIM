@@ -25,6 +25,7 @@ class Parameter {
     std::optional<double> get_value() const { return value_; };
 };
 
+namespace JoSIM {
 class Parameters {
 public:
   static void create_parameter(const std::pair<std::string, std::string> &s,
@@ -42,5 +43,6 @@ public:
 
   static void parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters);
 };
+}
 
 #endif

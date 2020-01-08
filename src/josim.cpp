@@ -22,54 +22,54 @@ int main(int argc, const char **argv) {
     // Parse input arguments for command line interface
     auto cli_options = JoSIM::CliOptions::parse(argc, argv);
     // Generate input object based on cli arguements
-    Input iObj(cli_options.analysis_type, 
+    JoSIM::Input iObj(cli_options.analysis_type, 
               cli_options.input_type,
               cli_options.verbose);    
     // Parse input file as specified by the cli arguments
-    Input::parse_file(cli_options.cir_file_name, iObj);
+    JoSIM::Input::parse_file(cli_options.cir_file_name, iObj);
     // Parse any identified parameter values
     if (iObj.parameters.size() > 0) {
-      Parameters::parse_parameters(iObj.parameters);
+      JoSIM::Parameters::parse_parameters(iObj.parameters);
     }
     // Parse any identified models
     for (const auto &i : iObj.netlist.models) {
-      Model::parse_model(std::make_pair(i.second, i.first.second), iObj.netlist.models_new, iObj.parameters);
+      JoSIM::Model::parse_model(std::make_pair(i.second, i.first.second), iObj.netlist.models_new, iObj.parameters);
     }
     // Expand nested subcircuits
     iObj.netlist.expand_subcircuits();
     // Expand main design using expanded subcircuits
     iObj.netlist.expand_maindesign();
     // Identify the simulation parameters
-    Transient::identify_simulation(iObj.controls, iObj.transSim);
+    JoSIM::Transient::identify_simulation(iObj.controls, iObj.transSim);
     // If verbose mode was requested, print the expanded netlist
     if (iObj.argVerb)
-      Verbose::print_expanded_netlist(iObj.netlist.expNetlist);
+      JoSIM::Verbose::print_expanded_netlist(iObj.netlist.expNetlist);
 
-    Matrix mObj;
+    JoSIM::Matrix mObj;
     // Create the matrix in csr format
     mObj.create_matrix(iObj);
 
     // Find the relevant traces to store
-    RelevantTrace::find_relevant_traces(iObj.controls, mObj);
+    JoSIM::RelevantTrace::find_relevant_traces(iObj.controls, mObj);
     
-    Simulation sObj;
+    JoSIM::Simulation sObj;
 
     sObj.trans_sim_new(iObj, mObj);
     
-    Output oObj;
+    JoSIM::Output oObj;
 
-    std::vector<std::vector<std::string>> output = Output::write_output(iObj, mObj, sObj);
+    std::vector<std::vector<std::string>> output = JoSIM::Output::write_output(iObj, mObj, sObj);
 
     if (cli_options.output_file_name) {
       if (cli_options.output_file_type == JoSIM::FileOutputType::Csv) {
-        Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ',');
+        JoSIM::Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ',');
       } else if (cli_options.output_file_type == JoSIM::FileOutputType::Dat) {
-        Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ' ');
+        JoSIM::Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ' ');
       } else if (cli_options.output_file_type == JoSIM::FileOutputType::WrSpice) {
-        Output::format_raw(cli_options.output_file_name.value(), output);
+        JoSIM::Output::format_raw(cli_options.output_file_name.value(), output);
       }
     } else {
-      Output::format_cout(output);
+      JoSIM::Output::format_cout(output);
     }
 
     return 0;

@@ -6,6 +6,7 @@
 #include "./Constants.hpp"
 #include "./Parameters.hpp"
 
+namespace JoSIM {
 class Model {
   private:
     std::string modelName_;
@@ -71,5 +72,6 @@ class Model {
         std::vector<std::pair<Model,std::string>> &models,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
 };
+}
 
 #endif

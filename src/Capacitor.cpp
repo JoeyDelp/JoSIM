@@ -103,7 +103,7 @@ void Capacitor::set_indices(const std::pair<std::string, std::string> &n, const 
 void Capacitor::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const JoSIM::AnalysisType &antyp, const double &timestep) {
-          capacitance_ = Parameters::parse_param(s.first, p, s.second);
+          capacitance_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
           if (antyp == JoSIM::AnalysisType::Voltage) value_ = (timestep / 2) * (1 / capacitance_);
           else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep * timestep) / (4 * JoSIM::Constants::SIGMA * capacitance_);
         }

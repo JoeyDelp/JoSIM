@@ -203,7 +203,7 @@ std::string Misc::substring_before(const std::string &str,
     return str;
 }
 
-std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
+std::vector<double> Misc::parse_function(const std::string &str, JoSIM::Input &iObj,
                                          const std::string &subckt) {
   std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
@@ -234,7 +234,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
             JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
       else
         // values.push_back(modifier(tokens.at(i)));
-        values.push_back(Parameters::parse_param(
+        values.push_back(JoSIM::Parameters::parse_param(
             tokens.at(i), iObj.parameters, subckt));
     }
     if (timesteps.size() < values.size())
@@ -524,7 +524,7 @@ std::vector<double> Misc::parse_function(const std::string &str, Input &iObj,
             JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
       else
         // values.push_back(modifier(tokens.at(i)));
-        values.push_back(Parameters::parse_param(
+        values.push_back(JoSIM::Parameters::parse_param(
             tokens.at(i), iObj.parameters, subckt));
     }
     if (timesteps.size() < values.size())

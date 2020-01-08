@@ -5,7 +5,7 @@
 
 #include <fstream>
 
-std::vector<std::string> Input::read_file(const std::string &fileName){
+std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
   std::string line;
   std::fstream ifile(fileName);
   std::vector<std::string> fileLines;
@@ -14,7 +14,7 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
       getline(ifile, line);
       std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
       if (line.find(".INCLUDE") != std::string::npos) {
-        std::vector<std::string> tempInclude = Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
+        std::vector<std::string> tempInclude = JoSIM::Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
         fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
       } else {
         std::transform(line.begin(), line.end(), line.begin(), toupper);
@@ -39,8 +39,8 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
   return {};
 }
 
-void Input::parse_file(const std::string &fileName, Input &iObj) {
-  std::vector<std::string> fileLines = Input::read_file(fileName);
+void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
+  std::vector<std::string> fileLines = JoSIM::Input::read_file(fileName);
 
   bool subckt = false;
   bool control = false;
@@ -67,9 +67,9 @@ void Input::parse_file(const std::string &fileName, Input &iObj) {
         // If parameter, add to unparsed parameters list
       } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
         if (subckt) {
-          Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
+          JoSIM::Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
         } else {
-          Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
+          JoSIM::Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
         }
         // If control, set flag as start of controls
       } else if (fileLines.at(i).find(".CONTROL") != std::string::npos) {
@@ -100,9 +100,9 @@ void Input::parse_file(const std::string &fileName, Input &iObj) {
       // If parameter, add to unparsed parameter list
       if (fileLines.at(i).find("PARAM") != std::string::npos) {
         if (subckt) {
-          Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
+          JoSIM::Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
         } else {
-          Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
+          JoSIM::Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
         }
         // If model, add to models list
       } else if (fileLines.at(i).find("MODEL") != std::string::npos) {

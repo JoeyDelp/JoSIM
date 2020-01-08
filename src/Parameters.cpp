@@ -10,7 +10,7 @@
 #include <limits>
 #include <cmath>
 
-void Parameters::create_parameter(const std::pair<std::string, std::string> &s,
+void JoSIM::Parameters::create_parameter(const std::pair<std::string, std::string> &s,
                                   std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
   Parameter temp;
   std::vector<std::string> tokens;
@@ -45,7 +45,7 @@ const std::vector<std::string> funcs = {
     "ACOSH", "ASINH", "ATANH", "EXP",  "LOG",  "LOG10", "SQRT", "CBRT"
 };
 
-double Parameters::parse_param(
+double JoSIM::Parameters::parse_param(
     const std::string &expr,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &params,
     const std::string &subckt) 
@@ -199,7 +199,7 @@ double Parameters::parse_param(
   return Misc::modifier(rpnQueue.back());
 }
 
-int Parameters::prec_lvl(const std::string &op) {
+int JoSIM::Parameters::prec_lvl(const std::string &op) {
   switch (op[0]) {
     // + and - are lowest level
   case '+':
@@ -219,7 +219,7 @@ int Parameters::prec_lvl(const std::string &op) {
   return 4;
 }
 
-double Parameters::parse_operator(const std::string &op, double val1, double val2,
+double JoSIM::Parameters::parse_operator(const std::string &op, double val1, double val2,
                               int &popCount) {
   if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
     popCount = 1;
@@ -273,7 +273,7 @@ double Parameters::parse_operator(const std::string &op, double val1, double val
   return 0.0;
 }
 
-void Parameters::parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
+void JoSIM::Parameters::parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
   double value;
   int parsedCounter = 0;
 

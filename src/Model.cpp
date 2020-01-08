@@ -5,9 +5,9 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 
-void Model::parse_model(
+void JoSIM::Model::parse_model(
     const std::pair<std::string, std::string> &s,
-    std::vector<std::pair<Model,std::string>> &models,
+    std::vector<std::pair<JoSIM::Model,std::string>> &models,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
   
   // Split keywords using spaces
@@ -16,7 +16,7 @@ void Model::parse_model(
   if(tokens.size() < 3) {
     Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
   }
-  Model temp;
+  JoSIM::Model temp;
 
   temp.set_modelName(tokens.at(1));
   
@@ -54,7 +54,7 @@ void Model::parse_model(
     if (itemToken.size() == 1) {
       Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
     }
-    double value = Parameters::parse_param(itemToken.at(1), p,
+    double value = JoSIM::Parameters::parse_param(itemToken.at(1), p,
                                 s.second);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
       temp.set_voltageGap(value);

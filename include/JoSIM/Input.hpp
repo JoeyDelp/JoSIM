@@ -15,10 +15,11 @@
 #include <vector>
 #include <algorithm>
 
+namespace JoSIM {
 class Input {
 public:
   Netlist netlist;
-  Transient transSim;
+  JoSIM::Transient transSim;
   std::vector<std::string> fileLines, controls;
   std::vector<std::string> relevantX;
   std::unordered_map<JoSIM::ParameterName, Parameter> parameters;
@@ -40,5 +41,6 @@ public:
   static std::vector<std::string> read_file(const std::string &fileName);
   static void parse_file(const std::string &fileName, Input &iObj);
 };
+}
 
 #endif

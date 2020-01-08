@@ -103,6 +103,6 @@ void Resistor::set_indices(const std::pair<std::string, std::string> &n, const s
 void Resistor::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const JoSIM::AnalysisType &antyp, const double &timestep) {
-          if (antyp == JoSIM::AnalysisType::Voltage) value_ = Parameters::parse_param(s.first, p, s.second);
-          else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep/(2 * JoSIM::Constants::SIGMA)) * Parameters::parse_param(s.first, p, s.second);
+          if (antyp == JoSIM::AnalysisType::Voltage) value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+          else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep/(2 * JoSIM::Constants::SIGMA)) * JoSIM::Parameters::parse_param(s.first, p, s.second);
         }

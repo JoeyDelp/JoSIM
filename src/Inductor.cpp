@@ -105,7 +105,7 @@ void Inductor::set_indices(const std::pair<std::string, std::string> &n, const s
 void Inductor::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const JoSIM::AnalysisType &antyp, const double &timestep) {
-          inductance_ = Parameters::parse_param(s.first, p, s.second);
+          inductance_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
           if (antyp == JoSIM::AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
           else if (antyp == JoSIM::AnalysisType::Phase) value_ = inductance_ / JoSIM::Constants::SIGMA;
 }

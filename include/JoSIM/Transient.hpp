@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+namespace JoSIM {
 class Transient {
 private:
   double prstep;
@@ -36,5 +37,6 @@ public:
 
   static void identify_simulation(const std::vector<std::string> &controls, Transient &tObj);
 };
+}
 
 #endif

@@ -13,7 +13,7 @@
 
 using namespace JoSIM;
 
-void Matrix::create_matrix(Input &iObj)
+void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
 {
   int nodeCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
@@ -58,7 +58,7 @@ void Matrix::create_matrix(Input &iObj)
   sqtr = iObj.netlist.expNetlist.size()/2;
   tqtr = iObj.netlist.expNetlist.size()/4 * 3;
 
-  std::cout << "Matrix Creation Progress:" << std::endl;
+  std::cout << "JoSIM::Matrix Creation Progress:" << std::endl;
   std::cout << "0%\r" << std::flush;
   int creationCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
@@ -126,16 +126,26 @@ void Matrix::create_matrix(Input &iObj)
       case 'G':
         components.devices.emplace_back(VCCS::create_VCCS(i, 
             nm, lm, nc, 
-            iObj.parameters, iObj.argAnal, 
-            iObj.transSim.get_prstep(), branchIndex));
+            iObj.parameters, branchIndex));
         components.vccsIndices.emplace_back(components.devices.size() - 1);        
         break;
       case 'F':
         components.devices.emplace_back(CCCS::create_CCCS(i, 
             nm, lm, nc, 
-            iObj.parameters, iObj.argAnal, 
-            iObj.transSim.get_prstep(), branchIndex));
+            iObj.parameters, branchIndex));
         components.cccsIndices.emplace_back(components.devices.size() - 1);        
+        break;
+      case 'E':
+        components.devices.emplace_back(VCVS::create_VCVS(i, 
+            nm, lm, nc, 
+            iObj.parameters, branchIndex));
+        components.vcvsIndices.emplace_back(components.devices.size() - 1);        
+        break;
+      case 'H':
+        components.devices.emplace_back(CCVS::create_CCVS(i, 
+            nm, lm, nc, 
+            iObj.parameters, branchIndex));
+        components.ccvsIndices.emplace_back(components.devices.size() - 1);        
         break;
     }
     creationCounter++;
@@ -175,7 +185,7 @@ void Matrix::create_matrix(Input &iObj)
     auto &ind1 = std::get<Inductor>(components.devices.at(ind1Index.value()));
     auto &ind2 = std::get<Inductor>(components.devices.at(ind2Index.value()));
 
-    double cf = Parameters::parse_param(tokens.at(3), iObj.parameters, s.second);
+    double cf = JoSIM::Parameters::parse_param(tokens.at(3), iObj.parameters, s.second);
     double mutual = cf * std::sqrt(ind1.get_inductance() * ind2.get_inductance());
 
     
@@ -193,13 +203,13 @@ void Matrix::create_matrix(Input &iObj)
 
 }
 
-void Matrix::create_csr() {
+void JoSIM::Matrix::create_csr() {
   create_nz();
   create_ci();
   create_rp();
 }
 
-void Matrix::create_nz() {
+void JoSIM::Matrix::create_nz() {
   nz.clear();
 
   for(const auto &it : nc) {
@@ -217,7 +227,7 @@ void Matrix::create_nz() {
   }
 }
 
-void Matrix::create_ci() {
+void JoSIM::Matrix::create_ci() {
   ci.clear();
 
   for(const auto &it : nc) {
@@ -235,7 +245,7 @@ void Matrix::create_ci() {
   }
 }
 
-void Matrix::create_rp() {
+void JoSIM::Matrix::create_rp() {
   rp.clear();
 
   rp.emplace_back(0);

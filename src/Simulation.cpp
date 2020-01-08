@@ -14,7 +14,7 @@
 #include <cmath>
 #include <iostream>
 
-void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
+void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
   std::vector<double> lhsValues, LHS_PRE(mObj.rp.size() - 1, 0.0);
   int simSize = iObj.transSim.get_simsize();
   int saveAll = false;

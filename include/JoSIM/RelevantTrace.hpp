@@ -6,9 +6,9 @@
 #include "./Misc.hpp"
 #include "./Errors.hpp"
 
-class Matrix;
 
 namespace JoSIM {
+  class Matrix;
   enum class StorageType : int { Voltage = 0, Phase = 1, Current = 2};
 }
 
@@ -42,6 +42,7 @@ template<class It> It uniquify(It begin, It const end)
     return begin;
 }
 
+namespace JoSIM {
 class RelevantTrace {
   public:
     bool device;
@@ -55,10 +56,11 @@ class RelevantTrace {
       device(false)
     {};
 
-    static void find_relevant_traces(const std::vector<std::string> &c, Matrix &mObj);
-    static void handle_current(const std::string &s, Matrix &mObj);
-    static void handle_voltage_or_phase(const std::string &s, bool voltage, Matrix &mObj);
+    static void find_relevant_traces(const std::vector<std::string> &c, JoSIM::Matrix &mObj);
+    static void handle_current(const std::string &s, JoSIM::Matrix &mObj);
+    static void handle_voltage_or_phase(const std::string &s, bool voltage, JoSIM::Matrix &mObj);
 
 };
+}
 
 #endif

@@ -23,7 +23,7 @@ class JJ {
     int currentIndex_;
     int variableIndex_;
     double area_;
-    Model model_;
+    JoSIM::Model model_;
     double value_;
     double phaseConst_;
 
@@ -53,7 +53,7 @@ class JJ {
         std::unordered_set<std::string> &lm,
         std::vector<std::vector<std::pair<int, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const std::vector<std::pair<Model, std::string>> &models,
+        const std::vector<std::pair<JoSIM::Model, std::string>> &models,
         const JoSIM::AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
@@ -66,7 +66,7 @@ class JJ {
     void set_variableIndex(const int &vc) { variableIndex_ = vc; }
     void set_area(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
-    void set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<Model, std::string>> &models);
+    void set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<JoSIM::Model, std::string>> &models);
     void set_value(const double &v) { value_ = v; };
     void set_phaseConst(const double &timestep, const JoSIM::AnalysisType &antyp);
     void set_pn1(const double &v) { pn1_ = v; }
@@ -97,7 +97,7 @@ class JJ {
     const double& get_vn2() const { return vn2_; }
     const double& get_dvn1() const { return dvn1_; }
     const double& get_dvn2() const { return dvn2_; }
-    const Model& get_model() const { return model_; }
+    const JoSIM::Model& get_model() const { return model_; }
     const double& get_subCond() const { return subCond_; }
     const double& get_transCond() const { return transCond_; }
     const double& get_normalCond() const { return normalCond_; }

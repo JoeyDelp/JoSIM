@@ -14,8 +14,6 @@ VCCS VCCS::create_VCCS(
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<int, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const JoSIM::AnalysisType &antyp,
-    const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
@@ -28,7 +26,7 @@ VCCS VCCS::create_VCCS(
       Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
-  temp.set_value(std::make_pair(tokens.at(5), s.second), p, antyp, timestep);
+  temp.set_value(std::make_pair(tokens.at(5), s.second), p);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
   temp.set_currentIndex(branchIndex - 1);
@@ -44,7 +42,9 @@ void VCCS::set_label(const std::string &s, std::unordered_set<std::string> &lm) 
   }
 }
 
-void VCCS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+void VCCS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
+  const std::pair<std::string, std::string> &n2, const std::unordered_map<std::string, int> &nm, 
+  const std::string &s, int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   // 0
@@ -88,7 +88,8 @@ void VCCS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string
   }
 }
 
-void VCCS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex) {
+void VCCS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
+  const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     posIndex1_ = nm.at(n1.first);
     nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
@@ -112,8 +113,6 @@ void VCCS::set_indices(const std::pair<std::string, std::string> &n1, const std:
 }
 
 void VCCS::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep) {
-          if (antyp == JoSIM::AnalysisType::Voltage) value_ = Parameters::parse_param(s.first, p, s.second);
-          else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep/(2 * JoSIM::Constants::SIGMA)) * Parameters::parse_param(s.first, p, s.second);
-        }
+  const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
+  value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+}

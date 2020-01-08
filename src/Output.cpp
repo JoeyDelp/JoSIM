@@ -15,7 +15,7 @@
 #include <fstream>
 #include <iostream>
 
-std::vector<std::vector<std::string>> Output::write_output(const Input &iObj, const Matrix &mObj, const Simulation &sObj) {
+std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::Input &iObj, const JoSIM::Matrix &mObj, const JoSIM::Simulation &sObj) {
   std::vector<std::vector<std::string>> unformattedOutput = {{"time"}};
   unformattedOutput.resize(sObj.results.timeAxis.size() + 1);
   std::ostringstream fstring;
@@ -181,7 +181,7 @@ std::vector<std::vector<std::string>> Output::write_output(const Input &iObj, co
   return unformattedOutput;
 }
 
-void Output::format_csv_or_dat(const std::string &filename, const std::vector<std::vector<std::string>> &output, const char &delimiter) {
+void JoSIM::Output::format_csv_or_dat(const std::string &filename, const std::vector<std::vector<std::string>> &output, const char &delimiter) {
   std::ofstream outfile(filename);
   if (outfile.is_open()) {
     for (const auto &i : output) {
@@ -196,11 +196,11 @@ void Output::format_csv_or_dat(const std::string &filename, const std::vector<st
   }
 }
 
-void Output::format_raw(const std::string &filename, const std::vector<std::vector<std::string>> &output) {
+void JoSIM::Output::format_raw(const std::string &filename, const std::vector<std::vector<std::string>> &output) {
 
 }
 
-void Output::format_cout(const std::vector<std::vector<std::string>> &output) {
+void JoSIM::Output::format_cout(const std::vector<std::vector<std::string>> &output) {
   for (const auto &i : output) {
     for (const auto &j : i) {
       std::cout << j << " ";
