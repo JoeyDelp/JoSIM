@@ -27,7 +27,7 @@ class JJ {
     double value_;
     double phaseConst_;
 
-    double lowerB_, upperB_, subCond_, transCond_, normalCond_;
+    double lowerB_, upperB_, subCond_, transCond_, normalCond_, gLarge_;
     double del0_, del_, rncalc_;
     double pn1_;
     double vn1_, vn2_;
@@ -74,6 +74,7 @@ class JJ {
     void set_vn2(const double &v) { vn2_ = v; }
     void set_dvn1(const double &v) { dvn1_ = v; }
     void set_dvn2(const double &v) { dvn2_ = v; }
+    void set_gLarge(const double &v) { gLarge_ = v; }
     void set_subCond(const double &v) { subCond_ = v; }
     void set_transCond(const double &v) { transCond_ = v; }
     void set_normalCond(const double &v) { normalCond_ = v; }
@@ -98,6 +99,7 @@ class JJ {
     const double& get_dvn1() const { return dvn1_; }
     const double& get_dvn2() const { return dvn2_; }
     const JoSIM::Model& get_model() const { return model_; }
+    const double& get_gLarge() const { return gLarge_; }
     const double& get_subCond() const { return subCond_; }
     const double& get_transCond() const { return transCond_; }
     const double& get_normalCond() const { return normalCond_; }

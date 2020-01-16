@@ -146,23 +146,34 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
       }
       // Guess voltage (V0)
       double v0 = temp.get_vn1() + iObj.transSim.get_prstep() * temp.get_dvn1();
+      // Update junction transition
+      if(model.get_resistanceType() == 1) {
+        auto testLU = temp.update_value(v0);
+        if(testLU && !needsLU) {
+          needsLU = true;
+        }
+      }
       // -(hbar / h * e) φp - Vp 
       RHS.at(temp.get_variableIndex()) = -hbar_he * temp.get_pn1() - temp.get_vn1();
       // Phase guess (P0)
       double phi0 = temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0);
-      // (hR / h + 2RC) * (Ic sin φ0 - 2C / h Vp - C ΔVp)
-      RHS.at(temp.get_currentIndex()) = (temp.get_nonZeros().back()) * (((JoSIM::Constants::PI * temp.get_del()) / (2 * JoSIM::Constants::EV * temp.get_rncalc())) *
+      // (hR / h + 2RC) * (-Ic sin φ0 + 2C / h Vp + C ΔVp)
+      RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((JoSIM::Constants::PI * temp.get_del()) / (2 * JoSIM::Constants::EV * temp.get_rncalc())) *
                                         (sin(phi0) / sqrt(1 - model.get_transparency() * (sin(phi0 / 2) * sin(phi0 / 2)))) 
                                         * tanh((temp.get_del()) / (2 * JoSIM::Constants::BOLTZMANN * model.get_temperature()) *
-                                          sqrt(1 - model.get_transparency() * (sin(phi0 / 2) * sin(phi0 / 2)))) -
+                                          sqrt(1 - model.get_transparency() * (sin(phi0 / 2) * sin(phi0 / 2))))) +
                                         (((2 * model.get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
-                                        - (model.get_capacitance() * temp.get_dvn1())) - temp.get_transitionCurrent();
-      // Update junction transition
-      if(model.get_resistanceType() == 1) {
-        needsLU = temp.update_value(v0);
-      }
+                                        + (model.get_capacitance() * temp.get_dvn1()) - temp.get_transitionCurrent());
+
       temp.set_vn2(temp.get_vn1());
       temp.set_dvn2(temp.get_dvn1());
+    }
+    if (needsLU) {
+      mObj.create_nz();
+      klu_free_numeric(&Numeric, &Common);
+      Numeric = klu_factor(&mObj.rp.front(), &mObj.ci.front(),
+                          &mObj.nz.front(), Symbolic, &Common);
+      needsLU = false;
     }
     // Handle voltage sources
     for (const auto &j : mObj.components.vsIndices) {
@@ -353,14 +364,6 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
       for (int m = 0; m < mObj.rp.size() - 1; ++m) {
         results.xVector_new.at(m).value().emplace_back(lhsValues.at(m));
       }
-    }
-    
-    if (needsLU) {
-      mObj.create_nz();
-      klu_free_numeric(&Numeric, &Common);
-      Numeric = klu_factor(&mObj.rp.front(), &mObj.ci.front(),
-                           &mObj.nz.front(), Symbolic, &Common);
-      needsLU = false;
     }
 
     results.timeAxis.emplace_back(i * iObj.transSim.get_prstep());

@@ -31,12 +31,12 @@ JJ JJ::create_jj(
   }
   temp.set_model(std::make_pair(tokens.back(), s.second), models);
   temp.set_pn1(temp.get_model().get_phaseOffset());
-  temp.set_subCond((temp.get_model().get_subgapResistance() * timestep) / (timestep + 2 * temp.get_model().get_subgapResistance() * temp.get_model().get_capacitance()));
-  temp.set_transCond((temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV() * timestep) 
-                     / (temp.get_model().get_criticalCurrent() * timestep 
-                     + 2 * temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV() * temp.get_model().get_capacitance()));
-  temp.set_normalCond((temp.get_model().get_normalResistance() * timestep) / (timestep + 2 * temp.get_model().get_normalResistance() * temp.get_model().get_capacitance()));
-  temp.set_value(temp.get_subCond());
+  temp.set_gLarge(temp.get_model().get_criticalCurrent() /
+          (temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV()));
+  temp.set_subCond((1/temp.get_model().get_subgapResistance()) + ((2 * temp.get_model().get_capacitance()) / timestep));
+  temp.set_transCond(temp.get_gLarge() + ((2 * temp.get_model().get_capacitance()) / timestep));
+  temp.set_normalCond((1/temp.get_model().get_normalResistance()) + ((2 * temp.get_model().get_capacitance()) / timestep));
+  temp.set_value(1/temp.get_subCond());
   temp.set_del0(1.76 * JoSIM::Constants::BOLTZMANN * temp.get_model().get_criticalTemperature());
   temp.set_del(temp.get_del0() * sqrt(cos((JoSIM::Constants::PI / 2) 
                * (temp.get_model().get_temperature() / temp.get_model().get_criticalTemperature())
@@ -137,11 +137,13 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
     if(antyp == JoSIM::AnalysisType::Voltage) {
       nonZeros_.emplace_back(1);
       nonZeros_.emplace_back(-1);
+      nonZeros_.emplace_back(-value_);
+      rowPointer_.emplace_back(3);
     } else if(antyp == JoSIM::AnalysisType::Phase) {
       nonZeros_.emplace_back(1);
+      nonZeros_.emplace_back(-value_);
+      rowPointer_.emplace_back(2);
     }
-    nonZeros_.emplace_back(-value_);
-    rowPointer_.emplace_back(3);
     branchIndex++;
     columnIndex_.emplace_back(nm.at(n.first));
     columnIndex_.emplace_back(nm.at(n.second));
@@ -213,24 +215,24 @@ void JJ::set_phaseConst(const double &timestep, const JoSIM::AnalysisType &antyp
 
 // Update the value based on the matrix entry based on the current voltage value
 bool JJ::update_value(const double &v) {
-  if(abs(v) < lowerB_) {
+  if(fabs(v) < lowerB_) {
     transitionCurrent_ = 0.0;
-    if(nonZeros_.back() != -subCond_) {
-      nonZeros_.back() = -subCond_;
+    if(nonZeros_.back() != -1/subCond_) {
+      nonZeros_.back() = -1/subCond_;
       return true;
     } else {
       return false;
     }
-  } else if (abs(v) < upperB_) {
+  } else if (fabs(v) < upperB_) {
     if (v < 0) {
       transitionCurrent_ = -lowerB_ * ((1 / model_.get_subgapResistance()) 
-                           - (model_.get_criticalCurrent()/(model_.get_criticalToNormalRatio() * model_.get_deltaV())));
+                           - gLarge_);
     } else {
       transitionCurrent_ = lowerB_ * ((1 / model_.get_subgapResistance()) 
-                           - (model_.get_criticalCurrent()/(model_.get_criticalToNormalRatio() * model_.get_deltaV())));
+                           - gLarge_);
     }
-    if(nonZeros_.back() != -transCond_) {
-      nonZeros_.back() = -transCond_;
+    if(nonZeros_.back() != -1/transCond_) {
+      nonZeros_.back() = -1/transCond_;
       return true;
     } else {
       return false;
@@ -245,8 +247,8 @@ bool JJ::update_value(const double &v) {
                            + model_.get_voltageGap() * (1 / model_.get_subgapResistance()) 
                            - lowerB_ * (1 / model_.get_normalResistance()));
     }
-    if(nonZeros_.back() != -normalCond_) {
-      nonZeros_.back() = -normalCond_;
+    if(nonZeros_.back() != -1/normalCond_) {
+      nonZeros_.back() = -1/normalCond_;
       return true;
     } else {
       return false;

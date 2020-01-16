@@ -58,7 +58,7 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
   sqtr = iObj.netlist.expNetlist.size()/2;
   tqtr = iObj.netlist.expNetlist.size()/4 * 3;
 
-  std::cout << "JoSIM::Matrix Creation Progress:" << std::endl;
+  std::cout << "Matrix Creation Progress:" << std::endl;
   std::cout << "0%\r" << std::flush;
   int creationCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
