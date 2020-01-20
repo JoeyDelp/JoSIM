@@ -27,7 +27,7 @@ cols = int(math.ceil(N / 4))
 rows = int(math.ceil(N / cols))
 
 gs = gridspec.GridSpec(rows, cols)
-fig = pl.figure()
+fig = pl.figure(num=sys.argv[1])
 for var in range(1,len(labels)):
     ax = fig.add_subplot(gs[var - 1])
     ax.plot(time, data[var])
@@ -35,5 +35,4 @@ for var in range(1,len(labels)):
     ax.set_ylabel(labels[var])
 
 fig.set_tight_layout(True)
-fig.show()
-input()
+pl.show()

@@ -16,8 +16,7 @@
 
 class Results {
 public:
-  std::vector<std::vector<double>> xVect;
-  std::vector<std::optional<std::vector<double>>> xVector_new;
+  std::vector<std::optional<std::vector<double>>> xVector;
   std::vector<double> timeAxis;
   std::unordered_map<std::string, std::vector<double>> junctionCurrents;
 

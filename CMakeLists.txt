@@ -50,7 +50,8 @@ add_library(josim
             src/CCCS.cpp
             src/VCVS.cpp
             src/CCVS.cpp
-            src/RelevantTrace.cpp)
+            src/RelevantTrace.cpp
+            src/Function.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

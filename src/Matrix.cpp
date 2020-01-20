@@ -5,6 +5,7 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/Function.hpp"
 
 #include <algorithm>
 #include <string>
@@ -95,22 +96,42 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
         components.junctionIndices.emplace_back(components.devices.size() - 1);
         break;
       case 'V':
-        components.devices.emplace_back(VoltageSource::create_voltagesource(i, 
+        if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+          components.devices.emplace_back(PhaseSource::create_phasesource(i, 
             nm, lm, nc, branchIndex));
-        sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
-        std::get<VoltageSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
-        components.vsIndices.emplace_back(components.devices.size() - 1);
-        break;
+          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+          JoSIM::Function::voltage_to_phase(sources.back(), iObj);
+          std::get<PhaseSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
+          components.psIndices.emplace_back(components.devices.size() - 1);
+          break;
+        } else {
+          components.devices.emplace_back(VoltageSource::create_voltagesource(i, 
+            nm, lm, nc, branchIndex));
+          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+          std::get<VoltageSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
+          components.vsIndices.emplace_back(components.devices.size() - 1);
+          break;
+        }
       case 'P':
-        components.devices.emplace_back(PhaseSource::create_phasesource(i, 
+        if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+          components.devices.emplace_back(VoltageSource::create_voltagesource(i, 
             nm, lm, nc, branchIndex));
-        sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
-        std::get<PhaseSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
-        components.psIndices.emplace_back(components.devices.size() - 1);
-        break;
+          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+          JoSIM::Function::phase_to_voltage(sources.back(), iObj);
+          std::get<VoltageSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
+          components.vsIndices.emplace_back(components.devices.size() - 1);
+          break;
+        } else {
+          components.devices.emplace_back(PhaseSource::create_phasesource(i, 
+            nm, lm, nc, branchIndex));
+          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+          std::get<PhaseSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
+          components.psIndices.emplace_back(components.devices.size() - 1);
+          break;
+        }
       case 'I':
         components.currentsources.emplace_back(CurrentSource::create_currentsource(i, nm, lm));
-        sources.emplace_back(Misc::parse_function(i.first, iObj, i.second));
+        sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
         components.currentsources.back().set_sourceIndex(sources.size() - 1);
         break;
       case 'T':

@@ -36,7 +36,7 @@ void JoSIM::RelevantTrace::find_relevant_traces(const std::vector<std::string> &
     // Tokenize each store command using spaces
     std::vector<std::string> tokens = Misc::tokenize_space(i);
     // Complain if any of the commands have less than 3 tokens
-    if(tokens.size() < 3 && tokens.at(0) != "SAVE") {
+    if(tokens.size() < 2 && tokens.at(0) != "SAVE") {
       Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
     }
     // Fix any naming issues
