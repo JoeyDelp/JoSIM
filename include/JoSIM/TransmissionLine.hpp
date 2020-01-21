@@ -23,15 +23,15 @@ class TransmissionLine {
     int currentIndex1_;
     int currentIndex2_;
     double value_;
-    double dv1n1_, dv1n2_, dv2n1_, dv2n2_;
-    double dv1nk_, dv1nk1_, dv2nk_, dv2nk1_;
+    double dp1n1_, dp1n2_, dv2n1_, dp2n2_;
+    double dp1nk_, dp1nk1_, dp2nk_, dp2nk1_;
     int timestepDelay_;
   public:
     TransmissionLine() :
     currentIndex1_(-1), currentIndex2_(-1), 
     value_(0),
-    dv1n1_(0), dv1n2_(0), dv2n1_(0), dv2n2_(0),
-    dv1nk_(0), dv1nk1_(0), dv2nk_(0), dv2nk1_(0),
+    dp1n1_(0), dp1n2_(0), dv2n1_(0), dp2n2_(0),
+    dp1nk_(0), dp1nk1_(0), dp2nk_(0), dp2nk1_(0),
     timestepDelay_(0)
     {};
     
@@ -60,14 +60,14 @@ class TransmissionLine {
     void set_timestepDelay(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const double &timestep);
-    void set_dv1n1(const double &v) { dv1n1_ = v; }
-    void set_dv1n2(const double &v) { dv1n2_ = v; }
-    void set_dv2n1(const double &v) { dv2n1_ = v; }
-    void set_dv2n2(const double &v) { dv2n2_ = v; }
-    void set_dv1nk(const double &v) { dv1nk_ = v; }
-    void set_dv1nk1(const double &v) { dv1nk1_ = v; }
-    void set_dv2nk(const double &v) { dv2nk_ = v; }
-    void set_dv2nk1(const double &v) { dv2nk1_ = v; }
+    void set_dp1n1(const double &v) { dp1n1_ = v; }
+    void set_dp1n2(const double &v) { dp1n2_ = v; }
+    void set_dp2n1(const double &v) { dv2n1_ = v; }
+    void set_dp2n2(const double &v) { dp2n2_ = v; }
+    void set_dp1nk(const double &v) { dp1nk_ = v; }
+    void set_dp1nk1(const double &v) { dp1nk1_ = v; }
+    void set_dp2nk(const double &v) { dp2nk_ = v; }
+    void set_dp2nk1(const double &v) { dp2nk1_ = v; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -81,14 +81,14 @@ class TransmissionLine {
     const int& get_currentIndex2() const { return currentIndex2_; }
     const double& get_value() const { return value_; }
     const int& get_timestepDelay() const { return timestepDelay_; }
-    const double& get_dv1n1() const { return dv1n1_; }
-    const double& get_dv1n2() const { return dv1n2_; }
-    const double& get_dv2n1() const { return dv2n1_; }
-    const double& get_dv2n2() const { return dv2n2_; }
-    const double& get_dv1nk() const { return dv1nk_; }
-    const double& get_dv1nk1() const { return dv1nk1_; }
-    const double& get_dv2nk() const { return dv2nk_; }
-    const double& get_dv2nk1() const { return dv2nk1_; }
+    const double& get_dp1n1() const { return dp1n1_; }
+    const double& get_dp1n2() const { return dp1n2_; }
+    const double& get_dp2n1() const { return dv2n1_; }
+    const double& get_dp2n2() const { return dp2n2_; }
+    const double& get_dp1nk() const { return dp1nk_; }
+    const double& get_dp1nk1() const { return dp1nk1_; }
+    const double& get_dp2nk() const { return dp2nk_; }
+    const double& get_dp2nk1() const { return dp2nk1_; }
 };
 
 #endif

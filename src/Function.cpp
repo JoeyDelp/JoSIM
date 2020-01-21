@@ -440,8 +440,11 @@ void JoSIM::Function::parse_pws(const std::vector<std::string> &tokens, std::vec
 void JoSIM::Function::voltage_to_phase(std::vector<double> &source, const JoSIM::Input &iObj) {
   double vn1, value;
   for(int i = 0; i < source.size(); i++) {
-    if(i == 0) value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (source.at(i));
-    else value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (source.at(i) + vn1) + source.at(i - 1);
+    if(i == 0) { 
+      value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (source.at(i));
+    } else { 
+      value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (source.at(i) + vn1) + source.at(i - 1);
+    }
     vn1 = source.at(i);
     source.at(i) = value;
   }
@@ -450,8 +453,11 @@ void JoSIM::Function::voltage_to_phase(std::vector<double> &source, const JoSIM:
 void JoSIM::Function::phase_to_voltage(std::vector<double> &source, const JoSIM::Input &iObj) {
   double pn1, value;
   for(int i = 0; i < source.size(); i++) {
-    if(i == 0) value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i));
-    else value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i) - pn1) - source.at(i - 1);
+    if(i == 0) {
+      value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i));
+    } else {
+      value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i) - pn1) - source.at(i - 1);
+    }
     pn1 = source.at(i);
     source.at(i) = value;
   }

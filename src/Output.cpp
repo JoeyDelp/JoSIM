@@ -45,22 +45,34 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
               if (j == 0) {
                 value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
                         * sObj.results.xVector.at(i.index1.value()).value().at(j);
-                voltN1 = value;
+                voltN1 = 0.0;
+              } else if (j == 1) {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * (sObj.results.xVector.at(i.index1.value()).value().at(j)
+                        -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)) + voltN1;
+                voltN1 = 0.0;
               } else {
                 value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
                         * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                        -  sObj.results.xVector.at(i.index1.value()).value().at(j - 1)) - voltN1;
+                        -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)
+                        + sObj.results.xVector.at(i.index1.value()).value().at(j - 2)) + voltN1;
                 voltN1 = value;
               }
             } else if (!i.index1) {
               if (j == 0) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
                         * (-sObj.results.xVector.at(i.index2.value()).value().at(j));
-                voltN1 = value;
+                voltN1 = 0.0;
+              } else if (j == 1) {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
+                        -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
+                voltN1 = 0.0;
               } else {
                 value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
                         * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                        -  (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) - voltN1;
+                        -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
+                        + (-sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
                 voltN1 = value;
               }
             } else {
@@ -68,13 +80,20 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
                 value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
                         * (sObj.results.xVector.at(i.index1.value()).value().at(j)
                         - sObj.results.xVector.at(i.index2.value()).value().at(j));
-                voltN1 = value;
+                voltN1 = 0.0;
+              } else if (j == 1) {
+                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                        * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
+                        -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
+                voltN1 = 0.0;
               } else {
                 value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
                         * ((sObj.results.xVector.at(i.index1.value()).value().at(j) 
                         - sObj.results.xVector.at(i.index2.value()).value().at(j))
-                        -  (sObj.results.xVector.at(i.index1.value()).value().at(j - 1) 
-                        - sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) - voltN1;
+                        - 2 * (sObj.results.xVector.at(i.index1.value()).value().at(j - 1) 
+                        - sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
+                        + (sObj.results.xVector.at(i.index1.value()).value().at(j - 2) 
+                        - sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
                 voltN1 = value;
               }
             }
@@ -85,7 +104,8 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
         }
       } else if(i.storageType == JoSIM::StorageType::Phase) {
         unformattedOutput.at(0).emplace_back(i.deviceLabel.value());
-        double phaseN1 = 0;
+        double phaseN1, phaseN2;
+        phaseN1 = phaseN2 = 0.0;
         for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
           double value;
           if(i.deviceLabel.value().at(3) == 'B' || i.deviceLabel.value().at(3) == 'P') {
@@ -106,21 +126,33 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
                   value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
                           * sObj.results.xVector.at(i.index1.value()).value().at(j);
                   phaseN1 = value;
+                } else if (j == 1) {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)) + 2 * phaseN1 - phaseN2;
+                  phaseN2 = phaseN1;
+                  phaseN1 = value;
                 } else {
                   value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
                           * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          +  sObj.results.xVector.at(i.index1.value()).value().at(j - 1)) + phaseN1;
+                          - sObj.results.xVector.at(i.index1.value()).value().at(j - 2)) + 2 * phaseN1 - phaseN2;
+                  phaseN2 = phaseN1;
                   phaseN1 = value;
                 }
               } else if (!i.index1) {
                 if (j == 0) {
-                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
                           * (-sObj.results.xVector.at(i.index2.value()).value().at(j));
                   phaseN1 = value;
+                } else if (j == 1) {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                          * (-sObj.results.xVector.at(i.index2.value()).value().at(j)) + 2 * phaseN1 - phaseN2;
+                  phaseN2 = phaseN1;
+                  phaseN1 = value;
                 } else {
-                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
                           * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          +  (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + phaseN1;
+                          - (-sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + 2 * phaseN1 - phaseN2;
+                  phaseN2 = phaseN1;
                   phaseN1 = value;
                 }
               } else {
@@ -129,12 +161,19 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
                           * (sObj.results.xVector.at(i.index1.value()).value().at(j)
                           - sObj.results.xVector.at(i.index2.value()).value().at(j));
                   phaseN1 = value;
+                } else if (j == 1) {
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
+                          - sObj.results.xVector.at(i.index2.value()).value().at(j)) + 2 * phaseN1 - phaseN2;
+                  phaseN2 = phaseN1;
+                  phaseN1 = value;
                 } else {
-                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) 
-                          * ((sObj.results.xVector.at(i.index1.value()).value().at(j) 
+                  value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA))  
+                          * ((sObj.results.xVector.at(i.index1.value()).value().at(j)
                           - sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          +  (sObj.results.xVector.at(i.index1.value()).value().at(j - 1) 
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + phaseN1;
+                          - (sObj.results.xVector.at(i.index1.value()).value().at(j - 2)
+                          -sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + 2 * phaseN1 - phaseN2;
+                  phaseN2 = phaseN1;
                   phaseN1 = value;
                 }
               }
