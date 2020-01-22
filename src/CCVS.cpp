@@ -12,9 +12,9 @@ CCVS CCVS::create_CCVS(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<int, int>>> &nc,
+    std::vector<std::vector<std::pair<double, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    int &branchIndex) {
+    int &branchIndex, const JoSIM::Input &iObj) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
   CCVS temp;
@@ -26,10 +26,11 @@ CCVS CCVS::create_CCVS(
       Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
-  temp.set_value(std::make_pair(tokens.at(5), s.second), p);
+  temp.set_value(std::make_pair(tokens.at(5), s.second), p, iObj);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
   temp.set_currentIndex(branchIndex - 1);
+  temp.set_currentIndex2(branchIndex - 2);
   return temp;
 }
 
@@ -44,6 +45,18 @@ void CCVS::set_label(const std::string &s, std::unordered_set<std::string> &lm) 
 
 void CCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
   const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+  if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
+    if(nm.count(n1.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.first);
+  }
+  if(n1.second != "0" && n1.second.find("GND") == std::string::npos) {
+    if(nm.count(n1.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.second);
+  }
+  if(n2.first != "0" && n2.first.find("GND") == std::string::npos) {
+    if(nm.count(n2.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.first);
+  }
+  if(n2.second != "0" && n2.second.find("GND") == std::string::npos) {
+    if(nm.count(n2.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.second);
+  }
   nonZeros_.clear();
   columnIndex_.clear();
   // 0
@@ -265,7 +278,7 @@ void CCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string
 }
 
 void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-  const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex) {
+  const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     posIndex1_ = nm.at(n1.first);
     nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
@@ -293,6 +306,10 @@ void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std:
 }
 
 void CCVS::set_value(const std::pair<std::string, std::string> &s, 
-  const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
-  value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+  const std::unordered_map<JoSIM::ParameterName, Parameter> &p, const JoSIM::Input &iObj) {
+  if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+    value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+  } else {
+    value_ = ((JoSIM::Parameters::parse_param(s.first, p, s.second) * iObj.transSim.get_prstep())/(JoSIM::Constants::SIGMA * 2));
+  }
 }

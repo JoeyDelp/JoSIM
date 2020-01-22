@@ -41,60 +41,64 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
                       - sObj.results.xVector.at(i.index2.value()).value().at(j);
             }
           } else {
-            if(!i.index2) {
-              if (j == 0) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
-                        * sObj.results.xVector.at(i.index1.value()).value().at(j);
-                voltN1 = 0.0;
-              } else if (j == 1) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                        -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)) + voltN1;
-                voltN1 = 0.0;
-              } else {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                        -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)
-                        + sObj.results.xVector.at(i.index1.value()).value().at(j - 2)) + voltN1;
-                voltN1 = value;
-              }
-            } else if (!i.index1) {
-              if (j == 0) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
-                        * (-sObj.results.xVector.at(i.index2.value()).value().at(j));
-                voltN1 = 0.0;
-              } else if (j == 1) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                        -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
-                voltN1 = 0.0;
-              } else {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                        -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
-                        + (-sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
-                voltN1 = value;
-              }
+            if(i.deviceLabel.value().at(3) == 'B') {
+              value = sObj.results.xVector.at(i.variableIndex.value()).value().at(j);
             } else {
-              if (j == 0) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                        - sObj.results.xVector.at(i.index2.value()).value().at(j));
-                voltN1 = 0.0;
-              } else if (j == 1) {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                        -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
-                voltN1 = 0.0;
+              if(!i.index2) {
+                if (j == 0) {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
+                          * sObj.results.xVector.at(i.index1.value()).value().at(j);
+                  voltN1 = 0.0;
+                } else if (j == 1) {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
+                          -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)) + voltN1;
+                  voltN1 = 0.0;
+                } else {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
+                          -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)
+                          + sObj.results.xVector.at(i.index1.value()).value().at(j - 2)) + voltN1;
+                  voltN1 = value;
+                }
+              } else if (!i.index1) {
+                if (j == 0) {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) 
+                          * (-sObj.results.xVector.at(i.index2.value()).value().at(j));
+                  voltN1 = 0.0;
+                } else if (j == 1) {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
+                          -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
+                  voltN1 = 0.0;
+                } else {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
+                          -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
+                          + (-sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
+                  voltN1 = value;
+                }
               } else {
-                value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
-                        * ((sObj.results.xVector.at(i.index1.value()).value().at(j) 
-                        - sObj.results.xVector.at(i.index2.value()).value().at(j))
-                        - 2 * (sObj.results.xVector.at(i.index1.value()).value().at(j - 1) 
-                        - sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
-                        + (sObj.results.xVector.at(i.index1.value()).value().at(j - 2) 
-                        - sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
-                voltN1 = value;
+                if (j == 0) {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
+                          - sObj.results.xVector.at(i.index2.value()).value().at(j));
+                  voltN1 = 0.0;
+                } else if (j == 1) {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
+                          -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
+                  voltN1 = 0.0;
+                } else {
+                  value = ((JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep())  
+                          * ((sObj.results.xVector.at(i.index1.value()).value().at(j) 
+                          - sObj.results.xVector.at(i.index2.value()).value().at(j))
+                          - 2 * (sObj.results.xVector.at(i.index1.value()).value().at(j - 1) 
+                          - sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
+                          + (sObj.results.xVector.at(i.index1.value()).value().at(j - 2) 
+                          - sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
+                  voltN1 = value;
+                }
               }
             }
           }
@@ -108,18 +112,18 @@ std::vector<std::vector<std::string>> JoSIM::Output::write_output(const JoSIM::I
         phaseN1 = phaseN2 = 0.0;
         for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
           double value;
-          if(i.deviceLabel.value().at(3) == 'B' || i.deviceLabel.value().at(3) == 'P') {
-            value = sObj.results.xVector.at(i.index1.value()).value().at(j);
+          if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+            if(!i.index2) {
+              value = sObj.results.xVector.at(i.index1.value()).value().at(j);
+            } else if (!i.index1) {
+              value = -sObj.results.xVector.at(i.index2.value()).value().at(j);
+            } else {
+              value = sObj.results.xVector.at(i.index1.value()).value().at(j) 
+                      - sObj.results.xVector.at(i.index2.value()).value().at(j);
+            }
           } else {
-            if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
-              if(!i.index2) {
-                value = sObj.results.xVector.at(i.index1.value()).value().at(j);
-              } else if (!i.index1) {
-                value = -sObj.results.xVector.at(i.index2.value()).value().at(j);
-              } else {
-                value = sObj.results.xVector.at(i.index1.value()).value().at(j) 
-                        - sObj.results.xVector.at(i.index2.value()).value().at(j);
-              }
+            if(i.deviceLabel.value().at(3) == 'B') {
+              value = sObj.results.xVector.at(i.variableIndex.value()).value().at(j);
             } else {
               if(!i.index2) {
                 if (j == 0) {

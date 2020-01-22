@@ -39,7 +39,7 @@ class TransmissionLine {
         const std::pair<std::string, std::string> &s,
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<int, int>>> &nc,
+        std::vector<std::vector<std::pair<double, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const JoSIM::AnalysisType &antyp,
         const double &timestep,
@@ -51,7 +51,7 @@ class TransmissionLine {
         const std::string &s, int &branchIndex);
     void set_indices(const std::pair<std::string, std::string> &n1, 
         const std::pair<std::string, std::string> &n2, 
-        const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
+        const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
     void set_currentIndex1(const int &cc) { currentIndex1_ = cc; }
     void set_currentIndex2(const int &cc) { currentIndex2_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 

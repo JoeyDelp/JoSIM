@@ -20,7 +20,7 @@ public:
 
   Components components;
   std::unordered_map<std::string, int> nm;
-  std::vector<std::vector<std::pair<int, int>>> nc;
+  std::vector<std::vector<std::pair<double, int>>> nc;
   std::unordered_set<std::string> lm;
   int branchIndex;
   std::vector<double> nz;

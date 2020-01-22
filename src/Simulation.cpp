@@ -53,6 +53,17 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
     if(i == fqtr) std::cout << "25%\r" << std::flush;
     if(i == sqtr) std::cout << "50%\r" << std::flush;
     if(i == tqtr) std::cout << "75%\r" << std::flush;
+    // Handle current sources
+    for (const auto &j : mObj.components.currentsources) {
+      if(j.get_posIndex() && !j.get_negIndex()) {
+          RHS.at(j.get_posIndex().value()) -= (mObj.sources.at(j.get_sourceIndex()).at(i));
+        } else if(!j.get_posIndex() && j.get_negIndex()) {
+          RHS.at(j.get_negIndex().value()) += (mObj.sources.at(j.get_sourceIndex()).at(i));
+        } else {
+          RHS.at(j.get_posIndex().value()) -= (mObj.sources.at(j.get_sourceIndex()).at(i));
+          RHS.at(j.get_negIndex().value()) += (mObj.sources.at(j.get_sourceIndex()).at(i));
+        }
+    }
     // Handle resistors
     for (const auto &j : mObj.components.resistorIndices) {
       const auto &temp = std::get<Resistor>(mObj.components.devices.at(j));
@@ -224,16 +235,37 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
         }
       }
     }
-    // Handle current sources
-    for (const auto &j : mObj.components.currentsources) {
-      if(j.get_posIndex() && !j.get_negIndex()) {
-          RHS.at(j.get_posIndex().value()) -= (mObj.sources.at(j.get_sourceIndex()).at(i));
-        } else if(!j.get_posIndex() && j.get_negIndex()) {
-          RHS.at(j.get_negIndex().value()) += (mObj.sources.at(j.get_sourceIndex()).at(i));
+    // Handle ccvs
+    for (const auto &j : mObj.components.ccvsIndices) {
+      const auto &temp = std::get<CCVS>(mObj.components.devices.at(j));
+      if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+        double prevNode;
+        if(temp.get_posIndex() && !temp.get_negIndex()) {
+          prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
+        } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+          prevNode = (-LHS_PRE.at(temp.get_negIndex().value()));
         } else {
-          RHS.at(j.get_posIndex().value()) -= (mObj.sources.at(j.get_sourceIndex()).at(i));
-          RHS.at(j.get_negIndex().value()) += (mObj.sources.at(j.get_sourceIndex()).at(i));
+          prevNode = (LHS_PRE.at(temp.get_posIndex().value())
+                  - LHS_PRE.at(temp.get_negIndex().value()));
         }
+        RHS.at(temp.get_currentIndex2()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex2()) + prevNode;
+      }
+    }
+     // Handle vccs
+    for (const auto &j : mObj.components.vccsIndices) {
+      const auto &temp = std::get<VCCS>(mObj.components.devices.at(j));
+      if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+        double prevNode;
+        if(temp.get_posIndex2() && !temp.get_negIndex2()) {
+          prevNode = (LHS_PRE.at(temp.get_posIndex2().value()));
+        } else if(!temp.get_posIndex2() && temp.get_negIndex2()) {
+          prevNode = (-LHS_PRE.at(temp.get_negIndex2().value()));
+        } else {
+          prevNode = (LHS_PRE.at(temp.get_posIndex2().value())
+                  - LHS_PRE.at(temp.get_negIndex2().value()));
+        }
+        RHS.at(temp.get_currentIndex()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
+      }
     }
     // Handle transmission lines
     for (const auto &j : mObj.components.txIndices) {

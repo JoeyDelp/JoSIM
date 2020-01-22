@@ -6,6 +6,7 @@
 #include "./ParameterName.hpp"
 #include "./Parameters.hpp"
 #include "./AnalysisType.hpp"
+#include "./Input.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -20,7 +21,7 @@ class CCVS {
     std::vector<int> rowPointer_;
     std::optional<int> posIndex1_, negIndex1_;
     std::optional<int> posIndex2_, negIndex2_;
-    int currentIndex_;
+    int currentIndex_, currentIndex2_;
     double value_;
   public:
     CCVS() :
@@ -32,17 +33,18 @@ class CCVS {
         const std::pair<std::string, std::string> &s,
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<int, int>>> &nc,
+        std::vector<std::vector<std::pair<double, int>>> &nc,
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        int &branchIndex);
+        int &branchIndex, const JoSIM::Input &iObj);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
       const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
     void set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-      const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex);
+      const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
+    void set_currentIndex2(const int &cc) { currentIndex2_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
+        const std::unordered_map<JoSIM::ParameterName, Parameter> &p, const JoSIM::Input &iObj);
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -53,6 +55,7 @@ class CCVS {
     const std::optional<int>& get_posIndex2() const { return posIndex2_; }
     const std::optional<int>& get_negIndex2() const { return negIndex2_; }
     const int& get_currentIndex() const { return currentIndex_; }
+    const int& get_currentIndex2() const { return currentIndex2_; }
     const double& get_value() const { return value_; }
 
 };

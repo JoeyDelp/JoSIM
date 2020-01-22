@@ -51,6 +51,7 @@ class RelevantTrace {
     std::optional<int> index1;
     std::optional<int> index2;
     std::optional<int> sourceIndex;
+    std::optional<int> variableIndex;
 
     RelevantTrace() :
       device(false)

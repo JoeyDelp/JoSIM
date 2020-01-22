@@ -27,6 +27,12 @@ void CurrentSource::set_label(const std::string &s, std::unordered_set<std::stri
 }
 
 void CurrentSource::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm) {
+  if(n.first != "0" && n.first.find("GND") == std::string::npos) {
+    if(nm.count(n.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.first);
+  }
+  if(n.second != "0" && n.second.find("GND") == std::string::npos) {
+    if(nm.count(n.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.second);
+  }
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
   } else if(n.first.find("GND") != std::string::npos || n.first == "0") {

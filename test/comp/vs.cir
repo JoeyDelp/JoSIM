@@ -1,0 +1,8 @@
+* Voltage source component test
+* Date modified: 2020/01/22
+VA  1   0  pwl(0 0 170p 0 176p 600u 182p 0 370p 0 376p 600u 382p 0 600p 0 606p 600u 612p 0 700p 0 706p 600u 712p 0)
+RA  1   0   2
+.tran 0.25p 1000p
+.print devv RA
+.print devi RA
+.print devp RA

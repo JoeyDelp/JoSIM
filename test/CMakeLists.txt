@@ -22,18 +22,6 @@ add_integration_test(
 )
 
 add_integration_test(
-  NAME ex_jj_char
-  CIR ex_jj_char.cir
-  OUT ex_jj_char.csv
-)
-
-add_integration_test(
-  NAME ex_jtl_1kA
-  CIR ex_jtl_1kA.cir
-  OUT ex_jtl_1kA.csv
-)
-
-add_integration_test(
   NAME ex_jtl_basic
   CIR ex_jtl_basic.cir
   OUT ex_jtl_basic.csv
@@ -66,32 +54,6 @@ add_integration_test(
 )
 
 add_integration_test(
-  NAME ex_mut_test
-  CIR ex_mut_test.cir
-  OUT ex_mut_test.csv
-)
-
-add_integration_test(
-  NAME ex_ps_jtl
-  CIR ex_ps_jtl.cir
-  OUT ex_ps_jtl.csv
-  PHASE
-)
-
-add_integration_test(
-  NAME ex_xline_test
-  CIR ex_xline_test.cir
-  OUT ex_xline_test.csv
-)
-
-# add_integration_test(
-#   NAME ex_mitll_not_wr
-#   CIR ex_mitll_not_wr.cir
-#   OUT ex_mitll_not_wr.csv
-#   WRSPICE
-# )
-
-add_integration_test(
   NAME test_param_nest
   CIR param/test_param_nest.cir
 )
@@ -116,10 +78,3 @@ add_integration_test(
   NAME test_output
   CIR syntax/test_output.cir
 )
-
-#add_integration_test(
-#  NAME test_mitll_xort
-#  CIR TEST_MITLL_XORT.cir
-#  OUT test_mitll_xort.csv
-#  WRSPICE
-#)

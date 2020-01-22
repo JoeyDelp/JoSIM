@@ -551,6 +551,16 @@ void Errors::parsing_errors(ParsingErrors errorCode, const std::string &whatPart
   }
 }
 
+void Errors::netlist_errors(NetlistErrors errorCode, const std::string &whatPart) {
+  std::string formattedMessage = "Netlist\n";
+  switch (errorCode) {
+  case NetlistErrors::NO_SUCH_NODE:
+    formattedMessage += "Node \"" + whatPart + "\" was not found in the netlist\n";
+    formattedMessage += "Please check for any disconnections in the netlist";
+    throw formattedMessage;
+  }
+}
+
 void Errors::output_errors(OutputErrors errorCode, const std::string &whatPart) {
   std::string formattedMessage = "Output\n";
   switch (errorCode) {
@@ -559,6 +569,13 @@ void Errors::output_errors(OutputErrors errorCode, const std::string &whatPart) 
       formattedMessage += "Please ensure write permission in for the file: " + whatPart;
       throw formattedMessage;
   }
+}
+
+[[noreturn]] void Errors::oor() {
+  std::cerr << "E: Out of range error. This is a bug." << std::endl;
+  std::cerr << "E: Please contact the developer." << std::endl;
+  std::cerr << std::endl;
+  exit(-1);
 }
 
 [[noreturn]] void Errors::error_message(const std::string &formattedMessage) {

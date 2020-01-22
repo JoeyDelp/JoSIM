@@ -5,3 +5,4 @@ Vtest   1   0   sin(0 5)
 .tran 0.25p 100p
 .print devv L1
 .print devi L1
+.print devp L1

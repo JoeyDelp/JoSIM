@@ -12,7 +12,7 @@ JJ JJ::create_jj(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<int, int>>> &nc,
+    std::vector<std::vector<std::pair<double, int>>> &nc,
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
     const std::vector<std::pair<JoSIM::Model, std::string>> &models,
     const JoSIM::AnalysisType &antyp,
@@ -65,6 +65,12 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
     const JoSIM::AnalysisType &antyp, const double &timestep) {
   nonZeros_.clear();
   columnIndex_.clear();
+  if(n.first != "0" && n.first.find("GND") == std::string::npos) {
+    if(nm.count(n.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.first);
+  }
+  if(n.second != "0" && n.second.find("GND") == std::string::npos) {
+    if(nm.count(n.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.second);
+  }
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     // 0 0
     if(n.first.find("GND") != std::string::npos || n.first == "0") {
@@ -158,7 +164,7 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
   }
 }
 
-void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<int, int>>> &nc, const int &branchIndex) {
+void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));

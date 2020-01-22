@@ -153,6 +153,9 @@ void JoSIM::RelevantTrace::find_relevant_traces(const std::vector<std::string> &
     if(i.index2) {
       mObj.relevantIndices.emplace_back(i.index2.value());
     }
+    if(i.variableIndex) {
+      mObj.relevantIndices.emplace_back(i.variableIndex.value());
+    }
   }
 
   for(const auto &i : mObj.components.txIndices) {
@@ -250,8 +253,14 @@ void JoSIM::RelevantTrace::handle_voltage_or_phase(const std::string &s, bool vo
               temp.deviceLabel = "\"P(" + s + ")\"";
             }
             temp.device = true;
+            temp.index1 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
+            return device.get_posIndex();
+            }, mObj.components.devices.at(j));
+            temp.index2 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
+              return device.get_negIndex();
+            }, mObj.components.devices.at(j));
             try {
-              temp.index1 = std::get<JJ>(mObj.components.devices.at(j)).get_variableIndex();
+              temp.variableIndex = std::get<JJ>(mObj.components.devices.at(j)).get_variableIndex();
               mObj.relevantTraces.emplace_back(temp);
               break;
             } catch (const std::bad_variant_access&) {}

@@ -147,7 +147,7 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
       case 'G':
         components.devices.emplace_back(VCCS::create_VCCS(i, 
             nm, lm, nc, 
-            iObj.parameters, branchIndex));
+            iObj.parameters, branchIndex, iObj));
         components.vccsIndices.emplace_back(components.devices.size() - 1);        
         break;
       case 'F':
@@ -165,7 +165,7 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
       case 'H':
         components.devices.emplace_back(CCVS::create_CCVS(i, 
             nm, lm, nc, 
-            iObj.parameters, branchIndex));
+            iObj.parameters, branchIndex, iObj));
         components.ccvsIndices.emplace_back(components.devices.size() - 1);        
         break;
     }

@@ -74,6 +74,8 @@ int main(int argc, const char **argv) {
 
     return 0;
   } catch(std::string &formattedMessage) {
-      Errors::error_message(formattedMessage);
+    Errors::error_message(formattedMessage);
+  } catch(std::out_of_range &e) {
+    Errors::oor();
   }
 }

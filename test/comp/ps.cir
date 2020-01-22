@@ -1,0 +1,6 @@
+* Phase source component test
+* Date modified: 2020/01/22
+PA    4    0    pwl(0 0 300p 0 302.5p 2*pi)
+RA    4    0    1
+.tran 0.25p 500p
+.print v(RA) i(RA) p(RA)

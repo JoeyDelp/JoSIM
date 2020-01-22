@@ -145,6 +145,10 @@ enum class OutputErrors : int {
   CANNOT_OPEN_FILE
 };
 
+enum class NetlistErrors : int {
+  NO_SUCH_NODE
+};
+
 class Errors {
 public:
   static void cli_errors(CLIErrors errorCode, const std::string &whatPart = "");
@@ -172,6 +176,10 @@ public:
   static void parsing_errors(ParsingErrors errorCode, const std::string &whatPart);
   
   static void output_errors(OutputErrors errorCode, const std::string &whatPart);
+  
+  static void netlist_errors(NetlistErrors errorCode, const std::string &whatPart);
+  
+  [[noreturn]] static void oor();
   
   [[noreturn]] static void error_message (const std::string &formattedMessage);
 
