@@ -393,8 +393,11 @@ void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1
 void TransmissionLine::set_value(const std::pair<std::string, std::string> &s, 
         const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
         const JoSIM::AnalysisType &antyp, const double &timestep) {
-  if (antyp == JoSIM::AnalysisType::Voltage) value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
-  else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep * JoSIM::Parameters::parse_param(s.first, p, s.second)) / (2 * JoSIM::Constants::SIGMA);
+  if (antyp == JoSIM::AnalysisType::Voltage) {
+    value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+  } else if (antyp == JoSIM::AnalysisType::Phase) {
+    value_ = (timestep * JoSIM::Parameters::parse_param(s.first, p, s.second)) / (2 * JoSIM::Constants::SIGMA);
+  }
 }
 
 void TransmissionLine::set_timestepDelay(const std::pair<std::string, std::string> &s, 

@@ -270,130 +270,133 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
     // Handle transmission lines
     for (const auto &j : mObj.components.txIndices) {
       auto &temp = std::get<TransmissionLine>(mObj.components.devices.at(j));
-      if(i >= temp.get_timestepDelay()) {
-        double prevNodek, prevNode2k;
-        // φ1n-k
-        if(temp.get_posIndex() && !temp.get_negIndex()) {
-          prevNodek = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay());
-        } else if(!temp.get_posIndex() && temp.get_negIndex()) {
-          prevNodek = -results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
-        } else {
-          prevNodek = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay())
-                      - results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
-        }
-        // φ2n-k
-        if(temp.get_posIndex2() && !temp.get_negIndex2()) {
-          prevNode2k = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay());
-        } else if(!temp.get_posIndex2() && temp.get_negIndex2()) {
-          prevNode2k = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
-        } else {
-          prevNode2k = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay())
-                        - results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
-        }
-        if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+        if(i >= temp.get_timestepDelay()) {
+          double prevNodek, prevNode2k;
+          // φ1n-k
+          if(temp.get_posIndex() && !temp.get_negIndex()) {
+            prevNodek = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay());
+          } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+            prevNodek = -results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
+          } else {
+            prevNodek = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay())
+                        - results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
+          }
+          // φ2n-k
+          if(temp.get_posIndex2() && !temp.get_negIndex2()) {
+            prevNode2k = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay());
+          } else if(!temp.get_posIndex2() && temp.get_negIndex2()) {
+            prevNode2k = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
+          } else {
+            prevNode2k = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay())
+                          - results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
+          }
           // IT1 = V2(n-k) + Z0 I2(n-k)
           RHS.at(temp.get_currentIndex()) = prevNode2k + temp.get_value() * results.xVector.at(
                                               temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay());
           // IT2 = V1(n-k) + Z0 I1(n-k)
           RHS.at(temp.get_currentIndex2()) = prevNodek + temp.get_value() * results.xVector.at(
                                               temp.get_currentIndex()).value().at(i - temp.get_timestepDelay());
-          
-        } else if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
-          // φ1n-1, φ2n-1, φ1n-2, φ2n-2, φ1n-k-1, φ2n-k-1
-          double prevNodeN, prevNode2N, prevNodeN1, prevNode2N1, prevNodek1, prevNode2k1;
-          prevNodeN1 = 0.0;
-          prevNode2N1 = 0.0;
-          prevNodek1 = 0.0;
-          prevNode2k1 = 0.0;
-          // φ1n-1, φ1n-2
+        }
+      } else if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+        if (i > 0) {
+          // φ1n-1, φ2n-1, φ1n-k-1, φ2n-k-1
+          double prevNodeN, prevNode2N;
+          // φ1n-1
           if(temp.get_posIndex() && !temp.get_negIndex()) {
             prevNodeN = results.xVector.at(temp.get_posIndex().value()).value().at(i - 1);
-            if (i > 1) {
-              prevNodeN1 = results.xVector.at(temp.get_posIndex().value()).value().at(i - 2);
-            }
-            // φ1n-k-1
-            if(i > temp.get_timestepDelay() + 1) {
-              prevNodek1 = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay() - 1);
-            }
           } else if(!temp.get_posIndex() && temp.get_negIndex()) {
             prevNodeN = -results.xVector.at(temp.get_negIndex().value()).value().at(i - 1);
-            if (i > 1) {
-              prevNodeN1 = -results.xVector.at(temp.get_negIndex().value()).value().at(i - 2); 
-            }
-            // φ1n-k-1           
-            if(i >= temp.get_timestepDelay() + 1) { 
-              prevNodek1 = -results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay() - 1);
-            }            
           } else {
             prevNodeN = results.xVector.at(temp.get_posIndex().value()).value().at(i - 1)
                     - results.xVector.at(temp.get_negIndex().value()).value().at(i - 1);
-            if (i > 1) {
-              prevNodeN1 = results.xVector.at(temp.get_posIndex().value()).value().at(i - 2)
-                    - results.xVector.at(temp.get_negIndex().value()).value().at(i - 2);
-            }
-            // φ1n-k-1
-            if(i >= temp.get_timestepDelay() + 1) {
-              prevNodek1 = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay() - 1)
-                    - results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay() - 1);
-            }
           }
-          // φ2n-1, φ2n-2
+          // φ2n-1
           if(temp.get_posIndex2() && !temp.get_negIndex2()) {
             prevNode2N = results.xVector.at(temp.get_posIndex2().value()).value().at(i - 1);
-            if (i > 1) {
-              prevNode2N1 = results.xVector.at(temp.get_posIndex2().value()).value().at(i - 2);
-            }
-            // φ2n-k-1
-            if(i >= temp.get_timestepDelay() + 1) {
-              prevNode2k1 = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
-            }
           } else if(!temp.get_posIndex2() && temp.get_negIndex2()) {
             prevNode2N = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - 1);
-            if (i > 1) {
-              prevNode2N1 = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - 2);
-            }
-            // φ2n-k-1
-            if(i >= temp.get_timestepDelay() + 1) {
-              prevNode2k1 = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
-            }
           } else {
             prevNode2N = results.xVector.at(temp.get_posIndex2().value()).value().at(i - 1)
                     - results.xVector.at(temp.get_negIndex2().value()).value().at(i - 1);
-            if (i > 1) { 
-              prevNode2N1 = results.xVector.at(temp.get_posIndex2().value()).value().at(i - 2)
-                    - results.xVector.at(temp.get_negIndex2().value()).value().at(i - 2);
-            }
-            // φ2n-k-1
-            if(i >= temp.get_timestepDelay() + 1) {
-              prevNode2k1 = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay() - 1)
-                    - results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
-            }
           }
-          // (dφ1/dt)n-1 = (2 / h) * (φ1n-1 - φ1n-2) - (dφ1/dt)n-2
-          temp.set_dp1n1((2 / iObj.transSim.get_prstep()) * (prevNodeN - prevNodeN1) - temp.get_dp1n2());
-          // (dφ2/dt)n-1 = (2 / h) * (φ2n-1 - φ2n-2) - (dφ2/dt)n-2
-          temp.set_dp2n1((2 / iObj.transSim.get_prstep()) * (prevNode2N - prevNode2N1) - temp.get_dp2n2());
-          temp.set_dp1n2(temp.get_dp1n1());
-          temp.set_dp2n2(temp.get_dp2n1());
-          if(i < (temp.get_timestepDelay() + 1)) {
-            // (dφ1/dt)n-k = (2 / h) * (φ1n-k)
-            temp.set_dp1nk((2 / iObj.transSim.get_prstep()) * (prevNodek));
-            // (dφ2/dt)n-k = (2 / h) * (φ2n-k)
-            temp.set_dp2nk((2 / iObj.transSim.get_prstep()) * (prevNode2k));
+          if(i >= temp.get_timestepDelay()) {
+            double prevNodek, prevNode2k, prevNodek1, prevNode2k1;
+            prevNodek1 = 0.0;
+            prevNode2k1 = 0.0;
+            // φ1n-k
+            if(temp.get_posIndex() && !temp.get_negIndex()) {
+              prevNodek = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay());
+              // φ1n-k-1
+              if(i > temp.get_timestepDelay() + 1) {
+                prevNodek1 = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay() - 1);
+              }
+            } else if(!temp.get_posIndex() && temp.get_negIndex()) {
+              prevNodek = -results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
+              // φ1n-k-1           
+              if(i >= temp.get_timestepDelay() + 1) { 
+                prevNodek1 = -results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay() - 1);
+              } 
+            } else {
+              prevNodek = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay())
+                          - results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay());
+              // φ1n-k-1
+              if(i >= temp.get_timestepDelay() + 1) {
+                prevNodek1 = results.xVector.at(temp.get_posIndex().value()).value().at(i - temp.get_timestepDelay() - 1)
+                      - results.xVector.at(temp.get_negIndex().value()).value().at(i - temp.get_timestepDelay() - 1);
+              }
+            }
+            // φ2n-k
+            if(temp.get_posIndex2() && !temp.get_negIndex2()) {
+              prevNode2k = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay());
+              // φ2n-k-1
+              if(i >= temp.get_timestepDelay() + 1) {
+                prevNode2k1 = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
+              }
+            } else if(!temp.get_posIndex2() && temp.get_negIndex2()) {
+              prevNode2k = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
+              // φ2n-k-1
+              if(i >= temp.get_timestepDelay() + 1) {
+                prevNode2k1 = -results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
+              }
+            } else {
+              prevNode2k = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay())
+                            - results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay());
+              // φ2n-k-1
+              if(i >= temp.get_timestepDelay() + 1) {
+                prevNode2k1 = results.xVector.at(temp.get_posIndex2().value()).value().at(i - temp.get_timestepDelay() - 1)
+                      - results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
+              }
+            }
+            if(i == temp.get_timestepDelay()) {
+              // IT1 = (hZ0/2σ) * (IT1n-1 + IT2n-k) + φ1n-1 + φ2n-k
+              RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1)
+                                                + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay()))
+                                                + prevNodeN + prevNode2k;
+              // IT2 = (hZ0/2σ) * (IT2n-1 + IT1n-k + IT1n-k-1) + φ2n-1 + φ1n-k + φ1n-k-1                                   
+              RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1)
+                                                + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay()))
+                                                + prevNode2N + prevNodek;
+            } else {
+              // IT1 = (hZ0/2σ) * (IT1n-1 + IT2n-k + IT2n-k-1) + φ1n-1 + φ2n-k - φ2n-k-1
+              RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1)
+                                                + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay())
+                                                + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay() - 1))
+                                                + prevNodeN + prevNode2k - prevNode2k1;
+              // IT2 = (hZ0/2σ) * (IT2n-1 + IT1n-k + IT1n-k-1) + φ2n-1 + φ1n-k - φ1n-k-1                                   
+              RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1)
+                                                + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay())
+                                                + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay() - 1))
+                                                + prevNode2N + prevNodek - prevNodek1;
+            }
           } else {
-            // (dφ1/dt)n-k = (2 / h) * (φ1n-k - φ1n-k-1) - (dφ1/dt)n-k-1
-            temp.set_dp1nk((2 / iObj.transSim.get_prstep()) * (prevNodek - prevNodek1) - temp.get_dp1nk1());
-            // (dφ2/dt)n-k = (2 / h) * (φ2n-k - φ2n-k-1) - (dφ2/dt)n-k-1
-            temp.set_dp2nk((2 / iObj.transSim.get_prstep()) * (prevNode2k - prevNode2k1) - temp.get_dp2nk1());
+            // IT1 = (hZ0/2σ) * (IT1n-1) + φ1n-1
+              RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1))
+                                                + prevNodeN;
+              // IT2 = (hZ0/2σ) * (IT2n-1) + φ2n-1                         
+              RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1))
+                                                + prevNode2N;
           }
-          temp.set_dp1nk1(temp.get_dp1nk());
-          temp.set_dp2nk1(temp.get_dp2nk());
-          // IT1 = (hZ0/2σ) * IT2n-k + φ1n-1 + (h/2) * ((dφ1/dt)n-1 + (dφ2/dt)n-k) 
-          RHS.at(temp.get_currentIndex()) = temp.get_value() * results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay())
-                                            + prevNodeN + (iObj.transSim.get_prstep() / 2) * (temp.get_dp1n1() + temp.get_dp2nk());
-          // IT2 = (hZ0/2σ) * IT1n-k + φ2n-1 + (h/2) * ((dφ2/dt)n-1 + (dφ1/dt)n-k)                                   
-          RHS.at(temp.get_currentIndex2()) = temp.get_value() * results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay())
-                                            + prevNode2N + (iObj.transSim.get_prstep() / 2) * (temp.get_dp2n1() + temp.get_dp1nk());
         }
       }
     }
