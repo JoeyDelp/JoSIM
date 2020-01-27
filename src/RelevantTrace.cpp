@@ -41,13 +41,7 @@ void JoSIM::RelevantTrace::find_relevant_traces(const std::vector<std::string> &
     }
     // Fix any naming issues
     for (auto &l : tokens) {
-      if (l.find('_') != std::string::npos) {
-        tokens2 = Misc::tokenize_delimiter(l, "_");
-        l = tokens2.back();
-        tokens2.pop_back();
-        for (int k = tokens2.size() - 1; k >= 0; k--)
-          l += "|" + tokens2.at(k);
-      } else if (l.find('.') != std::string::npos) {
+      if (l.find('.') != std::string::npos) {
         std::replace(l.begin(), l.end(), '.', '|');
       }
     }

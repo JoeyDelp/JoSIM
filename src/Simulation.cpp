@@ -18,7 +18,7 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
   std::vector<double> lhsValues, LHS_PRE(mObj.rp.size() - 1, 0.0);
   int simSize = iObj.transSim.get_simsize();
   int saveAll = false;
-  if(mObj.relevantIndices.size() == 0) saveAll = true;
+  if(mObj.relevantTraces.size() == 0) saveAll = true;
   results.xVector.resize(mObj.rp.size() - 1);
   if(!saveAll) {
     for (const auto &i : mObj.relevantIndices) {

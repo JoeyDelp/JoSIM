@@ -36,6 +36,7 @@ void JoSIM::Parameters::create_parameter(const std::pair<std::string, std::strin
     parameters.insert({JoSIM::ParameterName(tokens.at(0), s.first), temp});
   } else {
     Errors::parsing_errors(ParsingErrors::EXPRESSION_ARLEADY_DEFINED, s.second);
+    parameters.insert({JoSIM::ParameterName(tokens.at(0), s.first), temp});
   }
 }
 

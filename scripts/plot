@@ -30,9 +30,18 @@ gs = gridspec.GridSpec(rows, cols)
 fig = pl.figure(num=sys.argv[1])
 for var in range(1,len(labels)):
     ax = fig.add_subplot(gs[var - 1])
-    ax.plot(time, data[var])
+    ax.plot(time, data[var], 'k', linewidth=0.75)
     ax.set_xlabel(labels[0])
-    ax.set_ylabel(labels[var])
+    if labels[var][0] == 'V':
+        ax.set_ylabel("voltage (V)")
+    elif labels[var][0] == 'I':
+        ax.set_ylabel("current (A)")
+    elif labels[var][0] == 'P':
+        ax.set_ylabel("phase (rad)")
+    ax.text(.5,.95,labels[var],
+        horizontalalignment='center',
+        transform=ax.transAxes)
+    pl.grid(True)
 
 fig.set_tight_layout(True)
 pl.show()

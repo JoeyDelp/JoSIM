@@ -525,8 +525,9 @@ void Errors::parsing_errors(ParsingErrors errorCode, const std::string &whatPart
   switch (errorCode) {
   case ParsingErrors::EXPRESSION_ARLEADY_DEFINED:
     formattedMessage += "Expression duplication: " + whatPart + "\n";
-    formattedMessage += "Please revise netlist.";
-    throw formattedMessage;
+    formattedMessage += "Replacing.";
+    warning_message(formattedMessage);
+    break;
   case ParsingErrors::UNIDENTIFIED_PART:
     formattedMessage += "The following variables were not found/defined.\n";
     formattedMessage += "Please ensure that these variables exist within the netlist.\n";
