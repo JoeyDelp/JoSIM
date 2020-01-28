@@ -13,13 +13,13 @@ std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
     while (!ifile.eof()) {
       getline(ifile, line);
       std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
+      if (!line.empty() && line.back() == '\r')
+          line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
       if (line.find(".INCLUDE") != std::string::npos) {
         std::vector<std::string> tempInclude = JoSIM::Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
         fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
       } else {
         std::transform(line.begin(), line.end(), line.begin(), toupper);
-        if (!line.empty() && line.back() == '\r')
-          line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
         if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
           if(Misc::starts_with(line, '+')) 
             fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);

@@ -11,7 +11,7 @@ void JoSIM::Model::parse_model(
     const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
   
   // Split keywords using spaces
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize_delimiter(s.first, "();, \t");
   // Ensure the model conforms to correct syntax: .model modelname modeltype(parameters)
   if(tokens.size() < 3) {
     Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
@@ -20,16 +20,8 @@ void JoSIM::Model::parse_model(
 
   temp.set_modelName(tokens.at(1));
   
-  auto startParam = s.first.find("(");
-  auto endParam = s.first.find(")");
   if(tokens.at(2).find("JJ") != std::string::npos) {
-    if(startParam == std::string::npos) {
-      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
-    } else if(endParam == std::string::npos) {
-      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
-    } else {
-      tokens = Misc::tokenize_delimiter(s.first.substr(startParam+1, endParam), "();, \t");
-    }
+    tokens.erase(tokens.begin(), tokens.begin() + 3);
   } else {
     Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, s.first);
   }
