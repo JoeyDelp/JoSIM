@@ -513,6 +513,11 @@ void Errors::function_errors(FunctionErrors errorCode, const std::string &whatPa
     formattedMessage += "Matrix is singular. Matrix will have no solution.\n";
     formattedMessage += "Please check the components in the netlist. The program will abort.";
     throw formattedMessage;
+  case SimulationErrors::PHASEGUESS_TOO_LARGE:
+    formattedMessage += "Junction " + whatPart + " has gone too far.\n";
+    formattedMessage += "This is a result of integration error.\n";
+    formattedMessage += "Please reduce the timestep and try again.";
+    throw formattedMessage;
   default:
     formattedMessage += "Unknown simulation error: " + whatPart + "\n";
     formattedMessage += "Please contact the developer.";
@@ -557,6 +562,11 @@ void Errors::netlist_errors(NetlistErrors errorCode, const std::string &whatPart
   switch (errorCode) {
   case NetlistErrors::NO_SUCH_NODE:
     formattedMessage += "Node \"" + whatPart + "\" was not found in the netlist\n";
+    formattedMessage += "Please check for any disconnections in the netlist";
+    throw formattedMessage;
+  case NetlistErrors::MISSING_IO:
+    formattedMessage += "Missing I/O nodes.\n";
+    formattedMessage += "Line: " + whatPart + "\n";
     formattedMessage += "Please check for any disconnections in the netlist";
     throw formattedMessage;
   }

@@ -150,6 +150,12 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
           temp.set_pn1(prevNode);
         }
       }
+      // Ensure timestep is not too large
+      if ((double)i/(double)simSize > 0.01) {
+        if (abs(temp.get_phi0() - temp.get_pn1()) > (0.25 * 2 * JoSIM::Constants::PI)) {
+          Errors::simulation_errors(SimulationErrors::PHASEGUESS_TOO_LARGE, temp.get_label());
+        }
+      }
       if (i <= 3) {
         temp.set_dvn1(0.0);
       } else {
@@ -172,12 +178,12 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
         RHS.at(temp.get_variableIndex()) = temp.get_pn1() + (1 / hbar_he) * temp.get_vn1();
       }
       // Phase guess (P0)
-      double phi0 = temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0);
+      temp.set_phi0(temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0));
       // (hR / h + 2RC) * (-Ic sin φ0 + 2C / h Vp + C ΔVp)
       RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((JoSIM::Constants::PI * temp.get_del()) / (2 * JoSIM::Constants::EV * temp.get_rncalc())) *
-                                        (sin(phi0) / sqrt(1 - model.get_transparency() * (sin(phi0 / 2) * sin(phi0 / 2)))) 
+                                        (sin(temp.get_phi0()) / sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2)))) 
                                         * tanh((temp.get_del()) / (2 * JoSIM::Constants::BOLTZMANN * model.get_temperature()) *
-                                          sqrt(1 - model.get_transparency() * (sin(phi0 / 2) * sin(phi0 / 2))))) +
+                                          sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2))))) +
                                         (((2 * model.get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
                                         + (model.get_capacitance() * temp.get_dvn1()) - temp.get_transitionCurrent());
 

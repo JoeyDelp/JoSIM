@@ -17,6 +17,7 @@ void JoSIM::Transient::identify_simulation(const std::vector<std::string> &contr
       if (simtokens.at(0).find("TRAN") != std::string::npos) {
         if (simtokens.size() < 2) {
           Errors::control_errors(ControlErrors::TRANS_ERROR, "Too few parameters: " + i);
+          tObj.set_prstep(1E-12);
           tObj.set_maxtstep(1E-12);
           tObj.set_tstop(1E-9);
           tObj.set_tstart(0);
@@ -40,6 +41,13 @@ void JoSIM::Transient::identify_simulation(const std::vector<std::string> &contr
             tObj.set_maxtstep(1E-12);
           }
         }
+      }
+      if(tObj.get_prstep() == 0 || tObj.get_tstop() == 0 ) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR, i);
+        tObj.set_prstep(1E-12);
+        tObj.set_maxtstep(1E-12);
+        tObj.set_tstop(1E-9);
+        tObj.set_tstart(0);
       }
     }
   }

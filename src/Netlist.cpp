@@ -107,6 +107,9 @@ void Netlist::expand_maindesign() {
         subcktName = tokens.back();
         io.assign(tokens.begin() + 1, tokens.end() - 1);
       }
+      if (io.size() == 0) {
+        Errors::netlist_errors(NetlistErrors::MISSING_IO, maindesign.at(i));
+      }
       if (subcircuits.count(subcktName) != 0) {
         for (int k = 0; k < subcircuits.at(subcktName).lines.size();
              k++) {

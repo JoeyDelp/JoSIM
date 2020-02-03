@@ -130,7 +130,8 @@ enum class SimulationErrors : int {
   JJICRIT_NOT_FOUND,
   JJPHASE_NODE_NOT_FOUND,
   INDUCTOR_CURRENT_NOT_FOUND,
-  MATRIX_SINGULAR
+  MATRIX_SINGULAR,
+  PHASEGUESS_TOO_LARGE
 };
 
 enum class ParsingErrors : int {
@@ -146,7 +147,8 @@ enum class OutputErrors : int {
 };
 
 enum class NetlistErrors : int {
-  NO_SUCH_NODE
+  NO_SUCH_NODE,
+  MISSING_IO
 };
 
 class Errors {
