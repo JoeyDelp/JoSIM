@@ -39,6 +39,7 @@ public:
   bool argVerb = false;
 
   static std::vector<std::string> read_file(const std::string &fileName);
+  static std::vector<std::string> read_input();
   static void parse_file(const std::string &fileName, Input &iObj);
 };
 }

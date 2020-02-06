@@ -10,6 +10,61 @@
 # Tests
 
 add_integration_test(
+  NAME test_capacitor
+  CIR comp/capacitor.cir
+)
+
+add_integration_test(
+  NAME test_cccs
+  CIR comp/cccs.cir
+)
+
+add_integration_test(
+  NAME test_ccvs
+  CIR comp/ccvs.cir
+)
+
+add_integration_test(
+  NAME test_inductor
+  CIR comp/inductor.cir
+)
+
+add_integration_test(
+  NAME test_jj
+  CIR comp/jj.cir
+)
+
+add_integration_test(
+  NAME test_ps
+  CIR comp/ps.cir
+)
+
+add_integration_test(
+  NAME test_resistor
+  CIR comp/resistor.cir
+)
+
+add_integration_test(
+  NAME test_tx
+  CIR comp/tx.cir
+)
+
+add_integration_test(
+  NAME test_vccs
+  CIR comp/vccs.cir
+)
+
+add_integration_test(
+  NAME test_vcvs
+  CIR comp/vcvs.cir
+)
+
+add_integration_test(
+  NAME test_vs
+  CIR comp/vs.cir
+)
+
+add_integration_test(
   NAME ex_dcsfq_jtl_sink
   CIR ex_dcsfq_jtl_sink.cir
   OUT ex_dcsfq_jtl_sink.csv

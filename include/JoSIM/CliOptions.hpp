@@ -19,6 +19,7 @@ struct CliOptions {
   AnalysisType analysis_type = AnalysisType::Voltage;
   bool verbose = false;
   bool parallel = false;
+  bool standardin = false;
 
   std::optional<std::string> output_file_name;
   FileOutputType output_file_type;

@@ -4,6 +4,7 @@
 #include "JoSIM/Input.hpp"
 
 #include <fstream>
+#include <iostream>
 
 std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
   std::string line;
@@ -39,8 +40,42 @@ std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
   return {};
 }
 
+std::vector<std::string> JoSIM::Input::read_input() {
+  std::string line;
+  std::vector<std::string> fileLines;
+  for (std::string line; std::getline(std::cin, line);) {
+    std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
+    if(line == ".END") break;
+    if (!line.empty() && line.back() == '\r')
+        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+    if (line.find(".INCLUDE") != std::string::npos) {
+      std::vector<std::string> tempInclude = JoSIM::Input::read_file(line.substr(9));
+      fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
+    } else {
+      std::transform(line.begin(), line.end(), line.begin(), toupper);
+      if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
+        if(Misc::starts_with(line, '+')) 
+          fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
+        else 
+          fileLines.emplace_back(line);
+      }
+    }
+  }
+  if (fileLines.empty()) { 
+    Errors::input_errors(InputErrors::EMPTY_FILE, "standard_input");
+  } else {
+    return fileLines;
+  }
+  return {};
+}
+
 void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
-  std::vector<std::string> fileLines = JoSIM::Input::read_file(fileName);
+  std::vector<std::string> fileLines;
+  if(fileName == "standard_input") {
+    fileLines = JoSIM::Input::read_input();
+  } else {
+    fileLines = JoSIM::Input::read_file(fileName);
+  }
 
   bool subckt = false;
   bool control = false;

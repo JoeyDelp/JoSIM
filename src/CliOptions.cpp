@@ -95,6 +95,11 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
         case 'h':
           display_help();
           exit(0);
+        // Standard Input Switch
+        case 'i':
+          out.standardin = true;
+          out.cir_file_name = "standard_input";
+          break;
         // Output file switch
         case 'o':
           if (specArg) {
@@ -102,12 +107,8 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             if (argument.find('=') != std::string::npos) {
               argument = argument.substr(argument.find('=') + 1);
               out.output_file_name = argument;
-              std::cout << "Output file: " << out.output_file_name.value() << std::endl;
-              std::cout << std::endl;
             } else {
               out.output_file_name = "output.csv";
-              std::cout << "Output file: " << out.output_file_name.value() << std::endl;
-              std::cout << std::endl;
             }
             if (out.output_file_name.value().find('.') != std::string::npos) {
               std::string outExt = out.output_file_name.value().substr(
@@ -127,8 +128,6 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             if (i != argc - 1) {
               if (argv[i + 1][0] != '-') {
                 out.output_file_name = argv[i + 1];
-                std::cout << "Output file: " << out.output_file_name.value()
-                          << std::endl;
                 std::cout << std::endl;
                 if (out.output_file_name.value().find('.') != std::string::npos) {
                   std::string outExt = out.output_file_name.value().substr(
@@ -148,16 +147,11 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
               } else {
                 out.output_file_type = FileOutputType::Csv;
                 out.output_file_name = "output.csv";
-                std::cout << "Output file: " << out.output_file_name.value()
-                          << std::endl;
-                std::cout << std::endl;
                 Errors::cli_errors(CLIErrors::NO_OUTPUT);
               }
             } else {
               out.output_file_type = FileOutputType::Csv;
               out.output_file_name = "output.csv";
-              std::cout << "Output file: " << out.output_file_name.value() << std::endl;
-              std::cout << std::endl;
               Errors::cli_errors(CLIErrors::NO_OUTPUT);
             }
           }
@@ -194,9 +188,11 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
         }
         // If the argument is not a switch it is the input file
       } else {
-        out.cir_file_name = argv[i];
-        std::cout << "Input file: " << out.cir_file_name << std::endl;
-        std::cout << std::endl;
+        if(!out.standardin) {
+          out.cir_file_name = argv[i];
+        } else {
+          out.cir_file_name = "standard_input";
+        }
       }
     }
   }
@@ -208,6 +204,15 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
     if(out.output_file_name.value() == out.cir_file_name) {
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
     }
+  }
+
+  std::cout << "Input file: " << out.cir_file_name 
+            << std::endl;
+  std::cout << std::endl;
+  if(out.output_file_name) {
+    std::cout << "Output file: " << out.output_file_name.value()
+              << std::endl;
+    std::cout << std::endl;
   }
 
   return out;
@@ -248,6 +253,20 @@ void CliOptions::display_help() {
   std::cout << std::setw(13) << std::left << "--help" << std::setw(3)
             << std::left << "|"
             << " " << std::endl;
+  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+            << "|" << std::endl;
+
+  std::cout << std::setw(13) << std::left << "-i" << std::setw(3) << std::left
+            << "|"
+            << "Input circuit netlist from standard input."
+            << std::endl;
+  std::cout << std::setw(13) << std::left << "--input" << std::setw(3)
+            << std::left << "|"
+            << "This command ignores any additional input file specified." << std::endl;
+  std::cout
+      << std::setw(13) << std::left << "  " << std::setw(3) << std::left << "|"
+      << "Reads from standard input until the .end command or EOF character is specified."
+      << std::endl;
   std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
