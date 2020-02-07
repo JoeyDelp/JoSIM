@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+import os
+import fnmatch
+import sys
+
+scriptpath = os.path.dirname(os.path.realpath(__file__))
+path = '{0}/../test/'.format(scriptpath);
+reference_path = '{0}/../test/reference/'.format(scriptpath);
+pattern = 'ex_*.cir'
+
+ex_files = [f for f in fnmatch.filter(os.listdir(path), pattern)]
+
+print("Voltage mode tests")
+print("==================")
+for f in ex_files:
+    file = os.path.join(path, f)
+    pre, ext = os.path.splitext(file)
+    if("_wr" in file):
+        cmd = 'josim-cli -c 1 -o {0} {1} &> /dev/null'.format(pre+'.csv', file)
+    else:
+        cmd = 'josim-cli -o {0} {1} &> /dev/null'.format(pre+'.csv', file)
+    returned_value = os.system(cmd)
+    if(returned_value == 0):
+        print('PASS:', f)
+    else:
+        print('FAIL:', f)
+    reference_file = os.path.join(reference_path, f)
+    pre_ref, ext_ref = os.path.splitext(reference_file)
+    reference_file = pre_ref + '.csv'
+    cmd = 'diff {0} {1}'.format(pre+'.csv' , reference_file)
+    returned_value = os.system(cmd)
+    if(returned_value == 0):
+        print('MATCH:', f)
+    else:
+        print('MISSMATCH:', f)
+print("Phase mode tests")
+print("================")
+for f in ex_files:
+    file = os.path.join(path, f)
+    pre, ext = os.path.splitext(file)
+    if("_wr" in file):
+        cmd = 'josim-cli -a 1 -c 1 -o {0} {1} &> /dev/null'.format(pre+'_phase.csv', file)
+    else:
+        cmd = 'josim-cli -a 1 -o {0} {1} &> /dev/null'.format(pre+'_phase.csv', file)
+    returned_value = os.system(cmd)
+    if(returned_value == 0):
+        print('PASS:', f)
+    else:
+        print('FAIL:', f)
+    reference_file = os.path.join(reference_path, f)
+    pre_ref, ext_ref = os.path.splitext(reference_file)
+    reference_file = pre_ref + '_phase.csv'
+    cmd = 'diff {0} {1}'.format(pre+'_phase.csv' , reference_file)
+    returned_value = os.system(cmd)
+    if(returned_value == 0):
+        print('MATCH:', f)
+    else:
+        print('MISSMATCH:', f)
+
+cmd = "rm -rf {0}/../test/ex_*.csv".format(scriptpath)
+os.system(cmd)
