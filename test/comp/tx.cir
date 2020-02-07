@@ -1,0 +1,7 @@
+* Transmission line component test
+* Date modified: 2020/01/22
+Vtest   1   0   sin(0 5)
+T1      1   0   2   0   TD=200p   Z0=2
+RA      2   0   1
+.tran 0.25p 1000p
+.print v(RA) i(RA) p(RA) v(1) p(1)

@@ -15,7 +15,6 @@ X3 6 7 LSmitll_ptlrx
 X4 11 8 LSmitll_DCSFQ
 X5 8 9 LSmitll_ptltx
 .subckt LSmitll_DFFT IN CLK OUT
-.include LSmitll_DFFT_models.inc
 .param Scaling=1.0
 .param B0=2
 .param Ic0=0.0001

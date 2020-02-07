@@ -10,6 +10,61 @@
 # Tests
 
 add_integration_test(
+  NAME test_capacitor
+  CIR comp/capacitor.cir
+)
+
+add_integration_test(
+  NAME test_cccs
+  CIR comp/cccs.cir
+)
+
+add_integration_test(
+  NAME test_ccvs
+  CIR comp/ccvs.cir
+)
+
+add_integration_test(
+  NAME test_inductor
+  CIR comp/inductor.cir
+)
+
+add_integration_test(
+  NAME test_jj
+  CIR comp/jj.cir
+)
+
+add_integration_test(
+  NAME test_ps
+  CIR comp/ps.cir
+)
+
+add_integration_test(
+  NAME test_resistor
+  CIR comp/resistor.cir
+)
+
+add_integration_test(
+  NAME test_tx
+  CIR comp/tx.cir
+)
+
+add_integration_test(
+  NAME test_vccs
+  CIR comp/vccs.cir
+)
+
+add_integration_test(
+  NAME test_vcvs
+  CIR comp/vcvs.cir
+)
+
+add_integration_test(
+  NAME test_vs
+  CIR comp/vs.cir
+)
+
+add_integration_test(
   NAME ex_dcsfq_jtl_sink
   CIR ex_dcsfq_jtl_sink.cir
   OUT ex_dcsfq_jtl_sink.csv
@@ -19,18 +74,6 @@ add_integration_test(
   NAME ex_gen_pp_ipht
   CIR ex_gen_pp_ipht.cir
   OUT ex_gen_pp_ipht.csv
-)
-
-add_integration_test(
-  NAME ex_jj_char
-  CIR ex_jj_char.cir
-  OUT ex_jj_char.csv
-)
-
-add_integration_test(
-  NAME ex_jtl_1kA
-  CIR ex_jtl_1kA.cir
-  OUT ex_jtl_1kA.csv
 )
 
 add_integration_test(
@@ -66,32 +109,6 @@ add_integration_test(
 )
 
 add_integration_test(
-  NAME ex_mut_test
-  CIR ex_mut_test.cir
-  OUT ex_mut_test.csv
-)
-
-add_integration_test(
-  NAME ex_ps_jtl
-  CIR ex_ps_jtl.cir
-  OUT ex_ps_jtl.csv
-  PHASE
-)
-
-add_integration_test(
-  NAME ex_xline_test
-  CIR ex_xline_test.cir
-  OUT ex_xline_test.csv
-)
-
-# add_integration_test(
-#   NAME ex_mitll_not_wr
-#   CIR ex_mitll_not_wr.cir
-#   OUT ex_mitll_not_wr.csv
-#   WRSPICE
-# )
-
-add_integration_test(
   NAME test_param_nest
   CIR param/test_param_nest.cir
 )
@@ -116,10 +133,3 @@ add_integration_test(
   NAME test_output
   CIR syntax/test_output.cir
 )
-
-#add_integration_test(
-#  NAME test_mitll_xort
-#  CIR TEST_MITLL_XORT.cir
-#  OUT test_mitll_xort.csv
-#  WRSPICE
-#)

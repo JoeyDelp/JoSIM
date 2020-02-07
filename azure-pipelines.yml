@@ -44,12 +44,13 @@ steps:
 
 - script: |
     sudo apt-get -y update
-    sudo apt-get -y install libsuitesparse-dev python3-dev
+    sudo apt-get -y install libsuitesparse-dev python3.7-dev
   displayName: 'Install APT dependencies'
 
-- script: conan install ..
-  displayName: 'Install Conan dependencies'
-  workingDirectory: build
+- script: |
+    sudo pip install --upgrade pip
+    sudo pip install --force-reinstall cmake
+  displayName: 'Install CMake 3.14'
 
 - script: cmake ..
   workingDirectory: build

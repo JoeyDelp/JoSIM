@@ -1,60 +1,81 @@
 // Copyright (c) 2019 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
+
 #include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/j_input.h"
-#include "JoSIM/j_matrix.h"
-#include "JoSIM/j_output.h"
-#include "JoSIM/j_parser.h"
-#include "JoSIM/j_simulation.h"
-#include "JoSIM/j_std_include.h"
-#include "JoSIM/j_verbose.h"
-
+#include "JoSIM/Matrix.hpp"
+#include "JoSIM/Output.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/Simulation.hpp"
+#include "JoSIM/Verbose.hpp"
 #include "JoSIM/CliOptions.hpp"
+#include "JoSIM/Input.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Transient.hpp"
+#include "JoSIM/Model.hpp"
 
-using namespace JoSIM;
 
 int main(int argc, const char **argv) {
 
-  CliOptions::version_info();
-  auto cli_options = CliOptions::parse(argc, argv);
+  try {
+    // Before anything. Display versioning info.
+    JoSIM::CliOptions::version_info();
+    // Parse input arguments for command line interface
+    auto cli_options = JoSIM::CliOptions::parse(argc, argv);
+    // Generate input object based on cli arguements
+    JoSIM::Input iObj(cli_options.analysis_type, 
+              cli_options.input_type,
+              cli_options.verbose);    
+    // Parse input file as specified by the cli arguments
+    JoSIM::Input::parse_file(cli_options.cir_file_name, iObj);
+    // Parse any identified parameter values
+    if (iObj.parameters.size() > 0) {
+      JoSIM::Parameters::parse_parameters(iObj.parameters);
+    }
+    // Parse any identified models
+    for (const auto &i : iObj.netlist.models) {
+      JoSIM::Model::parse_model(std::make_pair(i.second, i.first.second), iObj.netlist.models_new, iObj.parameters);
+    }
+    // Expand nested subcircuits
+    iObj.netlist.expand_subcircuits();
+    // Expand main design using expanded subcircuits
+    iObj.netlist.expand_maindesign();
+    // Identify the simulation parameters
+    JoSIM::Transient::identify_simulation(iObj.controls, iObj.transSim);
+    // If verbose mode was requested, print the expanded netlist
+    if (iObj.argVerb)
+      JoSIM::Verbose::print_expanded_netlist(iObj.netlist.expNetlist);
 
-  Input iObj(cli_options.analysis_type, cli_options.input_type,
-             cli_options.verbose);
-  Matrix mObj;
-  Simulation sObj;
-  Output oObj;
+    JoSIM::Matrix mObj;
+    // Create the matrix in csr format
+    mObj.create_matrix(iObj);
 
-  iObj.read_input_file(cli_options.cir_file_name, iObj.fileLines);
-  iObj.split_netlist(iObj.fileLines, iObj.controls, iObj.parameters,
-                     iObj.netlist);
-  if (iObj.parameters.unparsedParams.size() > 0)
-    Parser::parse_parameters(iObj.parameters);
-  iObj.expand_subcircuits();
-  iObj.expand_maindesign();
-  if (iObj.argVerb)
-    Verbose::print_expanded_netlist(iObj.expNetlist);
-  sObj.identify_simulation(iObj.controls, iObj.transSim.prstep,
-                           iObj.transSim.tstop, iObj.transSim.tstart,
-                           iObj.transSim.maxtstep);
-  mObj.find_relevant_x(iObj);
-  mObj.create_matrix(iObj);
-  if (cli_options.analysis_type == AnalysisType::Voltage)
-    sObj.trans_sim<JoSIM::AnalysisType::Voltage>(iObj, mObj);
-    //sObj.transient_voltage_simulation(iObj, mObj);
-  else if (cli_options.analysis_type == AnalysisType::Phase)
-    sObj.trans_sim<JoSIM::AnalysisType::Phase>(iObj, mObj);
-    // sObj.transient_phase_simulation(iObj, mObj);
-  oObj.relevant_traces(iObj, mObj, sObj);
+    // Find the relevant traces to store
+    JoSIM::RelevantTrace::find_relevant_traces(iObj.controls, mObj);
+    
+    JoSIM::Simulation sObj;
 
-  if (cli_options.output_to_file) {
-    if (cli_options.output_file_type == FileOutputType::Csv)
-      oObj.write_data(cli_options.output_file_name, mObj, sObj);
-    else if (cli_options.output_file_type == FileOutputType::Dat)
-      oObj.write_legacy_data(cli_options.output_file_name, mObj, sObj);
-    else if (cli_options.output_file_type == FileOutputType::WrSpice)
-      oObj.write_wr_data(cli_options.output_file_name);
+    sObj.trans_sim_new(iObj, mObj);
+    
+    JoSIM::Output oObj;
+
+    std::vector<std::vector<std::string>> output = JoSIM::Output::write_output(iObj, mObj, sObj);
+
+    if (cli_options.output_file_name) {
+      if (cli_options.output_file_type == JoSIM::FileOutputType::Csv) {
+        JoSIM::Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ',');
+      } else if (cli_options.output_file_type == JoSIM::FileOutputType::Dat) {
+        JoSIM::Output::format_csv_or_dat(cli_options.output_file_name.value(), output, ' ');
+      } else if (cli_options.output_file_type == JoSIM::FileOutputType::WrSpice) {
+        JoSIM::Output::format_raw(cli_options.output_file_name.value(), output);
+      }
+    } else {
+      JoSIM::Output::format_cout(output);
+    }
+
+    return 0;
+  } catch(std::string &formattedMessage) {
+    Errors::error_message(formattedMessage);
+  } catch(std::out_of_range &e) {
+    Errors::oor();
   }
-  if (!cli_options.output_to_file)
-    oObj.write_cout(mObj, sObj);
-  return 0;
 }

@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Johannes Delport
+// This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_ANALYSISTYPE_HPP
 #define JOSIM_ANALYSISTYPE_HPP
 
@@ -7,11 +9,11 @@ namespace JoSIM {
 
 enum class AnalysisType : int { Voltage = 0, Phase = 1 };
 
-constexpr AnalysisType analysis_type_from_int(int type) {
+constexpr AnalysisType analysis_type_from_int(AnalysisType type) {
   switch (type) {
-  case static_cast<int>(AnalysisType::Voltage):
+  case AnalysisType::Voltage:
     return AnalysisType::Voltage;
-  case static_cast<int>(AnalysisType::Phase):
+  case AnalysisType::Phase:
     return AnalysisType::Phase;
   default:
     throw std::runtime_error("Invalid analysis type");

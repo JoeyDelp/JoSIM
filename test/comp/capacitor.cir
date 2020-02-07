@@ -1,0 +1,8 @@
+* Capacitor component test
+* Date modified: 2020/01/22
+C1  1   0   1
+Itest   1   0   sin(0 5)
+.tran 0.25p 100p
+.print devv C1
+.print devi C1
+.print devp C1

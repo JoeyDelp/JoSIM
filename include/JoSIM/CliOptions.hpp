@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Johannes Delport
+// This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_CLIOPTIONS_HPP
 #define JOSIM_CLIOPTIONS_HPP
 
@@ -5,7 +7,9 @@
 #include "./FileOutputType.hpp"
 #include "./InputType.hpp"
 
+#include <optional>
 #include <string>
+#include <algorithm>
 
 namespace JoSIM {
 
@@ -15,10 +19,9 @@ struct CliOptions {
   AnalysisType analysis_type = AnalysisType::Voltage;
   bool verbose = false;
   bool parallel = false;
+  bool standardin = false;
 
-  // Replace with optional in C++17
-  bool output_to_file = false;
-  std::string output_file_name;
+  std::optional<std::string> output_file_name;
   FileOutputType output_file_type;
 
   // helper functions

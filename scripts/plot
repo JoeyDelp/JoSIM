@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+import math
+import matplotlib
+matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as pl
+from matplotlib import gridspec
+import numpy as np
+import csv
+import sys
+
+time = []
+data = []
+labels = set()
+with open(sys.argv[1], 'r') as csvFile:
+    reader = csv.DictReader(csvFile, dialect='excel')
+    labels = reader.fieldnames
+    data.append([])
+    for row in reader:
+        time.append(float(row[labels[0]]))
+        for var in range(1,len(labels)):
+            data.append([])
+            data[var].append(float(row[labels[var]]))
+csvFile.close()
+
+N = len(labels) - 1
+cols = int(math.ceil(N / 4))
+rows = int(math.ceil(N / cols))
+
+gs = gridspec.GridSpec(rows, cols)
+fig = pl.figure(num=sys.argv[1])
+for var in range(1,len(labels)):
+    ax = fig.add_subplot(gs[var - 1])
+    ax.plot(time, data[var], 'k', linewidth=0.75)
+    ax.set_xlabel(labels[0])
+    if labels[var][0] == 'V':
+        ax.set_ylabel("voltage (V)")
+    elif labels[var][0] == 'I':
+        ax.set_ylabel("current (A)")
+    elif labels[var][0] == 'P':
+        ax.set_ylabel("phase (rad)")
+    ax.text(.5,.95,labels[var],
+        horizontalalignment='center',
+        transform=ax.transAxes)
+    pl.grid(True)
+
+fig.set_tight_layout(True)
+pl.show()

@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(JoSIM VERSION 2.3)
+project(JoSIM VERSION 2.4)
 
-include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
+
+add_definitions(-DVERSION="${CMAKE_PROJECT_VERSION}")
 
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
@@ -20,23 +22,39 @@ if(MAKING_STATIC_BUILD)
   set(CMAKE_BUILD_SHARED OFF)
 endif()
 
-# CMake utils
-include(${PROJECT_SOURCE_DIR}/cmake/suitesparse.cmake)
-
 # JoSIM library
 # -------------
 
 add_library(josim
             src/CliOptions.cpp
-            src/j_simulation.cpp
-            src/j_output.cpp
-            src/j_misc.cpp
-            src/j_matrix.cpp
-            src/j_input.cpp
-            src/j_errors.cpp
-            src/j_components.cpp
-            src/j_parser.cpp
-            src/j_verbose.cpp)
+            src/Simulation.cpp
+            src/Output.cpp
+            src/Misc.cpp
+            src/Matrix.cpp
+            src/Input.cpp
+            src/Errors.cpp
+            src/Verbose.cpp
+            src/Netlist.cpp
+            src/Model.cpp
+            src/Parameters.cpp
+            src/Transient.cpp
+            src/Resistor.cpp
+            src/Inductor.cpp
+            src/Capacitor.cpp
+            src/JJ.cpp
+            src/VoltageSource.cpp
+            src/PhaseSource.cpp
+            src/CurrentSource.cpp
+            src/TransmissionLine.cpp
+            src/VCCS.cpp
+            src/CCCS.cpp
+            src/VCVS.cpp
+            src/CCVS.cpp
+            src/RelevantTrace.cpp
+            src/Function.cpp)
+
+# Alias for projects including JoSIM
+add_library(josim::josim ALIAS josim)
 
 # Include directories
 target_include_directories(josim PUBLIC
