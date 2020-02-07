@@ -2,16 +2,16 @@
 import os
 import fnmatch
 import sys
-from difflib import Differ
 
-def find_difference(file1, file2):
-    with open(file1) as f1, open(file2) as f2:
-        differ = Differ()
-
-        for line in differ.compare(f1.readlines(), f2.readlines()):
-            if not line.startswith(" "):
+def find_difference(path_1, path_2):
+    l1 = l2 = True
+    with open(path_1, 'r') as f1, open(path_2, 'r') as f2:
+        while l1 and l2:
+            l1 = f1.readline()
+            l2 = f2.readline()
+            if l1 != l2:
                 return False
-        return True
+    return True
 
 def main():
     scriptpath = os.path.dirname(os.path.realpath(__file__))
