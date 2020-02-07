@@ -35,6 +35,17 @@ Referencing:
 ---
 
 ## Changelog
+### v2.4 - 07/02/2020
+- Complete rewrite of core internals
+- Modularization of each component allowing easier implementation of integration methods
+- Error reporting major improvment. Less random exits with no warnings. Better exits.
+- Focus on object orientation for improved library access
+- Speed up of matrix creation algorithm
+- Improvements to output format
+- Inclusion of '.include' control card
+- Capability to read from standard in using '-i' command
+- Various bug fixes
+
 ### v2.3 - 10/05/2019
 - Major changes to JoSIM internal engine
 - Removal of plotting engines in favor of external tools such as Python
