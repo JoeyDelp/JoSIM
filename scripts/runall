@@ -1,61 +1,78 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import fnmatch
 import sys
+from difflib import Differ
 
-scriptpath = os.path.dirname(os.path.realpath(__file__))
-path = '{0}/../test/'.format(scriptpath);
-reference_path = '{0}/../test/reference/'.format(scriptpath);
-pattern = 'ex_*.cir'
+def find_difference(file1, file2):
+    with open(file1) as f1, open(file2) as f2:
+        differ = Differ()
 
-ex_files = [f for f in fnmatch.filter(os.listdir(path), pattern)]
+        for line in differ.compare(f1.readlines(), f2.readlines()):
+            if not line.startswith(" "):
+                return False
+        return True
 
-print("Voltage mode tests")
-print("==================")
-for f in ex_files:
-    file = os.path.join(path, f)
-    pre, ext = os.path.splitext(file)
-    if("_wr" in file):
-        cmd = 'josim-cli -c 1 -o {0} {1} &> /dev/null'.format(pre+'.csv', file)
+def main():
+    scriptpath = os.path.dirname(os.path.realpath(__file__))
+    if os.name == 'nt':
+        josimpath = '{0}/../build/Release/josim-cli.exe'.format(scriptpath)
+        null = '> NULL 2>&1'
     else:
-        cmd = 'josim-cli -o {0} {1} &> /dev/null'.format(pre+'.csv', file)
-    returned_value = os.system(cmd)
-    if(returned_value == 0):
-        print('PASS:', f)
-    else:
-        print('FAIL:', f)
-    reference_file = os.path.join(reference_path, f)
-    pre_ref, ext_ref = os.path.splitext(reference_file)
-    reference_file = pre_ref + '.csv'
-    cmd = 'diff {0} {1}'.format(pre+'.csv' , reference_file)
-    returned_value = os.system(cmd)
-    if(returned_value == 0):
-        print('MATCH:', f)
-    else:
-        print('MISSMATCH:', f)
-print("Phase mode tests")
-print("================")
-for f in ex_files:
-    file = os.path.join(path, f)
-    pre, ext = os.path.splitext(file)
-    if("_wr" in file):
-        cmd = 'josim-cli -a 1 -c 1 -o {0} {1} &> /dev/null'.format(pre+'_phase.csv', file)
-    else:
-        cmd = 'josim-cli -a 1 -o {0} {1} &> /dev/null'.format(pre+'_phase.csv', file)
-    returned_value = os.system(cmd)
-    if(returned_value == 0):
-        print('PASS:', f)
-    else:
-        print('FAIL:', f)
-    reference_file = os.path.join(reference_path, f)
-    pre_ref, ext_ref = os.path.splitext(reference_file)
-    reference_file = pre_ref + '_phase.csv'
-    cmd = 'diff {0} {1}'.format(pre+'_phase.csv' , reference_file)
-    returned_value = os.system(cmd)
-    if(returned_value == 0):
-        print('MATCH:', f)
-    else:
-        print('MISSMATCH:', f)
+        josimpath = '{0}/../build/josim-cli'.format(scriptpath)
+        null = '&> /dev/null'
+    path = '{0}/../test/'.format(scriptpath);
+    reference_path = '{0}/../test/reference/'.format(scriptpath);
+    pattern = 'ex_*.cir'
 
-cmd = "rm -rf {0}/../test/ex_*.csv".format(scriptpath)
-os.system(cmd)
+    ex_files = [f for f in fnmatch.filter(os.listdir(path), pattern)]
+
+    print("Voltage mode tests")
+    print("==================")
+    for f in ex_files:
+        file = os.path.join(path, f)
+        pre, ext = os.path.splitext(file)
+        csvfile = pre + '.csv'
+        if("_wr" in file):
+            cmd = '{0} -c 1 -o {1} {2} {3}'.format(josimpath, csvfile, file, null)
+        else:
+            cmd = '{0} -o {1} {2} {3}'.format(josimpath, csvfile, file, null)
+        returned_value = os.system(cmd)
+        if(returned_value == 0):
+            print('PASS:', f)
+        else:
+            print('FAIL:', f)
+        reference_file = os.path.join(reference_path, f)
+        pre, ext = os.path.splitext(reference_file)
+        reference_file = pre + '.csv'
+        if(find_difference(reference_file, csvfile)):
+            print('MATCH:', f)
+            os.remove(csvfile)
+        else:
+            print('MISSMATCH:', f)
+    print("Phase mode tests")
+    print("================")
+    for f in ex_files:
+        file = os.path.join(path, f)
+        pre, ext = os.path.splitext(file)
+        csvfile = pre + '_phase.csv'
+        if("_wr" in file):
+            cmd = '{0} -a 1 -c 1 -o {1} {2} {3}'.format(josimpath, csvfile, file, null)
+        else:
+            cmd = '{0} -a 1 -o {1} {2} {3}'.format(josimpath, csvfile, file, null)
+        returned_value = os.system(cmd)
+        if(returned_value == 0):
+            print('PASS:', f)
+        else:
+            print('FAIL:', f)
+        reference_file = os.path.join(reference_path, f)
+        pre, ext = os.path.splitext(reference_file)
+        reference_file = pre + '_phase.csv'
+        if(find_difference(reference_file, csvfile)):
+            print('MATCH:', f)
+            os.remove(csvfile)
+        else:
+            print('MISSMATCH:', f)
+
+if __name__== "__main__":
+  main()
