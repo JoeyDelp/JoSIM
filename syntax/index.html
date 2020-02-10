@@ -838,7 +838,7 @@
 <h3 id="simulation">Simulation</h3>
 <p><strong>.tran</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{step}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{stop}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_{start}</script>]</p>
 <p>This generates a simulation that runs from <script type="math/tex">T_{start}</script> (0 unless specified) until <script type="math/tex">T_{stop}</script> and generates a simulation point at every <script type="math/tex">T_{step}</script> between those two points. The difference between start and stop divided by the step size floored to the closest integer value indicates how many simulation steps there will be.</p>
-<p>JoSIM does <strong>not</strong> at present support any form of variable timestep input. It will in addition complain if a timestep is chosen that results in a phase step larget than 20% of 2$\pi$.</p>
+<p>JoSIM does <strong>not</strong> at present support any form of variable timestep input. It will in addition complain if a timestep is chosen that results in a phase step larget than 20% of 2<script type="math/tex">\pi</script>.</p>
 <h3 id="output">Output</h3>
 <p>A simulation is meaningless unless the results are stored or viewed in some way. In order to know which of these results are relevant and need to be stored the simulator needs output control commands.</p>
 <p>These output commands can be of either </p>
