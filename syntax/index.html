@@ -463,6 +463,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#include" title="Include" class="md-nav__link">
+    Include
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standard-input" title="Standard Input" class="md-nav__link">
+    Standard Input
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -684,6 +698,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#include" title="Include" class="md-nav__link">
+    Include
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standard-input" title="Standard Input" class="md-nav__link">
+    Standard Input
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -810,6 +838,7 @@
 <h3 id="simulation">Simulation</h3>
 <p><strong>.tran</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{step}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script type="math/tex">T_{stop}</script>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<script type="math/tex">T_{start}</script>]</p>
 <p>This generates a simulation that runs from <script type="math/tex">T_{start}</script> (0 unless specified) until <script type="math/tex">T_{stop}</script> and generates a simulation point at every <script type="math/tex">T_{step}</script> between those two points. The difference between start and stop divided by the step size floored to the closest integer value indicates how many simulation steps there will be.</p>
+<p>JoSIM does <strong>not</strong> at present support any form of variable timestep input. It will in addition complain if a timestep is chosen that results in a phase step larget than 20% of 2<script type="math/tex; mode=display">\pi</script>.</p>
 <h3 id="output">Output</h3>
 <p>A simulation is meaningless unless the results are stored or viewed in some way. In order to know which of these results are relevant and need to be stored the simulator needs output control commands.</p>
 <p>These output commands can be of either </p>
@@ -847,6 +876,13 @@
 <p>...</p>
 <p><strong>.endc</strong></p>
 <p>Wherein all controls can be specified by omitting the usual prepending period to the command.</p>
+<h3 id="include">Include</h3>
+<p>JoSIM allows the use of a <em>.include</em> control card that uses the following syntax</p>
+<p><strong>.include</strong> <em>relative_path_to_file</em></p>
+<p>This command reads in the contents of the relevant file pointed to by the relevant path uppon parsing of the netlist essentially extending the netlist by the linked file. This is incredibly handy when large subcircuits are involved and reuse of subcircuits accross multiple files is required.</p>
+<p>This can also be used to house all the models used in simulation allowing a central point of alteration if the model is changed.</p>
+<h3 id="standard-input">Standard Input</h3>
+<p>JoSIM now allows input from standard input allowing a line-by-line read in of a netlist until the <em>.end</em> card is found or alternatively the EOF character is returned.</p>
 <div class="references"></div>
                 
                   
