@@ -286,13 +286,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capacitor" title="Capacitor" class="md-nav__link">
-    Capacitor
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#josephson-junction" title="Josephson Junction" class="md-nav__link">
     Josephson Junction
   </a>
@@ -330,6 +323,34 @@
         <li class="md-nav__item">
   <a href="#mutual-inductance" title="Mutual inductance" class="md-nav__link">
     Mutual inductance
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-controlled-current-source" title="Current Controlled Current Source" class="md-nav__link">
+    Current Controlled Current Source
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-controlled-voltage-source" title="Current Controlled Voltage Source" class="md-nav__link">
+    Current Controlled Voltage Source
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source" title="Voltage Controlled Current Source" class="md-nav__link">
+    Voltage Controlled Current Source
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voltage-controlled-voltage-source" title="Voltage Controlled Voltage Source" class="md-nav__link">
+    Voltage Controlled Voltage Source
   </a>
   
 </li>
@@ -397,13 +418,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#capacitor" title="Capacitor" class="md-nav__link">
-    Capacitor
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#josephson-junction" title="Josephson Junction" class="md-nav__link">
     Josephson Junction
   </a>
@@ -445,6 +459,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#current-controlled-current-source" title="Current Controlled Current Source" class="md-nav__link">
+    Current Controlled Current Source
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-controlled-voltage-source" title="Current Controlled Voltage Source" class="md-nav__link">
+    Current Controlled Voltage Source
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source" title="Voltage Controlled Current Source" class="md-nav__link">
+    Voltage Controlled Current Source
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voltage-controlled-voltage-source" title="Voltage Controlled Voltage Source" class="md-nav__link">
+    Voltage Controlled Voltage Source
+  </a>
+  
+</li>
+      
       
       
       
@@ -481,21 +523,27 @@
 <p>
 <script type="math/tex; mode=display">\frac{v_{12}(t)}{R1} = i_{R1}(t)</script>
 </p>
+<p>
+<script type="math/tex; mode=display"> V_{12}-RI_{R} = 0 </script>
+</p>
 <p>This can then be written as a matrix stamp in the form</p>
 <p>
 <script type="math/tex; mode=display">\begin{equation}
     \begin{bmatrix}
-        \frac{1}{R1} & -\frac{1}{R1} \\
-        -\frac{1}{R1} & \frac{1}{R1}
+    0 & 0 & 1 \\
+    0 & 0 & -1 \\
+    1 & -1 & -R
     \end{bmatrix}
     \begin{bmatrix}
         V_{1} \\
-        V_{2}
-    \end{bmatrix}
+        V_{2}\\
+        I_{R}
+\end{bmatrix}
     =
     \begin{bmatrix}
-        I_{R1}\\
-        -I_{R1} 
+        0\\
+        0\\
+        0 
     \end{bmatrix}
 \end{equation}</script>
 </p>
@@ -531,7 +579,59 @@
     \end{bmatrix}
 \end{equation}</script>
 </p>
-<h3 id="capacitor">Capacitor</h3>
+<h3 id="_1"><table></h3>
+<p><tr>
+    <th>Switch</th><th>Options</th><th>Explanation</th>
+  </tr>
+  <tr>
+    <td>-a</td><td>0 or 1</td><td rowspan="2">Sets the analysis type between Voltage and Phase mode</td>
+  </tr>
+  <tr>
+    <td>--analysis=</td><td>0 is default</td>
+  </tr>
+  <tr>
+    <td>-c</td><td>0 or 1</td><td rowspan="2">Sets the subcircuit convention used internally. 0 being JSIM. 1 being WRspice (standard SPICE)</td>
+  </tr>
+  <tr>
+    <td>--convention=</td><td>0 is default</td>
+  </tr>
+  <tr>
+    <td>-h</td><td></td><td rowspan="2">Displays the help menu that contains explanations for each of these switches.</td>
+  </tr>
+  <tr>
+    <td>--help</td><td></td>
+  </tr>
+  <tr>
+    <td>-i</td><td></td><td rowspan="2">Input circuit netlist from standard input.</td>
+  </tr>
+  <tr>
+    <td>--input</td><td></td>
+  </tr>
+  <tr>
+    <td>-o</td><td>output filename</td><td rowspan="2">Save the output to file as either .csv, .dat or raw</td>
+  </tr>
+  <tr>
+    <td>--output=</td><td>output.csv</td>
+  </tr>
+  <tr>
+    <td>-p</td><td></td><td rowspan="2">Enables an experimental parallel processing feature. This is still under construction and results might not be as intendend</td>
+  </tr>
+  <tr>
+    <td>--parallel</td><td></td>
+  </tr>
+  <tr>
+    <td>-V</td><td></td><td rowspan="2">Enables verbose mode, displaying extra information with regards to the simulation</td>
+  </tr>
+  <tr>
+    <td>--verbose</td><td></td>
+  </tr>
+  <tr>
+    <td>-v</td><td></td><td rowspan="2">Displays the version information for this version of the executable</td>
+  </tr>
+  <tr>
+    <td>--version</td><td></td>
+  </tr>
+</table></p>
 <figure>
   <img src="../img/capacitor.pdf" alt="Capacitor Symbol" class="center" width="25%">
     <figcaption align="center">Fig. 2 - A basic capacitor with current flowing through it</figcaption>
@@ -620,11 +720,13 @@
 <p>Which when expanded with the trapezoidal rule becomes:</p>
 <p>
 <script type="math/tex; mode=display">{I_{B1}}_{n} = I_c\sin{\phi_n} + \frac{V_{n}}{R} + \frac{2C}{h_n}(V_{n} - V_{n-1}) - C{\frac{dV}{dt}}_{n-1} </script>
+<script type="math/tex; mode=display">-\frac{V_{n}}{R} - \frac{2C}{h_{n}}V_{n} + I_{B1_{n}} = I_{c}\sin{\phi_{n}} - \frac{2C}{h_n}V_{n-1}-C\frac{dV}{dt}_{n-1}</script>
 </p>
 <p>
-<script type="math/tex; mode=display">(\frac{1}{R} + \frac{2C}{h_n})V_n - {I_{B1}}_{n} = -I_c\sin{\phi_n} - \frac{2C}{h_n}V_{n-1} - C{\frac{dV}{dt}}_{n-1}</script>
+<script type="math/tex; mode=display">(\frac{1}{R} + \frac{2C}{h_n})V_n - {I_{B1}}_{n} = -I_c\sin{\phi_n} + \frac{2C}{h_n}V_{n-1} + C{\frac{dV}{dt}}_{n-1}</script>
+<script type="math/tex; mode=display">V_{n} - \frac{h_{n}R}{h_{n} + 2RC}I_{B1_{n}} = \left(\frac{h_{n}R}{h_{n} + 2RC}\right)\left(-I_{c}\sin{\phi_{n}} + \frac{2C}{h_{n}}V_{n-1} + C\frac{dV}{dt}_{n-1}\right) </script>
 </p>
-<p>This however depends on the current phase which needs to be solved. We therefore require an equation for phase that is voltage dependent:</p>
+<p>This equation depends on the phase at the present time step, which needs to be solved. Phase is not, however, solved and we therefore need to use the voltage-phase relationship to find a voltage dependent solution for the phase:</p>
 <p>
 <script type="math/tex; mode=display">V_n = \frac{\hbar}{2e}{\frac{d\phi}{dt}}_{n}</script>
 </p>
@@ -634,27 +736,31 @@
 <p>
 <script type="math/tex; mode=display">V_n - \frac{\hbar}{h_n e}\phi_{n} = - \frac{\hbar}{h_n e}\phi_{n-1} - V_{n-1}</script>
 </p>
-<p>
-<script type="math/tex; mode=display">-\frac{h_n e}{\hbar}V_{n} + \phi_{n} = \phi_{n-1} + \frac{h_n e}{\hbar} V_{n-1}</script>
-</p>
 <p>We can now combine these two equations to form the component stamp matrix:</p>
 <p>
 <script type="math/tex; mode=display">\begin{equation}
     \begin{bmatrix}
-        \frac{1}{R}+\frac{2C}{h_n} & -\frac{1}{R}-\frac{2C}{h_n} & 0 \\
-        -\frac{1}{R}-\frac{2C}{h_n} & \frac{1}{R}+\frac{2C}{h_n} & 0 \\ -\frac{h_n e}{\hbar} & \frac{h_n e}{\hbar} & 1  \end{bmatrix}
+        0 & 0 & 0 & 1 \\
+        0 & 0 & 0 & -1 \\
+        1 & -1 & - \frac{\hbar}{h_n e} & 0 \\ 
+        1 & -1 & 0 & - \frac{h_{n}R}{h_{n} + 2RC}   
+    \end{bmatrix}
     \begin{bmatrix}
         V_1 \\
-        V_2 \\ \phi_{n}
+        V_2 \\ 
+        \phi_{n}\\
+        I_{B1_{n}}
     \end{bmatrix}
     =
     \begin{bmatrix}
-        I_s\\
-        -I_s \\  \phi_{n-1} + \frac{h_n e}{\hbar} V_{n-1}
+        0 \\
+        0 \\
+        -\frac{\hbar}{h_n e}\phi_{n-1} - V_{n-1} \\
+        I_{s} 
     \end{bmatrix}
 \end{equation}</script>
 </p>
-<p>Where <script type="math/tex; mode=display">I_s = -I_c\sin{\phi_n} - \frac{2C}{h_n}V_{n-1} - C{\frac{dV}{dt}}_{n-1}</script>
+<p>Where <script type="math/tex; mode=display">I_{s} = \left(\frac{h_{n}R}{h_{n} + 2RC}\right)\left(-I_{c}\sin{\phi_{n}} + \frac{2C}{h_{n}}V_{n-1} + C\frac{dV}{dt}_{n-1}\right)</script>
 </p>
 <p>It is, however, not possible to use the phase value for the current time step in the calculation of the current time step, we therefore have to rely on an estimated phase value based on previous values.</p>
 <p>We define this estimation as:</p>
@@ -680,21 +786,28 @@
 <p>
 <script type="math/tex; mode=display">R_N = \frac{\pi\Delta}{2eI_c}\tanh\left(\frac{\Delta}{2k_{B}T}\right)</script>
 </p>
-<p>This allows us to change the characteristics of the tunnel current by simply altering the value <script type="math/tex">\overline{D}</script>. For values of <script type="math/tex">\overline{D} \ll 1</script> the equation becomes the normal sinusoidal equation whereas for large values of <script type="math/tex">\overline{D}</script> it becomes the non-sinusoidal ballistic tunneling equation.</p>
+<p>This allows us to change the characteristics of the tunnel current by simply altering the transparency value <script type="math/tex">\overline{D}</script>. For values of <script type="math/tex">\overline{D} \ll 1</script> the equation becomes the normal sinusoidal equation whereas for large values of <script type="math/tex">\overline{D}</script> it becomes the non-sinusoidal ballistic tunneling equation.</p>
 <p>To define the Josephson junction in phase we simply swap the voltage and phase of the component previously identified. The equations remain the same since the Josephson junction is already a phase element.</p>
 <p>
 <script type="math/tex; mode=display">\begin{equation}
     \begin{bmatrix}
-        0 & 0 & \frac{1}{R}+\frac{2C}{h_n} \\
-        0 & 0 & -\frac{1}{R}-\frac{2C}{h_n} \\ 1 & -1 & -\frac{h_n e}{\hbar}    \end{bmatrix}
+        0 & 0 & 0 & 1 \\
+        0 & 0 & 0 & -1 \\
+        1 & -1 & - \frac{h_n e}{\hbar} & 0 \\ 
+        0 & 0 & 1 & - \frac{h_{n}R}{h_{n} + 2RC}    
+    \end{bmatrix}
     \begin{bmatrix}
         \phi_1 \\
-        \phi_2 \\ V_{n}
+        \phi_2 \\ 
+        V_{n}\\
+        I_{B1_{n}}
     \end{bmatrix}
     =
     \begin{bmatrix}
-        I_s\\
-        -I_s \\  \phi_{n-1} + \frac{h_n e}{\hbar} V_{n-1}
+        0 \\
+        0 \\
+        \phi_{n-1} + \frac{h_n e}{\hbar}V_{n-1} \\
+        I_{s} 
     \end{bmatrix}
 \end{equation}</script>
 </p>
@@ -828,19 +941,32 @@
 <p>
 <script type="math/tex; mode=display">\frac{\Phi_0}{2\pi}{\frac{d\phi_{34}}{dt}}_{n} - Z_0 {I_{2}}_{n} = \frac{\Phi_0}{2\pi}{\frac{d\phi_{12}}{dt}}_{n-k} + Z_0 {I_{1}}_{n-k}</script>
 </p>
-<p>Which when expanded becomes:</p>
+<p>Since the equations are reciprocal, we only work with one side to simplify the rest of the equations. We rewrite this equation in terms of the differential as follows:</p>
 <p>
-<script type="math/tex; mode=display">{\phi_{12}}_{n} - \frac{\pi h_n Z_0}{\Phi_0}{I_{1}}_{n} = \frac{\pi h_n Z_0}{\Phi_0}{I_{2}}_{n-k} + {\phi_{12}}_{n-1} + \frac{h_n}{2}\left({\frac{d\phi_{12}}{dt}}_{n-1} + {\frac{d\phi_{34}}{dt}}_{n-k}\right)</script>
+<script type="math/tex; mode=display">\frac{\Phi_0}{2\pi}{\frac{d\phi_{12}}{dt}}_{n} = Z_0 {I_{1}}_{n} + \frac{\Phi_0}{2\pi}{\frac{d\phi_{34}}{dt}}_{n-k} + Z_0 {I_{2}}_{n-k}</script>
 </p>
+<p>We now expand this using the trapezoidal method as:</p>
 <p>
-<script type="math/tex; mode=display">{\phi_{34}}_{n} - \frac{\pi h_n Z_0}{\Phi_0}{I_{2}}_{n} = \frac{\pi h_n Z_0}{\Phi_0}{I_{1}}_{n-k} + {\phi_{34}}_{n-1} + \frac{h_n}{2}\left({\frac{d\phi_{34}}{dt}}_{n-1} + {\frac{d\phi_{12}}{dt}}_{n-k}\right)</script>
+<script type="math/tex; mode=display">\frac{\Phi_0}{2\pi}\frac{2}{h_{n}}\left(\phi_{12_{n}} - \phi_{12_{n-1}}\right) - \frac{\Phi_0}{2\pi}\frac{d\phi_{12}}{dt}_{n-1} = Z_{0}I_{1_{n}}\\ + \frac{\Phi_0}{2\pi}\left(\phi_{34_{n-k}} - \phi_{34_{n-k-1}}\right) - \frac{\Phi_0}{2\pi}\frac{d\phi_{34}}{dt}_{n-k-1} + Z_{0}I_{2_{n-k}} </script>
+</p>
+<p>and substitute the unexpanded equation into the derivative:</p>
+<p>
+<script type="math/tex; mode=display">\frac{\Phi_0}{2\pi}\frac{2}{h_{n}}\left(\phi_{12_{n}} - \phi_{12_{n-1}}\right) - Z_0 {I_{1}}_{n-1} + \frac{\Phi_0}{2\pi}{\frac{d\phi_{34}}{dt}}_{n-k-1} + Z_0 {I_{2}}_{n-k-1} = Z_{0}I_{1_{n}}\\ + \frac{\Phi_0}{2\pi}\left(\phi_{34_{n-k}} - \phi_{34_{n-k-1}}\right) - \frac{\Phi_0}{2\pi}\frac{d\phi_{34}}{dt}_{n-k-1} + Z_{0}I_{2_{n-k}} </script>
+</p>
+<p>Simplifying this equation results in:</p>
+<p>
+<script type="math/tex; mode=display">\phi_{12_{n}} - \frac{2\pi h_{n}Z_{0}}{2\Phi_{0}}I_{1_{n}} = \frac{2\pi h_{n}Z_{0}}{2\Phi_{0}}\left(I_{1_{n-1}} + I_{2_{n-k}} - I_{2_{n-k-1}}\right) + \phi_{12_{n-1}} +\phi_{34_{n-k}} - \phi_{34_{n-k-1}} </script>
+</p>
+<p>With the reciprocal:</p>
+<p>
+<script type="math/tex; mode=display">{\phi_{34}}_{n} - \frac{2\pi h_n Z_0}{\Phi_0}{2I_{2}}_{n} = \frac{2\pi h_n Z_0}{2\Phi_0}\left(I_{2_{n-1}} + I_{1_{n-k}} - I_{1_{n-k-1}}\right) + {\phi_{34}}_{n-1} +\phi_{12_{n-k}} - \phi_{12_{n-k-1}} </script>
 </p>
 <p>This leads to the component stamp matrix:</p>
 <p>
 <script type="math/tex; mode=display">\begin{equation}
     \begin{bmatrix}
         0 & 0 & 0 & 0 & 1 & 0 \\
-        0 & 0 & 0 & 0 & -1 & 0 \\ 0 & 0 & 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 & 0 & -1 \\ 1 & -1 & 0 & 0 & - \frac{\pi h_n Z_0}{\Phi_0} & 0 \\ 0 & 0 & 1 & -1 & 0 & - \frac{\pi h_n Z_0}{\Phi_0}     \end{bmatrix}
+        0 & 0 & 0 & 0 & -1 & 0 \\ 0 & 0 & 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 & 0 & -1 \\ 1 & -1 & 0 & 0 & - \frac{2\pi h_n Z_0}{2 \Phi_0} & 0 \\ 0 & 0 & 1 & -1 & 0 & - \frac{2\pi h_n Z_0}{2\Phi_0}    \end{bmatrix}
     \begin{bmatrix}
         \phi_{12} \\
         \phi_{21} \\ \phi_{34} \\ \phi_{43} \\ I_{1} \\ I_{2}   \end{bmatrix}
@@ -931,6 +1057,155 @@
         0 \\
         0 \\0 \\
         0 \\0 \\ 0
+\end{bmatrix}
+\end{equation}</script>
+</p>
+<h3 id="current-controlled-current-source">Current Controlled Current Source</h3>
+<figure>
+  <img src="../img/cccs.pdf" alt="Current Controlled Current Source Symbol" class="center" width="35%">
+    <figcaption align="center">Fig. 8 - Current controlled current source model</figcaption>
+</figure>
+
+<p>Current controlled current source allows modulation of current in a particular branch through the current in a remote branch.</p>
+<p>
+<script type="math/tex; mode=display"> I_{out} = \beta I_{in} </script>
+<script type="math/tex; mode=display"> V_{1} - V_{2} = 0 </script>
+<script type="math/tex; mode=display"> \beta = value </script>
+</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+    \begin{bmatrix}
+    0 & 0 & 0 & 0 & \frac{1}{\beta} \\
+    0 & 0 & 0 & 0 & -\frac{1}{\beta} \\ 
+    0 & 0 & 0 & 0 & 1 \\
+    0 & 0 & 0 & 0 & -1 \\
+    1 & -1 & 0 & 0 & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+    V_{1}\\
+    V_{2}\\
+    V_{3}\\
+    V_{4}\\
+    I_{out}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    0\\
+    0\\
+    0\\
+    0\\
+    0
+    \end{bmatrix}
+\end{equation}</script>
+</p>
+<h3 id="current-controlled-voltage-source">Current Controlled Voltage Source</h3>
+<figure>
+  <img src="../img/ccvs.pdf" alt="Current Controlled Voltage Source Symbol" class="center" width="35%">
+    <figcaption align="center">Fig. 9 - Current controlled voltage source model</figcaption>
+</figure>
+
+<p>Current controlled voltage source allows the modulation of a voltage node through a remote current source.</p>
+<p>
+<script type="math/tex; mode=display">V_{1} - V_{2} = 0</script>
+<script type="math/tex; mode=display">V_{3} - V_{4} = \mu I_{in}</script>
+</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+\begin{bmatrix}
+0 & 0 & 0 & 0 & 1 & 0\
+0 & 0 & 0 & 0 & -1 & 0\
+0 & 0 & 0 & 0 & 0 & 1\\
+0 & 0 & 0 & 0 & 0 & -1\\
+0 & 0 & 1 & -1 & -\mu & 0\\
+1 & -1 & 0 & 0 & 0 & -\mu
+\end{bmatrix}
+\begin{bmatrix}
+V_{1}\\
+V_{2}\\
+V{3}\\
+V{4}\\
+I_{in}\\
+I_{out}\end{bmatrix}
+=
+\begin{bmatrix}
+0\\
+0\\
+0\\
+0\\
+0\\
+0
+\end{bmatrix}
+\end{equation}</script>
+</p>
+<h3 id="voltage-controlled-current-source">Voltage Controlled Current Source</h3>
+<figure>
+  <img src="../img/vccs.pdf" alt="Voltage Controlled Current Source Symbol" class="center" width="35%">
+    <figcaption align="center">Fig. 10 - Voltage controlled current source model</figcaption>
+</figure>
+
+<p>Voltage controlled current source allows the modulation of a current in a branch through a remote voltage source.</p>
+<p>
+<script type="math/tex; mode=display">\alpha(V_{1} - V_{2}) = I_{out}</script>
+</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+\begin{bmatrix}
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 1\\
+0 & 0 & 0 & 0 & -1\\
+1 & -1 & 0 & 0 & -\frac{1}{\alpha}
+\end{bmatrix}
+\begin{bmatrix}
+V_{1}\\
+V_{2}\\
+V{3}\\
+V{4}\\
+I_{in}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0\\
+0\\
+0\\
+0\\
+0
+\end{bmatrix}
+\end{equation}</script>
+</p>
+<h3 id="voltage-controlled-voltage-source">Voltage Controlled Voltage Source</h3>
+<figure>
+  <img src="../img/vcvs.pdf" alt="Voltage Controlled Voltage Source Symbol" class="center" width="35%">
+    <figcaption align="center">Fig. 11 - Voltage controlled voltage source model</figcaption>
+</figure>
+
+<p>Voltage controlled current source allows the modulation of a current in a branch through a remote voltage source.</p>
+<p>
+<script type="math/tex; mode=display">A(V_{1} - V_{2}) = V_{3}-V_{4}</script>
+</p>
+<p>
+<script type="math/tex; mode=display">\begin{equation}
+\begin{bmatrix}
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 1\\
+0 & 0 & 0 & 0 & -1\\
+G & -G & 1 & -1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+V_{1}\\
+V_{2}\\
+V{3}\\
+V{4}\\
+I_{out}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0\\
+0\\
+0\\
+0\\
+0
 \end{bmatrix}
 \end{equation}</script>
 </p>

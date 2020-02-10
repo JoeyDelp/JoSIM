@@ -258,8 +258,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stable-v23-status" title="Stable: v2.3 - Status:" class="md-nav__link">
-    Stable: v2.3 - Status:
+  <a href="#stable-v24-status" title="Stable: v2.4 - Status:" class="md-nav__link">
+    Stable: v2.4 - Status:
   </a>
   
 </li>
@@ -321,8 +321,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#windows" title="Windows" class="md-nav__link">
-    Windows
+  <a href="#microsoft-windows" title="Microsoft Windows" class="md-nav__link">
+    Microsoft Windows
   </a>
   
 </li>
@@ -444,8 +444,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stable-v23-status" title="Stable: v2.3 - Status:" class="md-nav__link">
-    Stable: v2.3 - Status:
+  <a href="#stable-v24-status" title="Stable: v2.4 - Status:" class="md-nav__link">
+    Stable: v2.4 - Status:
   </a>
   
 </li>
@@ -507,8 +507,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#windows" title="Windows" class="md-nav__link">
-    Windows
+  <a href="#microsoft-windows" title="Microsoft Windows" class="md-nav__link">
+    Microsoft Windows
   </a>
   
 </li>
@@ -543,10 +543,10 @@
                 
                 
                 <h1 id="josim-superconducting-circuit-simulator">JoSIM - Superconducting Circuit Simulator</h1>
-<p>Developers Manual v2.3</p>
+<p>Developers Manual v2.4</p>
 <h2 id="project-status">Project Status</h2>
 <h3 id="testing-v24-status">Testing: v2.4 - Status: <a href="https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&amp;branchName=testing"><img alt="Build Status" src="https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing" /></a></h3>
-<h3 id="stable-v23-status">Stable: v2.3 - Status: <a href="https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&amp;branchName=master"><img alt="Build Status" src="https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master" /></a></h3>
+<h3 id="stable-v24-status">Stable: v2.4 - Status: <a href="https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&amp;branchName=master"><img alt="Build Status" src="https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master" /></a></h3>
 <h2 id="introduction">Introduction</h2>
 <p>JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.</p>
 <p>JoSIM is meant to function as a replacement to the aging simulators such as JSIM[<a class="citation" href="#ref-jsim" id="cite-jsim">jsim</a>] and WRspice[<a class="citation" href="#ref-wrspice" id="cite-wrspice">wrspice</a>]. JoSIM is written in modern C++ and is fully customizable and extendable to offer support for improved superconducting elements as well better approximations to the Josephson effect in superconducting materials.</p>
@@ -565,8 +565,8 @@ docs/
     ...             # Other markdown pages, images and other files.
 include/
     JoSIM           # JoSIM header files.
-    suitesparse     # SuiteSparse header files.
 lib                 # Libraries for different platforms.
+scripts             # Some Python3 scripts to automate testing and plotting
 site                # Where this documentation spawns from.
 src/
     josim_vs        # Visual Studio solution for JoSIM.
@@ -578,9 +578,9 @@ CMakeLists.txt      # Configuration to compile code.
 ...                 # Other configuration files and scripts.
 </code></pre>
 <h2 id="initial-setup">Initial setup</h2>
-<p>Release versions of JoSIM can be found on the <a href="https://www.github.com/JoeyDelp/JoSIM/releases">release page</a> of the open source github repository repository. At the time of writing this version is 2.3.</p>
+<p>Release versions of JoSIM can be found on the <a href="https://www.github.com/JoeyDelp/JoSIM/releases">release page</a> of the open source github repository repository. At the time of writing this version is 2.4.</p>
 <p>The source can also be cloned and compiled for either macOS, Linux or Windows. Within this repository there will be a <strong>CMakeLists.txt</strong> which is a recipe used to compile JoSIM using CMake.</p>
-<p>To compile the source a working C++ compiler with support for C++14 is required. Additionally SuiteSparse linear algebra libraries are required but are provided in the repository. Git version control software is recommended, but is not required to compile JoSIM. A single executable binary is generated using the CMake recipe and can be placed anywhere on the system as well as freely redistributed.</p>
+<p>To compile the source a working C++ compiler with support for C++17 is required. Additionally SuiteSparse linear algebra libraries are required but are provided in the repository. Git version control software is recommended, but is not required to compile JoSIM. A single executable binary is generated using the CMake recipe and can be placed anywhere on the system as well as freely redistributed.</p>
 <h3 id="license">License</h3>
 <p>JoSIM is governed by the MIT license, which is a very permissive license that allows anyone to redistribute the source as well as commercialize it without repercussions. The MIT license allows use of this software within proprietary software as long as all copies of the licensed software includes a copy of the MIT license as well as the copyright notice.</p>
 <h3 id="building-from-source">Building from source</h3>
@@ -601,27 +601,24 @@ $ sudo yum update
 
 <p>This will install various development tools such as <em>gcc</em>, <em>make</em> and <em>git</em>. JoSIM, however, requires a newer version of <em>gcc</em> than the one supplied within these packages. Fortunately this can be installed fairly easily by running the following:</p>
 <pre><code>$ sudo yum install centos-release-scl
-$ sudo yum install devtoolset-7
-$ scl enable devtoolset-7 bash
+$ sudo yum install devtoolset-8
+$ scl enable devtoolset-8 bash
 </code></pre>
 
 <p>The last command needs to be entered whenever the newer <em>gcc</em> is needed. This can fortunately be shortened using an alias:</p>
-<pre><code>$ echo 'alias dts7=&quot;scl enable devtoolset-7 bash&quot;' &gt;&gt; ~/.bashrc
+<pre><code>$ echo 'alias dts8=&quot;scl enable devtoolset-8 bash&quot;' &gt;&gt; ~/.bashrc
 </code></pre>
 
-<p>This will enable the devtoolset-7 environment on the current bash by just entering the command <em>dts7</em>.</p>
+<p>This will enable the devtoolset-8 environment on the current bash by just entering the command <em>dts8</em>.</p>
 <p>To simplify installation of various packages we make use of Python 3 and pip:</p>
 <pre><code>$ sudo install python36 python36-pip
 </code></pre>
 
-<p>This allows installation of the most relevant package versions of <em>cmake</em> and <em>conan</em>:</p>
-<pre><code>$ pip3 install conan cmake --user
+<p>This allows installation of the most relevant package version of <em>cmake</em>:</p>
+<pre><code>$ pip3 install cmake --user
 </code></pre>
 
-<p>We then only require the <em>suitesparse</em> package which can be installed using:</p>
-<pre><code>$ sudo yum install suitesparse suitesparse-devel
-</code></pre>
-
+<p>As of version 2.4 the relevant SuiteSparse dependency code is compiled into JoSIM resulting in no additional dependencies being needed.</p>
 <p>We are now ready to compile JoSIM</p>
 <p>JoSIM source can be directly downloaded from the repository as a compressed <em>.tar.gz</em> file or by cloning the repository. In either case, navigate to a directory where compilation will take place and extract the tarball or execute:</p>
 <pre><code>$ git clone https://github.com/JoeyDelp/JoSIM.git
@@ -630,39 +627,36 @@ $ cd JoSIM
 <p>Navigate to the newly cloned/extracted JoSIM directory then run the following commands:</p>
 <pre><code>$ mkdir build
 $ cd build
-$ conan install ..
-$ cmake3 ..
-$ make
+$ cmake ..
+$ cmake --build . --config Release
 </code></pre>
 <p>This will generate a JoSIM executable in the <strong>build</strong> directory.</p>
-<p>If the above fails complaining about C++17, then the <em>devtoolset-7</em> environment was not enabled or <em>conan</em> could not find the newer compiler. Ensure the <em>devtoolset</em> is enabled and ensure that the <em>conan</em> profile points to the correct <em>gcc</em> version:</p>
-<pre><code>$ conan profile new ~/.conan/profiles/gcc7 --detect
-$ conan install ..
+<p>Additionally, the <em>libjosim</em> library will also be generated. To use the library (and josim-cli) they need to be PATH obtainable. The best way to do this is to do: </p>
+<pre><code>$ sudo make install
 </code></pre>
 
-<p><em>conan</em> should display the following if the correct <em>gcc</em> was detected and the above command was executed:</p>
-<pre><code>Configuration:
-[settings]
-arch=x86_64
-arch_build=x86_64
-build_type=Release
-compiler=gcc
-compiler.libcxx=libstdc++
-compiler.version=7
-os=Linux
-os_build=Linux
-[options]
-[build_requires]
-[env]
-</code></pre>
-
-<p>If this is correct then <em>cmake</em> and <em>make</em> can be executed normally and JoSIM should compile.</p>
 <h4 id="apple-macos">Apple macOS</h4>
 <p>Apple macOS is very similar to most Unix systems and therefore follows mostly the same procedure. The user would clone the repository and install CMake as well as the necessary library as indicated in previous sections. These requirements can be installed using either Homebrew, Macports or compiled from source using the standard macOS compilers (installed through Xcode).</p>
-<h4 id="windows">Windows</h4>
-<p>A Microsoft Visual Studio solution is provided and can be found in the <strong>src</strong> folder. This is by far the easiest way to compile the software under a Microsoft Windows environment. Simply open the solution and click build (F6) to build the Release target for the software.</p>
-<p>It is also posisble to compile JoSIM on Windows using CMake. To do this, <a href="https://cmake.org/download/">CMake for Windows</a> would need to be installed along with the MSVC compiler, which is included in the <a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&amp;rel=16">Build Tools for Visual Studio 2019</a>.</p>
-<p>Once installed, the graphical interface for CMake can be used to choose the source directory, build directory and compiler to use (MSVC in this case). This will build the Windows version of JoSIM using the CMakeLists.txt configuration script.</p>
+<p>Python 3 is available through Homebrew and CMake can almost always be installed using pip (PyPI). </p>
+<h4 id="microsoft-windows">Microsoft Windows</h4>
+<p>There are various ways to compile JoSIM on the Microsoft Windows platform. The simplest way to do this is to install the <a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&amp;rel=16">Community version of Microsoft Visual Studio</a>, which is free to use. This is only to acquire a working C++ compiler that can be used by CMake.</p>
+<p>Next Python 3 will also be needed. This can be installed using Windows Store, Anaconda or <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a>. Once installed CMake can be installed much the same as any other system:</p>
+<pre><code>$ pip install cmake --user
+</code></pre>
+
+<p>To ensure that CMake detects the correct compiler (a restart might be required after MSVC install) simply run:</p>
+<pre><code>$ cmake --help
+</code></pre>
+
+<p>This should produce a help menu with a generator list at the bottom. If MSVC is installed and detected then it should have an asterisk (*) next to the relevant MSVC version to indicate that it is the default generator.</p>
+<p>The rest of the guide follows the same steps as Linux:</p>
+<pre><code>$ mkdir build
+$ cd build
+$ cmake ..
+$ cmake --build . --config Release
+</code></pre>
+
+<p>This will produce the JoSIM executable and library in the <strong>build/Release</strong> folder.</p>
 <style>
 .center {
     display: block;
