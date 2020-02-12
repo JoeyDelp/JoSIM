@@ -5,10 +5,12 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 
-void JoSIM::Model::parse_model(
+using namespace JoSIM;
+
+void Model::parse_model(
     const std::pair<std::string, std::string> &s,
-    std::vector<std::pair<JoSIM::Model,std::string>> &models,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
+    std::vector<std::pair<Model,std::string>> &models,
+    const std::unordered_map<ParameterName, Parameter> &p) {
   
   // Split keywords using spaces
   std::vector<std::string> tokens = Misc::tokenize_delimiter(s.first, "();, \t");
@@ -16,7 +18,7 @@ void JoSIM::Model::parse_model(
   if(tokens.size() < 3) {
     Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
   }
-  JoSIM::Model temp;
+  Model temp;
 
   temp.set_modelName(tokens.at(1));
   
@@ -46,7 +48,7 @@ void JoSIM::Model::parse_model(
     if (itemToken.size() == 1) {
       Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
     }
-    double value = JoSIM::Parameters::parse_param(itemToken.at(1), p,
+    double value = parse_param(itemToken.at(1), p,
                                 s.second);
     if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
       temp.set_voltageGap(value);

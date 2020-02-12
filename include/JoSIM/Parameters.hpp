@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <optional>
 
+namespace JoSIM {
 class Parameter {
   private:
     std::string expression_;
@@ -25,24 +26,22 @@ class Parameter {
     std::optional<double> get_value() const { return value_; };
 };
 
-namespace JoSIM {
-class Parameters {
-public:
-  static void create_parameter(const std::pair<std::string, std::string> &s,
-                              std::unordered_map<JoSIM::ParameterName, Parameter> &parameters);
+  void create_parameter(const std::pair<std::string, std::string> &s,
+                              std::unordered_map<ParameterName, Parameter> &parameters);
 
-  static double parse_param(
-      const std::string &expr,
-      const std::unordered_map<JoSIM::ParameterName, Parameter> &params,
+  double parse_param(const std::string &expr,
+      const std::unordered_map<ParameterName, Parameter> &params,
       const std::string &subckt = "");
 
-  static int prec_lvl(const std::string &op);
+  int precedence_lvl(const std::string &op);
 
-  static double parse_operator(const std::string &op, double val1, double val2,
+  double parse_operator(const std::string &op, double val1, double val2,
                               int &popCount);
 
-  static void parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters);
-};
-}
+  void parse_parameters(std::unordered_map<ParameterName, Parameter> &parameters);
+
+  void update_parameters(std::unordered_map<ParameterName, Parameter> &parameters);
+
+} // namespace JoSIM
 
 #endif

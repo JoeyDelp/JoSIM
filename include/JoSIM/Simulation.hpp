@@ -7,6 +7,7 @@
 #include "./Misc.hpp"
 #include "./Matrix.hpp"
 
+namespace JoSIM{
 
 #define TRANSIENT 0
 #define DC 1
@@ -14,21 +15,23 @@
 #define PHASE 3
 #define NONE_SPECIFIED 4
 
+
 class Results {
-public:
+  public:
   std::vector<std::optional<std::vector<double>>> xVector;
   std::vector<double> timeAxis;
-  std::unordered_map<std::string, std::vector<double>> junctionCurrents;
-
 };
-
-namespace JoSIM{
 class Simulation {
-public:
+  private:
+  void trans_sim_new(Input &iObj, Matrix &mObj);
+
+  public:
   Results results;
   bool sOutput = true;
 
-  void trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj);
+  Simulation(Input &iObj, Matrix &mObj) {
+    trans_sim_new(iObj, mObj);
+  }
 };
-}
+} // namespace JoSIM
 #endif

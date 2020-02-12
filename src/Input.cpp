@@ -6,7 +6,9 @@
 #include <fstream>
 #include <iostream>
 
-std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
+using namespace JoSIM;
+
+std::vector<std::string> Input::read_file(const std::string &fileName){
   std::string line;
   std::fstream ifile(fileName);
   std::vector<std::string> fileLines;
@@ -17,7 +19,7 @@ std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
       if (!line.empty() && line.back() == '\r')
           line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
       if (line.find(".INCLUDE") != std::string::npos) {
-        std::vector<std::string> tempInclude = JoSIM::Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
+        std::vector<std::string> tempInclude = Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
         fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
       } else {
         std::transform(line.begin(), line.end(), line.begin(), toupper);
@@ -40,7 +42,7 @@ std::vector<std::string> JoSIM::Input::read_file(const std::string &fileName){
   return {};
 }
 
-std::vector<std::string> JoSIM::Input::read_input() {
+std::vector<std::string> Input::read_input() {
   std::string line;
   std::vector<std::string> fileLines;
   for (std::string line; std::getline(std::cin, line);) {
@@ -49,7 +51,7 @@ std::vector<std::string> JoSIM::Input::read_input() {
     if (!line.empty() && line.back() == '\r')
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     if (line.find(".INCLUDE") != std::string::npos) {
-      std::vector<std::string> tempInclude = JoSIM::Input::read_file(line.substr(9));
+      std::vector<std::string> tempInclude = Input::read_file(line.substr(9));
       fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
     } else {
       std::transform(line.begin(), line.end(), line.begin(), toupper);
@@ -69,12 +71,12 @@ std::vector<std::string> JoSIM::Input::read_input() {
   return {};
 }
 
-void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
+void Input::parse_file(const std::string &fileName) {
   std::vector<std::string> fileLines;
   if(fileName == "standard_input") {
-    fileLines = JoSIM::Input::read_input();
+    fileLines = Input::read_input();
   } else {
-    fileLines = JoSIM::Input::read_file(fileName);
+    fileLines = Input::read_file(fileName);
   }
 
   bool subckt = false;
@@ -87,13 +89,13 @@ void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
     if (fileLines.at(i)[0] == '.') {
       if (fileLines.at(i).find(".SUBCKT") != std::string::npos) {
         subckt = true;
-        iObj.netlist.containsSubckt = true;
+        netlist.containsSubckt = true;
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (tokens.size() > 1) {
           if (tokens.size() > 2) {
             subcktName = tokens.at(1);
             for (int j = 2; j < tokens.size(); ++j) {
-              iObj.netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
+              netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
             }
           } else
             Errors::input_errors(InputErrors::MISSING_SUBCKT_IO);
@@ -102,9 +104,9 @@ void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
         // If parameter, add to unparsed parameters list
       } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
         if (subckt) {
-          JoSIM::Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
+          create_parameter(std::make_pair(subcktName, fileLines.at(i)), parameters);
         } else {
-          JoSIM::Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
+          create_parameter(std::make_pair("", fileLines.at(i)), parameters);
         }
         // If control, set flag as start of controls
       } else if (fileLines.at(i).find(".CONTROL") != std::string::npos) {
@@ -119,14 +121,14 @@ void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
       } else if (fileLines.at(i).find(".MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
-          iObj.netlist.models[std::make_pair(tokens[1], subcktName)] =
+          netlist.models[std::make_pair(tokens[1], subcktName)] =
               fileLines.at(i);
         else
-          iObj.netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
+          netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
         // If neither of these, normal control, add to controls list
       } else {
         if (!subckt)
-          iObj.controls.push_back(fileLines.at(i));
+          controls.push_back(fileLines.at(i));
         else
           Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subcktName);
       }
@@ -135,22 +137,22 @@ void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
       // If parameter, add to unparsed parameter list
       if (fileLines.at(i).find("PARAM") != std::string::npos) {
         if (subckt) {
-          JoSIM::Parameters::create_parameter(std::make_pair(subcktName, fileLines.at(i)), iObj.parameters);
+          create_parameter(std::make_pair(subcktName, fileLines.at(i)), parameters);
         } else {
-          JoSIM::Parameters::create_parameter(std::make_pair("", fileLines.at(i)), iObj.parameters);
+          create_parameter(std::make_pair("", fileLines.at(i)), parameters);
         }
         // If model, add to models list
       } else if (fileLines.at(i).find("MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
-          iObj.netlist.models[std::make_pair(tokens[1], subcktName)] =
+          netlist.models[std::make_pair(tokens[1], subcktName)] =
               fileLines.at(i);
         else
-          iObj.netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
+          netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
         // If neither, add to controls list
       } else {
         if (!subckt)
-          iObj.controls.push_back(fileLines.at(i));
+          controls.push_back(fileLines.at(i));
         else
           Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subcktName);
       }
@@ -158,14 +160,14 @@ void JoSIM::Input::parse_file(const std::string &fileName, JoSIM::Input &iObj) {
     } else {
       // If subcircuit flag, add line to relevant subcircuit
       if (subckt)
-        iObj.netlist.subcircuits[subcktName].lines.push_back(
+        netlist.subcircuits[subcktName].lines.push_back(
             std::make_pair(fileLines.at(i), subcktName));
       // If not, add line to main design
       else
-        iObj.netlist.maindesign.push_back(fileLines.at(i));
+        netlist.maindesign.push_back(fileLines.at(i));
     }
   }
   // If main is empty, complain
-  if (iObj.netlist.maindesign.empty())
+  if (netlist.maindesign.empty())
     Errors::input_errors(InputErrors::MISSING_MAIN);
 }

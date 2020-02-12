@@ -17,15 +17,19 @@
 
 namespace JoSIM {
 class Input {
-public:
+  private:
+    std::vector<std::string> read_file(const std::string &fileName);
+    std::vector<std::string> read_input();
+
+  public:
   Netlist netlist;
-  JoSIM::Transient transSim;
+  Transient transSim;
   std::vector<std::string> fileLines, controls;
   std::vector<std::string> relevantX;
-  std::unordered_map<JoSIM::ParameterName, Parameter> parameters;
+  std::unordered_map<ParameterName, Parameter> parameters;
 
-  Input(JoSIM::AnalysisType analysis_type = JoSIM::AnalysisType::Voltage,
-        JoSIM::InputType input_type = JoSIM::InputType::Jsim,
+  Input(AnalysisType analysis_type = AnalysisType::Voltage,
+        InputType input_type = InputType::Jsim,
         bool verbose = false) : 
     argAnal(analysis_type), 
     argConv(input_type), 
@@ -34,14 +38,12 @@ public:
       netlist.argConv = argConv;
     };
 
-  JoSIM::AnalysisType argAnal;
-  JoSIM::InputType argConv;
+  AnalysisType argAnal;
+  InputType argConv;
   bool argVerb = false;
 
-  static std::vector<std::string> read_file(const std::string &fileName);
-  static std::vector<std::string> read_input();
-  static void parse_file(const std::string &fileName, Input &iObj);
+  void parse_file(const std::string &fileName);
 };
-}
+} // namespace JoSIM
 
 #endif

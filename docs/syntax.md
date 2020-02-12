@@ -168,6 +168,8 @@ The most important of these control commands is the transient simulation command
 
 This generates a simulation that runs from \(T_{start}\) (0 unless specified) until \(T_{stop}\) and generates a simulation point at every \(T_{step}\) between those two points. The difference between start and stop divided by the step size floored to the closest integer value indicates how many simulation steps there will be.
 
+JoSIM does **not** at present support any form of variable timestep input. It will in addition complain if a timestep is chosen that results in a phase step larger than 20% of 2\(\pi\).
+
 ### Output
 
 A simulation is meaningless unless the results are stored or viewed in some way. In order to know which of these results are relevant and need to be stored the simulator needs output control commands.
@@ -239,4 +241,20 @@ Any of the above controls can be wrapped inside a control block with the followi
 **.endc**
 
 Wherein all controls can be specified by omitting the usual prepending period to the command.
+
+### Include
+
+JoSIM allows the use of a *.include* control card that uses the following syntax
+
+**.include** *relative_path_to_file*
+
+This command reads in the contents of the relevant file pointed to by the relevant path uppon parsing of the netlist essentially extending the netlist by the linked file. This is incredibly handy when large subcircuits are involved and reuse of subcircuits accross multiple files is required.
+
+This can also be used to house all the models used in simulation allowing a central point of alteration if the model is changed.
+
+### Standard Input
+
+JoSIM now allows input from standard input allowing a line-by-line read in of a netlist until the *.end* card is found or alternatively the EOF character is returned.
+
+
 

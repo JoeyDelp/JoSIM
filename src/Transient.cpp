@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
-void JoSIM::Transient::identify_simulation(const std::vector<std::string> &controls, JoSIM::Transient &tObj) {
+using namespace JoSIM;
+
+void Transient::identify_simulation(const std::vector<std::string> &controls, Transient &tObj) {
   std::vector<std::string> simtokens;
   bool transFound = false;
   for (const auto &i : controls) {

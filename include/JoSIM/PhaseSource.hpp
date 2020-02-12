@@ -11,6 +11,8 @@
 #include <unordered_set>
 #include <optional>
 
+
+namespace JoSIM {
 class PhaseSource {
   private:
     std::string label_;
@@ -49,4 +51,5 @@ class PhaseSource {
     const int& get_sourceIndex() const { return sourceIndex_; }
 };
 
+} // namespace JoSIM
 #endif

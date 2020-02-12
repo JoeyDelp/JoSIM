@@ -8,13 +8,15 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 CCVS CCVS::create_CCVS(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    int &branchIndex, const JoSIM::Input &iObj) {
+    const std::unordered_map<ParameterName, Parameter> &p,
+    int &branchIndex, const Input &iObj) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
   CCVS temp;
@@ -306,10 +308,10 @@ void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std:
 }
 
 void CCVS::set_value(const std::pair<std::string, std::string> &s, 
-  const std::unordered_map<JoSIM::ParameterName, Parameter> &p, const JoSIM::Input &iObj) {
-  if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
-    value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+  const std::unordered_map<ParameterName, Parameter> &p, const Input &iObj) {
+  if(iObj.argAnal == AnalysisType::Voltage) {
+    value_ = parse_param(s.first, p, s.second);
   } else {
-    value_ = ((JoSIM::Parameters::parse_param(s.first, p, s.second) * iObj.transSim.get_prstep())/(JoSIM::Constants::SIGMA * 2));
+    value_ = ((parse_param(s.first, p, s.second) * iObj.transSim.get_prstep())/(Constants::SIGMA * 2));
   }
 }

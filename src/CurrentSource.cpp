@@ -5,6 +5,8 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 
+using namespace JoSIM;
+
 CurrentSource CurrentSource::create_currentsource(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm,

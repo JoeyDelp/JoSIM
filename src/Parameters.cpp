@@ -10,8 +10,10 @@
 #include <limits>
 #include <cmath>
 
-void JoSIM::Parameters::create_parameter(const std::pair<std::string, std::string> &s,
-                                  std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
+using namespace JoSIM;
+
+void JoSIM::create_parameter(const std::pair<std::string, std::string> &s,
+                                  std::unordered_map<ParameterName, Parameter> &parameters) {
   Parameter temp;
   std::vector<std::string> tokens;
 
@@ -32,11 +34,11 @@ void JoSIM::Parameters::create_parameter(const std::pair<std::string, std::strin
 
   temp.set_expression(tokens.at(1));
 
-  if(parameters.count(JoSIM::ParameterName(tokens.at(0), s.first)) == 0) {
-    parameters.insert({JoSIM::ParameterName(tokens.at(0), s.first), temp});
+  if(parameters.count(ParameterName(tokens.at(0), s.first)) == 0) {
+    parameters.insert({ParameterName(tokens.at(0), s.first), temp});
   } else {
     Errors::parsing_errors(ParsingErrors::EXPRESSION_ARLEADY_DEFINED, s.second);
-    parameters.insert({JoSIM::ParameterName(tokens.at(0), s.first), temp});
+    parameters.insert({ParameterName(tokens.at(0), s.first), temp});
   }
 }
 
@@ -46,9 +48,29 @@ const std::vector<std::string> funcs = {
     "ACOSH", "ASINH", "ATANH", "EXP",  "LOG",  "LOG10", "SQRT", "CBRT"
 };
 
-double JoSIM::Parameters::parse_param(
+int JoSIM::precedence_lvl(const std::string &op) {
+  switch (op[0]) {
+    // + and - are lowest level
+  case '+':
+  case '-':
+    return 1;
+    // * and / are higher level
+  case '*':
+  case '/':
+    return 2;
+    // ^ (pow) is highest level
+  case '^':
+    return 3;
+    // default (functions) are max level
+  default:
+    return 4;
+  }
+  return 4;
+}
+
+double JoSIM::parse_param(
     const std::string &expr,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &params,
+    const std::unordered_map<ParameterName, Parameter> &params,
     const std::string &subckt) 
   {
   // Initialize the expression to evaluate
@@ -85,24 +107,24 @@ double JoSIM::Parameters::parse_param(
       rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
       qType.push_back('V');
     // If it is not a digit, check that it is not a parameter in local scope
-    //} else if (params.count(JoSIM::ParameterName(partToEval, subckt)) != 0) {
+    //} else if (params.count(ParameterName(partToEval, subckt)) != 0) {
     } else if ([&]() { 
-        if(params.count(JoSIM::ParameterName(partToEval, subckt)) != 0)
-          if(params.at(JoSIM::ParameterName(partToEval, subckt)).get_value())
+        if(params.count(ParameterName(partToEval, subckt)) != 0)
+          if(params.at(ParameterName(partToEval, subckt)).get_value())
             return true;
         return false;}() ) {
       rpnQueue.push_back(Misc::precise_to_string(
-          params.at(JoSIM::ParameterName(partToEval, subckt)).get_value().value()));
+          params.at(ParameterName(partToEval, subckt)).get_value().value()));
       qType.push_back('V');
     // If it is not in local scope, check that it is not a parameter in global scope
-    //} else if (params.count(JoSIM::ParameterName(partToEval, "")) != 0) {
+    //} else if (params.count(ParameterName(partToEval, "")) != 0) {
     } else if ([&]() { 
-        if(params.count(JoSIM::ParameterName(partToEval, "")) != 0)
-          if(params.at(JoSIM::ParameterName(partToEval, "")).get_value())
+        if(params.count(ParameterName(partToEval, "")) != 0)
+          if(params.at(ParameterName(partToEval, "")).get_value())
             return true;
         return false;}() ) {
       rpnQueue.push_back(Misc::precise_to_string(
-          params.at(JoSIM::ParameterName(partToEval, "")).get_value().value()));
+          params.at(ParameterName(partToEval, "")).get_value().value()));
       qType.push_back('V');
     // If it is not in either, check if it is not a function name such as SIN, COS, TAN, etc.
     } else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end()) {
@@ -114,8 +136,8 @@ double JoSIM::Parameters::parse_param(
     // If not a constant, check if it is an operator in the operator list
     } else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
       while ((!opStack.empty()) &&
-             (((prec_lvl(opStack.back()) == 4) ||
-               (prec_lvl(opStack.back()) >= prec_lvl(partToEval))) &&
+             (((precedence_lvl(opStack.back()) == 4) ||
+               (precedence_lvl(opStack.back()) >= precedence_lvl(partToEval))) &&
               (opStack.back().find_first_of("([{") == std::string::npos) &&
               (partToEval != "^"))) {
         rpnQueue.push_back(opStack.back());
@@ -200,27 +222,8 @@ double JoSIM::Parameters::parse_param(
   return Misc::modifier(rpnQueue.back());
 }
 
-int JoSIM::Parameters::prec_lvl(const std::string &op) {
-  switch (op[0]) {
-    // + and - are lowest level
-  case '+':
-  case '-':
-    return 1;
-    // * and / are higher level
-  case '*':
-  case '/':
-    return 2;
-    // ^ (pow) is highest level
-  case '^':
-    return 3;
-    // default (functions) are max level
-  default:
-    return 4;
-  }
-  return 4;
-}
 
-double JoSIM::Parameters::parse_operator(const std::string &op, double val1, double val2,
+double JoSIM::parse_operator(const std::string &op, double val1, double val2,
                               int &popCount) {
   if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
     popCount = 1;
@@ -274,7 +277,7 @@ double JoSIM::Parameters::parse_operator(const std::string &op, double val1, dou
   return 0.0;
 }
 
-void JoSIM::Parameters::parse_parameters(std::unordered_map<JoSIM::ParameterName, Parameter> &parameters) {
+void JoSIM::parse_parameters(std::unordered_map<ParameterName, Parameter> &parameters) {
   double value;
   int parsedCounter = 0;
 
@@ -302,3 +305,34 @@ void JoSIM::Parameters::parse_parameters(std::unordered_map<JoSIM::ParameterName
 
 }
 
+void JoSIM::update_parameters(std::unordered_map<ParameterName, Parameter> &parameters) {
+  double value;
+  int parsedCounter = 0;
+
+  for(auto i : parameters) {
+    i.second.set_value(std::nan(""));
+  }
+
+  while(parsedCounter < parameters.size()) {
+    int previous_counter = parsedCounter;
+    for(auto &i : parameters) {
+      if(!i.second.get_value()) {
+        value = parse_param(i.second.get_expression(), parameters, i.first.subcircuit());
+        if(!std::isnan(value)) {
+          i.second.set_value(value);
+          parsedCounter++;
+        }
+      }
+    }
+    if (previous_counter == parsedCounter) {
+      std::string unknownParams = "";
+      for (auto &i : parameters) {
+        if (!i.second.get_value()) {
+          unknownParams += i.first.name() + " " + i.first.subcircuit() + "\n";
+        }
+      }
+      Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, unknownParams);
+    }
+  }
+
+}

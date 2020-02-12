@@ -8,13 +8,13 @@
 
 namespace JoSIM {
 class Transient {
-private:
+  private:
   double prstep;
   double tstop;
   double tstart;
   double maxtstep;
   int simsize;
-public:
+  public:
   Transient() :
     prstep(1E-12),
     tstop(0.0),

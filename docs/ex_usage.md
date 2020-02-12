@@ -167,6 +167,12 @@ The command line interface has various switches which can be shown using the **-
     <td>--help</td><td></td>
   </tr>
   <tr>
+    <td>-i</td><td></td><td rowspan="2">Input circuit netlist from standard input.</td>
+  </tr>
+  <tr>
+    <td>--input</td><td></td>
+  </tr>
+  <tr>
     <td>-o</td><td>output filename</td><td rowspan="2">Save the output to file as either .csv, .dat or raw</td>
   </tr>
   <tr>

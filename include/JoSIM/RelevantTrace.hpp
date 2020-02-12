@@ -10,18 +10,14 @@
 namespace JoSIM {
   class Matrix;
   enum class StorageType : int { Voltage = 0, Phase = 1, Current = 2};
-}
 
-struct target_less
-{
+struct target_less {
     template<class It> bool operator()(It const &a, It const &b) const { return *a < *b; }
 };
-struct target_equal
-{
+struct target_equal {
     template<class It> bool operator()(It const &a, It const &b) const { return *a == *b; }
 };
-template<class It> It uniquify(It begin, It const end)
-{
+template<class It> It uniquify(It begin, It const end) {
     std::vector<It> v;
     v.reserve(static_cast<size_t>(std::distance(begin, end)));
     for (It i = begin; i != end; ++i)
@@ -42,12 +38,11 @@ template<class It> It uniquify(It begin, It const end)
     return begin;
 }
 
-namespace JoSIM {
 class RelevantTrace {
   public:
     bool device;
     std::optional<std::string> deviceLabel;
-    JoSIM::StorageType storageType;
+    StorageType storageType;
     std::optional<int> index1;
     std::optional<int> index2;
     std::optional<int> sourceIndex;
@@ -57,11 +52,12 @@ class RelevantTrace {
       device(false)
     {};
 
-    static void find_relevant_traces(const std::vector<std::string> &c, JoSIM::Matrix &mObj);
-    static void handle_current(const std::string &s, JoSIM::Matrix &mObj);
-    static void handle_voltage_or_phase(const std::string &s, bool voltage, JoSIM::Matrix &mObj);
 
 };
-}
+  void find_relevant_traces(const std::vector<std::string> &c, Matrix &mObj);
+  void handle_current(const std::string &s, Matrix &mObj);
+  void handle_voltage_or_phase(const std::string &s, bool voltage, Matrix &mObj);
+
+} // namespace JoSIM
 
 #endif

@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <optional>
 
+namespace JoSIM {
+
 class VCVS {
   private:
     std::string label_;
@@ -33,7 +35,7 @@ class VCVS {
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
         std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
+        const std::unordered_map<ParameterName, Parameter> &p,
         int &branchIndex);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
@@ -42,7 +44,7 @@ class VCVS {
       const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
+        const std::unordered_map<ParameterName, Parameter> &p);
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -57,4 +59,5 @@ class VCVS {
 
 };
 
+} // namespace JoSIM
 #endif

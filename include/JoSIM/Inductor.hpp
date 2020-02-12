@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <optional>
 
+
+namespace JoSIM {
 class Inductor {
   private:
     std::string label_;
@@ -35,8 +37,8 @@ class Inductor {
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
         std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp,
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
@@ -44,9 +46,9 @@ class Inductor {
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep);
-    void add_mutualInductance(const double &m, const JoSIM::AnalysisType &antyp, const double &timestep, const int &columnIndex);
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp, const double &timestep);
+    void add_mutualInductance(const double &m, const AnalysisType &antyp, const double &timestep, const int &columnIndex);
     void set_mutualInductance(const std::pair<int, double> &mut) { mutualInductances_.emplace_back(mut); }
 
     const std::string& get_label() const { return label_; }
@@ -62,4 +64,5 @@ class Inductor {
 
 };
 
+} // namespace JoSIM
 #endif

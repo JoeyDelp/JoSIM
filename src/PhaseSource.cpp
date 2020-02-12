@@ -8,6 +8,8 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 PhaseSource PhaseSource::create_phasesource(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 

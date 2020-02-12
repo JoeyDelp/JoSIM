@@ -12,13 +12,15 @@
 #include <locale>
 #include <functional>
 
+using namespace JoSIM;
+
 TransmissionLine TransmissionLine::create_transmissionline(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const JoSIM::AnalysisType &antyp,
+    const std::unordered_map<ParameterName, Parameter> &p,
+    const AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -391,17 +393,17 @@ void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1
 }
 
 void TransmissionLine::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep) {
-  if (antyp == JoSIM::AnalysisType::Voltage) {
-    value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
-  } else if (antyp == JoSIM::AnalysisType::Phase) {
-    value_ = (timestep * JoSIM::Parameters::parse_param(s.first, p, s.second)) / (2 * JoSIM::Constants::SIGMA);
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp, const double &timestep) {
+  if (antyp == AnalysisType::Voltage) {
+    value_ = parse_param(s.first, p, s.second);
+  } else if (antyp == AnalysisType::Phase) {
+    value_ = (timestep * parse_param(s.first, p, s.second)) / (2 * Constants::SIGMA);
   }
 }
 
 void TransmissionLine::set_timestepDelay(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
+        const std::unordered_map<ParameterName, Parameter> &p,
         const double &timestep) {
-  timestepDelay_ = (int)(JoSIM::Parameters::parse_param(s.first, p, s.second) / timestep);
+  timestepDelay_ = (int)(parse_param(s.first, p, s.second) / timestep);
 }

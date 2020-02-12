@@ -14,8 +14,8 @@
 
 namespace JoSIM {
 class Matrix {
-public:
-  JoSIM::AnalysisType analysisType;
+  public:
+  AnalysisType analysisType;
   std::vector<std::vector<double>> sources;
 
   Components components;
@@ -25,15 +25,15 @@ public:
   int branchIndex;
   std::vector<double> nz;
   std::vector<int> ci, rp;
-  std::vector<JoSIM::RelevantTrace> relevantTraces;
+  std::vector<RelevantTrace> relevantTraces;
   std::vector<int> relevantIndices;
   
   Matrix(){};
-  void create_matrix(JoSIM::Input &iObj);
+  void create_matrix(Input &iObj);
   void create_csr();
   void create_nz();
   void create_ci();
   void create_rp();
 };
-}
+} // namespace JoSIM
 #endif

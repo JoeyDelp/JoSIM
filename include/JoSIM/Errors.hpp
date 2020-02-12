@@ -4,7 +4,7 @@
 #define JOSIM_J_ERRORS_H
 
 #include <string>
-
+namespace JoSIM {
 enum class CLIErrors : int { 
   NO_ANALYSIS,
   NO_CONVENTION,
@@ -143,7 +143,8 @@ enum class ParsingErrors : int {
 };
 
 enum class OutputErrors : int {
-  CANNOT_OPEN_FILE
+  CANNOT_OPEN_FILE,
+  NOTHING_SPECIFIED
 };
 
 enum class NetlistErrors : int {
@@ -187,5 +188,5 @@ public:
 
   static void warning_message (const std::string &formattedMessage);
 };
-
+} // namespace JoSIM
 #endif
