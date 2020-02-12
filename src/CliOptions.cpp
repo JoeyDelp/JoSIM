@@ -128,7 +128,6 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             if (i != argc - 1) {
               if (argv[i + 1][0] != '-') {
                 out.output_file_name = argv[i + 1];
-                std::cout << std::endl;
                 if (out.output_file_name.value().find('.') != std::string::npos) {
                   std::string outExt = out.output_file_name.value().substr(
                       out.output_file_name.value().find_last_of('.'),
@@ -205,7 +204,6 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
     }
   }
-
   std::cout << "Input file: " << out.cir_file_name 
             << std::endl;
   std::cout << std::endl;
@@ -328,5 +326,8 @@ void CliOptions::version_info() {
             << std::endl;
   std::cout << "v" << VERSION << "." << GIT_COMMIT_HASH << " compiled on " << __DATE__ << " at "
             << __TIME__ << std::endl;
+  #ifndef NDEBUG
+    std::cout << "(Debug)"  << std::endl;
+  #endif
   std::cout << std::endl;
 }
