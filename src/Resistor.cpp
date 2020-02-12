@@ -8,13 +8,15 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 Resistor Resistor::create_resistor(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const JoSIM::AnalysisType &antyp,
+    const std::unordered_map<ParameterName, Parameter> &p,
+    const AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -107,8 +109,8 @@ void Resistor::set_indices(const std::pair<std::string, std::string> &n, const s
 }
 
 void Resistor::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep) {
-          if (antyp == JoSIM::AnalysisType::Voltage) value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
-          else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep/(2 * JoSIM::Constants::SIGMA)) * JoSIM::Parameters::parse_param(s.first, p, s.second);
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp, const double &timestep) {
+          if (antyp == AnalysisType::Voltage) value_ = parse_param(s.first, p, s.second);
+          else if (antyp == AnalysisType::Phase) value_ = (timestep/(2 * Constants::SIGMA)) * parse_param(s.first, p, s.second);
         }

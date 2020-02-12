@@ -8,13 +8,15 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 Capacitor Capacitor::create_capacitor(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const JoSIM::AnalysisType &antyp,
+    const std::unordered_map<ParameterName, Parameter> &p,
+    const AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -107,9 +109,9 @@ void Capacitor::set_indices(const std::pair<std::string, std::string> &n, const 
 }
 
 void Capacitor::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep) {
-          capacitance_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
-          if (antyp == JoSIM::AnalysisType::Voltage) value_ = (timestep / 2) * (1 / capacitance_);
-          else if (antyp == JoSIM::AnalysisType::Phase) value_ = (timestep * timestep) / (4 * JoSIM::Constants::SIGMA * capacitance_);
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp, const double &timestep) {
+          capacitance_ = parse_param(s.first, p, s.second);
+          if (antyp == AnalysisType::Voltage) value_ = (timestep / 2) * (1 / capacitance_);
+          else if (antyp == AnalysisType::Phase) value_ = (timestep * timestep) / (4 * Constants::SIGMA * capacitance_);
         }

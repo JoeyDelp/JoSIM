@@ -5,7 +5,9 @@
 
 #include <iostream>
 
-void JoSIM::Verbose::print_expanded_netlist(
+using namespace JoSIM;
+
+void Verbose::print_expanded_netlist(
     const std::vector<std::pair<std::string, std::string>> &expNetlist) {
   std::cout << "Printing expanded netlist:" << std::endl;
   for (const auto &i : expNetlist) {

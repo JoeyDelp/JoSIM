@@ -8,13 +8,15 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 Inductor Inductor::create_inductor(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-    const JoSIM::AnalysisType &antyp,
+    const std::unordered_map<ParameterName, Parameter> &p,
+    const AnalysisType &antyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
@@ -109,18 +111,18 @@ void Inductor::set_indices(const std::pair<std::string, std::string> &n, const s
 }
 
 void Inductor::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep) {
-          inductance_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
-          if (antyp == JoSIM::AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
-          else if (antyp == JoSIM::AnalysisType::Phase) value_ = inductance_ / JoSIM::Constants::SIGMA;
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp, const double &timestep) {
+          inductance_ = parse_param(s.first, p, s.second);
+          if (antyp == AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
+          else if (antyp == AnalysisType::Phase) value_ = inductance_ / Constants::SIGMA;
 }
 
-void Inductor::add_mutualInductance(const double &m, const JoSIM::AnalysisType &antyp, const double &timestep, const int &columnIndex) {
-  if(antyp == JoSIM::AnalysisType::Voltage) {
+void Inductor::add_mutualInductance(const double &m, const AnalysisType &antyp, const double &timestep, const int &columnIndex) {
+  if(antyp == AnalysisType::Voltage) {
     nonZeros_.emplace_back(-(2*m) / timestep);
-  } else if(antyp == JoSIM::AnalysisType::Phase) {
-    nonZeros_.emplace_back(-m/JoSIM::Constants::SIGMA);
+  } else if(antyp == AnalysisType::Phase) {
+    nonZeros_.emplace_back(-m/Constants::SIGMA);
   }
   columnIndex_.emplace_back(columnIndex);
   rowPointer_.back()++;

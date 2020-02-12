@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <string>
 
+namespace JoSIM {
 class CurrentSource {
   private:
     std::string label_;
@@ -33,4 +34,5 @@ class CurrentSource {
     int get_sourceIndex() const { return sourceIndex_; }
 };
 
+} // namespace JoSIM
 #endif

@@ -23,7 +23,7 @@
 
 #include <unordered_map>
 #include <variant>
-
+namespace JoSIM {
 class Components {
   public:
     std::vector<std::variant<Resistor, 
@@ -42,4 +42,5 @@ class Components {
       vsIndices, psIndices, txIndices, vccsIndices, cccsIndices, vcvsIndices, ccvsIndices;
     std::vector<std::pair<std::string, std::string>> mutualinductances;
 };
+} // namespace JoSIM
 #endif

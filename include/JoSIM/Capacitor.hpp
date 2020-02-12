@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <optional>
 
+namespace JoSIM {
+
 class Capacitor {
   private:
     std::string label_;
@@ -38,8 +40,8 @@ class Capacitor {
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
         std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp,
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
@@ -47,8 +49,8 @@ class Capacitor {
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const JoSIM::AnalysisType &antyp, const double &timestep);
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const AnalysisType &antyp, const double &timestep);
     void set_pn1(const double &v) { pn1_ = v; }
     void set_dpn1(const double &v) { dpn1_ = v; }
 
@@ -66,4 +68,5 @@ class Capacitor {
 
 };
 
+} // namespace JoSIM
 #endif

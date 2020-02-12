@@ -4,9 +4,11 @@
 #include "JoSIM/RelevantTrace.hpp"
 #include "JoSIM/Matrix.hpp"
 
-void JoSIM::RelevantTrace::find_relevant_traces(const std::vector<std::string> &c, JoSIM::Matrix &mObj) {
+using namespace JoSIM;
+
+void JoSIM::find_relevant_traces(const std::vector<std::string> &c, Matrix &mObj) {
   std::vector<std::string> storeCommands, tokens2;
-  JoSIM::RelevantTrace temp;
+  RelevantTrace temp;
 
   for (const auto &i : c) {
     if (i.find("PRINT") != std::string::npos) {
@@ -173,9 +175,9 @@ void JoSIM::RelevantTrace::find_relevant_traces(const std::vector<std::string> &
   mObj.relevantIndices.erase(uniquify(mObj.relevantIndices.begin(), mObj.relevantIndices.end()), mObj.relevantIndices.end());
 }
 
-void JoSIM::RelevantTrace::handle_current(const std::string &s, JoSIM::Matrix &mObj) {
-  JoSIM::RelevantTrace temp;
-  temp.storageType = JoSIM::StorageType::Current;
+void JoSIM::handle_current(const std::string &s, Matrix &mObj) {
+  RelevantTrace temp;
+  temp.storageType = StorageType::Current;
   if(s.at(0) != 'I'){
     for(int j = 0; j < mObj.components.devices.size(); ++j) {
       const auto& l = std::visit([](const auto& device) noexcept -> const std::string& {
@@ -208,13 +210,13 @@ void JoSIM::RelevantTrace::handle_current(const std::string &s, JoSIM::Matrix &m
   }
 }
 
-void JoSIM::RelevantTrace::handle_voltage_or_phase(const std::string &s, bool voltage, JoSIM::Matrix &mObj) {
+void JoSIM::handle_voltage_or_phase(const std::string &s, bool voltage, Matrix &mObj) {
   std::vector<std::string> tokens = Misc::tokenize_delimiter(s, " ,");
-  JoSIM::RelevantTrace temp;
+  RelevantTrace temp;
   if(voltage) {
-    temp.storageType = JoSIM::StorageType::Voltage;
+    temp.storageType = StorageType::Voltage;
   } else {
-    temp.storageType = JoSIM::StorageType::Phase;
+    temp.storageType = StorageType::Phase;
   }
   for(int j = 0; j < mObj.components.devices.size(); ++j) {
     const auto& l = std::visit([](const auto& device) noexcept -> const std::string& {

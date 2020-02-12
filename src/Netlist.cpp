@@ -7,6 +7,8 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/InputType.hpp"
 
+using namespace JoSIM;
+
 void Netlist::expand_subcircuits() {
   std::vector<std::string> tokens, io;
   std::vector<std::pair<std::string, std::string>> moddedLines;
@@ -27,10 +29,10 @@ void Netlist::expand_subcircuits() {
           tokens = Misc::tokenize_space(
               subcircuits.at(i.first).lines.at(j).first);
           label = tokens.at(0);
-          if (argConv == JoSIM::InputType::Jsim) /* LEFT */ {
+          if (argConv == InputType::Jsim) /* LEFT */ {
             subcktName = tokens.at(1);
             io.assign(tokens.begin() + 2, tokens.end());
-          } else if (argConv == JoSIM::InputType::WrSpice) /* RIGHT */ {
+          } else if (argConv == InputType::WrSpice) /* RIGHT */ {
             subcktName = tokens.back();
             io.assign(tokens.begin() + 1, tokens.end() - 1);
           }
@@ -100,10 +102,10 @@ void Netlist::expand_maindesign() {
     if (maindesign.at(i)[0] == 'X') {
       tokens = Misc::tokenize_space(maindesign.at(i));
       label = tokens.at(0);
-      if (argConv == JoSIM::InputType::Jsim) /* LEFT */ {
+      if (argConv == InputType::Jsim) /* LEFT */ {
         subcktName = tokens.at(1);
         io.assign(tokens.begin() + 2, tokens.end());
-      } else if (argConv == JoSIM::InputType::WrSpice) /* RIGHT */ {
+      } else if (argConv == InputType::WrSpice) /* RIGHT */ {
         subcktName = tokens.back();
         io.assign(tokens.begin() + 1, tokens.end() - 1);
       }

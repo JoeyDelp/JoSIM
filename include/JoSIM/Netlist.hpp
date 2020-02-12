@@ -11,6 +11,7 @@
 #include <vector>
 #include <unordered_map>
 
+namespace JoSIM {
 struct pair_hash {
   template <class T1, class T2>
   std::size_t operator()(const std::pair<T1, T2> &p) const noexcept {
@@ -21,7 +22,7 @@ struct pair_hash {
 };
 
 class Subcircuit {
-public:
+  public:
   std::vector<std::string> io;
   std::vector<std::pair<std::string, std::string>> lines;
   std::vector<std::string> subckts;
@@ -38,11 +39,11 @@ public:
 };
 
 class Netlist {
-public:
+  public:
   std::unordered_map<std::pair<std::string, std::string>, std::string,
                      pair_hash>
       models;
-  std::vector<std::pair<JoSIM::Model, std::string>> models_new;
+  std::vector<std::pair<Model, std::string>> models_new;
   std::unordered_map<std::string, Subcircuit> subcircuits;
   std::unordered_map<std::string, int> subcktLookup;
   std::vector<std::string> maindesign;
@@ -50,14 +51,14 @@ public:
   std::vector<std::pair<std::string, std::string>> expNetlist;
   int jjCount, compCount, subcktCounter, nestedSubcktCount;
   bool containsSubckt;
-  JoSIM::InputType argConv;
+  InputType argConv;
   Netlist() :
     jjCount(0),
     compCount(0),
     subcktCounter(0),
     nestedSubcktCount(0),
     containsSubckt(false),
-    argConv(JoSIM::InputType::Jsim)
+    argConv(InputType::Jsim)
   {
   
   };
@@ -65,4 +66,5 @@ public:
   void expand_maindesign();
 };
 
+} // namespace JoSIM
 #endif

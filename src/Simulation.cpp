@@ -14,7 +14,9 @@
 #include <cmath>
 #include <iostream>
 
-void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
+using namespace JoSIM;
+
+void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
   std::vector<double> lhsValues, LHS_PRE(mObj.rp.size() - 1, 0.0);
   int simSize = iObj.transSim.get_simsize();
   int saveAll = false;
@@ -29,7 +31,7 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
       results.xVector.at(i).emplace();
     }
   }
-  double hbar_he = (JoSIM::Constants::HBAR / (iObj.transSim.get_prstep() * JoSIM::Constants::EV));
+  double hbar_he = (Constants::HBAR / (iObj.transSim.get_prstep() * Constants::EV));
   int ok;
   int fqtr, sqtr, tqtr;
   fqtr = simSize/4;
@@ -76,8 +78,8 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
         prevNode = (LHS_PRE.at(temp.get_posIndex().value())
                 - LHS_PRE.at(temp.get_negIndex().value()));
       }
-      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
-      } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      if(iObj.argAnal == AnalysisType::Voltage) {
+      } else if (iObj.argAnal == AnalysisType::Phase) {
         // Rh/2σ Ip + φp
         RHS.at(temp.get_currentIndex()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
       }
@@ -94,7 +96,7 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
         prevNode = (LHS_PRE.at(temp.get_posIndex().value())
                 - LHS_PRE.at(temp.get_negIndex().value()));
       }
-      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      if(iObj.argAnal == AnalysisType::Voltage) {
         // -2L/h Ip - Vp
         RHS.at(temp.get_currentIndex()) = -temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) - prevNode;
         // -2M/h Im
@@ -115,11 +117,11 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
         prevNode = (LHS_PRE.at(temp.get_posIndex().value())
                 - LHS_PRE.at(temp.get_negIndex().value()));
       }
-      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      if(iObj.argAnal == AnalysisType::Voltage) {
         // h/2C Ip + Vp
         RHS.at(temp.get_currentIndex()) = temp.get_value()
                                           * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
-      } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      } else if (iObj.argAnal == AnalysisType::Phase) {
         double pn2 = temp.get_pn1();
         temp.set_pn1(prevNode);
         double dpn2 = temp.get_dpn1();
@@ -142,17 +144,17 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
                 - LHS_PRE.at(temp.get_negIndex().value()));
       }
       if(i > 0) {
-        if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+        if(iObj.argAnal == AnalysisType::Voltage) {
           temp.set_vn1(prevNode);
           temp.set_pn1(LHS_PRE.at(temp.get_variableIndex()));
-        } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+        } else if (iObj.argAnal == AnalysisType::Phase) {
           temp.set_vn1(LHS_PRE.at(temp.get_variableIndex()));
           temp.set_pn1(prevNode);
         }
       }
       // Ensure timestep is not too large
       if ((double)i/(double)simSize > 0.01) {
-        if (abs(temp.get_phi0() - temp.get_pn1()) > (0.25 * 2 * JoSIM::Constants::PI)) {
+        if (abs(temp.get_phi0() - temp.get_pn1()) > (0.25 * 2 * Constants::PI)) {
           Errors::simulation_errors(SimulationErrors::PHASEGUESS_TOO_LARGE, temp.get_label());
         }
       }
@@ -171,18 +173,18 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
         }
       }
       // -(hbar / h * e) φp - Vp 
-      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      if(iObj.argAnal == AnalysisType::Voltage) {
         RHS.at(temp.get_variableIndex()) = -hbar_he * temp.get_pn1() - temp.get_vn1();
       // φp + (h * e / hbar) Vp 
-      } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      } else if (iObj.argAnal == AnalysisType::Phase) {
         RHS.at(temp.get_variableIndex()) = temp.get_pn1() + (1 / hbar_he) * temp.get_vn1();
       }
       // Phase guess (P0)
       temp.set_phi0(temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0));
       // (hR / h + 2RC) * (-Ic sin φ0 + 2C / h Vp + C ΔVp)
-      RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((JoSIM::Constants::PI * temp.get_del()) / (2 * JoSIM::Constants::EV * temp.get_rncalc())) *
+      RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((Constants::PI * temp.get_del()) / (2 * Constants::EV * temp.get_rncalc())) *
                                         (sin(temp.get_phi0()) / sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2)))) 
-                                        * tanh((temp.get_del()) / (2 * JoSIM::Constants::BOLTZMANN * model.get_temperature()) *
+                                        * tanh((temp.get_del()) / (2 * Constants::BOLTZMANN * model.get_temperature()) *
                                           sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2))))) +
                                         (((2 * model.get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
                                         + (model.get_capacitance() * temp.get_dvn1()) - temp.get_transitionCurrent());
@@ -200,9 +202,9 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
     // Handle voltage sources
     for (const auto &j : mObj.components.vsIndices) {
       const auto &temp = std::get<VoltageSource>(mObj.components.devices.at(j));
-      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      if(iObj.argAnal == AnalysisType::Voltage) {
         RHS.at(temp.get_currentIndex()) = mObj.sources.at(temp.get_sourceIndex()).at(i);
-      } else if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      } else if (iObj.argAnal == AnalysisType::Phase) {
         double prevNode;
         if(temp.get_posIndex() && !temp.get_negIndex()) {
           prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
@@ -213,18 +215,18 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
                   - LHS_PRE.at(temp.get_negIndex().value()));
         }
         if(i < 1) {
-          RHS.at(temp.get_currentIndex()) = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (mObj.sources.at(temp.get_sourceIndex()).at(i)) + prevNode;
+          RHS.at(temp.get_currentIndex()) = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) * (mObj.sources.at(temp.get_sourceIndex()).at(i)) + prevNode;
         } else {
-          RHS.at(temp.get_currentIndex()) = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (mObj.sources.at(temp.get_sourceIndex()).at(i) - mObj.sources.at(temp.get_sourceIndex()).at(i-1)) + prevNode;
+          RHS.at(temp.get_currentIndex()) = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) * (mObj.sources.at(temp.get_sourceIndex()).at(i) - mObj.sources.at(temp.get_sourceIndex()).at(i-1)) + prevNode;
         }
       }
     }
     // Handle phase sources
     for (const auto &j : mObj.components.psIndices) {
       const auto &temp = std::get<PhaseSource>(mObj.components.devices.at(j));
-      if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      if (iObj.argAnal == AnalysisType::Phase) {
         RHS.at(temp.get_currentIndex()) = mObj.sources.at(temp.get_sourceIndex()).at(i);
-      } else if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      } else if(iObj.argAnal == AnalysisType::Voltage) {
         double prevNode;
         if(temp.get_posIndex() && !temp.get_negIndex()) {
           prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
@@ -235,16 +237,16 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
                   - LHS_PRE.at(temp.get_negIndex().value()));
         }
         if(i == 0) {
-          RHS.at(temp.get_currentIndex()) = ((JoSIM::Constants::SIGMA * 2) / iObj.transSim.get_prstep()) * (mObj.sources.at(temp.get_sourceIndex()).at(i)) - prevNode;
+          RHS.at(temp.get_currentIndex()) = ((Constants::SIGMA * 2) / iObj.transSim.get_prstep()) * (mObj.sources.at(temp.get_sourceIndex()).at(i)) - prevNode;
         } else {
-          RHS.at(temp.get_currentIndex()) = ((JoSIM::Constants::SIGMA * 2) / iObj.transSim.get_prstep()) * (mObj.sources.at(temp.get_sourceIndex()).at(i) - mObj.sources.at(temp.get_sourceIndex()).at(i-1)) - prevNode;
+          RHS.at(temp.get_currentIndex()) = ((Constants::SIGMA * 2) / iObj.transSim.get_prstep()) * (mObj.sources.at(temp.get_sourceIndex()).at(i) - mObj.sources.at(temp.get_sourceIndex()).at(i-1)) - prevNode;
         }
       }
     }
     // Handle ccvs
     for (const auto &j : mObj.components.ccvsIndices) {
       const auto &temp = std::get<CCVS>(mObj.components.devices.at(j));
-      if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      if (iObj.argAnal == AnalysisType::Phase) {
         double prevNode;
         if(temp.get_posIndex() && !temp.get_negIndex()) {
           prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
@@ -260,7 +262,7 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
      // Handle vccs
     for (const auto &j : mObj.components.vccsIndices) {
       const auto &temp = std::get<VCCS>(mObj.components.devices.at(j));
-      if (iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      if (iObj.argAnal == AnalysisType::Phase) {
         double prevNode;
         if(temp.get_posIndex2() && !temp.get_negIndex2()) {
           prevNode = (LHS_PRE.at(temp.get_posIndex2().value()));
@@ -276,7 +278,7 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
     // Handle transmission lines
     for (const auto &j : mObj.components.txIndices) {
       auto &temp = std::get<TransmissionLine>(mObj.components.devices.at(j));
-      if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+      if(iObj.argAnal == AnalysisType::Voltage) {
         if(i >= temp.get_timestepDelay()) {
           double prevNodek, prevNode2k;
           // φ1n-k
@@ -304,7 +306,7 @@ void JoSIM::Simulation::trans_sim_new(JoSIM::Input &iObj, JoSIM::Matrix &mObj) {
           RHS.at(temp.get_currentIndex2()) = prevNodek + temp.get_value() * results.xVector.at(
                                               temp.get_currentIndex()).value().at(i - temp.get_timestepDelay());
         }
-      } else if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+      } else if(iObj.argAnal == AnalysisType::Phase) {
         if (i > 0) {
           // φ1n-1, φ2n-1, φ1n-k-1, φ2n-k-1
           double prevNodeN, prevNode2N;

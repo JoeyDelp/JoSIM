@@ -8,6 +8,8 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 VoltageSource VoltageSource::create_voltagesource(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 

@@ -9,16 +9,18 @@
 #include <cmath>
 #include <cctype>
 
+using namespace JoSIM;
+
 double Misc::string_constant(const std::string &s) {
-  if (s == "PI") return JoSIM::Constants::PI;
-  else if (s == "PHI_ZERO") return JoSIM::Constants::PHI_ZERO;
-  else if (s == "BOLTZMANN") return JoSIM::Constants::BOLTZMANN;
-  else if (s == "EV") return JoSIM::Constants::EV;
-  else if (s == "HBAR") return JoSIM::Constants::HBAR;
-  else if (s == "C") return JoSIM::Constants::C;
-  else if (s == "MU0") return JoSIM::Constants::MU0;
-  else if (s == "EPS0") return JoSIM::Constants::EPS0;
-  else if (s == "SIGMA") return JoSIM::Constants::SIGMA;
+  if (s == "PI") return Constants::PI;
+  else if (s == "PHI_ZERO") return Constants::PHI_ZERO;
+  else if (s == "BOLTZMANN") return Constants::BOLTZMANN;
+  else if (s == "EV") return Constants::EV;
+  else if (s == "HBAR") return Constants::HBAR;
+  else if (s == "C") return Constants::C;
+  else if (s == "MU0") return Constants::MU0;
+  else if (s == "EPS0") return Constants::EPS0;
+  else if (s == "SIGMA") return Constants::SIGMA;
   return 0.0;
 }
 

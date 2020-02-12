@@ -8,7 +8,9 @@
 #include <cmath>
 #include <cassert>
 
-std::vector<double> JoSIM::Function::parse_function(const std::string &str, JoSIM::Input &iObj,
+using namespace JoSIM;
+
+std::vector<double> Function::parse_function(const std::string &str, Input &iObj,
                                          const std::string &subckt) {
   std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
@@ -43,8 +45,8 @@ std::vector<double> JoSIM::Function::parse_function(const std::string &str, JoSI
   return functionOfT;
 }
 
-void JoSIM::Function::parse_pwl(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                const JoSIM::Input &iObj, const std::string &subckt) {
+void Function::parse_pwl(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+                                const Input &iObj, const std::string &subckt) {
   std::vector<double> timesteps, values;
   if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
     Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
@@ -57,15 +59,15 @@ void JoSIM::Function::parse_pwl(const std::vector<std::string> &tokens, std::vec
   }
   for (int i = 1; i < tokens.size(); i = i + 2) {
     if (iObj.parameters.count(
-            JoSIM::ParameterName(tokens.at(i), subckt)) != 0) {
+            ParameterName(tokens.at(i), subckt)) != 0) {
       values.push_back(iObj.parameters.at(
-          JoSIM::ParameterName(tokens.at(i), subckt)).get_value().value());
+          ParameterName(tokens.at(i), subckt)).get_value().value());
     } else if (iObj.parameters.count(
-            JoSIM::ParameterName(tokens.at(i), "")) != 0) {
+            ParameterName(tokens.at(i), "")) != 0) {
       values.push_back(iObj.parameters.at(
-          JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
+          ParameterName(tokens.at(i), "")).get_value().value());
     } else {
-      values.push_back(JoSIM::Parameters::parse_param(
+      values.push_back(parse_param(
           tokens.at(i), iObj.parameters, subckt));
     }
   }
@@ -117,8 +119,8 @@ void JoSIM::Function::parse_pwl(const std::vector<std::string> &tokens, std::vec
   }
 }
 
-void JoSIM::Function::parse_pulse(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                  const JoSIM::Input &iObj, const std::string &subckt) {
+void Function::parse_pulse(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+                                  const Input &iObj, const std::string &subckt) {
   if (std::stod(tokens.at(0)) != 0.0) {
       Errors::function_errors(FunctionErrors::INITIAL_PULSE_VALUE, tokens.at(0));
   }
@@ -126,16 +128,16 @@ void JoSIM::Function::parse_pulse(const std::vector<std::string> &tokens, std::v
     Errors::function_errors(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }
   double vPeak, timeDelay, timeRise, timeFall, pulseWidth, pulseRepeat;
-  vPeak = JoSIM::Parameters::parse_param(tokens.at(1), iObj.parameters, subckt);
+  vPeak = parse_param(tokens.at(1), iObj.parameters, subckt);
   if (vPeak == 0.0) {
     if (iObj.argVerb) {
       Errors::function_errors(FunctionErrors::PULSE_VPEAK_ZERO, tokens.at(1));
     }
   }
-  timeDelay = JoSIM::Parameters::parse_param(tokens.at(2), iObj.parameters, subckt);
-  timeRise = JoSIM::Parameters::parse_param(tokens.at(3), iObj.parameters, subckt);
-  timeFall = JoSIM::Parameters::parse_param(tokens.at(4), iObj.parameters, subckt);
-  pulseWidth = JoSIM::Parameters::parse_param(tokens.at(5), iObj.parameters, subckt);
+  timeDelay = parse_param(tokens.at(2), iObj.parameters, subckt);
+  timeRise = parse_param(tokens.at(3), iObj.parameters, subckt);
+  timeFall = parse_param(tokens.at(4), iObj.parameters, subckt);
+  pulseWidth = parse_param(tokens.at(5), iObj.parameters, subckt);
   if (pulseWidth == 0.0) {
     if (iObj.argVerb) {
       Errors::function_errors(FunctionErrors::PULSE_WIDTH_ZERO, tokens.at(5));
@@ -209,8 +211,8 @@ void JoSIM::Function::parse_pulse(const std::vector<std::string> &tokens, std::v
   }
 }
 
-void JoSIM::Function::parse_sinusoid(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                      const JoSIM::Input &iObj, const std::string &subckt) {
+void Function::parse_sinusoid(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+                                      const Input &iObj, const std::string &subckt) {
   if (tokens.size() < 2) {
       Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }
@@ -219,22 +221,22 @@ void JoSIM::Function::parse_sinusoid(const std::vector<std::string> &tokens, std
   }
   double VO = 0.0, VA = 0.0, TD = 0.0, FREQ = 1 / iObj.transSim.get_tstop(),
           THETA = 0.0;
-  VO = JoSIM::Parameters::parse_param(tokens.at(0), iObj.parameters, subckt);
-  VA = JoSIM::Parameters::parse_param(tokens.at(1), iObj.parameters, subckt);
+  VO = parse_param(tokens.at(0), iObj.parameters, subckt);
+  VA = parse_param(tokens.at(1), iObj.parameters, subckt);
   if (VA == 0.0) {
     if (iObj.argVerb) {
       Errors::function_errors(FunctionErrors::SIN_VA_ZERO, tokens.at(1));
     }
   }
   if (tokens.size() == 5) {
-    FREQ = JoSIM::Parameters::parse_param(tokens.at(2), iObj.parameters, subckt);
-    TD = JoSIM::Parameters::parse_param(tokens.at(3), iObj.parameters, subckt);
-    THETA = JoSIM::Parameters::parse_param(tokens.at(4), iObj.parameters, subckt);
+    FREQ = parse_param(tokens.at(2), iObj.parameters, subckt);
+    TD = parse_param(tokens.at(3), iObj.parameters, subckt);
+    THETA = parse_param(tokens.at(4), iObj.parameters, subckt);
   } else if (tokens.size() == 4) {
-    FREQ = JoSIM::Parameters::parse_param(tokens.at(2), iObj.parameters, subckt);
-    TD = JoSIM::Parameters::parse_param(tokens.at(3), iObj.parameters, subckt);
+    FREQ = parse_param(tokens.at(2), iObj.parameters, subckt);
+    TD = parse_param(tokens.at(3), iObj.parameters, subckt);
   } else if (tokens.size() == 3) {
-    FREQ = JoSIM::Parameters::parse_param(tokens.at(2), iObj.parameters, subckt);
+    FREQ = parse_param(tokens.at(2), iObj.parameters, subckt);
   }
   int beginTime;
   beginTime = TD / iObj.transSim.get_prstep();
@@ -242,14 +244,14 @@ void JoSIM::Function::parse_sinusoid(const std::vector<std::string> &tokens, std
   assert(iObj.transSim.get_simsize() == functionOfT.size());
   for (int i = beginTime; i < iObj.transSim.get_simsize(); ++i) {
     double currentTimestep = i * iObj.transSim.get_prstep();
-    double value = VO + VA * sin(2 * JoSIM::Constants::PI * FREQ * (currentTimestep - TD)) *
+    double value = VO + VA * sin(2 * Constants::PI * FREQ * (currentTimestep - TD)) *
                       exp(-THETA * (currentTimestep - TD));
     functionOfT.at(i) = value;
   }
 }
 
-void JoSIM::Function::parse_custom(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                    const JoSIM::Input &iObj, const std::string &subckt) {
+void Function::parse_custom(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+                                    const Input &iObj, const std::string &subckt) {
   if (tokens.size() < 2){
     Errors::function_errors(FunctionErrors::CUS_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }                            
@@ -260,18 +262,18 @@ void JoSIM::Function::parse_custom(const std::vector<std::string> &tokens, std::
   std::vector<std::string> WF;
   double TS = 0.0, SF = 0.0, TD = 0.0;
   int PER = 0;
-  TS = JoSIM::Parameters::parse_param(tokens.at(1), iObj.parameters, subckt);
-  SF = JoSIM::Parameters::parse_param(tokens.at(2), iObj.parameters, subckt);
+  TS = parse_param(tokens.at(1), iObj.parameters, subckt);
+  SF = parse_param(tokens.at(2), iObj.parameters, subckt);
   if (SF == 0.0) {
     if (iObj.argVerb) {
       Errors::function_errors(FunctionErrors::CUS_SF_ZERO, tokens.at(2)); 
     }
   }
   if (tokens.size() == 6) {
-    TD = JoSIM::Parameters::parse_param(tokens.at(4), iObj.parameters, subckt);
+    TD = parse_param(tokens.at(4), iObj.parameters, subckt);
     PER = stoi(tokens.at(5));
   } else if (tokens.size() == 5) {
-    TD = JoSIM::Parameters::parse_param(tokens.at(4), iObj.parameters, subckt);
+    TD = parse_param(tokens.at(4), iObj.parameters, subckt);
   }
   std::ifstream wffile(WFline);
   if (wffile.good()) {
@@ -328,8 +330,8 @@ void JoSIM::Function::parse_custom(const std::vector<std::string> &tokens, std::
   }
 }
 
-void JoSIM::Function::parse_noise(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                  const JoSIM::Input &iObj, const std::string &subckt) {
+void Function::parse_noise(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+                                  const Input &iObj, const std::string &subckt) {
   if (tokens.size() < 2) {
       Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }
@@ -337,24 +339,24 @@ void JoSIM::Function::parse_noise(const std::vector<std::string> &tokens, std::v
     Errors::function_errors(FunctionErrors::NOISE_TOO_MANY_ARGUMENTS, std::to_string(tokens.size()));
   }
   double VO = 0.0, VA = 0.0, TD = 0.0, TSTEP = 0.0;
-  VO = JoSIM::Parameters::parse_param(tokens.at(0), iObj.parameters, subckt);
+  VO = parse_param(tokens.at(0), iObj.parameters, subckt);
   if(VO != 0.0 && tokens.size() == 4) {
     Errors::function_errors(FunctionErrors::NOISE_VO_ZERO, tokens.at(0));
-    VA = JoSIM::Parameters::parse_param(tokens.at(1), iObj.parameters, subckt);
+    VA = parse_param(tokens.at(1), iObj.parameters, subckt);
     if (VA == 0.0) {
       if (iObj.argVerb) {
         Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, tokens.at(1));
       }
     }
-    TD = JoSIM::Parameters::parse_param(tokens.at(3), iObj.parameters, subckt);
+    TD = parse_param(tokens.at(3), iObj.parameters, subckt);
   } else {
-    VA = JoSIM::Parameters::parse_param(tokens.at(0), iObj.parameters, subckt);
+    VA = parse_param(tokens.at(0), iObj.parameters, subckt);
     if (VA == 0.0) {
       if (iObj.argVerb) {
         Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, tokens.at(1));
       }
     }
-    TD = JoSIM::Parameters::parse_param(tokens.at(2), iObj.parameters, subckt);
+    TD = parse_param(tokens.at(2), iObj.parameters, subckt);
   }
   TSTEP = iObj.transSim.get_prstep();
   int beginTime;
@@ -366,8 +368,8 @@ void JoSIM::Function::parse_noise(const std::vector<std::string> &tokens, std::v
   }
 }
 
-void JoSIM::Function::parse_pws(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                const JoSIM::Input &iObj, const std::string &subckt) {
+void Function::parse_pws(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+                                const Input &iObj, const std::string &subckt) {
   std::vector<double> timesteps, values;
   if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
     Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
@@ -380,15 +382,15 @@ void JoSIM::Function::parse_pws(const std::vector<std::string> &tokens, std::vec
   }
   for (int i = 1; i < tokens.size(); i = i + 2) {
     if (iObj.parameters.count(
-            JoSIM::ParameterName(tokens.at(i), subckt)) != 0) {
+            ParameterName(tokens.at(i), subckt)) != 0) {
       values.push_back(iObj.parameters.at(
-          JoSIM::ParameterName(tokens.at(i), subckt)).get_value().value());
+          ParameterName(tokens.at(i), subckt)).get_value().value());
     } else if (iObj.parameters.count(
-            JoSIM::ParameterName(tokens.at(i), "")) != 0) {
+            ParameterName(tokens.at(i), "")) != 0) {
       values.push_back(iObj.parameters.at(
-          JoSIM::ParameterName(tokens.at(i), "")).get_value().value());
+          ParameterName(tokens.at(i), "")).get_value().value());
     } else {
-      values.push_back(JoSIM::Parameters::parse_param(
+      values.push_back(parse_param(
           tokens.at(i), iObj.parameters, subckt));
     }
   }
@@ -425,10 +427,10 @@ void JoSIM::Function::parse_pws(const std::vector<std::string> &tokens, std::vec
     for (int j = (int)startpoint + 1; j < (int)endpoint; ++j) {
       if (values.at(i - 1) < values.at(i)) {
         ba = (values.at(i) - values.at(i - 1)) / 2;
-        value = values.at(i - 1) + ba * sin((2 * JoSIM::Constants::PI * (j - (period/4)))/period) + ba;
+        value = values.at(i - 1) + ba * sin((2 * Constants::PI * (j - (period/4)))/period) + ba;
       } else if (values.at(i - 1) > values.at(i)) {
         ba = (values.at(i - 1) - values.at(i)) / 2;
-        value = values.at(i - 1) - ba * sin((2 * JoSIM::Constants::PI * (j + (period/4)))/period) - ba;
+        value = values.at(i - 1) - ba * sin((2 * Constants::PI * (j + (period/4)))/period) - ba;
       } else if (values.at(i - 1) == values.at(i)) {
         value = values.at(i);
       }
@@ -437,26 +439,26 @@ void JoSIM::Function::parse_pws(const std::vector<std::string> &tokens, std::vec
   }
 }
 
-void JoSIM::Function::voltage_to_phase(std::vector<double> &source, const JoSIM::Input &iObj) {
+void Function::voltage_to_phase(std::vector<double> &source, const Input &iObj) {
   double vn1, value;
   for(int i = 0; i < source.size(); i++) {
     if(i == 0) { 
-      value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (source.at(i));
+      value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) * (source.at(i));
     } else { 
-      value = (iObj.transSim.get_prstep() / (2 * JoSIM::Constants::SIGMA)) * (source.at(i) + vn1) + source.at(i - 1);
+      value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) * (source.at(i) + vn1) + source.at(i - 1);
     }
     vn1 = source.at(i);
     source.at(i) = value;
   }
 }
 
-void JoSIM::Function::phase_to_voltage(std::vector<double> &source, const JoSIM::Input &iObj) {
+void Function::phase_to_voltage(std::vector<double> &source, const Input &iObj) {
   double pn1, value;
   for(int i = 0; i < source.size(); i++) {
     if(i == 0) {
-      value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i));
+      value = ((2 * Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i));
     } else {
-      value = ((2 * JoSIM::Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i) - pn1) - source.at(i - 1);
+      value = ((2 * Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i) - pn1) - source.at(i - 1);
     }
     pn1 = source.at(i);
     source.at(i) = value;

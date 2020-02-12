@@ -12,7 +12,7 @@ class ParameterName {
   std::string name_;
   std::string subcircuit_;
 
-public:
+  public:
   ParameterName(std::string name, std::string subcircuit)
       : name_(std::move(name)), subcircuit_(std::move(subcircuit)) {
     // Empty
@@ -34,7 +34,7 @@ public:
 
 namespace std {
 
-// Hash function for JoSIM::ParameterName
+// Hash function for ParameterName
 template <> struct hash<JoSIM::ParameterName> {
   std::size_t operator()(const JoSIM::ParameterName &parameter_name) const {
     using std::hash;

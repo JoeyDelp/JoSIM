@@ -14,7 +14,7 @@
 
 using namespace JoSIM;
 
-void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
+void Matrix::create_matrix(Input &iObj)
 {
   int nodeCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
@@ -96,42 +96,42 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
         components.junctionIndices.emplace_back(components.devices.size() - 1);
         break;
       case 'V':
-        if(iObj.argAnal == JoSIM::AnalysisType::Phase) {
+        if(iObj.argAnal == AnalysisType::Phase) {
           components.devices.emplace_back(PhaseSource::create_phasesource(i, 
             nm, lm, nc, branchIndex));
-          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
-          JoSIM::Function::voltage_to_phase(sources.back(), iObj);
+          sources.emplace_back(Function::parse_function(i.first, iObj, i.second));
+          Function::voltage_to_phase(sources.back(), iObj);
           std::get<PhaseSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
           components.psIndices.emplace_back(components.devices.size() - 1);
           break;
         } else {
           components.devices.emplace_back(VoltageSource::create_voltagesource(i, 
             nm, lm, nc, branchIndex));
-          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+          sources.emplace_back(Function::parse_function(i.first, iObj, i.second));
           std::get<VoltageSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
           components.vsIndices.emplace_back(components.devices.size() - 1);
           break;
         }
       case 'P':
-        if(iObj.argAnal == JoSIM::AnalysisType::Voltage) {
+        if(iObj.argAnal == AnalysisType::Voltage) {
           components.devices.emplace_back(VoltageSource::create_voltagesource(i, 
             nm, lm, nc, branchIndex));
-          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
-          JoSIM::Function::phase_to_voltage(sources.back(), iObj);
+          sources.emplace_back(Function::parse_function(i.first, iObj, i.second));
+          Function::phase_to_voltage(sources.back(), iObj);
           std::get<VoltageSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
           components.vsIndices.emplace_back(components.devices.size() - 1);
           break;
         } else {
           components.devices.emplace_back(PhaseSource::create_phasesource(i, 
             nm, lm, nc, branchIndex));
-          sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+          sources.emplace_back(Function::parse_function(i.first, iObj, i.second));
           std::get<PhaseSource>(components.devices.back()).set_sourceIndex(sources.size() - 1);
           components.psIndices.emplace_back(components.devices.size() - 1);
           break;
         }
       case 'I':
         components.currentsources.emplace_back(CurrentSource::create_currentsource(i, nm, lm));
-        sources.emplace_back(JoSIM::Function::parse_function(i.first, iObj, i.second));
+        sources.emplace_back(Function::parse_function(i.first, iObj, i.second));
         components.currentsources.back().set_sourceIndex(sources.size() - 1);
         break;
       case 'T':
@@ -206,7 +206,7 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
     auto &ind1 = std::get<Inductor>(components.devices.at(ind1Index.value()));
     auto &ind2 = std::get<Inductor>(components.devices.at(ind2Index.value()));
 
-    double cf = JoSIM::Parameters::parse_param(tokens.at(3), iObj.parameters, s.second);
+    double cf = parse_param(tokens.at(3), iObj.parameters, s.second);
     double mutual = cf * std::sqrt(ind1.get_inductance() * ind2.get_inductance());
 
     
@@ -224,13 +224,13 @@ void JoSIM::Matrix::create_matrix(JoSIM::Input &iObj)
 
 }
 
-void JoSIM::Matrix::create_csr() {
+void Matrix::create_csr() {
   create_nz();
   create_ci();
   create_rp();
 }
 
-void JoSIM::Matrix::create_nz() {
+void Matrix::create_nz() {
   nz.clear();
 
   for(const auto &it : nc) {
@@ -248,7 +248,7 @@ void JoSIM::Matrix::create_nz() {
   }
 }
 
-void JoSIM::Matrix::create_ci() {
+void Matrix::create_ci() {
   ci.clear();
 
   for(const auto &it : nc) {
@@ -266,7 +266,7 @@ void JoSIM::Matrix::create_ci() {
   }
 }
 
-void JoSIM::Matrix::create_rp() {
+void Matrix::create_rp() {
   rp.clear();
 
   rp.emplace_back(0);

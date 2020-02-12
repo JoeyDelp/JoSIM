@@ -35,7 +35,7 @@ class Model {
       criticalTemperature_(9.1),
       deltaV_(0.1E-3),
       transparency_(0),
-      criticalToNormalRatio_(JoSIM::Constants::PI / 4),
+      criticalToNormalRatio_(Constants::PI / 4),
       phaseOffset_(0)
       {};
 
@@ -70,8 +70,8 @@ class Model {
     static void parse_model(
         const std::pair<std::string, std::string> &s,
         std::vector<std::pair<Model,std::string>> &models,
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
+        const std::unordered_map<ParameterName, Parameter> &p);
 };
-}
+} // namespace JoSIM
 
 #endif

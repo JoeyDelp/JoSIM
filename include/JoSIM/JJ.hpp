@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <optional>
 
+namespace JoSIM {
 class JJ {
   private:
     std::string label_;
@@ -23,7 +24,7 @@ class JJ {
     int currentIndex_;
     int variableIndex_;
     double area_;
-    JoSIM::Model model_;
+    Model model_;
     double value_;
     double phaseConst_;
 
@@ -52,23 +53,23 @@ class JJ {
         const std::unordered_map<std::string, int> &nm, 
         std::unordered_set<std::string> &lm,
         std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
-        const std::vector<std::pair<JoSIM::Model, std::string>> &models,
-        const JoSIM::AnalysisType &antyp,
+        const std::unordered_map<ParameterName, Parameter> &p,
+        const std::vector<std::pair<Model, std::string>> &models,
+        const AnalysisType &antyp,
         const double &timestep,
         int &branchIndex);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
         const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex,
-        const JoSIM::AnalysisType &antyp, const double &timestep);
+        const AnalysisType &antyp, const double &timestep);
     void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_variableIndex(const int &vc) { variableIndex_ = vc; }
     void set_area(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<JoSIM::ParameterName, Parameter> &p);
-    void set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<JoSIM::Model, std::string>> &models);
+        const std::unordered_map<ParameterName, Parameter> &p);
+    void set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<Model, std::string>> &models);
     void set_value(const double &v) { value_ = v; };
-    void set_phaseConst(const double &timestep, const JoSIM::AnalysisType &antyp);
+    void set_phaseConst(const double &timestep, const AnalysisType &antyp);
     void set_pn1(const double &v) { pn1_ = v; }
     void set_phi0(const double &v) { phi0_ = v; }
     void set_vn1(const double &v) { vn1_ = v; }
@@ -100,7 +101,7 @@ class JJ {
     const double& get_vn2() const { return vn2_; }
     const double& get_dvn1() const { return dvn1_; }
     const double& get_dvn2() const { return dvn2_; }
-    const JoSIM::Model& get_model() const { return model_; }
+    const Model& get_model() const { return model_; }
     const double& get_gLarge() const { return gLarge_; }
     const double& get_subCond() const { return subCond_; }
     const double& get_transCond() const { return transCond_; }
@@ -111,4 +112,5 @@ class JJ {
     const double& get_transitionCurrent() const { return transitionCurrent_; }
 };
 
+} // namespace JoSIM
 #endif

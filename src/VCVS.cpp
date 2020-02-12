@@ -8,12 +8,14 @@
 
 #include <utility>
 
+using namespace JoSIM;
+
 VCVS VCVS::create_VCVS(
     const std::pair<std::string, std::string> &s,
     const std::unordered_map<std::string, int> &nm, 
     std::unordered_set<std::string> &lm,
     std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<JoSIM::ParameterName, Parameter> &p,
+    const std::unordered_map<ParameterName, Parameter> &p,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
@@ -244,6 +246,6 @@ void VCVS::set_indices(const std::pair<std::string, std::string> &n1, const std:
 }
 
 void VCVS::set_value(const std::pair<std::string, std::string> &s, 
-  const std::unordered_map<JoSIM::ParameterName, Parameter> &p) {
-  value_ = JoSIM::Parameters::parse_param(s.first, p, s.second);
+  const std::unordered_map<ParameterName, Parameter> &p) {
+  value_ = parse_param(s.first, p, s.second);
 }
