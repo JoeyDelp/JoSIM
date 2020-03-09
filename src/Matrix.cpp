@@ -24,10 +24,10 @@ void Matrix::create_matrix(Input &iObj)
       if(tokens.size() < 4) {
         Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, i.first);
       }
-      if(tokens.at(1).find("GND") != std::string::npos || tokens.at(1) != "0") {
+      if(tokens.at(1).find("GND") == std::string::npos && tokens.at(1) != "0") {
         if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
       }
-      if(tokens.at(2).find("GND") != std::string::npos || tokens.at(2) != "0") {
+      if(tokens.at(2).find("GND") == std::string::npos && tokens.at(2) != "0") {
         if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
       }
     } else if (i.first.at(0) == 'T') {
@@ -36,16 +36,16 @@ void Matrix::create_matrix(Input &iObj)
       if(tokens.size() < 6) {
         Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, i.first);
       }
-      if(tokens.at(1).find("GND") != std::string::npos || tokens.at(1) != "0") {
+      if(tokens.at(1).find("GND") == std::string::npos && tokens.at(1) != "0") {
         if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
       }
-      if(tokens.at(2).find("GND") != std::string::npos || tokens.at(2) != "0") {
+      if(tokens.at(2).find("GND") == std::string::npos && tokens.at(2) != "0") {
         if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
       }
-      if(tokens.at(3).find("GND") != std::string::npos || tokens.at(3) != "0") {
+      if(tokens.at(3).find("GND") == std::string::npos && tokens.at(3) != "0") {
         if(nm.count(tokens.at(3)) == 0) nm[tokens.at(3)] = nodeCounter++;
       }
-      if(tokens.at(4).find("GND") != std::string::npos || tokens.at(4) != "0") {
+      if(tokens.at(4).find("GND") == std::string::npos && tokens.at(4) != "0") {
         if(nm.count(tokens.at(4)) == 0) nm[tokens.at(4)] = nodeCounter++;
       }
     }
