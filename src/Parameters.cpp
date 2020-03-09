@@ -49,7 +49,7 @@ const std::vector<std::string> funcs = {
 };
 
 int JoSIM::precedence_lvl(const std::string &op) {
-  switch (op[0]) {
+  switch (op.at(0)) {
     // + and - are lowest level
   case '+':
   case '-':
@@ -103,7 +103,7 @@ double JoSIM::parse_param(
         partToEval = expToEval.substr(0, opLoc);
     }
     // Handle a numerical value
-    if (isdigit(partToEval[0])) {
+    if (isdigit(partToEval.at(0))) {
       rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
       qType.push_back('V');
     // If it is not a digit, check that it is not a parameter in local scope
@@ -261,7 +261,7 @@ double JoSIM::parse_operator(const std::string &op, double val1, double val2,
       return cbrt(val2);
   } else {
     popCount = 2;
-    switch (op[0]) {
+    switch (op.at(0)) {
     case '+':
       return val1 + val2;
     case '-':

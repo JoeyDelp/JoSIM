@@ -252,7 +252,7 @@ void Output::format_raw(const std::string &filename) {
       outfile << "Command: version 4.3.8\n";
       outfile << "Variables:\n";
       outfile << " 0 time S\n";
-      for (int i = 1; i < traces.size(); i++) {
+      for (int i = 1; i < traces.size(); ++i) {
         std::string name = traces.at(i).name_;
         name.erase(std::remove(name.begin(), name.end(), '\"'), name.end());
         if (traces.at(i).type_ == 'V') {
@@ -268,8 +268,8 @@ void Output::format_raw(const std::string &filename) {
         }
       }
       outfile << "Values:\n";
-      for (int i = 0; i < loopsize; i++) {
-        for (int j = 0; j < traces.size(); j++) {
+      for (int i = 0; i < loopsize; ++i) {
+        for (int j = 0; j < traces.size(); ++j) {
           outfile << " " << std::string(Misc::numDigits(i), ' ') << " "
                   << traces.at(j).data_.at(i) << "\n";
         }

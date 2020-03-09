@@ -18,7 +18,8 @@ void Matrix::create_matrix(Input &iObj)
 {
   int nodeCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
-    if(i.first.at(0) != 'K' && i.first.at(0) != 'T') {
+    // if(i.first.at(0) != 'K' && i.first.at(0) != 'T') {
+    if(std::string("EFGHKT").find(i.first.at(0)) == std::string::npos) {
       std::vector<std::string> tokens = Misc::tokenize_space(i.first);
       // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
       if(tokens.size() < 4) {
@@ -30,7 +31,8 @@ void Matrix::create_matrix(Input &iObj)
       if(tokens.at(2).find("GND") == std::string::npos && tokens.at(2) != "0") {
         if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
       }
-    } else if (i.first.at(0) == 'T') {
+    // } else if (i.first.at(0) == 'T' ) {
+    } else if(std::string("EFGHT").find(i.first.at(0)) != std::string::npos) {
       std::vector<std::string> tokens = Misc::tokenize_space(i.first);
       // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
       if(tokens.size() < 6) {

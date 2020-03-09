@@ -24,13 +24,13 @@ void Transient::identify_simulation(const std::vector<std::string> &controls, Tr
           tObj.set_tstop(1E-9);
           tObj.set_tstart(0);
         } else {
-          tObj.set_prstep(Misc::modifier(simtokens[1]));
+          tObj.set_prstep(Misc::modifier(simtokens.at(1)));
           if (simtokens.size() > 2) {
-            tObj.set_tstop(Misc::modifier(simtokens[2]));
+            tObj.set_tstop(Misc::modifier(simtokens.at(2)));
             if (simtokens.size() > 3) {
-              tObj.set_tstart(Misc::modifier(simtokens[3]));
+              tObj.set_tstart(Misc::modifier(simtokens.at(3)));
               if (simtokens.size() > 4) {
-                tObj.set_maxtstep(Misc::modifier(simtokens[4]));
+                tObj.set_maxtstep(Misc::modifier(simtokens.at(4)));
               } else
                 tObj.set_maxtstep(1E-12);
             } else {

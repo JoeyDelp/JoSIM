@@ -441,7 +441,7 @@ void Function::parse_pws(const std::vector<std::string> &tokens, std::vector<dou
 
 void Function::voltage_to_phase(std::vector<double> &source, const Input &iObj) {
   double vn1, value;
-  for(int i = 0; i < source.size(); i++) {
+  for(int i = 0; i < source.size(); ++i) {
     if(i == 0) { 
       value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) * (source.at(i));
     } else { 
@@ -454,7 +454,7 @@ void Function::voltage_to_phase(std::vector<double> &source, const Input &iObj) 
 
 void Function::phase_to_voltage(std::vector<double> &source, const Input &iObj) {
   double pn1, value;
-  for(int i = 0; i < source.size(); i++) {
+  for(int i = 0; i < source.size(); ++i) {
     if(i == 0) {
       value = ((2 * Constants::SIGMA) / iObj.transSim.get_prstep()) * (source.at(i));
     } else {

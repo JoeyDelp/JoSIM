@@ -15,7 +15,7 @@ void Netlist::expand_subcircuits() {
   std::string subcktName, label, line;
   for (const auto &i : subcircuits) {
     for (const auto &j : i.second.lines) {
-      if (j.first[0] == 'X') {
+      if (j.first.at(0) == 'X') {
         subcircuits.at(i.first).containsSubckt = true;
         subcircuits.at(i.first).subcktCounter++;
         nestedSubcktCount++;
@@ -25,7 +25,7 @@ void Netlist::expand_subcircuits() {
   while (nestedSubcktCount != 0) {
     for (const auto &i : subcircuits) {
       for (int j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
-        if (subcircuits.at(i.first).lines.at(j).first[0] == 'X') {
+        if (subcircuits.at(i.first).lines.at(j).first.at(0) == 'X') {
           tokens = Misc::tokenize_space(
               subcircuits.at(i.first).lines.at(j).first);
           label = tokens.at(0);
@@ -41,34 +41,66 @@ void Netlist::expand_subcircuits() {
               for (int k = 0; k < subcircuits.at(subcktName).lines.size(); ++k) {
                 tokens = Misc::tokenize_space(
                     subcircuits.at(subcktName).lines.at(k).first);
-                tokens[0] = tokens[0] + "|" + label;
+                tokens.at(0) = tokens.at(0) + "|" + label;
                 if (std::count(subcircuits.at(subcktName).io.begin(),
                                subcircuits.at(subcktName).io.end(),
-                               tokens[1]) != 0) {
+                               tokens.at(1)) != 0) {
                   for (int l = 0;
-                       l < subcircuits.at(subcktName).io.size(); l++) {
-                    if (tokens[1] ==
+                       l < subcircuits.at(subcktName).io.size(); ++l) {
+                    if (tokens.at(1) ==
                         subcircuits.at(subcktName).io.at(l)) {
-                      tokens[1] = io.at(l);
+                      tokens.at(1) = io.at(l);
                       break;
                     }
                   }
-                } else if (tokens[1] != "0" && tokens[1] != "GND")
-                  tokens[1] = tokens[1] + "|" + label;
+                } else if (tokens.at(1) != "0" && tokens.at(1) != "GND") {
+                  tokens.at(1) = tokens.at(1) + "|" + label;
+                }
                 if (std::count(subcircuits.at(subcktName).io.begin(),
                                subcircuits.at(subcktName).io.end(),
-                               tokens[2]) != 0) {
+                               tokens.at(2)) != 0) {
                   for (int l = 0;
-                       l < subcircuits.at(subcktName).io.size(); l++) {
-                    if (tokens[2] ==
+                       l < subcircuits.at(subcktName).io.size(); ++l) {
+                    if (tokens.at(2) ==
                         subcircuits.at(subcktName).io.at(l)) {
-                      tokens[2] = io.at(l);
+                      tokens.at(2) = io.at(l);
                       break;
                     }
                   }
-                } else if (tokens[2] != "0" && tokens[2] != "GND")
-                  tokens[2] = tokens[2] + "|" + label;
-                line = tokens[0];
+                } else if (tokens.at(2) != "0" && tokens.at(2) != "GND") {
+                  tokens.at(2) = tokens.at(2) + "|" + label;
+                }
+                if(std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) {
+                  if (std::count(subcircuits.at(subcktName).io.begin(),
+                               subcircuits.at(subcktName).io.end(),
+                               tokens.at(3)) != 0) {
+                    for (int l = 0;
+                        l < subcircuits.at(subcktName).io.size(); ++l) {
+                      if (tokens.at(3) ==
+                          subcircuits.at(subcktName).io.at(l)) {
+                        tokens.at(3) = io.at(l);
+                        break;
+                      }
+                    }
+                  } else if (tokens.at(3) != "0" && tokens.at(3) != "GND") {
+                    tokens.at(3) = tokens.at(3) + "|" + label;
+                  }
+                  if (std::count(subcircuits.at(subcktName).io.begin(),
+                                subcircuits.at(subcktName).io.end(),
+                                tokens.at(4)) != 0) {
+                    for (int l = 0;
+                        l < subcircuits.at(subcktName).io.size(); ++l) {
+                      if (tokens.at(4) ==
+                          subcircuits.at(subcktName).io.at(l)) {
+                        tokens.at(4) = io.at(l);
+                        break;
+                      }
+                    }
+                  } else if (tokens.at(4) != "0" && tokens.at(4) != "GND") {
+                    tokens.at(4) = tokens.at(4) + "|" + label;
+                  }
+                }
+                line = tokens.at(0);
                 for (int m = 1; m < tokens.size(); ++m)
                   line += " " + tokens.at(m);
                 moddedLines.push_back(std::make_pair(
@@ -114,35 +146,65 @@ void Netlist::expand_maindesign() {
       }
       if (subcircuits.count(subcktName) != 0) {
         for (int k = 0; k < subcircuits.at(subcktName).lines.size();
-             k++) {
+             ++k) {
           tokens = Misc::tokenize_space(
               subcircuits.at(subcktName).lines.at(k).first);
-          tokens[0] = tokens[0] + "|" + label;
+          tokens.at(0) = tokens.at(0) + "|" + label;
           if (std::count(subcircuits.at(subcktName).io.begin(),
                          subcircuits.at(subcktName).io.end(),
-                         tokens[1]) != 0) {
+                         tokens.at(1)) != 0) {
             for (int l = 0; l < subcircuits.at(subcktName).io.size();
-                 l++) {
-              if (tokens[1] == subcircuits.at(subcktName).io.at(l)) {
-                tokens[1] = io.at(l);
+                 ++l) {
+              if (tokens.at(1) == subcircuits.at(subcktName).io.at(l)) {
+                tokens.at(1) = io.at(l);
                 break;
               }
             }
-          } else if (tokens[1] != "0" && tokens[1] != "GND")
-            tokens[1] = tokens[1] + "|" + label;
+          } else if (tokens.at(1) != "0" && tokens.at(1) != "GND") {
+            tokens.at(1) = tokens.at(1) + "|" + label;
+          }
           if (std::count(subcircuits.at(subcktName).io.begin(),
                          subcircuits.at(subcktName).io.end(),
-                         tokens[2]) != 0) {
+                         tokens.at(2)) != 0) {
             for (int l = 0; l < subcircuits.at(subcktName).io.size();
-                 l++) {
-              if (tokens[2] == subcircuits.at(subcktName).io.at(l)) {
-                tokens[2] = io.at(l);
+                 ++l) {
+              if (tokens.at(2) == subcircuits.at(subcktName).io.at(l)) {
+                tokens.at(2) = io.at(l);
                 break;
               }
             }
-          } else if (tokens[2] != "0" && tokens[2] != "GND")
-            tokens[2] = tokens[2] + "|" + label;
-          line = tokens[0];
+          } else if (tokens.at(2) != "0" && tokens.at(2) != "GND") {
+            tokens.at(2) = tokens.at(2) + "|" + label;
+          }
+          if(std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) {
+            if (std::count(subcircuits.at(subcktName).io.begin(),
+                         subcircuits.at(subcktName).io.end(),
+                         tokens.at(3)) != 0) {
+              for (int l = 0; l < subcircuits.at(subcktName).io.size();
+                  ++l) {
+                if (tokens.at(3) == subcircuits.at(subcktName).io.at(l)) {
+                  tokens.at(3) = io.at(l);
+                  break;
+                }
+              }
+            } else if (tokens.at(3) != "0" && tokens.at(3) != "GND") {
+              tokens.at(3) = tokens.at(3) + "|" + label;
+            }
+            if (std::count(subcircuits.at(subcktName).io.begin(),
+                          subcircuits.at(subcktName).io.end(),
+                          tokens.at(4)) != 0) {
+              for (int l = 0; l < subcircuits.at(subcktName).io.size();
+                  ++l) {
+                if (tokens.at(4) == subcircuits.at(subcktName).io.at(l)) {
+                  tokens.at(4) = io.at(l);
+                  break;
+                }
+              }
+            } else if (tokens.at(4) != "0" && tokens.at(4) != "GND") {
+              tokens.at(4) = tokens.at(4) + "|" + label;
+            }
+          }
+          line = tokens.at(0);
           for (int m = 1; m < tokens.size(); ++m)
             line += " " + tokens.at(m);
           moddedLines.push_back(std::make_pair(
