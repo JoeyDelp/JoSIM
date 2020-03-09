@@ -28,7 +28,7 @@ void Model::parse_model(
     Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, s.first);
   }
   
-  for (int i = 0; i < tokens.size(); i++) {
+  for (int i = 0; i < tokens.size(); ++i) {
     if(tokens.at(i) == "=" && (i-1) >= 0 && (i+1) < tokens.size()) {
       tokens.at(i-1) += tokens.at(i);
       tokens.at(i-1) += tokens.at(i+1);

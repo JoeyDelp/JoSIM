@@ -121,10 +121,10 @@ void Input::parse_file(const std::string &fileName) {
       } else if (fileLines.at(i).find(".MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
-          netlist.models[std::make_pair(tokens[1], subcktName)] =
+          netlist.models[std::make_pair(tokens.at(1), subcktName)] =
               fileLines.at(i);
         else
-          netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
+          netlist.models[std::make_pair(tokens.at(1), "")] = fileLines.at(i);
         // If neither of these, normal control, add to controls list
       } else {
         if (!subckt)
@@ -145,10 +145,10 @@ void Input::parse_file(const std::string &fileName) {
       } else if (fileLines.at(i).find("MODEL") != std::string::npos) {
         tokens = Misc::tokenize_space(fileLines.at(i));
         if (subckt)
-          netlist.models[std::make_pair(tokens[1], subcktName)] =
+          netlist.models[std::make_pair(tokens.at(1), subcktName)] =
               fileLines.at(i);
         else
-          netlist.models[std::make_pair(tokens[1], "")] = fileLines.at(i);
+          netlist.models[std::make_pair(tokens.at(1), "")] = fileLines.at(i);
         // If neither, add to controls list
       } else {
         if (!subckt)
