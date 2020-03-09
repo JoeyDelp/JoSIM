@@ -1,9 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.4 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.4.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-##### Stable: v2.4 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+##### Stable: v2.4.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ---
 
@@ -35,6 +35,12 @@ Referencing:
 ---
 
 ## Changelog
+### v2.4.1 - 09/03/2020
+- Fixed an issue where "GND" was not recognized as ground, creating a new node causing matrix singularity.
+- Fixed an issue with multiport devices (TX, CCCS, CCVS, VCCS, VCVS) not adding the 3rd and 4th node to the node map.
+- Fixed an issue with multiport devices not expanding properly if part of subcircuits.
+- Various other bug fixes
+
 ### v2.4 - 07/02/2020
 - Complete rewrite of core internals
 - Modularization of each component allowing easier implementation of integration methods
