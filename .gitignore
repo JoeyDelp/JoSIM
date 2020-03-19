@@ -311,6 +311,9 @@ doc/*
 .clang-format
 .clang-tidy
 
+# Clangd files
+.clangd
+
 # direnv file
 .envrc
 

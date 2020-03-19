@@ -282,8 +282,12 @@ void CCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string
 void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
   const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
-    posIndex1_ = nm.at(n1.first);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
+    if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
+      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
+    } else {
+      posIndex1_ = nm.at(n1.first);
+      nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
+    }
   } else if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
     negIndex1_ = nm.at(n1.second);
     nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
@@ -294,8 +298,12 @@ void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std:
     nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
   }
   if(n2.second.find("GND") != std::string::npos || n2.second == "0") {
-    posIndex2_ = nm.at(n2.first);
-    nc.at(nm.at(n2.first)).emplace_back(std::make_pair(-1, branchIndex - 2));
+    if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
+      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
+    } else {
+      posIndex2_ = nm.at(n2.first);
+      nc.at(nm.at(n2.first)).emplace_back(std::make_pair(-1, branchIndex - 2));
+    }
   } else if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
     negIndex2_ = nm.at(n2.second);
     nc.at(nm.at(n2.second)).emplace_back(std::make_pair(1, branchIndex - 2));
