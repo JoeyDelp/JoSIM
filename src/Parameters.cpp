@@ -93,7 +93,7 @@ double JoSIM::parse_param(
     if (opLoc == -1) {
       partToEval = expToEval;
     } else {
-      if (expToEval.at(opLoc) == '-')
+      if (expToEval.at(opLoc) == '-' || expToEval.at(opLoc) == '+')
         if (opLoc != 0)
           if (expToEval[opLoc - 1] == 'E')
             opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
