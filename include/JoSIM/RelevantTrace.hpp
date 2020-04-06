@@ -1,10 +1,10 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_RELEVANTTRACES_HPP
 #define JOSIM_RELEVANTTRACES_HPP
 
-#include "./Misc.hpp"
-#include "./Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Errors.hpp"
 
 
 namespace JoSIM {
@@ -54,9 +54,13 @@ class RelevantTrace {
 
 
 };
-  void find_relevant_traces(const std::vector<std::string> &c, Matrix &mObj);
-  void handle_current(const std::string &s, Matrix &mObj);
-  void handle_voltage_or_phase(const std::string &s, bool voltage, Matrix &mObj);
+  void find_relevant_traces(const std::vector<std::string> &c, 
+                            Matrix &mObj);
+  void handle_current(const std::string &s, 
+                      Matrix &mObj);
+  void handle_voltage_or_phase(const std::string &s, 
+                                bool voltage, 
+                                Matrix &mObj);
 
 } // namespace JoSIM
 

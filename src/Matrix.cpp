@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Matrix.hpp"
@@ -72,28 +72,28 @@ void Matrix::create_matrix(Input &iObj)
       case 'R':
         components.devices.emplace_back(Resistor::create_resistor(i, 
             nm, lm, nc, iObj.parameters, 
-            iObj.argAnal, 
+            iObj.argAnal, iObj.argInt,
             iObj.transSim.get_prstep(), branchIndex));
         components.resistorIndices.emplace_back(components.devices.size() - 1);
         break;
       case 'L':
         components.devices.emplace_back(Inductor::create_inductor(i, 
             nm, lm, nc, iObj.parameters, 
-            iObj.argAnal, 
+            iObj.argAnal, iObj.argInt,
             iObj.transSim.get_prstep(), branchIndex));
         components.inductorIndices.emplace_back(components.devices.size() - 1);
         break;
       case 'C':
         components.devices.emplace_back(Capacitor::create_capacitor(i, 
             nm, lm, nc, iObj.parameters, 
-            iObj.argAnal, 
+            iObj.argAnal, iObj.argInt,
             iObj.transSim.get_prstep(), branchIndex));
         components.capacitorIndices.emplace_back(components.devices.size() - 1);
         break;
       case 'B':
         components.devices.emplace_back(JJ::create_jj(i, 
             nm, lm, nc, iObj.parameters, iObj.netlist.models_new, 
-            iObj.argAnal, 
+            iObj.argAnal, iObj.argInt,
             iObj.transSim.get_prstep(), branchIndex));
         components.junctionIndices.emplace_back(components.devices.size() - 1);
         break;
@@ -139,7 +139,7 @@ void Matrix::create_matrix(Input &iObj)
       case 'T':
         components.devices.emplace_back(TransmissionLine::create_transmissionline(i, 
             nm, lm, nc, 
-            iObj.parameters, iObj.argAnal, 
+            iObj.parameters, iObj.argAnal, iObj.argInt,
             iObj.transSim.get_prstep(), branchIndex));
         components.txIndices.emplace_back(components.devices.size() - 1);        
         break;
@@ -212,8 +212,8 @@ void Matrix::create_matrix(Input &iObj)
     double mutual = cf * std::sqrt(ind1.get_inductance() * ind2.get_inductance());
 
     
-    ind1.add_mutualInductance(mutual, iObj.argAnal, iObj.transSim.get_prstep(), ind2.get_currentIndex());
-    ind2.add_mutualInductance(mutual, iObj.argAnal, iObj.transSim.get_prstep(), ind1.get_currentIndex());
+    ind1.add_mutualInductance(mutual, iObj.argAnal, iObj.argInt, iObj.transSim.get_prstep(), ind2.get_currentIndex());
+    ind2.add_mutualInductance(mutual, iObj.argAnal, iObj.argInt, iObj.transSim.get_prstep(), ind1.get_currentIndex());
 
     ind1.set_mutualInductance(std::make_pair(ind2Index.value(), mutual));
     ind2.set_mutualInductance(std::make_pair(ind1Index.value(), mutual));

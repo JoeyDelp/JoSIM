@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_ERRORS_H
 #define JOSIM_J_ERRORS_H
@@ -7,12 +7,14 @@
 namespace JoSIM {
 enum class CLIErrors : int { 
   NO_ANALYSIS,
+  NO_INTEGRATION,
   NO_CONVENTION,
   NO_OUTPUT,
   NO_INPUT,
   UNKNOWN_SWITCH,
   TOO_FEW_ARGUMENTS,
   INVALID_ANALYSIS,
+  INVALID_INTEGRATION,
   INVALID_CONVENTION,
   INPUT_SAME_OUTPUT
 };
@@ -154,33 +156,41 @@ enum class NetlistErrors : int {
 
 class Errors {
 public:
-  static void cli_errors(CLIErrors errorCode, const std::string &whatPart = "");
+  static void cli_errors(CLIErrors errorCode, 
+                          const std::string &whatPart = "");
 
-  static void input_errors(InputErrors errorCode, const std::string &whatPart = "");
+  static void input_errors(InputErrors errorCode, 
+                            const std::string &whatPart = "");
 
   static void invalid_component_errors(ComponentErrors errorCode,
                                        const std::string &componentLabel);
 
-  static void control_errors(ControlErrors errorCode, const std::string &whatPart);
+  static void control_errors(ControlErrors errorCode, 
+                              const std::string &whatPart);
 
   [[noreturn]] static void model_errors(ModelErrors errorCode,
                                         const std::string &whatPart);
 
-  static void matrix_errors(MatrixErrors errorCode, const std::string &whatPart);
+  static void matrix_errors(MatrixErrors errorCode, 
+                            const std::string &whatPart);
 
   [[noreturn]] static void misc_errors(MiscErrors errorCode,
                                        const std::string &whatPart);
 
-  static void function_errors(FunctionErrors errorCode, const std::string &whatPart);
+  static void function_errors(FunctionErrors errorCode, 
+                              const std::string &whatPart);
 
   [[noreturn]] static void simulation_errors(SimulationErrors errorCode,
                                              const std::string &whatPart);
 
-  static void parsing_errors(ParsingErrors errorCode, const std::string &whatPart);
+  static void parsing_errors(ParsingErrors errorCode, 
+                              const std::string &whatPart);
   
-  static void output_errors(OutputErrors errorCode, const std::string &whatPart);
+  static void output_errors(OutputErrors errorCode, 
+                            const std::string &whatPart);
   
-  static void netlist_errors(NetlistErrors errorCode, const std::string &whatPart);
+  static void netlist_errors(NetlistErrors errorCode, 
+                              const std::string &whatPart);
   
   [[noreturn]] static void oor();
   

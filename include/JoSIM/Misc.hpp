@@ -1,10 +1,10 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_MISC_H
 #define JOSIM_J_MISC_H
 
-#include "./Parameters.hpp"
-#include "./Input.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/Input.hpp"
 
 #include <unordered_map>
 #include <map>
@@ -19,16 +19,18 @@ class Input;
 
     std::string file_from_path(const std::string &path);
 
-    bool has_suffix(const std::string &str, const std::string &suffix);
+    bool has_suffix(const std::string &str, 
+                    const std::string &suffix);
 
-    bool starts_with(const std::string &input, char test);
+    bool starts_with(const std::string &input, 
+                      char test);
 
     std::vector<std::string> tokenize_space(const std::string &c);
 
     std::vector<std::string> tokenize_space_once(const std::string &c);
 
     std::vector<std::string> tokenize_delimiter(const std::string &c,
-                                                      const std::string &d);
+                                                const std::string &d);
 
     void ltrim(std::string &s);
 
@@ -37,22 +39,24 @@ class Input;
     double modifier(const std::string &value);
 
     void unique_push(std::vector<std::string> &vector,
-                            const std::string &string);
+                      const std::string &string);
 
     int index_of(const std::vector<std::string> &vector,
-                        const std::string &value);
+                  const std::string &value);
 
     std::string substring_after(const std::string &str,
-                                      const std::string &whatpart);
+                                const std::string &whatpart);
 
     std::string substring_before(const std::string &str,
-                                        const std::string &whatpart);
+                                  const std::string &whatpart);
 
-    std::vector<double> parse_function(const std::string &str, Input &iObj,
-                                              const std::string &subckt = "");
+    std::vector<double> parse_function(const std::string &str, 
+                                        Input &iObj,
+                                        const std::string &subckt = "");
 
     bool findX(const std::vector<std::string> &segment,
-                      std::string &theLine, int &linePos);
+                std::string &theLine, 
+                int &linePos);
 
     template <typename A, typename B>
     std::pair<B, A> flip_pair(const std::pair<A, B> &p) {

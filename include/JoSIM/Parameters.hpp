@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_PARAMETERS_HPP
 #define JOSIM_PARAMETERS_HPP
@@ -27,16 +27,18 @@ class Parameter {
 };
 
   void create_parameter(const std::pair<std::string, std::string> &s,
-                              std::unordered_map<ParameterName, Parameter> &parameters);
+                        std::unordered_map<ParameterName, Parameter> &parameters);
 
   double parse_param(const std::string &expr,
-      const std::unordered_map<ParameterName, Parameter> &params,
-      const std::string &subckt = "");
+                      const std::unordered_map<ParameterName, Parameter> &params,
+                      const std::string &subckt = "");
 
   int precedence_lvl(const std::string &op);
 
-  double parse_operator(const std::string &op, double val1, double val2,
-                              int &popCount);
+  double parse_operator(const std::string &op, 
+                        double val1, 
+                        double val2,
+                        int &popCount);
 
   void parse_parameters(std::unordered_map<ParameterName, Parameter> &parameters);
 

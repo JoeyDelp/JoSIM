@@ -1,13 +1,13 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_MATRIX_H
 #define JOSIM_J_MATRIX_H
 
-#include "./AnalysisType.hpp"
-#include "./Components.hpp"
-#include "./Input.hpp"
-#include "./Errors.hpp"
-#include "./RelevantTrace.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Components.hpp"
+#include "JoSIM/Input.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/RelevantTrace.hpp"
 
 #include <unordered_map>
 #include <unordered_set>

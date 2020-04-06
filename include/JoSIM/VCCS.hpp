@@ -1,12 +1,12 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_VCCS_HPP
 #define JOSIM_VCCS_HPP
 
-#include "./ParameterName.hpp"
-#include "./Parameters.hpp"
-#include "./AnalysisType.hpp"
-#include "./Input.hpp"
+#include "JoSIM/ParameterName.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Input.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -31,21 +31,27 @@ class VCCS {
       value_(1)
       {};
     
-    static VCCS create_VCCS(
-        const std::pair<std::string, std::string> &s,
-        const std::unordered_map<std::string, int> &nm, 
-        std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<ParameterName, Parameter> &p,
-        int &branchIndex, const Input &iObj);
-    void set_label(const std::string &s, std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-      const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-      const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
+    static VCCS create_VCCS(const std::pair<std::string, std::string> &s,
+                            const std::unordered_map<std::string, int> &nm, 
+                            std::unordered_set<std::string> &lm,
+                            std::vector<std::vector<std::pair<double, int>>> &nc,
+                            const std::unordered_map<ParameterName, Parameter> &p,
+                            int &branchIndex, const Input &iObj);
+    void set_label(const std::string &s, 
+                    std::unordered_set<std::string> &lm);
+    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
+                                      const std::pair<std::string, std::string> &n2, 
+                                      const std::unordered_map<std::string, int> &nm, 
+                                      const std::string &s, int &branchIndex);
+    void set_indices(const std::pair<std::string, std::string> &n1, 
+                      const std::pair<std::string, std::string> &n2, 
+                      const std::unordered_map<std::string, int> &nm, 
+                      std::vector<std::vector<std::pair<double, int>>> &nc, 
+                      const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p, const Input &iObj);
+                    const std::unordered_map<ParameterName, Parameter> &p, 
+                    const Input &iObj);
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }

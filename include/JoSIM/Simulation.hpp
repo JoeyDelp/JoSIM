@@ -1,11 +1,11 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_SIMULATION_H
 #define JOSIM_J_SIMULATION_H
 
-#include "./Errors.hpp"
-#include "./Misc.hpp"
-#include "./Matrix.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Matrix.hpp"
 
 namespace JoSIM{
 

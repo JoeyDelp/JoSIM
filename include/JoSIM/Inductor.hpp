@@ -1,11 +1,12 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_INDUCTOR_HPP
 #define JOSIM_INDUCTOR_HPP
 
-#include "./ParameterName.hpp"
-#include "./Parameters.hpp"
-#include "./AnalysisType.hpp"
+#include "JoSIM/ParameterName.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/IntegrationType.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -32,23 +33,39 @@ class Inductor {
       value_(0)
       {};
     
-    static Inductor create_inductor(
-        const std::pair<std::string, std::string> &s,
-        const std::unordered_map<std::string, int> &nm, 
-        std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const AnalysisType &antyp,
-        const double &timestep,
-        int &branchIndex);
-    void set_label(const std::string &s, std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
+    static Inductor create_inductor(const std::pair<std::string, std::string> &s,
+                                    const std::unordered_map<std::string, int> &nm, 
+                                    std::unordered_set<std::string> &lm,
+                                    std::vector<std::vector<std::pair<double, int>>> &nc,
+                                    const std::unordered_map<ParameterName, Parameter> &p,
+                                    const AnalysisType &antyp,
+                                    const IntegrationType & inttyp,
+                                    const double &timestep,
+                                    int &branchIndex);
+    void set_label(const std::string &s, 
+                    std::unordered_set<std::string> &lm);
+    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
+                                      const std::unordered_map<std::string, int> &nm, 
+                                      const std::string &s, 
+                                      int &branchIndex);
+    void set_indices(const std::pair<std::string, std::string> &n, 
+                      const std::unordered_map<std::string, int> &nm, 
+                      std::vector<std::vector<std::pair<double, int>>> &nc, 
+                      const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const AnalysisType &antyp, const double &timestep);
-    void add_mutualInductance(const double &m, const AnalysisType &antyp, const double &timestep, const int &columnIndex);
+                    const std::unordered_map<ParameterName, Parameter> &p,
+                    const AnalysisType &antyp, 
+                    const double &timestep);
+    void set_value_gear(const std::pair<std::string, std::string> &s, 
+                        const std::unordered_map<ParameterName, Parameter> &p,
+                        const AnalysisType &antyp, 
+                        const double &timestep);
+    void add_mutualInductance(const double &m, 
+                              const AnalysisType &antyp, 
+                              const IntegrationType & inttyp, 
+                              const double &timestep, 
+                              const int &columnIndex);
     void set_mutualInductance(const std::pair<int, double> &mut) { mutualInductances_.emplace_back(mut); }
 
     const std::string& get_label() const { return label_; }

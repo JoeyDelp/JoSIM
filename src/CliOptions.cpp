@@ -1,8 +1,9 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/CliOptions.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/IntegrationType.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -89,6 +90,33 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
                 Errors::cli_errors(CLIErrors::NO_CONVENTION);
             } else
               Errors::cli_errors(CLIErrors::NO_CONVENTION);
+          }
+          break;
+        // Integration switch
+        case 'd':
+          if (specArg) {
+            argument = argv[i];
+            argument = argument.substr(argument.find('=') + 1);
+            if (argument == "0")
+              out.integration_type = IntegrationType::Trapezoidal;
+            else if (argument == "1")
+              out.integration_type = IntegrationType::Gear;
+            else
+              Errors::cli_errors(CLIErrors::INVALID_INTEGRATION);
+          } else {
+            if (i != argc - 1) {
+              if (argv[i + 1][0] != '-') {
+                if (std::strcmp(argv[i + 1], "0") == 0)
+                  out.integration_type = IntegrationType::Trapezoidal;
+                else if (std::strcmp(argv[i + 1], "1") == 0)
+                  out.integration_type = IntegrationType::Gear;
+                else
+                  Errors::cli_errors(CLIErrors::INVALID_INTEGRATION);
+                i++;
+              } else
+                Errors::cli_errors(CLIErrors::NO_INTEGRATION);
+            } else
+              Errors::cli_errors(CLIErrors::NO_INTEGRATION);
           }
           break;
         // Help switch
@@ -219,96 +247,108 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
 void CliOptions::display_help() {
   std::cout << "JoSIM help interface\n";
   std::cout << "====================\n";
-  std::cout << std::setw(13) << std::left << "-a" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-a" << std::setw(3) << std::left
             << "|"
             << "Specifies the analysis type." << std::endl;
-  std::cout << std::setw(13) << std::left << "--analysis=" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--analysis=" << std::setw(3)
             << std::left << "|"
             << "0 for Voltage analysis (Default)." << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|"
             << "1 for Phase analysis." << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-c" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-c" << std::setw(3) << std::left
             << "|"
             << "Sets the subcircuit convention to left(0) or right(1)."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "--convention=" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--convention=" << std::setw(3)
             << std::left << "|"
             << "Default is left. WRSpice (normal SPICE) use right."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|"
             << "Eg. X01 SUBCKT 1 2 3     vs.     X01 1 2 3 SUBCKT" << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+            << "|" << std::endl;
+  
+  std::cout << std::setw(16) << std::left << "-d" << std::setw(3) << std::left
+            << "|"
+            << "Specifies the integration method." << std::endl;
+  std::cout << std::setw(16) << std::left << "--differential=" << std::setw(3)
+            << std::left << "|"
+            << "0 for Trapezoidal method (Default)." << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+            << "|"
+            << "1 for Gear method." << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-h" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-h" << std::setw(3) << std::left
             << "|"
             << "Displays this help menu" << std::endl;
-  std::cout << std::setw(13) << std::left << "--help" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--help" << std::setw(3)
             << std::left << "|"
             << " " << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-i" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-i" << std::setw(3) << std::left
             << "|"
             << "Input circuit netlist from standard input."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "--input" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--input" << std::setw(3)
             << std::left << "|"
             << "This command ignores any additional input file specified." << std::endl;
   std::cout
-      << std::setw(13) << std::left << "  " << std::setw(3) << std::left << "|"
+      << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
       << "Reads from standard input until the .end command or EOF character is specified."
       << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-o" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-o" << std::setw(3) << std::left
             << "|"
             << "Specify output file for simulation results (.csv)."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "--output=" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--output=" << std::setw(3)
             << std::left << "|"
             << "Default will be output.csv if no file is specified."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-p" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-p" << std::setw(3) << std::left
             << "|"
             << "(EXPERIMENTAL) Enables parallelization of certain functions."
             << std::endl;
-  std::cout << std::setw(13) << std::left << "--parallel" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--parallel" << std::setw(3)
             << std::left << "|"
             << "Requires compilation with OPENMP switch enabled." << std::endl;
   std::cout
-      << std::setw(13) << std::left << "  " << std::setw(3) << std::left << "|"
+      << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
       << "Threshold applies, overhead on small circuits negates performance."
       << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-V" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-V" << std::setw(3) << std::left
             << "|"
             << "Runs JoSIM in verbose mode." << std::endl;
-  std::cout << std::setw(13) << std::left << "--verbose" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--verbose" << std::setw(3)
             << std::left << "|"
             << " " << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
-  std::cout << std::setw(13) << std::left << "-v" << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "-v" << std::setw(3) << std::left
             << "|"
             << "Displays the JoSIM version info only." << std::endl;
-  std::cout << std::setw(13) << std::left << "--version" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--version" << std::setw(3)
             << std::left << "|"
             << " " << std::endl;
-  std::cout << std::setw(13) << std::left << "  " << std::setw(3) << std::left
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 
   std::cout << std::endl;
@@ -322,7 +362,7 @@ void CliOptions::version_info() {
   std::cout
       << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator"
       << std::endl;
-  std::cout << "Copyright (C) 2019 by Johannes Delport (jdelport@sun.ac.za)"
+  std::cout << "Copyright (C) 2020 by Johannes Delport (jdelport@sun.ac.za)"
             << std::endl;
   std::cout << "v" << VERSION << "." << GIT_COMMIT_HASH << " compiled on " << __DATE__ << " at "
             << __TIME__ << std::endl;

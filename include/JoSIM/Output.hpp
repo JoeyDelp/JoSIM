@@ -1,12 +1,12 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_OUTPUT_H
 #define JOSIM_J_OUTPUT_H
 
-#include "./Matrix.hpp"
-#include "./Misc.hpp"
-#include "./Simulation.hpp"
-#include "./Input.hpp"
+#include "JoSIM/Matrix.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Simulation.hpp"
+#include "JoSIM/Input.hpp"
 
 namespace JoSIM {
 class Trace {
@@ -26,9 +26,11 @@ class Output {
   std::vector<double> timesteps;
   Output(){};
   void write_output(const Input &iObj, 
-    const Matrix &mObj, const Simulation &sObj);
+                    const Matrix &mObj, 
+                    const Simulation &sObj);
 
-  void format_csv_or_dat(const std::string &filename, const char &delimiter);
+  void format_csv_or_dat(const std::string &filename, 
+                          const char &delimiter);
 
   void format_raw(const std::string &filename);
 

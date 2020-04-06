@@ -1,15 +1,16 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_INPUT_H
 #define JOSIM_J_INPUT_H
 
-#include "./AnalysisType.hpp"
-#include "./InputType.hpp"
-#include "./ParameterName.hpp"
-#include "./Errors.hpp"
-#include "./Netlist.hpp"
-#include "./Misc.hpp"
-#include "./Transient.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/InputType.hpp"
+#include "JoSIM/ParameterName.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Netlist.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Transient.hpp"
+#include "JoSIM/IntegrationType.hpp"
 
 #include <string>
 #include <vector>
@@ -30,9 +31,11 @@ class Input {
 
   Input(AnalysisType analysis_type = AnalysisType::Voltage,
         InputType input_type = InputType::Jsim,
+        IntegrationType int_type = IntegrationType::Trapezoidal,
         bool verbose = false) : 
     argAnal(analysis_type), 
     argConv(input_type), 
+    argInt(int_type),
     argVerb(verbose) 
     {
       netlist.argConv = argConv;
@@ -40,6 +43,7 @@ class Input {
 
   AnalysisType argAnal;
   InputType argConv;
+  IntegrationType argInt;
   bool argVerb = false;
 
   void parse_file(const std::string &fileName);

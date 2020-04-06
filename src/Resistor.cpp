@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Resistor.hpp"
@@ -17,6 +17,7 @@ Resistor Resistor::create_resistor(
     std::vector<std::vector<std::pair<double, int>>> &nc,
     const std::unordered_map<ParameterName, Parameter> &p,
     const AnalysisType &antyp,
+    const IntegrationType & inttyp,
     const double &timestep,
     int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);

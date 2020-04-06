@@ -1,10 +1,10 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_PHASESOURCE_HPP
 #define JOSIM_PHASESOURCE_HPP
 
-#include "./ParameterName.hpp"
-#include "./Parameters.hpp"
+#include "JoSIM/ParameterName.hpp"
+#include "JoSIM/Parameters.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -29,15 +29,20 @@ class PhaseSource {
       sourceIndex_(-1)
       {};
     
-    static PhaseSource create_phasesource(
-        const std::pair<std::string, std::string> &s,
-        const std::unordered_map<std::string, int> &nm, 
-        std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<double, int>>> &nc,
-        int &branchIndex);
+    static PhaseSource create_phasesource(const std::pair<std::string, std::string> &s,
+                                          const std::unordered_map<std::string, int> &nm, 
+                                          std::unordered_set<std::string> &lm,
+                                          std::vector<std::vector<std::pair<double, int>>> &nc,
+                                          int &branchIndex);
     void set_label(const std::string &s, std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
+    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
+                                      const std::unordered_map<std::string, int> &nm, 
+                                      const std::string &s, 
+                                      int &branchIndex);
+    void set_indices(const std::pair<std::string, std::string> &n, 
+                      const std::unordered_map<std::string, int> &nm, 
+                      std::vector<std::vector<std::pair<double, int>>> &nc, 
+                      const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_sourceIndex(const int &i) { sourceIndex_ = i; }
 

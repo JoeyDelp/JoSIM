@@ -1,11 +1,11 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_NETLIST_HPP
 #define JOSIM_NETLIST_HPP
 
-#include "./Parameters.hpp"
-#include "./InputType.hpp"
-#include "./Model.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/InputType.hpp"
+#include "JoSIM/Model.hpp"
 
 #include <string>
 #include <vector>
@@ -40,16 +40,17 @@ class Subcircuit {
 
 class Netlist {
   public:
-  std::unordered_map<std::pair<std::string, std::string>, std::string,
-                     pair_hash>
-      models;
+  std::unordered_map<std::pair<std::string, std::string>, std::string, pair_hash> models;
   std::vector<std::pair<Model, std::string>> models_new;
   std::unordered_map<std::string, Subcircuit> subcircuits;
   std::unordered_map<std::string, int> subcktLookup;
   std::vector<std::string> maindesign;
   std::vector<std::string> subckts;
   std::vector<std::pair<std::string, std::string>> expNetlist;
-  int jjCount, compCount, subcktCounter, nestedSubcktCount;
+  int jjCount, 
+      compCount, 
+      subcktCounter, 
+      nestedSubcktCount;
   bool containsSubckt;
   InputType argConv;
   Netlist() :

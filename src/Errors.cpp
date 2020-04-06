@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Errors.hpp"
@@ -33,8 +33,18 @@ void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
       formattedMessage += "Usage: josim [options] input_netlist\n\n";
       formattedMessage += "For further help use the -h switch";
       throw std::runtime_error(formattedMessage);
+    case CLIErrors::INVALID_INTEGRATION:
+      formattedMessage += "Invalid integration method specified. 0 - Trapezoidal, 1 - Gear.\n";
+      formattedMessage += "Usage: josim [options] input_netlist\n\n";
+      formattedMessage += "For further help use the -h switch";
+      throw std::runtime_error(formattedMessage);
     case CLIErrors::NO_ANALYSIS:
       formattedMessage += "No analysis was specified. Reverting to default (0 - Voltage).\n";
+      formattedMessage += "Please refer to the help menu (-h) or manual for further information.";
+      warning_message(formattedMessage);
+      break;
+    case CLIErrors::NO_INTEGRATION:
+      formattedMessage += "No integration method specified. Reverting to default (0 - Trapezoidal).\n";
       formattedMessage += "Please refer to the help menu (-h) or manual for further information.";
       warning_message(formattedMessage);
       break;

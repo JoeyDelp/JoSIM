@@ -1,10 +1,10 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_MODEL_H
 #define JOSIM_MODEL_H
 
-#include "./Constants.hpp"
-#include "./Parameters.hpp"
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Parameters.hpp"
 
 namespace JoSIM {
 class Model {
@@ -67,10 +67,9 @@ class Model {
     void set_criticalToNormalRatio(const double &r) { criticalToNormalRatio_ = r; }
     void set_phaseOffset(const double &o) { phaseOffset_ = o; }
 
-    static void parse_model(
-        const std::pair<std::string, std::string> &s,
-        std::vector<std::pair<Model,std::string>> &models,
-        const std::unordered_map<ParameterName, Parameter> &p);
+    static void parse_model(const std::pair<std::string, std::string> &s,
+                            std::vector<std::pair<Model,std::string>> &models,
+                            const std::unordered_map<ParameterName, Parameter> &p);
 };
 } // namespace JoSIM
 

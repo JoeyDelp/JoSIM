@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/AnalysisType.hpp"
@@ -25,6 +25,7 @@ int main(int argc, const char **argv) {
     // Generate input object based on cli arguements
     Input iObj(cli_options.analysis_type, 
               cli_options.input_type,
+              cli_options.integration_type,
               cli_options.verbose);    
     // Parse input file as specified by the cli arguments
     iObj.parse_file(cli_options.cir_file_name);

@@ -1,12 +1,13 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_JJ_HPP
 #define JOSIM_JJ_HPP
 
-#include "./ParameterName.hpp"
-#include "./Parameters.hpp"
-#include "./Model.hpp"
-#include "./AnalysisType.hpp"
+#include "JoSIM/ParameterName.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/Model.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/IntegrationType.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -48,28 +49,36 @@ class JJ {
       transitionCurrent_(0)
       {};
     
-    static JJ create_jj(
-        const std::pair<std::string, std::string> &s,
-        const std::unordered_map<std::string, int> &nm, 
-        std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const std::vector<std::pair<Model, std::string>> &models,
-        const AnalysisType &antyp,
-        const double &timestep,
-        int &branchIndex);
-    void set_label(const std::string &s, std::unordered_set<std::string> &lm);
+    static JJ create_jj(const std::pair<std::string, std::string> &s,
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::unordered_set<std::string> &lm,
+                        std::vector<std::vector<std::pair<double, int>>> &nc,
+                        const std::unordered_map<ParameterName, Parameter> &p,
+                        const std::vector<std::pair<Model, std::string>> &models,
+                        const AnalysisType &antyp,
+                        const IntegrationType & inttyp,
+                        const double &timestep,
+                        int &branchIndex);
+    void set_label(const std::string &s, 
+            std::unordered_set<std::string> &lm);
     void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
-        const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex,
-        const AnalysisType &antyp, const double &timestep);
-    void set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
+                                      const std::unordered_map<std::string, int> &nm, 
+                                      const std::string &s, int &branchIndex,
+                                      const AnalysisType &antyp, 
+                                      const double &timestep);
+    void set_indices(const std::pair<std::string, std::string> &n, 
+                      const std::unordered_map<std::string, int> &nm, 
+                      std::vector<std::vector<std::pair<double, int>>> &nc, 
+                      const int &branchIndex);
     void set_currentIndex(const int &cc) { currentIndex_ = cc; }
     void set_variableIndex(const int &vc) { variableIndex_ = vc; }
     void set_area(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p);
-    void set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<Model, std::string>> &models);
+                  const std::unordered_map<ParameterName, Parameter> &p);
+    void set_model(const std::pair<std::string, std::string> &s, 
+                    const std::vector<std::pair<Model, std::string>> &models);
     void set_value(const double &v) { value_ = v; };
-    void set_phaseConst(const double &timestep, const AnalysisType &antyp);
+    void set_phaseConst(const double &timestep, 
+                        const AnalysisType &antyp);
     void set_pn1(const double &v) { pn1_ = v; }
     void set_phi0(const double &v) { phi0_ = v; }
     void set_vn1(const double &v) { vn1_ = v; }

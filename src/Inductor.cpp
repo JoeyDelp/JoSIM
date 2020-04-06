@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Inductor.hpp"
@@ -10,17 +10,16 @@
 
 using namespace JoSIM;
 
-Inductor Inductor::create_inductor(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    const AnalysisType &antyp,
-    const double &timestep,
-    int &branchIndex) {
+Inductor Inductor::create_inductor(const std::pair<std::string, std::string> &s,
+                                    const std::unordered_map<std::string, int> &nm, 
+                                    std::unordered_set<std::string> &lm,
+                                    std::vector<std::vector<std::pair<double, int>>> &nc,
+                                    const std::unordered_map<ParameterName, Parameter> &p,
+                                    const AnalysisType &antyp,
+                                    const IntegrationType & inttyp,
+                                    const double &timestep,
+                                    int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-
   Inductor temp;
   temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {
@@ -38,7 +37,8 @@ Inductor Inductor::create_inductor(
   return temp;
 }
 
-void Inductor::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
+void Inductor::set_label(const std::string &s, 
+                          std::unordered_set<std::string> &lm) {
   if(lm.count(s) != 0) {
     Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
   } else {
@@ -47,7 +47,10 @@ void Inductor::set_label(const std::string &s, std::unordered_set<std::string> &
   }
 }
 
-void Inductor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+void Inductor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
+                                            const std::unordered_map<std::string, int> &nm, 
+                                            const std::string &s, 
+                                            int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n.first != "0" && n.first.find("GND") == std::string::npos) {
@@ -95,7 +98,10 @@ void Inductor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::st
   }
 }
 
-void Inductor::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void Inductor::set_indices(const std::pair<std::string, std::string> &n, 
+                            const std::unordered_map<std::string, int> &nm, 
+                            std::vector<std::vector<std::pair<double, int>>> &nc, 
+                            const int &branchIndex) {
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
@@ -111,14 +117,28 @@ void Inductor::set_indices(const std::pair<std::string, std::string> &n, const s
 }
 
 void Inductor::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const AnalysisType &antyp, const double &timestep) {
+                          const std::unordered_map<ParameterName, Parameter> &p,
+                          const AnalysisType &antyp, 
+                          const double &timestep) {
           inductance_ = parse_param(s.first, p, s.second);
           if (antyp == AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
           else if (antyp == AnalysisType::Phase) value_ = inductance_ / Constants::SIGMA;
 }
 
-void Inductor::add_mutualInductance(const double &m, const AnalysisType &antyp, const double &timestep, const int &columnIndex) {
+void Inductor::set_value_gear(const std::pair<std::string, std::string> &s, 
+                              const std::unordered_map<ParameterName, Parameter> &p,
+                              const AnalysisType &antyp, 
+                              const double &timestep) {
+          inductance_ = parse_param(s.first, p, s.second);
+          if (antyp == AnalysisType::Voltage) value_ = (3 / 2) * (inductance_/timestep);
+          else if (antyp == AnalysisType::Phase) value_ = inductance_ / Constants::SIGMA;
+}
+
+void Inductor::add_mutualInductance(const double &m, 
+                                    const AnalysisType &antyp, 
+                                    const IntegrationType & inttyp, 
+                                    const double &timestep, 
+                                    const int &columnIndex) {
   if(antyp == AnalysisType::Voltage) {
     nonZeros_.emplace_back(-(2*m) / timestep);
   } else if(antyp == AnalysisType::Phase) {

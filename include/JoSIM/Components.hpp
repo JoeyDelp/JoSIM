@@ -1,25 +1,25 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2020 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_COMPONENTS_H
 #define JOSIM_COMPONENTS_H
 
-#include "./Misc.hpp"
-#include "./Parameters.hpp"
-#include "./Constants.hpp"
-#include "./Input.hpp"
-#include "./Errors.hpp"
-#include "./Resistor.hpp"
-#include "./Inductor.hpp"
-#include "./Capacitor.hpp"
-#include "./JJ.hpp"
-#include "./VoltageSource.hpp"
-#include "./PhaseSource.hpp"
-#include "./CurrentSource.hpp"
-#include "./TransmissionLine.hpp"
-#include "./VCCS.hpp"
-#include "./CCCS.hpp"
-#include "./VCVS.hpp"
-#include "./CCVS.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Input.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Resistor.hpp"
+#include "JoSIM/Inductor.hpp"
+#include "JoSIM/Capacitor.hpp"
+#include "JoSIM/JJ.hpp"
+#include "JoSIM/VoltageSource.hpp"
+#include "JoSIM/PhaseSource.hpp"
+#include "JoSIM/CurrentSource.hpp"
+#include "JoSIM/TransmissionLine.hpp"
+#include "JoSIM/VCCS.hpp"
+#include "JoSIM/CCCS.hpp"
+#include "JoSIM/VCVS.hpp"
+#include "JoSIM/CCVS.hpp"
 
 #include <unordered_map>
 #include <variant>
@@ -38,8 +38,17 @@ class Components {
                              VCVS,
                              CCVS>> devices; 
     std::vector<CurrentSource> currentsources;
-    std::vector<int> junctionIndices, resistorIndices, inductorIndices, capacitorIndices, 
-      vsIndices, psIndices, txIndices, vccsIndices, cccsIndices, vcvsIndices, ccvsIndices;
+    std::vector<int> junctionIndices, 
+                      resistorIndices, 
+                      inductorIndices, 
+                      capacitorIndices, 
+                      vsIndices, 
+                      psIndices, 
+                      txIndices, 
+                      vccsIndices, 
+                      cccsIndices, 
+                      vcvsIndices, 
+                      ccvsIndices;
     std::vector<std::pair<std::string, std::string>> mutualinductances;
 };
 } // namespace JoSIM
