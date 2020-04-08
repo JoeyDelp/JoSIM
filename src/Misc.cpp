@@ -33,7 +33,8 @@ std::string Misc::file_from_path(const std::string &path) {
     return path.substr(posLastSlash + 1);
 }
 
-bool Misc::has_suffix(const std::string &str, const std::string &suffix) {
+bool Misc::has_suffix(const std::string &str, 
+                      const std::string &suffix) {
   return str.size() >= suffix.size() &&
          str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
@@ -206,8 +207,9 @@ std::string Misc::substring_before(const std::string &str,
     return str;
 }
 
-bool Misc::findX(const std::vector<std::string> &segment, std::string &theLine,
-                 int &linePos) {
+bool Misc::findX(const std::vector<std::string> &segment, 
+                  std::string &theLine,
+                  int &linePos) {
   for (int i = linePos; i < segment.size(); ++i) {
     if (segment.at(i).at(0) == 'X') {
       theLine = segment.at(i);

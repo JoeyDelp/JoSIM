@@ -13,7 +13,7 @@
 using namespace JoSIM;
 
 void JoSIM::create_parameter(const std::pair<std::string, std::string> &s,
-                                  std::unordered_map<ParameterName, Parameter> &parameters) {
+                              std::unordered_map<ParameterName, Parameter> &parameters) {
   Parameter temp;
   std::vector<std::string> tokens;
 
@@ -68,10 +68,9 @@ int JoSIM::precedence_lvl(const std::string &op) {
   return 4;
 }
 
-double JoSIM::parse_param(
-    const std::string &expr,
-    const std::unordered_map<ParameterName, Parameter> &params,
-    const std::string &subckt) 
+double JoSIM::parse_param(const std::string &expr,
+                          const std::unordered_map<ParameterName, Parameter> &params,
+                          const std::string &subckt) 
   {
   // Initialize the expression to evaluate
   std::string expToEval = expr;
@@ -223,7 +222,9 @@ double JoSIM::parse_param(
 }
 
 
-double JoSIM::parse_operator(const std::string &op, double val1, double val2,
+double JoSIM::parse_operator(const std::string &op, 
+                              double val1, 
+                              double val2,
                               int &popCount) {
   if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
     popCount = 1;

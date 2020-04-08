@@ -6,7 +6,8 @@
 
 using namespace JoSIM;
 
-void JoSIM::find_relevant_traces(const std::vector<std::string> &c, Matrix &mObj) {
+void JoSIM::find_relevant_traces(const std::vector<std::string> &c, 
+                                  Matrix &mObj) {
   std::vector<std::string> storeCommands, tokens2;
   RelevantTrace temp;
 
@@ -210,7 +211,9 @@ void JoSIM::handle_current(const std::string &s, Matrix &mObj) {
   }
 }
 
-void JoSIM::handle_voltage_or_phase(const std::string &s, bool voltage, Matrix &mObj) {
+void JoSIM::handle_voltage_or_phase(const std::string &s, 
+                                    bool voltage, 
+                                    Matrix &mObj) {
   std::vector<std::string> tokens = Misc::tokenize_delimiter(s, " ,");
   RelevantTrace temp;
   if(voltage) {

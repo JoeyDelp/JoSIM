@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/TransmissionLine.hpp"
+#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
@@ -14,16 +15,15 @@
 
 using namespace JoSIM;
 
-TransmissionLine TransmissionLine::create_transmissionline(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    const AnalysisType &antyp,
-    const IntegrationType & inttyp,
-    const double &timestep,
-    int &branchIndex) {
+TransmissionLine TransmissionLine::create_transmissionline(const std::pair<std::string, std::string> &s,
+                                                            const std::unordered_map<std::string, int> &nm, 
+                                                            std::unordered_set<std::string> &lm,
+                                                            std::vector<std::vector<std::pair<double, int>>> &nc,
+                                                            const std::unordered_map<ParameterName, Parameter> &p,
+                                                            const AnalysisType &antyp,
+                                                            const IntegrationType & inttyp,
+                                                            const double &timestep,
+                                                            int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   // Ensure the device has at least 6 parts: LABEL PNODE1 NNODE1 PNODE2 NNODE2 VALUE
   if(tokens.size() < 6) {
@@ -74,7 +74,11 @@ TransmissionLine TransmissionLine::create_transmissionline(
       Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
-  temp.set_value(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
+  if(inttyp == IntegrationType::Trapezoidal) {
+    temp.set_value(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
+  } else {
+    temp.set_value_gear(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
+  }
   temp.set_timestepDelay(std::make_pair(timeDelayValue, s.second), p, timestep);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
@@ -93,9 +97,10 @@ void TransmissionLine::set_label(const std::string &s, std::unordered_set<std::s
 }
 
 void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-        const std::pair<std::string, std::string> &n2,
-        const std::unordered_map<std::string, int> &nm, 
-        const std::string &s, int &branchIndex) {
+                                                    const std::pair<std::string, std::string> &n2,
+                                                    const std::unordered_map<std::string, int> &nm, 
+                                                    const std::string &s, 
+                                                    int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
@@ -365,8 +370,8 @@ void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string,
 }
 
 void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1, 
-        const std::pair<std::string, std::string> &n2, 
-        const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+                                    const std::pair<std::string, std::string> &n2, 
+                                    const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     posIndex1_ = nm.at(n1.first);
     nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 2));
@@ -394,17 +399,28 @@ void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1
 }
 
 void TransmissionLine::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const AnalysisType &antyp, const double &timestep) {
+                                  const std::unordered_map<ParameterName, Parameter> &p,
+                                  const AnalysisType &antyp, 
+                                  const double &timestep) {
   if (antyp == AnalysisType::Voltage) {
     value_ = parse_param(s.first, p, s.second);
   } else if (antyp == AnalysisType::Phase) {
     value_ = (timestep * parse_param(s.first, p, s.second)) / (2 * Constants::SIGMA);
   }
 }
+void TransmissionLine::set_value_gear(const std::pair<std::string, std::string> &s, 
+                                      const std::unordered_map<ParameterName, Parameter> &p,
+                                      const AnalysisType &antyp, 
+                                      const double &timestep) {
+  if (antyp == AnalysisType::Voltage) {
+    value_ = parse_param(s.first, p, s.second);
+  } else if (antyp == AnalysisType::Phase) {
+    value_ = (2.0 * timestep * parse_param(s.first, p, s.second)) / (3.0 * Constants::SIGMA);
+  }
+}
 
 void TransmissionLine::set_timestepDelay(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const double &timestep) {
+                                          const std::unordered_map<ParameterName, Parameter> &p,
+                                          const double &timestep) {
   timestepDelay_ = (int)(parse_param(s.first, p, s.second) / timestep);
 }

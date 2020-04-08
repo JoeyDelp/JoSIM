@@ -10,14 +10,12 @@
 
 using namespace JoSIM;
 
-VoltageSource VoltageSource::create_voltagesource(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    int &branchIndex) {
+VoltageSource VoltageSource::create_voltagesource(const std::pair<std::string, std::string> &s,
+                                                  const std::unordered_map<std::string, int> &nm, 
+                                                  std::unordered_set<std::string> &lm,
+                                                  std::vector<std::vector<std::pair<double, int>>> &nc,
+                                                  int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-
   VoltageSource temp;
   temp.set_label(tokens.at(0), lm);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
@@ -35,7 +33,10 @@ void VoltageSource::set_label(const std::string &s, std::unordered_set<std::stri
   }
 }
 
-void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
+                                                  const std::unordered_map<std::string, int> &nm, 
+                                                  const std::string &s, 
+                                                  int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n.first != "0" && n.first.find("GND") == std::string::npos) {
@@ -72,7 +73,10 @@ void VoltageSource::set_nonZeros_and_columnIndex(const std::pair<std::string, st
   }
 }
 
-void VoltageSource::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void VoltageSource::set_indices(const std::pair<std::string, std::string> &n, 
+                                const std::unordered_map<std::string, int> &nm, 
+                                std::vector<std::vector<std::pair<double, int>>> &nc, 
+                                const int &branchIndex) {
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));

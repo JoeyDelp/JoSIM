@@ -27,13 +27,15 @@ class Capacitor {
     double capacitance_;
     double pn1_;
     double dpn1_;
+    double pn2_;
   public:
     Capacitor() : 
       currentIndex_(-1),
       value_(0.0),
       capacitance_(0.0),
       pn1_(0.0),
-      dpn1_(0.0)
+      dpn1_(0.0),
+      pn2_(0.0)
       {};
     
     static Capacitor create_capacitor(const std::pair<std::string, std::string> &s,
@@ -66,6 +68,7 @@ class Capacitor {
                         const double &timestep);
     void set_pn1(const double &v) { pn1_ = v; }
     void set_dpn1(const double &v) { dpn1_ = v; }
+    void set_pn2(const double &v) { pn2_ = v; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -78,6 +81,7 @@ class Capacitor {
     const double& get_capacitance() const { return capacitance_; }
     const double& get_pn1() const { return pn1_; }
     const double& get_dpn1() const { return dpn1_; }
+    const double& get_pn2() const { return pn2_; }
 
 };
 

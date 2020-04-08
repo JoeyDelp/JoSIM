@@ -10,15 +10,13 @@
 
 using namespace JoSIM;
 
-VCCS VCCS::create_VCCS(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    int &branchIndex, const Input &iObj) {
+VCCS VCCS::create_VCCS(const std::pair<std::string, std::string> &s,
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::unordered_set<std::string> &lm,
+                        std::vector<std::vector<std::pair<double, int>>> &nc,
+                        const std::unordered_map<ParameterName, Parameter> &p,
+                        int &branchIndex, const Input &iObj) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-  
   VCCS temp;
   temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {
@@ -45,8 +43,10 @@ void VCCS::set_label(const std::string &s, std::unordered_set<std::string> &lm) 
 }
 
 void VCCS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-  const std::pair<std::string, std::string> &n2, const std::unordered_map<std::string, int> &nm, 
-  const std::string &s, int &branchIndex) {
+                                        const std::pair<std::string, std::string> &n2, 
+                                        const std::unordered_map<std::string, int> &nm, 
+                                        const std::string &s, 
+                                        int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
@@ -102,8 +102,11 @@ void VCCS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string
   }
 }
 
-void VCCS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-  const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void VCCS::set_indices(const std::pair<std::string, std::string> &n1, 
+                        const std::pair<std::string, std::string> &n2, 
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::vector<std::vector<std::pair<double, int>>> &nc, 
+                        const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
       Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);

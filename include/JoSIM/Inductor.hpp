@@ -26,11 +26,13 @@ class Inductor {
     int currentIndex_;
     double inductance_;
     double value_;
+    double in2_;
   public:
     Inductor() :
       currentIndex_(-1),
       inductance_(0),
-      value_(0)
+      value_(0),
+      in2_(0)
       {};
     
     static Inductor create_inductor(const std::pair<std::string, std::string> &s,
@@ -67,6 +69,7 @@ class Inductor {
                               const double &timestep, 
                               const int &columnIndex);
     void set_mutualInductance(const std::pair<int, double> &mut) { mutualInductances_.emplace_back(mut); }
+    void set_in2(const double &v) { in2_ = v; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -78,6 +81,7 @@ class Inductor {
     const double& get_value() const { return value_; }
     const double& get_inductance() const { return inductance_; }
     const std::vector<std::pair<int, double>> get_mutualInductance() const { return mutualInductances_; }
+    const double& get_in2() const { return in2_; }
 
 };
 

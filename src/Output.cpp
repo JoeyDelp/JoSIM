@@ -17,7 +17,9 @@
 
 using namespace JoSIM;
 
-void Output::write_output(const Input &iObj, const Matrix &mObj, const Simulation &sObj) {
+void Output::write_output(const Input &iObj, 
+                          const Matrix &mObj, 
+                          const Simulation &sObj) {
   traces.emplace_back("time");
   traces.back().data_ = sObj.results.timeAxis;
   traces.back().type_ = 'T';
@@ -215,7 +217,8 @@ void Output::write_output(const Input &iObj, const Matrix &mObj, const Simulatio
   }
 }
 
-void Output::format_csv_or_dat(const std::string &filename, const char &delimiter) {
+void Output::format_csv_or_dat(const std::string &filename, 
+                                const char &delimiter) {
   std::ofstream outfile(filename);
   outfile << std::setprecision(15);
   if (outfile.is_open()) {

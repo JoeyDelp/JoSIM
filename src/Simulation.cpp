@@ -4,6 +4,7 @@
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Components.hpp"
+#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Model.hpp"
@@ -16,7 +17,8 @@
 
 using namespace JoSIM;
 
-void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
+void Simulation::trans_sim_new(Input &iObj, 
+                                Matrix &mObj) {
   std::vector<double> lhsValues, LHS_PRE(mObj.rp.size() - 1, 0.0);
   int simSize = iObj.transSim.get_simsize();
   int saveAll = false;
@@ -68,7 +70,7 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
     }
     // Handle resistors
     for (const auto &j : mObj.components.resistorIndices) {
-      const auto &temp = std::get<Resistor>(mObj.components.devices.at(j));
+      auto &temp = std::get<Resistor>(mObj.components.devices.at(j));
       double prevNode;
       if(temp.get_posIndex() && !temp.get_negIndex()) {
         prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
@@ -80,13 +82,19 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
       }
       if(iObj.argAnal == AnalysisType::Voltage) {
       } else if (iObj.argAnal == AnalysisType::Phase) {
-        // Rh/2σ Ip + φp
-        RHS.at(temp.get_currentIndex()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
+        if(iObj.argInt == IntegrationType::Trapezoidal) {
+          // Rh/2σ Ip + φp
+          RHS.at(temp.get_currentIndex()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
+        } else {
+          // 4/3 φp1 - 1/3 φp2
+          RHS.at(temp.get_currentIndex()) = (4.0 / 3.0) * prevNode - (1.0 / 3.0) * temp.get_pn2();
+          temp.set_pn2(prevNode);
+        }
       }
     }
     // Handle inductors
     for (const auto &j : mObj.components.inductorIndices) {
-      const auto &temp = std::get<Inductor>(mObj.components.devices.at(j));
+      auto &temp = std::get<Inductor>(mObj.components.devices.at(j));
       double prevNode;
       if(temp.get_posIndex() && !temp.get_negIndex()) {
         prevNode = (LHS_PRE.at(temp.get_posIndex().value()));
@@ -97,11 +105,22 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
                 - LHS_PRE.at(temp.get_negIndex().value()));
       }
       if(iObj.argAnal == AnalysisType::Voltage) {
-        // -2L/h Ip - Vp
-        RHS.at(temp.get_currentIndex()) = -temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) - prevNode;
-        // -2M/h Im
-        for(const auto &m : temp.get_mutualInductance()) {
-          RHS.at(temp.get_currentIndex()) -= (((2 * m.second) / iObj.transSim.get_prstep()) * LHS_PRE.at(std::get<Inductor>(mObj.components.devices.at(m.first)).get_currentIndex()));
+        if(iObj.argInt == IntegrationType::Trapezoidal) {
+          // -2L/h Ip - Vp
+          RHS.at(temp.get_currentIndex()) = -temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) - prevNode;
+          // -2M/h Im
+          for(const auto &m : temp.get_mutualInductance()) {
+            RHS.at(temp.get_currentIndex()) -= (((2 * m.second) / iObj.transSim.get_prstep()) * LHS_PRE.at(std::get<Inductor>(mObj.components.devices.at(m.first)).get_currentIndex()));
+          }
+        } else {
+          // -2L/h Ip + L/2h Ip2
+          RHS.at(temp.get_currentIndex()) = -(2.0 * temp.get_inductance()/(iObj.transSim.get_prstep())) * LHS_PRE.at(temp.get_currentIndex()) + ((temp.get_inductance()/(2.0 * iObj.transSim.get_prstep()))*temp.get_in2());
+          // -2M/h Im + M/2h Im2
+          for(const auto &m : temp.get_mutualInductance()) {
+            RHS.at(temp.get_currentIndex()) += (-((2 * m.second) / iObj.transSim.get_prstep()) * LHS_PRE.at(std::get<Inductor>(mObj.components.devices.at(m.first)).get_currentIndex()) 
+                                                + (m.second / (2.0 * iObj.transSim.get_prstep())) * std::get<Inductor>(mObj.components.devices.at(m.first)).get_in2());
+          }
+          temp.set_in2(LHS_PRE.at(temp.get_currentIndex()));
         }
       }
     }
@@ -117,17 +136,29 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
         prevNode = (LHS_PRE.at(temp.get_posIndex().value())
                 - LHS_PRE.at(temp.get_negIndex().value()));
       }
-      if(iObj.argAnal == AnalysisType::Voltage) {
-        // h/2C Ip + Vp
-        RHS.at(temp.get_currentIndex()) = temp.get_value()
-                                          * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
-      } else if (iObj.argAnal == AnalysisType::Phase) {
-        double pn2 = temp.get_pn1();
+      if(iObj.argInt == IntegrationType::Trapezoidal) {
+        if(iObj.argAnal == AnalysisType::Voltage) {
+          // h/2C Ip + Vp
+          RHS.at(temp.get_currentIndex()) = temp.get_value()
+                                            * LHS_PRE.at(temp.get_currentIndex()) + prevNode;
+        } else if (iObj.argAnal == AnalysisType::Phase) {
+          double pn2 = temp.get_pn1();
+          temp.set_pn1(prevNode);
+          double dpn2 = temp.get_dpn1();
+          temp.set_dpn1((2 / iObj.transSim.get_prstep()) * (temp.get_pn1() - pn2) - dpn2); 
+          // h/2C Ip - φp - h Δφp
+          RHS.at(temp.get_currentIndex()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) + prevNode + iObj.transSim.get_prstep() * temp.get_dpn1();
+        }
+      } else {
+        if(iObj.argAnal == AnalysisType::Voltage) {
+          // 4/3 Vp1 - 1/3 Vp2
+          RHS.at(temp.get_currentIndex()) = (4.0/3.0) * prevNode - (1.0/3.0) * temp.get_pn1();
+        } else if (iObj.argAnal == AnalysisType::Phase) {
+          // 8/3 φp1 + 10/9 φp2 -1/9 φp3
+          RHS.at(temp.get_currentIndex()) = (8.0/3.0) * prevNode + (10.0/9.0) * temp.get_pn1() - (1.0/9.0) * temp.get_pn2();
+          temp.set_pn2(temp.get_pn1());
+        }
         temp.set_pn1(prevNode);
-        double dpn2 = temp.get_dpn1();
-        temp.set_dpn1((2 / iObj.transSim.get_prstep()) * (temp.get_pn1() - pn2) - dpn2); 
-        // h/2C Ip - φp - h Δφp
-        RHS.at(temp.get_currentIndex()) = temp.get_value() * LHS_PRE.at(temp.get_currentIndex()) + prevNode + iObj.transSim.get_prstep() * temp.get_dpn1();
       }
     }
     // Handle junctions
@@ -163,34 +194,64 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
       } else {
         temp.set_dvn1((2 / iObj.transSim.get_prstep()) * (temp.get_vn1() - temp.get_vn2()) - temp.get_dvn2());
       }
-      // Guess voltage (V0)
-      double v0 = temp.get_vn1() + iObj.transSim.get_prstep() * temp.get_dvn1();
-      // Update junction transition
-      if(model.get_resistanceType() == 1) {
-        auto testLU = temp.update_value(v0);
-        if(testLU && !needsLU) {
-          needsLU = true;
+      double v0;
+      if (iObj.argInt == IntegrationType::Trapezoidal) {
+        // Guess voltage (V0)
+        v0 = temp.get_vn1() + iObj.transSim.get_prstep() * temp.get_dvn1();
+        // Phase guess (P0)
+        temp.set_phi0(temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0));
+        // -(hbar / h * e) φp - Vp 
+        if(iObj.argAnal == AnalysisType::Voltage) {
+          RHS.at(temp.get_variableIndex()) = -hbar_he * temp.get_pn1() - temp.get_vn1();
+        // φp + (h * e / hbar) Vp 
+        } else if (iObj.argAnal == AnalysisType::Phase) {
+          RHS.at(temp.get_variableIndex()) = temp.get_pn1() + (1 / hbar_he) * temp.get_vn1();
         }
+        // Update junction transition
+        if(model.get_resistanceType() == 1) {
+          auto testLU = temp.update_value(v0);
+          if(testLU && !needsLU) {
+            needsLU = true;
+          }
+        }
+        // (hR / h + 2RC) * (-Ic sin φ0 + 2C / h Vp + C ΔVp)
+        RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((Constants::PI * temp.get_del()) / (2 * Constants::EV * temp.get_rncalc())) *
+                                          (sin(temp.get_phi0()) / sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2)))) 
+                                          * tanh((temp.get_del()) / (2 * Constants::BOLTZMANN * model.get_temperature()) *
+                                            sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2))))) +
+                                          (((2 * model.get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
+                                          + (model.get_capacitance() * temp.get_dvn1()) - temp.get_transitionCurrent());
+        temp.set_dvn2(temp.get_dvn1());
+      } else {
+        // Guess voltage (V0)
+        v0 = (5.0/2.0) * temp.get_vn1() - 2.0 * temp.get_vn2() + (1.0 / 2.0) * temp.get_vn3();
+        // Phase guess (P0)
+        temp.set_phi0((4.0/3.0) * temp.get_pn1() - (1.0/3.0) * temp.get_pn2() + ((1.0 / Constants::SIGMA) * ((2.0 * iObj.transSim.get_prstep()) / 3.0)) * v0);
+        // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
+        if(iObj.argAnal == AnalysisType::Voltage) {
+          RHS.at(temp.get_variableIndex()) = (Constants::SIGMA) * (-(2.0 / iObj.transSim.get_prstep()) * temp.get_pn1() + (1.0 / (2.0 * iObj.transSim.get_prstep())) * temp.get_pn2());
+        // (4 / 3) φp1 - (1/3) φp2 
+        } else if (iObj.argAnal == AnalysisType::Phase) {
+          RHS.at(temp.get_variableIndex()) = (4.0 / 3.0) * temp.get_pn1() - (1.0 / 3.0) * temp.get_pn2();
+        }
+        temp.set_pn2(temp.get_pn1());
+        temp.set_vn3(temp.get_vn2());
+        // Update junction transition
+        if(model.get_resistanceType() == 1) {
+          auto testLU = temp.update_value(v0);
+          if(testLU && !needsLU) {
+            needsLU = true;
+          }
+        }
+        // (hR / h + 2RC) * (-Ic sin φ0 + 2C / h Vp1 - C/2h Vp2)
+        RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((Constants::PI * temp.get_del()) / (2 * Constants::EV * temp.get_rncalc())) *
+                                          (sin(temp.get_phi0()) / sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2)))) 
+                                          * tanh((temp.get_del()) / (2 * Constants::BOLTZMANN * model.get_temperature()) *
+                                            sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2))))) +
+                                          (((2 * model.get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
+                                          - ((model.get_capacitance() / (2.0 * iObj.transSim.get_prstep())) * temp.get_vn2()) - temp.get_transitionCurrent());
       }
-      // -(hbar / h * e) φp - Vp 
-      if(iObj.argAnal == AnalysisType::Voltage) {
-        RHS.at(temp.get_variableIndex()) = -hbar_he * temp.get_pn1() - temp.get_vn1();
-      // φp + (h * e / hbar) Vp 
-      } else if (iObj.argAnal == AnalysisType::Phase) {
-        RHS.at(temp.get_variableIndex()) = temp.get_pn1() + (1 / hbar_he) * temp.get_vn1();
-      }
-      // Phase guess (P0)
-      temp.set_phi0(temp.get_pn1() + (1 / hbar_he) * (temp.get_vn1() + v0));
-      // (hR / h + 2RC) * (-Ic sin φ0 + 2C / h Vp + C ΔVp)
-      RHS.at(temp.get_currentIndex()) = (-temp.get_nonZeros().back()) * (-(((Constants::PI * temp.get_del()) / (2 * Constants::EV * temp.get_rncalc())) *
-                                        (sin(temp.get_phi0()) / sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2)))) 
-                                        * tanh((temp.get_del()) / (2 * Constants::BOLTZMANN * model.get_temperature()) *
-                                          sqrt(1 - model.get_transparency() * (sin(temp.get_phi0() / 2) * sin(temp.get_phi0() / 2))))) +
-                                        (((2 * model.get_capacitance()) / iObj.transSim.get_prstep()) * temp.get_vn1()) 
-                                        + (model.get_capacitance() * temp.get_dvn1()) - temp.get_transitionCurrent());
-
       temp.set_vn2(temp.get_vn1());
-      temp.set_dvn2(temp.get_dvn1());
     }
     if (needsLU) {
       mObj.create_nz();
@@ -376,35 +437,66 @@ void Simulation::trans_sim_new(Input &iObj, Matrix &mObj) {
                       - results.xVector.at(temp.get_negIndex2().value()).value().at(i - temp.get_timestepDelay() - 1);
               }
             }
-            if(i == temp.get_timestepDelay()) {
-              // IT1 = (hZ0/2σ) * (IT1n-1 + IT2n-k) + φ1n-1 + φ2n-k
-              RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1)
-                                                + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay()))
-                                                + prevNodeN + prevNode2k;
-              // IT2 = (hZ0/2σ) * (IT2n-1 + IT1n-k + IT1n-k-1) + φ2n-1 + φ1n-k + φ1n-k-1                                   
-              RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1)
-                                                + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay()))
-                                                + prevNode2N + prevNodek;
+            if(iObj.argInt == IntegrationType::Trapezoidal) {
+              if(i == temp.get_timestepDelay()) {
+                // IT1 = (hZ0/2σ) * (IT1n-1 + IT2n-k) + φ1n-1 + φ2n-k
+                RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1)
+                                                  + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay()))
+                                                  + prevNodeN + prevNode2k;
+                // IT2 = (hZ0/2σ) * (IT2n-1 + IT1n-k + IT1n-k-1) + φ2n-1 + φ1n-k + φ1n-k-1                                   
+                RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1)
+                                                  + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay()))
+                                                  + prevNode2N + prevNodek;
+              } else {
+                // IT1 = (hZ0/2σ) * (IT1n-1 + IT2n-k + IT2n-k-1) + φ1n-1 + φ2n-k - φ2n-k-1
+                RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1)
+                                                  + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay())
+                                                  + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay() - 1))
+                                                  + prevNodeN + prevNode2k - prevNode2k1;
+                // IT2 = (hZ0/2σ) * (IT2n-1 + IT1n-k + IT1n-k-1) + φ2n-1 + φ1n-k - φ1n-k-1                                   
+                RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1)
+                                                  + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay())
+                                                  + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay() - 1))
+                                                  + prevNode2N + prevNodek - prevNodek1;
+              }
             } else {
-              // IT1 = (hZ0/2σ) * (IT1n-1 + IT2n-k + IT2n-k-1) + φ1n-1 + φ2n-k - φ2n-k-1
-              RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1)
-                                                + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay())
-                                                + results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay() - 1))
-                                                + prevNodeN + prevNode2k - prevNode2k1;
-              // IT2 = (hZ0/2σ) * (IT2n-1 + IT1n-k + IT1n-k-1) + φ2n-1 + φ1n-k - φ1n-k-1                                   
-              RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1)
-                                                + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay())
-                                                + results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay() - 1))
-                                                + prevNode2N + prevNodek - prevNodek1;
+              if(i == temp.get_timestepDelay()) {
+                // IT1 = (hZ0/2σ) * IT2n-k - (4/3) φ1n-1 - (1/3) φ1n-2 - φ2n-k
+                RHS.at(temp.get_currentIndex()) = temp.get_value() * results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay())
+                                                  -(4.0/3.0) * prevNodeN - (1.0/3.0) * temp.get_p1n2() - prevNode2k;
+                // IT2 = (hZ0/2σ) * IT1n-k - (4/3) φ2n-1 - (1/3) φ2n-2 - φ1n-k                          
+                RHS.at(temp.get_currentIndex2()) = temp.get_value() * results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay())
+                                                  -(4.0/3.0) * prevNode2N - (1.0/3.0) * temp.get_p2n2() - prevNodek;
+              } else {
+                // IT1 = (hZ0/2σ) * IT2n-k - (4/3) φ1n-1 - (1/3) φ1n-2 - φ2n-k - (4/3) φ2n-k-1 + (1/3) φ2n-k-2
+                RHS.at(temp.get_currentIndex()) = temp.get_value() * results.xVector.at(temp.get_currentIndex2()).value().at(i - temp.get_timestepDelay())
+                                                  -(4.0/3.0) * prevNodeN - (1.0/3.0) * temp.get_p1n2() - prevNode2k
+                                                  -(4.0/3.0) * prevNode2k1 + (1.0/3.0) * temp.get_p2nk2();
+                // IT2 = (hZ0/2σ) * IT1n-k - (4/3) φ2n-1 - (1/3) φ2n-2 - φ1n-k - (4/3) φ1n-k-1 + (1/3) φ1n-k-2                              
+                RHS.at(temp.get_currentIndex2()) = temp.get_value() * results.xVector.at(temp.get_currentIndex()).value().at(i - temp.get_timestepDelay())
+                                                  -(4.0/3.0) * prevNode2N - (1.0/3.0) * temp.get_p2n2() - prevNodek
+                                                  -(4.0/3.0) * prevNodek1 + (1.0/3.0) * temp.get_p1nk2();
+              }
+              temp.set_p1nk2(prevNodek1);
+              temp.set_p2nk2(prevNode2k1);
             }
           } else {
-            // IT1 = (hZ0/2σ) * (IT1n-1) + φ1n-1
+            if(iObj.argInt == IntegrationType::Trapezoidal) {
+              // IT1 = (hZ0/2σ) * (IT1n-1) + φ1n-1
               RHS.at(temp.get_currentIndex()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex()).value().at(i - 1))
-                                                + prevNodeN;
+                                                  + prevNodeN;
               // IT2 = (hZ0/2σ) * (IT2n-1) + φ2n-1                         
               RHS.at(temp.get_currentIndex2()) = temp.get_value() * (results.xVector.at(temp.get_currentIndex2()).value().at(i - 1))
                                                 + prevNode2N;
+            } else {
+              // IT1 = -(4/3) φ1n-1 - (1/3) φ1n-2
+              RHS.at(temp.get_currentIndex()) = -(4.0/3.0) * prevNodeN - (1.0/3.0) * temp.get_p1n2();
+              // IT2 = -(4/3) φ2n-1 - (1/3) φ2n-2                        
+              RHS.at(temp.get_currentIndex2()) = -(4.0/3.0) * prevNode2N - (1.0/3.0) * temp.get_p2n2();
+            }
           }
+          temp.set_p1n2(prevNodeN);
+          temp.set_p2n2(prevNode2N);
         }
       }
     }

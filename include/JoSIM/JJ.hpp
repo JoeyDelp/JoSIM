@@ -31,8 +31,8 @@ class JJ {
 
     double lowerB_, upperB_, subCond_, transCond_, normalCond_, gLarge_;
     double del0_, del_, rncalc_;
-    double pn1_, phi0_;
-    double vn1_, vn2_;
+    double pn1_, pn2_, phi0_;
+    double vn1_, vn2_, vn3_;
     double dvn1_, dvn2_;
     double transitionCurrent_;
     
@@ -45,7 +45,7 @@ class JJ {
       phaseConst_(0),
       lowerB_(0), upperB_(0), subCond_(0), transCond_(0), normalCond_(0),
       del0_(0), del_(0), rncalc_(0),
-      pn1_(0), vn1_(0), vn2_(0), dvn1_(0), dvn2_(0),
+      pn1_(0), pn2_(0), vn1_(0), vn2_(0), vn3_(0), dvn1_(0), dvn2_(0),
       transitionCurrent_(0)
       {};
     
@@ -79,10 +79,14 @@ class JJ {
     void set_value(const double &v) { value_ = v; };
     void set_phaseConst(const double &timestep, 
                         const AnalysisType &antyp);
+    void set_phaseConst_gear(const double &timestep, 
+                        const AnalysisType &antyp);
     void set_pn1(const double &v) { pn1_ = v; }
+    void set_pn2(const double &v) { pn2_ = v; }
     void set_phi0(const double &v) { phi0_ = v; }
     void set_vn1(const double &v) { vn1_ = v; }
     void set_vn2(const double &v) { vn2_ = v; }
+    void set_vn3(const double &v) { vn3_ = v; }
     void set_dvn1(const double &v) { dvn1_ = v; }
     void set_dvn2(const double &v) { dvn2_ = v; }
     void set_gLarge(const double &v) { gLarge_ = v; }
@@ -105,9 +109,11 @@ class JJ {
     const double& get_area() const { return area_; }
     const double& get_value() const { return value_; }
     const double& get_pn1() const { return pn1_; }
+    const double& get_pn2() const { return pn2_; }
     const double& get_phi0() const { return phi0_; }
     const double& get_vn1() const { return vn1_; }
     const double& get_vn2() const { return vn2_; }
+    const double& get_vn3() const { return vn3_; }
     const double& get_dvn1() const { return dvn1_; }
     const double& get_dvn2() const { return dvn2_; }
     const Model& get_model() const { return model_; }

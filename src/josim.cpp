@@ -15,8 +15,8 @@
 
 using namespace JoSIM;
 
-int main(int argc, const char **argv) {
-
+int main(int argc, 
+          const char **argv) {
   try {
     // Before anything. Display versioning info.
     CliOptions::version_info();

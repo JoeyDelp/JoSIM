@@ -10,13 +10,12 @@
 
 using namespace JoSIM;
 
-VCVS VCVS::create_VCVS(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    int &branchIndex) {
+VCVS VCVS::create_VCVS(const std::pair<std::string, std::string> &s,
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::unordered_set<std::string> &lm,
+                        std::vector<std::vector<std::pair<double, int>>> &nc,
+                        const std::unordered_map<ParameterName, Parameter> &p,
+                        int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
   VCVS temp;
@@ -44,8 +43,11 @@ void VCVS::set_label(const std::string &s, std::unordered_set<std::string> &lm) 
   }
 }
 
-void VCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-  const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+void VCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
+                                        const std::pair<std::string, std::string> &n2, 
+                                        const std::unordered_map<std::string, int> &nm, 
+                                        const std::string &s, 
+                                        int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
@@ -221,8 +223,11 @@ void VCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string
   }
 }
 
-void VCVS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-  const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void VCVS::set_indices(const std::pair<std::string, std::string> &n1, 
+                        const std::pair<std::string, std::string> &n2, 
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::vector<std::vector<std::pair<double, int>>> &nc, 
+                        const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
       Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
@@ -254,6 +259,6 @@ void VCVS::set_indices(const std::pair<std::string, std::string> &n1, const std:
 }
 
 void VCVS::set_value(const std::pair<std::string, std::string> &s, 
-  const std::unordered_map<ParameterName, Parameter> &p) {
+                      const std::unordered_map<ParameterName, Parameter> &p) {
   value_ = parse_param(s.first, p, s.second);
 }

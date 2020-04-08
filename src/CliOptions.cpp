@@ -11,7 +11,8 @@
 
 using namespace JoSIM;
 
-CliOptions CliOptions::parse(int argc, const char **argv) {
+CliOptions CliOptions::parse(int argc, 
+                              const char **argv) {
   CliOptions out;
   int pos = 0;
   std::string argument;

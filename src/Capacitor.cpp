@@ -124,7 +124,7 @@ void Capacitor::set_value(const std::pair<std::string, std::string> &s,
                           const std::unordered_map<ParameterName, Parameter> &p,
                           const AnalysisType &antyp, const double &timestep) {
           capacitance_ = parse_param(s.first, p, s.second);
-          if (antyp == AnalysisType::Voltage) value_ = (timestep / 2) * (1 / capacitance_);
+          if (antyp == AnalysisType::Voltage) value_ = (timestep / 2.0) * (1.0 / capacitance_);
           else if (antyp == AnalysisType::Phase) value_ = (timestep * timestep) / (4 * Constants::SIGMA * capacitance_);
         }
 
@@ -132,6 +132,6 @@ void Capacitor::set_value_gear(const std::pair<std::string, std::string> &s,
                                 const std::unordered_map<ParameterName, Parameter> &p,
                                 const AnalysisType &antyp, const double &timestep) {
           capacitance_ = parse_param(s.first, p, s.second);
-          if (antyp == AnalysisType::Voltage) value_ = (2 / 3) * (timestep / capacitance_);
-          else if (antyp == AnalysisType::Phase) value_ = (4 * timestep * timestep) / (9 * Constants::SIGMA * capacitance_);
+          if (antyp == AnalysisType::Voltage) value_ = (2.0/ 3.0) * (timestep / capacitance_);
+          else if (antyp == AnalysisType::Phase) value_ = (4.0 * timestep * timestep) / (9.0 * Constants::SIGMA * capacitance_);
         }

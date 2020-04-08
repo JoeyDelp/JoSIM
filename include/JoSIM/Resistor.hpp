@@ -24,10 +24,12 @@ class Resistor {
     std::optional<int> posIndex_, negIndex_;
     int currentIndex_;
     double value_;
+    double pn2_;
   public:
     Resistor() :
       currentIndex_(-1),
-      value_(0)
+      value_(0),
+      pn2_(0)
       {};
     
     static Resistor create_resistor(const std::pair<std::string, std::string> &s,
@@ -58,6 +60,7 @@ class Resistor {
                         const std::unordered_map<ParameterName, Parameter> &p,
                         const AnalysisType &antyp, 
                         const double &timestep);
+    void set_pn2(const double &v) { pn2_ = v; }
 
     const std::string& get_label() const { return label_; }
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
@@ -67,6 +70,7 @@ class Resistor {
     const std::optional<int>& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }
     const double& get_value() const { return value_; }
+    const double& get_pn2() const { return pn2_; }
 
 };
 

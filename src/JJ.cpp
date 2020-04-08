@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/JJ.hpp"
+#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
@@ -10,17 +11,16 @@
 
 using namespace JoSIM;
 
-JJ JJ::create_jj(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    const std::vector<std::pair<Model, std::string>> &models,
-    const AnalysisType &antyp,
-    const IntegrationType & inttyp,
-    const double &timestep,
-    int &branchIndex) {
+JJ JJ::create_jj(const std::pair<std::string, std::string> &s,
+                  const std::unordered_map<std::string, int> &nm, 
+                  std::unordered_set<std::string> &lm,
+                  std::vector<std::vector<std::pair<double, int>>> &nc,
+                  const std::unordered_map<ParameterName, Parameter> &p,
+                  const std::vector<std::pair<Model, std::string>> &models,
+                  const AnalysisType &antyp,
+                  const IntegrationType & inttyp,
+                  const double &timestep,
+                  int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
 
   JJ temp;
@@ -36,9 +36,23 @@ JJ JJ::create_jj(
   temp.set_pn1(temp.get_model().get_phaseOffset());
   temp.set_gLarge(temp.get_model().get_criticalCurrent() /
           (temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV()));
-  temp.set_subCond((1/temp.get_model().get_subgapResistance()) + ((2 * temp.get_model().get_capacitance()) / timestep));
-  temp.set_transCond(temp.get_gLarge() + ((2 * temp.get_model().get_capacitance()) / timestep));
-  temp.set_normalCond((1/temp.get_model().get_normalResistance()) + ((2 * temp.get_model().get_capacitance()) / timestep));
+  if(inttyp == IntegrationType::Trapezoidal) {
+    // (1/R0) + (2C/h)
+    temp.set_subCond((1/temp.get_model().get_subgapResistance()) + ((2.0 * temp.get_model().get_capacitance()) / timestep));
+    // (GL) + (2C/h)
+    temp.set_transCond(temp.get_gLarge() + ((2.0 * temp.get_model().get_capacitance()) / timestep));
+    // (1/RN) + (2C/h)
+    temp.set_normalCond((1/temp.get_model().get_normalResistance()) + ((2.0 * temp.get_model().get_capacitance()) / timestep));
+    temp.set_phaseConst(timestep, antyp);
+  } else {
+    // (1/R0) + (3C/2h)
+    temp.set_subCond((1/temp.get_model().get_subgapResistance()) + ((3.0 * temp.get_model().get_capacitance()) / (2.0 * timestep)));
+    // (GL) + (3C/2h)
+    temp.set_transCond(temp.get_gLarge() + ((3.0 * temp.get_model().get_capacitance()) / (2.0 * timestep)));
+    // (1/RN) + (3C/2h)
+    temp.set_normalCond((1/temp.get_model().get_normalResistance()) + ((3.0 * temp.get_model().get_capacitance()) / (2.0 * timestep)));
+    temp.set_phaseConst_gear(timestep, antyp);
+  }
   temp.set_value(1/temp.get_subCond());
   temp.set_del0(1.76 * Constants::BOLTZMANN * temp.get_model().get_criticalTemperature());
   temp.set_del(temp.get_del0() * sqrt(cos((Constants::PI / 2) 
@@ -46,7 +60,6 @@ JJ JJ::create_jj(
                * (temp.get_model().get_temperature() / temp.get_model().get_criticalTemperature()))));
   temp.set_rncalc(((Constants::PI * temp.get_del()) / (2 * Constants::EV * temp.get_model().get_criticalCurrent()))
                   * tanh(temp.get_del() / (2 * Constants::BOLTZMANN * temp.get_model().get_temperature())));
-  temp.set_phaseConst(timestep, antyp);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex, antyp, timestep);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
   temp.set_variableIndex(branchIndex - 2);
@@ -54,7 +67,8 @@ JJ JJ::create_jj(
   return temp;
 }
 
-void JJ::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
+void JJ::set_label(const std::string &s, 
+                    std::unordered_set<std::string> &lm) {
   if(lm.count(s) != 0) {
     Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
   } else {
@@ -64,8 +78,11 @@ void JJ::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
 }
 
 void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
-    const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex, 
-    const AnalysisType &antyp, const double &timestep) {
+                                      const std::unordered_map<std::string, int> &nm, 
+                                      const std::string &s, 
+                                      int &branchIndex, 
+                                      const AnalysisType &antyp, 
+                                      const double &timestep) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n.first != "0" && n.first.find("GND") == std::string::npos) {
@@ -167,7 +184,10 @@ void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> 
   }
 }
 
-void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void JJ::set_indices(const std::pair<std::string, std::string> &n, 
+                      const std::unordered_map<std::string, int> &nm, 
+                      std::vector<std::vector<std::pair<double, int>>> &nc, 
+                      const int &branchIndex) {
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
@@ -183,11 +203,12 @@ void JJ::set_indices(const std::pair<std::string, std::string> &n, const std::un
 }
 
 void JJ::set_area(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p) {
+                  const std::unordered_map<ParameterName, Parameter> &p) {
           area_ = parse_param(s.first, p, s.second);
 }
 
-void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vector<std::pair<Model, std::string>> &models) {
+void JJ::set_model(const std::pair<std::string, std::string> &s, 
+                    const std::vector<std::pair<Model, std::string>> &models) {
   bool found = false;
   for(auto &i : models) {
     if(i.first.get_modelName() == s.first && i.second == s.second) {
@@ -217,9 +238,16 @@ void JJ::set_model(const std::pair<std::string, std::string> &s, const std::vect
   upperB_ = model_.get_voltageGap() + 0.5 * model_.get_deltaV();
 }
 
-void JJ::set_phaseConst(const double &timestep, const AnalysisType &antyp){
+void JJ::set_phaseConst(const double &timestep, 
+                        const AnalysisType &antyp){
   if(antyp == AnalysisType::Voltage) phaseConst_ = Constants::HBAR / (timestep * Constants::EV);
   else if (antyp == AnalysisType::Phase) phaseConst_ = (timestep * Constants::EV) / Constants::HBAR;
+}
+
+void JJ::set_phaseConst_gear(const double &timestep, 
+                        const AnalysisType &antyp){
+  if(antyp == AnalysisType::Voltage) phaseConst_ = Constants::SIGMA * (3.0 / (2.0 * timestep));
+  else if (antyp == AnalysisType::Phase) phaseConst_ = ((2.0 * timestep) / 3.0) * (1.0 / Constants::SIGMA);
 }
 
 // Update the value based on the matrix entry based on the current voltage value

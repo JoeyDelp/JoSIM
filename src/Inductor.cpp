@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Inductor.hpp"
+#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
@@ -29,8 +30,11 @@ Inductor Inductor::create_inductor(const std::pair<std::string, std::string> &s,
       Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
-
-  temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
+  if(inttyp == IntegrationType::Trapezoidal) {
+    temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
+  } else {
+    temp.set_value_gear(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
+  }
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
   temp.set_currentIndex(branchIndex - 1);
@@ -121,7 +125,7 @@ void Inductor::set_value(const std::pair<std::string, std::string> &s,
                           const AnalysisType &antyp, 
                           const double &timestep) {
           inductance_ = parse_param(s.first, p, s.second);
-          if (antyp == AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
+          if (antyp == AnalysisType::Voltage) value_ = (2.0 / timestep) * inductance_;
           else if (antyp == AnalysisType::Phase) value_ = inductance_ / Constants::SIGMA;
 }
 
@@ -130,7 +134,7 @@ void Inductor::set_value_gear(const std::pair<std::string, std::string> &s,
                               const AnalysisType &antyp, 
                               const double &timestep) {
           inductance_ = parse_param(s.first, p, s.second);
-          if (antyp == AnalysisType::Voltage) value_ = (3 / 2) * (inductance_/timestep);
+          if (antyp == AnalysisType::Voltage) value_ = (3.0 / 2.0) * (inductance_/timestep);
           else if (antyp == AnalysisType::Phase) value_ = inductance_ / Constants::SIGMA;
 }
 
@@ -139,10 +143,18 @@ void Inductor::add_mutualInductance(const double &m,
                                     const IntegrationType & inttyp, 
                                     const double &timestep, 
                                     const int &columnIndex) {
-  if(antyp == AnalysisType::Voltage) {
-    nonZeros_.emplace_back(-(2*m) / timestep);
-  } else if(antyp == AnalysisType::Phase) {
-    nonZeros_.emplace_back(-m/Constants::SIGMA);
+  if(inttyp == IntegrationType::Trapezoidal) {
+    if(antyp == AnalysisType::Voltage) {
+      nonZeros_.emplace_back(-(2*m) / timestep);
+    } else if(antyp == AnalysisType::Phase) {
+      nonZeros_.emplace_back(-m/Constants::SIGMA);
+    }
+  } else {
+    if(antyp == AnalysisType::Voltage) {
+      nonZeros_.emplace_back(-(3*m) / (2*timestep));
+    } else if(antyp == AnalysisType::Phase) {
+      nonZeros_.emplace_back(-m/Constants::SIGMA);
+    }
   }
   columnIndex_.emplace_back(columnIndex);
   rowPointer_.back()++;

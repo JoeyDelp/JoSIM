@@ -10,15 +10,14 @@
 
 using namespace JoSIM;
 
-CCVS CCVS::create_CCVS(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    int &branchIndex, const Input &iObj) {
+CCVS CCVS::create_CCVS(const std::pair<std::string, std::string> &s,
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::unordered_set<std::string> &lm,
+                        std::vector<std::vector<std::pair<double, int>>> &nc,
+                        const std::unordered_map<ParameterName, Parameter> &p,
+                        int &branchIndex, 
+                        const Input &iObj) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-  
   CCVS temp;
   temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {
@@ -36,7 +35,8 @@ CCVS CCVS::create_CCVS(
   return temp;
 }
 
-void CCVS::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
+void CCVS::set_label(const std::string &s, 
+                      std::unordered_set<std::string> &lm) {
   if(lm.count(s) != 0) {
     Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
   } else {
@@ -45,8 +45,11 @@ void CCVS::set_label(const std::string &s, std::unordered_set<std::string> &lm) 
   }
 }
 
-void CCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-  const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+void CCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
+                                        const std::pair<std::string, std::string> &n2, 
+                                        const std::unordered_map<std::string, int> &nm, 
+                                        const std::string &s, 
+                                        int &branchIndex) {
   if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
     if(nm.count(n1.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.first);
   }
@@ -279,8 +282,11 @@ void CCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string
   }
 }
 
-void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-  const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void CCVS::set_indices(const std::pair<std::string, std::string> &n1, 
+                        const std::pair<std::string, std::string> &n2, 
+                        const std::unordered_map<std::string, int> &nm, 
+                        std::vector<std::vector<std::pair<double, int>>> &nc, 
+                        const int &branchIndex) {
   if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
     if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
       Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
@@ -316,7 +322,8 @@ void CCVS::set_indices(const std::pair<std::string, std::string> &n1, const std:
 }
 
 void CCVS::set_value(const std::pair<std::string, std::string> &s, 
-  const std::unordered_map<ParameterName, Parameter> &p, const Input &iObj) {
+                      const std::unordered_map<ParameterName, Parameter> &p, 
+                      const Input &iObj) {
   if(iObj.argAnal == AnalysisType::Voltage) {
     value_ = parse_param(s.first, p, s.second);
   } else {

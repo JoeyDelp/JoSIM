@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Resistor.hpp"
+#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
@@ -10,16 +11,15 @@
 
 using namespace JoSIM;
 
-Resistor Resistor::create_resistor(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    const AnalysisType &antyp,
-    const IntegrationType & inttyp,
-    const double &timestep,
-    int &branchIndex) {
+Resistor Resistor::create_resistor(const std::pair<std::string, std::string> &s,
+                                    const std::unordered_map<std::string, int> &nm, 
+                                    std::unordered_set<std::string> &lm,
+                                    std::vector<std::vector<std::pair<double, int>>> &nc,
+                                    const std::unordered_map<ParameterName, Parameter> &p,
+                                    const AnalysisType &antyp,
+                                    const IntegrationType & inttyp,
+                                    const double &timestep,
+                                    int &branchIndex) {
   std::vector<std::string> tokens = Misc::tokenize_space(s.first);
   
   Resistor temp;
@@ -31,7 +31,11 @@ Resistor Resistor::create_resistor(
       Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
     }
   }
-  temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
+  if(inttyp == IntegrationType::Trapezoidal) {
+    temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
+  } else {
+    temp.set_value_gear(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
+  }
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
   temp.set_currentIndex(branchIndex - 1);
@@ -47,7 +51,10 @@ void Resistor::set_label(const std::string &s, std::unordered_set<std::string> &
   }
 }
 
-void Resistor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
+void Resistor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
+                                            const std::unordered_map<std::string, int> &nm, 
+                                            const std::string &s, 
+                                            int &branchIndex) {
   nonZeros_.clear();
   columnIndex_.clear();
   if(n.first != "0" && n.first.find("GND") == std::string::npos) {
@@ -94,7 +101,10 @@ void Resistor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::st
   }
 }
 
-void Resistor::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
+void Resistor::set_indices(const std::pair<std::string, std::string> &n, 
+                            const std::unordered_map<std::string, int> &nm, 
+                            std::vector<std::vector<std::pair<double, int>>> &nc, 
+                            const int &branchIndex) {
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
@@ -110,8 +120,17 @@ void Resistor::set_indices(const std::pair<std::string, std::string> &n, const s
 }
 
 void Resistor::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const AnalysisType &antyp, const double &timestep) {
+                          const std::unordered_map<ParameterName, Parameter> &p,
+                          const AnalysisType &antyp, 
+                          const double &timestep) {
           if (antyp == AnalysisType::Voltage) value_ = parse_param(s.first, p, s.second);
-          else if (antyp == AnalysisType::Phase) value_ = (timestep/(2 * Constants::SIGMA)) * parse_param(s.first, p, s.second);
+          else if (antyp == AnalysisType::Phase) value_ = (timestep/(2.0 * Constants::SIGMA)) * parse_param(s.first, p, s.second);
+        }
+
+void Resistor::set_value_gear(const std::pair<std::string, std::string> &s, 
+                              const std::unordered_map<ParameterName, Parameter> &p,
+                              const AnalysisType &antyp, 
+                              const double &timestep) {
+          if (antyp == AnalysisType::Voltage) value_ = parse_param(s.first, p, s.second);
+          else if (antyp == AnalysisType::Phase) value_ = ((2.0 * timestep)/(3.0 * Constants::SIGMA)) * parse_param(s.first, p, s.second);
         }

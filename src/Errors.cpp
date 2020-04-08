@@ -7,7 +7,8 @@
 
 using namespace JoSIM;
 
-void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
+void Errors::cli_errors(CLIErrors errorCode, 
+                        const std::string &whatPart) {
   std::string formattedMessage = "Command Line Interface\n";
   switch (errorCode) {
     case CLIErrors::NO_OUTPUT:
@@ -70,7 +71,8 @@ void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
   }
 }
 
-void Errors::input_errors(InputErrors errorCode, const std::string &whatPart) {
+void Errors::input_errors(InputErrors errorCode, 
+                          const std::string &whatPart) {
   std::string formattedMessage = "Input\n";
   switch (errorCode) {
     case InputErrors::CANNOT_OPEN_FILE:
@@ -219,7 +221,8 @@ void Errors::invalid_component_errors(ComponentErrors errorCode,
   }
 }
 
-void Errors::control_errors(ControlErrors errorCode, const std::string &whatPart) {
+void Errors::control_errors(ControlErrors errorCode, 
+                            const std::string &whatPart) {
   std::string formattedMessage = "Controls\n";
   switch (errorCode) {
     case ControlErrors::TRANS_ERROR:
@@ -377,7 +380,8 @@ void Errors::control_errors(ControlErrors errorCode, const std::string &whatPart
   }
 }
 
-void Errors::matrix_errors(MatrixErrors errorCode, const std::string &whatPart) {
+void Errors::matrix_errors(MatrixErrors errorCode, 
+                            const std::string &whatPart) {
   std::string formattedMessage = "Matrix\n";                                         
   switch (errorCode) {
     case MatrixErrors::NON_SQUARE:
@@ -405,7 +409,8 @@ void Errors::matrix_errors(MatrixErrors errorCode, const std::string &whatPart) 
   }
 }
 
-void Errors::function_errors(FunctionErrors errorCode, const std::string &whatPart) {
+void Errors::function_errors(FunctionErrors errorCode, 
+                              const std::string &whatPart) {
   std::string formattedMessage = "Function\n";                                         
   switch (errorCode) {
     case FunctionErrors::INITIAL_VALUES:
@@ -537,7 +542,8 @@ void Errors::function_errors(FunctionErrors errorCode, const std::string &whatPa
   }
 }
 
-void Errors::parsing_errors(ParsingErrors errorCode, const std::string &whatPart) {
+void Errors::parsing_errors(ParsingErrors errorCode, 
+                            const std::string &whatPart) {
   std::string formattedMessage = "Parsing\n";                                         
   switch (errorCode) {
     case ParsingErrors::EXPRESSION_ARLEADY_DEFINED:
@@ -569,7 +575,8 @@ void Errors::parsing_errors(ParsingErrors errorCode, const std::string &whatPart
   }
 }
 
-void Errors::netlist_errors(NetlistErrors errorCode, const std::string &whatPart) {
+void Errors::netlist_errors(NetlistErrors errorCode, 
+                            const std::string &whatPart) {
   std::string formattedMessage = "Netlist\n";
   switch (errorCode) {
     case NetlistErrors::NO_SUCH_NODE:
@@ -584,7 +591,8 @@ void Errors::netlist_errors(NetlistErrors errorCode, const std::string &whatPart
   }
 }
 
-void Errors::output_errors(OutputErrors errorCode, const std::string &whatPart) {
+void Errors::output_errors(OutputErrors errorCode, 
+                          const std::string &whatPart) {
   std::string formattedMessage = "Output\n";
   switch (errorCode) {
     case OutputErrors::CANNOT_OPEN_FILE:

@@ -7,10 +7,9 @@
 
 using namespace JoSIM;
 
-void Model::parse_model(
-    const std::pair<std::string, std::string> &s,
-    std::vector<std::pair<Model,std::string>> &models,
-    const std::unordered_map<ParameterName, Parameter> &p) {
+void Model::parse_model(const std::pair<std::string, std::string> &s,
+                        std::vector<std::pair<Model,std::string>> &models,
+                        const std::unordered_map<ParameterName, Parameter> &p) {
   
   // Split keywords using spaces
   std::vector<std::string> tokens = Misc::tokenize_delimiter(s.first, "();, \t");

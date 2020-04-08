@@ -25,6 +25,7 @@ class TransmissionLine {
     int currentIndex1_;
     int currentIndex2_;
     double value_;
+    double p1n2_, p2n2_, p1nk2_, p2nk2_;
     double dp1n1_, dp1n2_, dv2n1_, dp2n2_;
     double dp1nk_, dp1nk1_, dp2nk_, dp2nk1_;
     int timestepDelay_;
@@ -32,6 +33,7 @@ class TransmissionLine {
     TransmissionLine() :
     currentIndex1_(-1), currentIndex2_(-1), 
     value_(0),
+    p1n2_(0), p2n2_(0), p1nk2_(0), p2nk2_(0),
     dp1n1_(0), dp1n2_(0), dv2n1_(0), dp2n2_(0),
     dp1nk_(0), dp1nk1_(0), dp2nk_(0), dp2nk1_(0),
     timestepDelay_(0)
@@ -68,6 +70,10 @@ class TransmissionLine {
     void set_timestepDelay(const std::pair<std::string, std::string> &s, 
                             const std::unordered_map<ParameterName, Parameter> &p,
                             const double &timestep);
+    void set_p1n2(const double &v) { p1n2_ = v; }
+    void set_p2n2(const double &v) { p2n2_ = v; }
+    void set_p1nk2(const double &v) { p1nk2_ = v; }
+    void set_p2nk2(const double &v) { p2nk2_ = v; }
     void set_dp1n1(const double &v) { dp1n1_ = v; }
     void set_dp1n2(const double &v) { dp1n2_ = v; }
     void set_dp2n1(const double &v) { dv2n1_ = v; }
@@ -89,6 +95,10 @@ class TransmissionLine {
     const int& get_currentIndex2() const { return currentIndex2_; }
     const double& get_value() const { return value_; }
     const int& get_timestepDelay() const { return timestepDelay_; }
+    const double& get_p1n2() const { return p1n2_; }
+    const double& get_p2n2() const { return p2n2_; }
+    const double& get_p1nk2() const { return p1nk2_; }
+    const double& get_p2nk2() const { return p2nk2_; }
     const double& get_dp1n1() const { return dp1n1_; }
     const double& get_dp1n2() const { return dp1n2_; }
     const double& get_dp2n1() const { return dv2n1_; }

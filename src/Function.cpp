@@ -11,7 +11,7 @@
 using namespace JoSIM;
 
 std::vector<double> Function::parse_function(const std::string &str, Input &iObj,
-                                         const std::string &subckt) {
+                                              const std::string &subckt) {
   std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
   auto first = str.find('(') + 1;
@@ -45,8 +45,10 @@ std::vector<double> Function::parse_function(const std::string &str, Input &iObj
   return functionOfT;
 }
 
-void Function::parse_pwl(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                const Input &iObj, const std::string &subckt) {
+void Function::parse_pwl(const std::vector<std::string> &tokens, 
+                          std::vector<double> &functionOfT, 
+                          const Input &iObj, 
+                          const std::string &subckt) {
   std::vector<double> timesteps, values;
   if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
     Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
@@ -119,8 +121,10 @@ void Function::parse_pwl(const std::vector<std::string> &tokens, std::vector<dou
   }
 }
 
-void Function::parse_pulse(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                  const Input &iObj, const std::string &subckt) {
+void Function::parse_pulse(const std::vector<std::string> &tokens, 
+                            std::vector<double> &functionOfT, 
+                            const Input &iObj, 
+                            const std::string &subckt) {
   if (std::stod(tokens.at(0)) != 0.0) {
       Errors::function_errors(FunctionErrors::INITIAL_PULSE_VALUE, tokens.at(0));
   }
