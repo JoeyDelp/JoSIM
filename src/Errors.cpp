@@ -199,6 +199,11 @@ void Errors::invalid_component_errors(ComponentErrors errorCode,
       formattedMessage += "Invalid definition for transmission line found.\n";
       formattedMessage += "Infringing line: " + whatPart;
       throw std::runtime_error(formattedMessage);
+    case ComponentErrors::INVALID_TX_RESOLUTION:
+      formattedMessage += "Time delay for transmission line is smaller than resolution of simulation timestep.\n";
+      formattedMessage += "Please ensure that timestep for simulation is smaller than any transmission line delay.\n";
+      formattedMessage += "Infringing line: " + whatPart;
+      throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_INDUCTOR:
       formattedMessage += "Invalid mutual coupling defined. Missing inductor " + whatPart + "\n";
       formattedMessage += "Please ensure that " + whatPart + " exists.";

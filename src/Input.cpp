@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <regex>
 
 using namespace JoSIM;
 
@@ -15,6 +16,7 @@ std::vector<std::string> Input::read_file(const std::string &fileName){
   if (ifile.is_open()) {
     while (!ifile.eof()) {
       getline(ifile, line);
+      line = std::regex_replace(line, std::regex("^ +"), "");
       std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
       if (!line.empty() && line.back() == '\r')
           line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());

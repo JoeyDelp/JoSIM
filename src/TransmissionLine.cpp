@@ -423,4 +423,7 @@ void TransmissionLine::set_timestepDelay(const std::pair<std::string, std::strin
                                           const std::unordered_map<ParameterName, Parameter> &p,
                                           const double &timestep) {
   timestepDelay_ = (int)(parse_param(s.first, p, s.second) / timestep);
+  if(timestepDelay_ < timestep) {
+    Errors::invalid_component_errors(ComponentErrors::INVALID_TX_RESOLUTION, label_);
+  }
 }

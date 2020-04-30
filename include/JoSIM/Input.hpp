@@ -32,11 +32,13 @@ class Input {
   Input(AnalysisType analysis_type = AnalysisType::Voltage,
         InputType input_type = InputType::Jsim,
         IntegrationType int_type = IntegrationType::Trapezoidal,
-        bool verbose = false) : 
+        bool verbose = false,
+        bool minimal = false) : 
     argAnal(analysis_type), 
     argConv(input_type), 
     argInt(int_type),
-    argVerb(verbose) 
+    argVerb(verbose),
+    argMin(minimal) 
     {
       netlist.argConv = argConv;
     };
@@ -45,6 +47,7 @@ class Input {
   InputType argConv;
   IntegrationType argInt;
   bool argVerb = false;
+  bool argMin = false;
 
   void parse_file(const std::string &fileName);
 };

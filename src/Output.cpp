@@ -287,8 +287,9 @@ void Output::format_raw(const std::string &filename) {
   }
 }
 
-void Output::format_cout() {
-  for (int i = 0; i < traces.size() - 1; ++i) {
+void Output::format_cout(const bool &argMin) {
+  if(!argMin) {
+    for (int i = 0; i < traces.size() - 1; ++i) {
       std::cout << traces.at(i).name_ << " ";
     }
     std::cout << traces.at(traces.size() - 1).name_ << "\n";
@@ -298,4 +299,5 @@ void Output::format_cout() {
       }
       std::cout << std::setw(15) << traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
+  }
 }

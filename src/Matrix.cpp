@@ -61,13 +61,17 @@ void Matrix::create_matrix(Input &iObj)
   sqtr = iObj.netlist.expNetlist.size()/2;
   tqtr = iObj.netlist.expNetlist.size()/4 * 3;
 
-  std::cout << "Matrix Creation Progress:" << std::endl;
-  std::cout << "0%\r" << std::flush;
+  if(!iObj.argMin) {
+    std::cout << "Matrix Creation Progress:" << std::endl;
+    std::cout << "0%\r" << std::flush;
+  }
   int creationCounter = 0;
   for (const auto &i : iObj.netlist.expNetlist) {
-    if(creationCounter == fqtr) std::cout << "25%\r" << std::flush;
-    if(creationCounter == sqtr) std::cout << "50%\r" << std::flush;
-    if(creationCounter == tqtr) std::cout << "75%\r" << std::flush;
+    if(!iObj.argMin) {
+      if(creationCounter == fqtr) std::cout << "25%\r" << std::flush;
+      if(creationCounter == sqtr) std::cout << "50%\r" << std::flush;
+      if(creationCounter == tqtr) std::cout << "75%\r" << std::flush;
+    }
     switch(i.first.at(0)){
       case 'R':
         components.devices.emplace_back(Resistor::create_resistor(i, 
@@ -220,9 +224,10 @@ void Matrix::create_matrix(Input &iObj)
   }
 
   create_csr();
-
-  std::cout << "100%" << std::endl;
-  std::cout << "\n";
+  if(!iObj.argMin) {
+    std::cout << "100%" << std::endl;
+    std::cout << "\n";
+  }
 
 }
 

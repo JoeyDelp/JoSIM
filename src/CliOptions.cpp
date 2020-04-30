@@ -129,6 +129,10 @@ CliOptions CliOptions::parse(int argc,
           out.standardin = true;
           out.cir_file_name = "standard_input";
           break;
+        // Enable minimal (no output)
+        case 'm':
+          out.minimal = true;
+          break;
         // Output file switch
         case 'o':
           if (specArg) {
@@ -233,13 +237,15 @@ CliOptions CliOptions::parse(int argc,
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
     }
   }
-  std::cout << "Input file: " << out.cir_file_name 
-            << std::endl;
-  std::cout << std::endl;
-  if(out.output_file_name) {
-    std::cout << "Output file: " << out.output_file_name.value()
+  if(!out.minimal) {
+    std::cout << "Input file: " << out.cir_file_name 
               << std::endl;
     std::cout << std::endl;
+    if(out.output_file_name) {
+      std::cout << "Output file: " << out.output_file_name.value()
+                << std::endl;
+      std::cout << std::endl;
+    }
   }
 
   return out;
@@ -306,6 +312,15 @@ void CliOptions::display_help() {
       << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
       << "Reads from standard input until the .end command or EOF character is specified."
       << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+            << "|" << std::endl;
+
+  std::cout << std::setw(16) << std::left << "-m" << std::setw(3) << std::left
+            << "|"
+            << "Disables most output." << std::endl;
+  std::cout << std::setw(16) << std::left << "--minimal" << std::setw(3)
+            << std::left << "|"
+            << " " << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
 

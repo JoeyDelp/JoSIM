@@ -20,6 +20,7 @@ struct CliOptions {
   AnalysisType analysis_type = AnalysisType::Voltage;
   IntegrationType integration_type = IntegrationType::Trapezoidal;
   bool verbose = false;
+  bool minimal = false;
   bool parallel = false;
   bool standardin = false;
 

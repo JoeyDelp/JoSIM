@@ -26,7 +26,8 @@ int main(int argc,
     Input iObj(cli_options.analysis_type, 
               cli_options.input_type,
               cli_options.integration_type,
-              cli_options.verbose);    
+              cli_options.verbose,
+              cli_options.minimal);    
     // Parse input file as specified by the cli arguments
     iObj.parse_file(cli_options.cir_file_name);
     // Parse any identified parameter values
@@ -69,7 +70,7 @@ int main(int argc,
         oObj.Output::format_raw(cli_options.output_file_name.value());
       }
     } else {
-      oObj.Output::format_cout();
+      oObj.Output::format_cout(iObj.argMin);
     }
 
     return 0;

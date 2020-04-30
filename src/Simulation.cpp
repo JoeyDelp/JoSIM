@@ -50,13 +50,17 @@ void Simulation::trans_sim_new(Input &iObj,
   Numeric = klu_factor(&mObj.rp.front(), &mObj.ci.front(),
                        &mObj.nz.front(), Symbolic, &Common);
   results.timeAxis.clear();
-  std::cout << "Simulation Progress:" << std::endl;
-  std::cout << "0%\r" << std::flush;
+  if(!iObj.argMin) {
+    std::cout << "Simulation Progress:" << std::endl;
+    std::cout << "0%\r" << std::flush;
+  }
   for(int i = 0; i < simSize; ++i) {
     std::vector<double> RHS(mObj.rp.size() - 1, 0.0);
-    if(i == fqtr) std::cout << "25%\r" << std::flush;
-    if(i == sqtr) std::cout << "50%\r" << std::flush;
-    if(i == tqtr) std::cout << "75%\r" << std::flush;
+    if(!iObj.argMin){
+      if(i == fqtr) std::cout << "25%\r" << std::flush;
+      if(i == sqtr) std::cout << "50%\r" << std::flush;
+      if(i == tqtr) std::cout << "75%\r" << std::flush;
+    }
     // Handle current sources
     for (const auto &j : mObj.components.currentsources) {
       if(j.get_posIndex() && !j.get_negIndex()) {
@@ -522,8 +526,10 @@ void Simulation::trans_sim_new(Input &iObj,
 
     results.timeAxis.emplace_back(i * iObj.transSim.get_prstep());
   }
-  std::cout << "100%" << std::endl;
-  std::cout << "\n";
+  if(!iObj.argMin) {
+    std::cout << "100%" << std::endl;
+    std::cout << "\n";
+  }
   
   klu_free_symbolic(&Symbolic, &Common);
   klu_free_numeric(&Numeric, &Common);

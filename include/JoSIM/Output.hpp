@@ -34,7 +34,7 @@ class Output {
 
   void format_raw(const std::string &filename);
 
-  void format_cout();
+  void format_cout(const bool &argMin);
 };
 } // namespace JoSIM
 
