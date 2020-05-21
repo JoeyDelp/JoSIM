@@ -10,7 +10,7 @@ using namespace JoSIM;
 
 std::vector<std::string> Input::read_file(const std::string &fileName){
   std::string line;
-  std::fstream ifile(fileName);
+  std::ifstream ifile(fileName);
   std::vector<std::string> fileLines;
   if (ifile.is_open()) {
     while (!ifile.eof()) {
