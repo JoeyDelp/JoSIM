@@ -37,7 +37,7 @@ void JoSIM::find_relevant_traces(const std::vector<std::string> &c,
 
   for (const auto &i : storeCommands) {
     // Tokenize each store command using spaces
-    std::vector<std::string> tokens = Misc::tokenize_space(i);
+    std::vector<std::string> tokens = Misc::tokenize(i);
     // Complain if any of the commands have less than 3 tokens
     if(tokens.size() < 2 && tokens.at(0) != "SAVE") {
       Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, i);
@@ -214,7 +214,7 @@ void JoSIM::handle_current(const std::string &s, Matrix &mObj) {
 void JoSIM::handle_voltage_or_phase(const std::string &s, 
                                     bool voltage, 
                                     Matrix &mObj) {
-  std::vector<std::string> tokens = Misc::tokenize_delimiter(s, " ,");
+  std::vector<std::string> tokens = Misc::tokenize(s, " ,");
   RelevantTrace temp;
   if(voltage) {
     temp.storageType = StorageType::Voltage;
@@ -237,10 +237,10 @@ void JoSIM::handle_voltage_or_phase(const std::string &s,
             temp.deviceLabel = "\"P(" + s + ")\"";
           }
           temp.device = true;
-          temp.index1 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
+          temp.index1 = std::visit([](const auto& device) noexcept -> const int_o& {
             return device.get_posIndex();
           }, mObj.components.devices.at(j));
-          temp.index2 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
+          temp.index2 = std::visit([](const auto& device) noexcept -> const int_o& {
             return device.get_negIndex();
           }, mObj.components.devices.at(j));
           mObj.relevantTraces.emplace_back(temp);
@@ -252,10 +252,10 @@ void JoSIM::handle_voltage_or_phase(const std::string &s,
               temp.deviceLabel = "\"P(" + s + ")\"";
             }
             temp.device = true;
-            temp.index1 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
+            temp.index1 = std::visit([](const auto& device) noexcept -> const int_o& {
             return device.get_posIndex();
             }, mObj.components.devices.at(j));
-            temp.index2 = std::visit([](const auto& device) noexcept -> const std::optional<int>& {
+            temp.index2 = std::visit([](const auto& device) noexcept -> const int_o& {
               return device.get_negIndex();
             }, mObj.components.devices.at(j));
             try {

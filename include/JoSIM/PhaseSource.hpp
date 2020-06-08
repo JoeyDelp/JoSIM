@@ -19,7 +19,7 @@ class PhaseSource {
     std::vector<double> nonZeros_;
     std::vector<int> columnIndex_;
     std::vector<int> rowPointer_;
-    std::optional<int> posIndex_, negIndex_;
+    int_o posIndex_, negIndex_;
     int currentIndex_;
     int sourceIndex_;
 
@@ -50,8 +50,8 @@ class PhaseSource {
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
     const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const std::optional<int>& get_posIndex() const { return posIndex_; }
-    const std::optional<int>& get_negIndex() const { return negIndex_; }
+    const int_o& get_posIndex() const { return posIndex_; }
+    const int_o& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }
     const int& get_sourceIndex() const { return sourceIndex_; }
 };

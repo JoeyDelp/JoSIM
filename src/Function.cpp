@@ -17,7 +17,7 @@ std::vector<double> Function::parse_function(const std::string &str, Input &iObj
   auto first = str.find('(') + 1;
   auto last = str.find(')');
   std::string params = str.substr(first, last - first);
-  tokens = Misc::tokenize_delimiter(params, " ,");
+  tokens = Misc::tokenize(params, " ,");
   /* PWL(0 0 T1 V1 T2 V2 ... TN VN) */
   if (str.find("PWL") != std::string::npos) {
     parse_pwl(tokens, functionOfT, iObj, subckt);
@@ -286,7 +286,7 @@ void Function::parse_custom(const std::vector<std::string> &tokens, std::vector<
     Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, WFline);
   }
   wffile.close();
-  WF = Misc::tokenize_delimiter(WFline, " ,;");
+  WF = Misc::tokenize(WFline, " ,;");
   std::vector<double> timesteps, values;
   for (int i = 0; i < WF.size(); ++i) {
     values.push_back(Misc::modifier(WF.at(i)) * SF);

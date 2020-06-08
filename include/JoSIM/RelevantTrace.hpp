@@ -5,6 +5,7 @@
 
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/TypeDefines.hpp"
 
 
 namespace JoSIM {
@@ -41,12 +42,12 @@ template<class It> It uniquify(It begin, It const end) {
 class RelevantTrace {
   public:
     bool device;
-    std::optional<std::string> deviceLabel;
+    string_o deviceLabel;
     StorageType storageType;
-    std::optional<int> index1;
-    std::optional<int> index2;
-    std::optional<int> sourceIndex;
-    std::optional<int> variableIndex;
+    int_o index1;
+    int_o index2;
+    int_o sourceIndex;
+    int_o variableIndex;
 
     RelevantTrace() :
       device(false)

@@ -24,7 +24,7 @@ TransmissionLine TransmissionLine::create_transmissionline(const std::pair<std::
                                                             const IntegrationType & inttyp,
                                                             const double &timestep,
                                                             int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize(s.first);
   // Ensure the device has at least 6 parts: LABEL PNODE1 NNODE1 PNODE2 NNODE2 VALUE
   if(tokens.size() < 6) {
     Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, s.first);

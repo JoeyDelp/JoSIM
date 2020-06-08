@@ -15,7 +15,7 @@ VoltageSource VoltageSource::create_voltagesource(const std::pair<std::string, s
                                                   std::unordered_set<std::string> &lm,
                                                   std::vector<std::vector<std::pair<double, int>>> &nc,
                                                   int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize(s.first);
   VoltageSource temp;
   temp.set_label(tokens.at(0), lm);
   temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);

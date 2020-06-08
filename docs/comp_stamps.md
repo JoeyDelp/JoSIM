@@ -73,59 +73,7 @@ This allows us to create a phase resistor matrix stamp as:
 	\end{bmatrix}
 \end{equation}
 
-### <table>
-  <tr>
-    <th>Switch</th><th>Options</th><th>Explanation</th>
-  </tr>
-  <tr>
-    <td>-a</td><td>0 or 1</td><td rowspan="2">Sets the analysis type between Voltage and Phase mode</td>
-  </tr>
-  <tr>
-    <td>--analysis=</td><td>0 is default</td>
-  </tr>
-  <tr>
-    <td>-c</td><td>0 or 1</td><td rowspan="2">Sets the subcircuit convention used internally. 0 being JSIM. 1 being WRspice (standard SPICE)</td>
-  </tr>
-  <tr>
-  	<td>--convention=</td><td>0 is default</td>
-  </tr>
-  <tr>
-    <td>-h</td><td></td><td rowspan="2">Displays the help menu that contains explanations for each of these switches.</td>
-  </tr>
-  <tr>
-    <td>--help</td><td></td>
-  </tr>
-  <tr>
-    <td>-i</td><td></td><td rowspan="2">Input circuit netlist from standard input.</td>
-  </tr>
-  <tr>
-    <td>--input</td><td></td>
-  </tr>
-  <tr>
-    <td>-o</td><td>output filename</td><td rowspan="2">Save the output to file as either .csv, .dat or raw</td>
-  </tr>
-  <tr>
-    <td>--output=</td><td>output.csv</td>
-  </tr>
-  <tr>
-    <td>-p</td><td></td><td rowspan="2">Enables an experimental parallel processing feature. This is still under construction and results might not be as intendend</td>
-  </tr>
-  <tr>
-    <td>--parallel</td><td></td>
-  </tr>
-  <tr>
-    <td>-V</td><td></td><td rowspan="2">Enables verbose mode, displaying extra information with regards to the simulation</td>
-  </tr>
-  <tr>
-    <td>--verbose</td><td></td>
-  </tr>
-  <tr>
-    <td>-v</td><td></td><td rowspan="2">Displays the version information for this version of the executable</td>
-  </tr>
-  <tr>
-    <td>--version</td><td></td>
-  </tr>
-</table>
+### Capacitor
 
 <figure>
   <img src="../img/capacitor.pdf" alt="Capacitor Symbol" class="center" width="25%">

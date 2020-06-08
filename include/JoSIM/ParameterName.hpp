@@ -10,10 +10,10 @@ namespace JoSIM {
 
 class ParameterName {
   std::string name_;
-  std::string subcircuit_;
+  std::optional<std::string> subcircuit_;
 
   public:
-  ParameterName(std::string name, std::string subcircuit)
+  ParameterName(std::string name, std::optional<std::string> subcircuit)
       : name_(std::move(name)), subcircuit_(std::move(subcircuit)) {
     // Empty
   }
@@ -22,11 +22,13 @@ class ParameterName {
   const std::string &name() const noexcept { return name_; }
 
   /// Get subcircuit name of parameter, "" if it is in global scope
-  const std::string &subcircuit() const noexcept { return subcircuit_; }
+  const std::optional<std::string> &subcircuit() const noexcept { 
+    return subcircuit_; }
 
   /// Equality comparison
   bool operator==(const ParameterName &other) const noexcept {
-    return (name_ == other.name_ && subcircuit_ == other.subcircuit_);
+    return (name_ == other.name_ && 
+      subcircuit_.value() == other.subcircuit_.value());
   }
 };
 
@@ -41,7 +43,8 @@ template <> struct hash<JoSIM::ParameterName> {
     using std::string;
 
     auto hash_name = hash<string>()(parameter_name.name());
-    auto hash_subcircuit = hash<string>()(parameter_name.subcircuit());
+    auto hash_subcircuit = 
+      hash<std::optional<string>>()(parameter_name.subcircuit());
 
     return hash_name ^ (hash_subcircuit << 1);
   }

@@ -21,16 +21,18 @@ class Capacitor {
     std::vector<double> nonZeros_;
     std::vector<int> columnIndex_;
     std::vector<int> rowPointer_;
-    std::optional<int> posIndex_, negIndex_;
+    int_o posIndex_, negIndex_;
     int currentIndex_;
+    int nodeConfig_;
     double value_;
     double capacitance_;
     double pn1_;
     double dpn1_;
     double pn2_;
   public:
-    Capacitor() : 
-      currentIndex_(-1),
+    Capacitor() :
+      currentIndex_(-1), 
+      nodeConfig_(0),
       value_(0.0),
       capacitance_(0.0),
       pn1_(0.0),
@@ -74,8 +76,8 @@ class Capacitor {
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
     const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const std::optional<int>& get_posIndex() const { return posIndex_; }
-    const std::optional<int>& get_negIndex() const { return negIndex_; }
+    const int_o& get_posIndex() const { return posIndex_; }
+    const int_o& get_negIndex() const { return negIndex_; }
     const int& get_currentIndex() const { return currentIndex_; }
     const double& get_value() const { return value_; }
     const double& get_capacitance() const { return capacitance_; }

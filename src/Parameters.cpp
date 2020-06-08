@@ -12,34 +12,34 @@
 
 using namespace JoSIM;
 
-void JoSIM::create_parameter(const std::pair<std::string, std::string> &s,
-                              std::unordered_map<ParameterName, Parameter> &parameters) {
+void JoSIM::create_parameter(
+  const tokens_t &s, param_map &parameters, string_o subc) {
+  // Temporary parameter which will be stored
   Parameter temp;
-  std::vector<std::string> tokens;
-
-  // Validity check: Check to see if '=' exists
-  if(s.second.find_first_of('=') == std::string::npos) {
-    Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, s.second);
+  // Check to ensure declaration is valid
+  if(s.size() < 2) {
+    Errors::parsing_errors(
+      ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s));
   }
-  // Remove ".PARAM" prefix and ensure valid declaration
-  tokens = Misc::tokenize_space_once(s.second);
-  if(tokens.size() < 2) {
-    Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, s.second);
+  // Check to see if '=' exists
+  if(Misc::vector_to_string(s).find('=') == std::string::npos) {
+    Errors::parsing_errors(
+      ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s));
   }
-  // Split into parameter name and expression
-  tokens = Misc::tokenize_delimiter(tokens.at(1), "=");
-  // Trim trailing and leading white spaces
-  Misc::rtrim(tokens.at(0));
-  Misc::ltrim(tokens.at(1));
-
+  // Split the line/tokens into the parameter name and expression
+  tokens_t tokens(s.begin()+1, s.end());
+  // 1st token is parameter name, 2nd is the expression
+  tokens = Misc::tokenize(
+    Misc::vector_to_string(tokens, ""), "=", 0, true, true);
+  // Set the expresion for the temporary parameter
   temp.set_expression(tokens.at(1));
-
-  if(parameters.count(ParameterName(tokens.at(0), s.first)) == 0) {
-    parameters.insert({ParameterName(tokens.at(0), s.first), temp});
-  } else {
-    Errors::parsing_errors(ParsingErrors::EXPRESSION_ARLEADY_DEFINED, s.second);
-    parameters.insert({ParameterName(tokens.at(0), s.first), temp});
-  }
+  // Warn user that duplicate parameter exists, this overwrites previous
+  if(parameters.count(ParameterName(tokens.at(0), subc)) != 0) {
+    Errors::parsing_errors(
+      ParsingErrors::EXPRESSION_ARLEADY_DEFINED, Misc::vector_to_string(s));
+  } 
+  // Insert the parameter into a map of known parameters for parsing
+  parameters.insert({ParameterName(tokens.at(0), subc), temp});
 }
 
 // Possible functions that can be called
@@ -68,146 +68,208 @@ int JoSIM::precedence_lvl(const std::string &op) {
   return 4;
 }
 
-double JoSIM::parse_param(const std::string &expr,
-                          const std::unordered_map<ParameterName, Parameter> &params,
-                          const std::string &subckt) 
-  {
+double JoSIM::parse_param(
+  const std::string &expr, const param_map&params, string_o subc) {
   // Initialize the expression to evaluate
   std::string expToEval = expr;
   // Remove any and all whitespace characters
   expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace),
                   expToEval.end());
-
+  // Stacks used in the shunting yard
   std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
+  // Create two copies of the type each element in the queue is
   std::vector<char> qType, qTypeCopy;
+  // Substring reference to part of the expression
   std::string partToEval;
+  // Counter
   int popCount = 0;
+  // Variable for the result to be returned
   double result;
-
   // Evaluate expression piece by piece until it is empy
   while (!expToEval.empty()) {
     // Find the position of the first operator
     int opLoc = expToEval.find_first_of("/*-+(){}[]^");
-    // If the position of the first operator is at the start 
+    // If no operator is found
     if (opLoc == -1) {
+      // The part to evaluate is the entire experssion
       partToEval = expToEval;
+    // If an operator is found
     } else {
-      if (expToEval.at(opLoc) == '-' || expToEval.at(opLoc) == '+')
-        if (opLoc != 0)
-          if (expToEval[opLoc - 1] == 'E')
+      // If the operator is either a '-' or a '+'
+      if (expToEval.at(opLoc) == '-' || expToEval.at(opLoc) == '+') {
+        // If this operator is not the start of the string
+        if (opLoc != 0){
+          // If the character preceeding this operator is an E
+          if (expToEval[opLoc - 1] == 'E') {
+            // Find the next operator since this operator is not an operator
             opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-      if (opLoc == 0)
+          }
+        }
+      }
+      // If the operator is at the start of the string
+      if (opLoc == 0) {
+        // The part to evaluate is the the operator
         partToEval = expToEval.substr(0, opLoc + 1);
-      else
+      // If the operator is further along
+      } else {
+        // The part to evaluate is from the start to the the operator
         partToEval = expToEval.substr(0, opLoc);
+      }
     }
     // Handle a numerical value
     if (isdigit(partToEval.at(0))) {
-      rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
+      // Add the value to the RPN queue with precision 6
+      rpnQueue.push_back(
+        Misc::precise_to_string(Misc::modifier(partToEval), 6));
+      // Identify the type as a value
       qType.push_back('V');
-    // If it is not a digit, check that it is not a parameter in local scope
-    //} else if (params.count(ParameterName(partToEval, subckt)) != 0) {
+    // If it is not a digit, check that it is not a parameter
     } else if ([&]() { 
-        if(params.count(ParameterName(partToEval, subckt)) != 0)
-          if(params.at(ParameterName(partToEval, subckt)).get_value())
+        // Check if the parameter exists
+        if(params.count(ParameterName(partToEval, subc)) != 0)
+          if(params.at(ParameterName(partToEval, subc)).get_value())
             return true;
         return false;}() ) {
+      // If the parameter exists then add to the queue with precision 6
       rpnQueue.push_back(Misc::precise_to_string(
-          params.at(ParameterName(partToEval, subckt)).get_value().value()));
+          params.at(ParameterName(partToEval, subc)).get_value().value(), 6));
+      // Identify the type as a value  
       qType.push_back('V');
-    // If it is not in local scope, check that it is not a parameter in global scope
-    //} else if (params.count(ParameterName(partToEval, "")) != 0) {
-    } else if ([&]() { 
-        if(params.count(ParameterName(partToEval, "")) != 0)
-          if(params.at(ParameterName(partToEval, "")).get_value())
-            return true;
-        return false;}() ) {
-      rpnQueue.push_back(Misc::precise_to_string(
-          params.at(ParameterName(partToEval, "")).get_value().value()));
-      qType.push_back('V');
-    // If it is not in either, check if it is not a function name such as SIN, COS, TAN, etc.
-    } else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end()) {
+    // Else check that it is not a function name such as SIN, COS, TAN, etc.
+    } else if (std::find(
+        funcs.begin(), funcs.end(), partToEval) != funcs.end()) {
+      // Add it to the operator stack if it is
       opStack.push_back(partToEval);
     // If not a function, check if it is not a defined constant
     } else if (Misc::string_constant(partToEval) != 0.0) {
-      rpnQueue.push_back(Misc::precise_to_string(Misc::string_constant(partToEval)));
+      // Add this defined constant to the RPN stack with precision 6
+      rpnQueue.push_back(
+        Misc::precise_to_string(Misc::string_constant(partToEval), 6));
+      // Identify the type as a value
       qType.push_back('V');
     // If not a constant, check if it is an operator in the operator list
     } else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
+      // While the operator stack is not empty
       while ((!opStack.empty()) &&
              (((precedence_lvl(opStack.back()) == 4) ||
-               (precedence_lvl(opStack.back()) >= precedence_lvl(partToEval))) &&
+               (precedence_lvl(opStack.back()) >= 
+                precedence_lvl(partToEval))) &&
               (opStack.back().find_first_of("([{") == std::string::npos) &&
               (partToEval != "^"))) {
+        // Add the operator to the RPN stack
         rpnQueue.push_back(opStack.back());
+        // Identify the type as operator
         qType.push_back('O');
+        // Remove the operator from the operator stack
         opStack.pop_back();
       }
+      // Add the part to be evaluated to the operator stack
       opStack.push_back(partToEval);
     // Check parenthesis opening
     } else if (partToEval.find_first_of("([{") != std::string::npos) {
+      // Add the parenthesis opening to the operator stack
       opStack.push_back(partToEval);
     // Check parenthesis close
     } else if (partToEval.find_first_of(")]}") != std::string::npos) {
+      // While the operator stack is not empty and the back is not a opening
       while ((!opStack.empty()) &&
              (opStack.back().find_first_of("([{") == std::string::npos)) {
+        // Add the operator to the RPN stack
         rpnQueue.push_back(opStack.back());
+        // Identify it as an operator
         qType.push_back('O');
+        // Remove the operator from the operator stack
         opStack.pop_back();
       }
+      // Id the stack is not empty and the back is a closing
       if ((!opStack.empty()) &&
           (opStack.back().find_first_of("([{") != std::string::npos)) {
+        // Remove from the operator stack
         opStack.pop_back();
+      // If this point is reached we have mismatched parenthesis
       } else {
         Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr);
       }
-    // If it is none of the above then the function is not valid or a parameter is used which has not been parsed
+    // The function is invalid or a parameter is used which is yet to be parsed
     } else {
+      // Return NaN to indicate this ocurred
       return std::numeric_limits<double>::quiet_NaN();
     }
     // Adjust the next part to be evaluated
     if (opLoc == 0) {
+      // If the operator is at 0, substring the rest of the expression
       expToEval = expToEval.substr(1);
+    // If the operator is not found then the remaining expression is empty
     } else if (opLoc == -1) {
       expToEval = "";
+    // Else substring until the next operator location
     } else {
       expToEval = expToEval.substr(opLoc);
     }
   }
+  // If the remaining expresiotn is empty
   if (expToEval.empty())
+    // If the operator stack is not empty (it should be)
     while (!opStack.empty()) {
+      // If the last operator is an opening parenthesis
       if (opStack.back().find_first_of("([{") != std::string::npos)
+        // We have mismatched parenthesis, complain
         Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr);
       else {
+        // Add the operator to the RPN stack
         rpnQueue.push_back(opStack.back());
+        // Identify it as an operator
         qType.push_back('O');
+        // Remove the operator from the operator stack
         opStack.pop_back();
       }
     }
+  // Perform Reverse Polish Notation expansion on RPN stack
   while (rpnQueue.size() > 1) {
+    // Clear the copies  
     rpnQueueCopy.clear();
     qTypeCopy.clear();
+    // Loop the the queue type
     for (int i = 0; i < qType.size(); ++i) {
+      // If the queue type is value
       if (qType[i] == 'V') {
+        // Add the value to the copy of the RPN
         rpnQueueCopy.push_back(rpnQueue[i]);
+        // Add the type to the copy of the qType
         qTypeCopy.push_back('V');
+      // If the type is operator
       } else if (qType[i] == 'O') {
-        if (i == 0)
+        // If the operator is the first item in the queue
+        if (i == 0) {
+          // We have an invalid queue type. Should always be VVO or VO
           Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr);
-        else if (i < 2) {
+        // If we are less than 2 deep in the stack
+        } else if (i < 2) {
+          // Remove the previous value from the copy
           rpnQueueCopy.pop_back();
+          // Process the operator on the value and add to the copy
           rpnQueueCopy.push_back(Misc::precise_to_string(parse_operator(
-              rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
+              rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount), 6));
+        // Now proceed as normal with RPN expansion
         } else {
+          // Evaluate the operator on the two values
           result = parse_operator(rpnQueue[i], Misc::modifier(rpnQueue[i - 2]),
                                   Misc::modifier(rpnQueue[i - 1]), popCount);
-          for (int k = 0; k < popCount; ++k)
+          // Remove the two values from the copy
+          for (int k = 0; k < popCount; ++k) {
             rpnQueueCopy.pop_back();
-          if (popCount == 2)
+          }
+          // If we removed two
+          if (popCount == 2) {
+            // Remove the type from the copy of type stack
             qTypeCopy.pop_back();
-          rpnQueueCopy.push_back(Misc::precise_to_string(result));
+          }
+          // Add the result value to the RPN queue
+          rpnQueueCopy.push_back(Misc::precise_to_string(result, 6));
         }
+        // If the RPN queue is greater or equal to i
         if (rpnQueue.size() >= i) {
+          // Insert the rest of the stacks to the copies
           rpnQueueCopy.insert(rpnQueueCopy.end(), rpnQueue.begin() + i + 1,
                               rpnQueue.end());
           qTypeCopy.insert(qTypeCopy.end(), qType.begin() + i + 1, qType.end());
@@ -218,14 +280,13 @@ double JoSIM::parse_param(const std::string &expr,
     rpnQueue = rpnQueueCopy;
     qType = qTypeCopy;
   }
+  // The final value should be the one we want, return this
   return Misc::modifier(rpnQueue.back());
 }
 
 
-double JoSIM::parse_operator(const std::string &op, 
-                              double val1, 
-                              double val2,
-                              int &popCount) {
+double JoSIM::parse_operator(
+  const std::string &op, double val1, double val2, int &popCount) {
   if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
     popCount = 1;
     if (op == "SIN")
@@ -278,62 +339,124 @@ double JoSIM::parse_operator(const std::string &op,
   return 0.0;
 }
 
-void JoSIM::parse_parameters(std::unordered_map<ParameterName, Parameter> &parameters) {
+void JoSIM::parse_parameters(param_map &parameters) {
+  // Double parsed value that will be stored for each parameter
   double value;
+  // Counter to ensure that we do not get stuck in a loop
   int parsedCounter = 0;
-
+  // Parse parameters while counter is less than total parameter count
   while(parsedCounter < parameters.size()) {
+    // Set previous counter to counter to do sanity check
     int previous_counter = parsedCounter;
+    // Loop through the parameters parsing them if possible
     for(auto &i : parameters) {
+      // If the parameter does not yet have a value (double)
       if(!i.second.get_value()) {
-        value = parse_param(i.second.get_expression(), parameters, i.first.subcircuit());
+        // Parse this parameter if expression if possible
+        value = parse_param(
+          i.second.get_expression(), parameters, i.first.subcircuit());
+        // If the returned value is not NaN
         if(!std::isnan(value)) {
+          // Set the parameter value (double) to the parsed value (double)
           i.second.set_value(value);
+          // Increase the counter
           parsedCounter++;
         }
       }
     }
+    // If we reach this point then there are parameters that could not be parsed
     if (previous_counter == parsedCounter) {
-      std::string unknownParams = "";
+      // Temporary string that will contain the parameter to complain about
+      std::string unknownParams;
+      // Loop through the parameters
       for (auto &i : parameters) {
+        // If there are parameters with no value (double)
         if (!i.second.get_value()) {
-          unknownParams += i.first.name() + " " + i.first.subcircuit() + "\n";
+          // Create a string with the name and subcircuit
+          unknownParams += 
+            i.first.name() + " " + i.first.subcircuit().value() + "\n";
         }
       }
+      // Complain about all the unknown parameters only once
       Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, unknownParams);
     }
   }
 
 }
 
-void JoSIM::update_parameters(std::unordered_map<ParameterName, Parameter> &parameters) {
-  double value;
-  int parsedCounter = 0;
-
+void JoSIM::update_parameters(param_map &parameters) {
+  // Reset all the paraemeter values (doubles)
   for(auto i : parameters) {
     i.second.set_value(std::nan(""));
   }
+  // Parse all the parameters again
+  parse_parameters(parameters);
+}
 
-  while(parsedCounter < parameters.size()) {
-    int previous_counter = parsedCounter;
-    for(auto &i : parameters) {
-      if(!i.second.get_value()) {
-        value = parse_param(i.second.get_expression(), parameters, i.first.subcircuit());
-        if(!std::isnan(value)) {
-          i.second.set_value(value);
-          parsedCounter++;
-        }
-      }
+void expand_inline_parameters(
+  std::pair<tokens_t, string_o> &s, param_map &parameters) {
+  int_o oPos, cPos;
+  // Loop through all the provided tokens, expanding any parameters
+  for(int i = 0; i < s.first.size(); ++i) {
+    // If there exists a opening curly parenthesis, an expression exists
+    if(s.first.at(i).find("{") != std::string::npos) {
+      oPos = i;
     }
-    if (previous_counter == parsedCounter) {
-      std::string unknownParams = "";
-      for (auto &i : parameters) {
-        if (!i.second.get_value()) {
-          unknownParams += i.first.name() + " " + i.first.subcircuit() + "\n";
-        }
-      }
-      Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, unknownParams);
+    // If there exists a closing curly parenthesis, an expression exists
+    if(s.first.at(i).find("}") != std::string::npos) {
+      cPos = i;
     }
   }
-
+  // If an expression opening was found
+  if(oPos) {
+    //  Then a closing brace must exist 
+    if(!cPos) {
+      // Complain if it doesn't
+      Errors::parsing_errors(
+        ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s.first));
+    }
+    // Create a temporary vector to split the token on '{'
+    tokens_t temp = 
+      Misc::tokenize(s.first.at(oPos.value()), "{", 1, true, true);
+    // Erase the original token containing the '{'
+    s.first.erase(s.first.begin() + oPos.value());
+    // Insert at the previous token position the temporary vector
+    s.first.insert(s.first.begin() + oPos.value(), temp.begin(), temp.end());
+    // If the emporary token is of size 2. e.g. "td={4" becomes [td=][4]
+    if(temp.size() == 2) {
+      // Increment the position to the begining of the expression
+      oPos = oPos.value() + 1;
+    }
+    // Split the closing parenthesis into tokens on '}'
+    temp = 
+      Misc::tokenize(s.first.at(cPos.value()), "}", 1, true, true);
+    // Erase the original closing token
+    s.first.erase(s.first.begin() + cPos.value());
+    // Insert the temporary vector at the original position
+    s.first.insert(s.first.begin() + cPos.value(), temp.begin(), temp.end());
+    // Parse the identified expression
+    double value = parse_param(
+      Misc::vector_to_string(tokens_t(s.first.begin() + oPos.value(), 
+        s.first.begin() + cPos.value()), ""), parameters, s.second);
+    // If the returned value is not NaN
+    if(!std::isnan(value)) {
+      // Complain of invalid parameter expression
+      Errors::parsing_errors(
+        ParsingErrors::UNIDENTIFIED_PART, Misc::vector_to_string(s.first));
+    }
+    // Erase the expression part of the tokens
+    s.first.erase(
+      s.first.begin() + oPos.value(), s.first.begin() + cPos.value());  
+    // Insert the double value in the place of the expression
+    s.first.insert(
+      s.first.begin() + oPos.value(), Misc::precise_to_string(value, 6));
+  }
+  // If an expression closing was found
+  if(cPos) {
+    //  Then a opening brace must exist 
+    if(!oPos) {
+      // Complain if it doesn't
+      Errors::parsing_errors(
+        ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s.first));
+    }
 }

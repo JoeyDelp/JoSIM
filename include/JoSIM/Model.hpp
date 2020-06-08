@@ -5,6 +5,7 @@
 
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Parameters.hpp"
+#include "JoSIM/TypeDefines.hpp"
 
 namespace JoSIM {
 class Model {
@@ -64,12 +65,13 @@ class Model {
     void set_criticalTemperature(const double &t) { criticalTemperature_ = t; }
     void set_deltaV(const double &d) { deltaV_ = d; }
     void set_transparency(const double &t) { transparency_ = t; }
-    void set_criticalToNormalRatio(const double &r) { criticalToNormalRatio_ = r; }
+    void set_criticalToNormalRatio(const double &r) { 
+      criticalToNormalRatio_ = r; }
     void set_phaseOffset(const double &o) { phaseOffset_ = o; }
 
-    static void parse_model(const std::pair<std::string, std::string> &s,
-                            std::vector<std::pair<Model,std::string>> &models,
-                            const std::unordered_map<ParameterName, Parameter> &p);
+    static void parse_model(
+      const std::pair<tokens_t, string_o> &s, 
+      vector_pair_t<Model, string_o> &models, const param_map &p);
 };
 } // namespace JoSIM
 

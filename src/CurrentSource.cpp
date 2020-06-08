@@ -10,7 +10,7 @@ using namespace JoSIM;
 CurrentSource CurrentSource::create_currentsource(const std::pair<std::string, std::string> &s,
                                                   const std::unordered_map<std::string, int> &nm,
                                                   std::unordered_set<std::string> &lm) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize(s.first);
   CurrentSource temp;
   temp.set_label(tokens.at(0), lm);
   temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm);

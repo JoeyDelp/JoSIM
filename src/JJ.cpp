@@ -11,26 +11,35 @@
 
 using namespace JoSIM;
 
-JJ JJ::create_jj(const std::pair<std::string, std::string> &s,
-                  const std::unordered_map<std::string, int> &nm, 
-                  std::unordered_set<std::string> &lm,
-                  std::vector<std::vector<std::pair<double, int>>> &nc,
-                  const std::unordered_map<ParameterName, Parameter> &p,
-                  const std::vector<std::pair<Model, std::string>> &models,
-                  const AnalysisType &antyp,
-                  const IntegrationType & inttyp,
-                  const double &timestep,
-                  int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-
-  JJ temp;
-  temp.set_label(tokens.at(0), lm);
-  // Junction line has potential to have up to 6 parts, identifying the last 3 can be tricky.
-  for(int i = 0; i < tokens.size(); ++i) {
-    if(tokens.at(i).find("AREA=") != std::string::npos) {
-      temp.set_area(std::make_pair(tokens.at(i).substr(tokens.at(i).find("AREA=") + 5), s.second), p);
-      tokens.erase(tokens.begin() + i);
+JJ::JJ(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
+    const param_map &pm, const vector_pair_t<Model, string_o> &models,
+    const AnalysisType &at, const double &h, int &bi) {
+  // Make a copy of the tokens so that they are mutable
+  tokens_t t = s.first;
+  // Check if the label has already been defined
+  if(lm.count(s.first.at(0)) != 0) {
+    Errors::invalid_component_errors(
+      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+  }
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s);
+  // Junction line has potential to have up to 6 parts
+  for(int i = 0; i < s.first.size(); ++i) {
+    // If the part contains the AREA specifiere
+    if(s.first.at(i).find("AREA=") != std::string::npos) {
+      // Set the area
+      area_ = parse_param(
+        s.first.at(i).substr(s.first.at(i).find("AREA=") + 5), pm, s.second);
+      t.erase(t.begin() + i);
     }
+  }
+  // Find the model
+  for (auto i : models) {
+    if (t.back())
   }
   temp.set_model(std::make_pair(tokens.back(), s.second), models);
   temp.set_pn1(temp.get_model().get_phaseOffset());

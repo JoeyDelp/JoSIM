@@ -21,8 +21,8 @@ class VCCS {
     std::vector<double> nonZeros_;
     std::vector<int> columnIndex_;
     std::vector<int> rowPointer_;
-    std::optional<int> posIndex1_, negIndex1_;
-    std::optional<int> posIndex2_, negIndex2_;
+    int_o posIndex1_, negIndex1_;
+    int_o posIndex2_, negIndex2_;
     int currentIndex_;
     double value_;
   public:
@@ -57,10 +57,10 @@ class VCCS {
     const std::vector<double>& get_nonZeros() const { return nonZeros_; }
     const std::vector<int>& get_columnIndex() const { return columnIndex_; }
     const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const std::optional<int>& get_posIndex() const { return posIndex1_; }
-    const std::optional<int>& get_negIndex() const { return negIndex1_; }
-    const std::optional<int>& get_posIndex2() const { return posIndex2_; }
-    const std::optional<int>& get_negIndex2() const { return negIndex2_; }
+    const int_o& get_posIndex() const { return posIndex1_; }
+    const int_o& get_negIndex() const { return negIndex1_; }
+    const int_o& get_posIndex2() const { return posIndex2_; }
+    const int_o& get_negIndex2() const { return negIndex2_; }
     const int& get_currentIndex() const { return currentIndex_; }
     const double& get_value() const { return value_; }
 

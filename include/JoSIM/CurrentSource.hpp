@@ -12,7 +12,7 @@ namespace JoSIM {
 class CurrentSource {
   private:
     std::string label_;
-    std::optional<int> posIndex_, negIndex_;
+    int_o posIndex_, negIndex_;
     int sourceIndex_;
   
   public:
@@ -30,8 +30,8 @@ class CurrentSource {
     void set_sourceIndex(const int &i) { sourceIndex_ = i; }
 
     std::string get_label() const { return label_; }
-    std::optional<int> get_posIndex() const { return posIndex_; }
-    std::optional<int> get_negIndex() const { return negIndex_; }
+    int_o get_posIndex() const { return posIndex_; }
+    int_o get_negIndex() const { return negIndex_; }
     int get_sourceIndex() const { return sourceIndex_; }
 };
 

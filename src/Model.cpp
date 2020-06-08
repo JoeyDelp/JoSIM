@@ -4,75 +4,70 @@
 #include "JoSIM/Model.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/TypeDefines.hpp"
 
 using namespace JoSIM;
 
-void Model::parse_model(const std::pair<std::string, std::string> &s,
-                        std::vector<std::pair<Model,std::string>> &models,
-                        const std::unordered_map<ParameterName, Parameter> &p) {
-  
-  // Split keywords using spaces
-  std::vector<std::string> tokens = Misc::tokenize_delimiter(s.first, "();, \t");
-  // Ensure the model conforms to correct syntax: .model modelname modeltype(parameters)
-  if(tokens.size() < 3) {
-    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
+void Model::parse_model(
+  const std::pair<tokens_t, string_o> &s, 
+  vector_pair_t<Model, string_o> &models, const param_map &p) {
+  // Ensure the model conforms to correct syntax
+  if(s.first.size() < 3) {
+    Errors::model_errors(
+      ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
   }
+  // Create a model that will be stored
   Model temp;
-
-  temp.set_modelName(tokens.at(1));
-  
-  if(tokens.at(2).find("JJ") != std::string::npos) {
-    tokens.erase(tokens.begin(), tokens.begin() + 3);
-  } else {
-    Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, s.first);
+  // The second token is the model label
+  temp.set_modelName(s.first.at(1));
+  // The third token needs to start with "JJ" for this to be valid
+  if(s.first.at(2).compare(0, 2, "JJ") != 0) {
+    Errors::model_errors(
+      ModelErrors::UNKNOWN_MODEL_TYPE, Misc::vector_to_string(s.first));
   }
-  
-  for (int i = 0; i < tokens.size(); ++i) {
-    if(tokens.at(i) == "=" && (i-1) >= 0 && (i+1) < tokens.size()) {
-      tokens.at(i-1) += tokens.at(i);
-      tokens.at(i-1) += tokens.at(i+1);
-      tokens.erase(tokens.begin() + i);
-      tokens.erase(tokens.begin() + i);
-    } else if(tokens.at(i).back() == '=' && (i+1) < tokens.size()) {
-      tokens.at(i) += tokens.at(i+1);
-      tokens.erase(tokens.begin() + i + 1);
-    } else if(tokens.at(i).front() == '=' && (i-1) >= 0) {
-      tokens.at(i-1) += tokens.at(i);
-      tokens.erase(tokens.begin() + i);
-    }
+  // Create a temporary tokens variable containing the model parameters
+  tokens_t tokens(s.first.begin() + 2, s.first.end());
+  tokens = Misc::tokenize(
+    Misc::vector_to_string(tokens).substr(2), "=(), ", true, true);
+  // Sanity check, there should be an even number of tokens (parameter=value)
+  if (tokens.size() % 2 != 0) {
+    Errors::model_errors(
+      ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
   }
-
-  for (int i = 0; i < tokens.size(); ++i) {
-    std::vector<std::string> itemToken = Misc::tokenize_delimiter(tokens.at(i), "=");
-    if (itemToken.size() == 1) {
-      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, s.first);
+  // Loop through the parameter tokens
+  for (int i = 0; i < tokens.size(); i += 2) {
+    // Every even odd token should be a value (otherwise complain)
+    double value = parse_param(tokens.at(i + 1), p, s.second);
+    if(std::isnan(value)) {
+      Errors::model_errors(
+      ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
     }
-    double value = parse_param(itemToken.at(1), p,
-                                s.second);
-    if (itemToken.at(0) == "VG" || itemToken.at(0) == "VGAP")
+    // Assign the relevant model parameters
+    if (tokens.at(i) == "VG" || tokens.at(i) == "VGAP"){
       temp.set_voltageGap(value);
-    else if (itemToken.at(0) == "IC" || itemToken.at(0) == "ICRIT")
+    } else if (tokens.at(i) == "IC" || tokens.at(i) == "ICRIT") {
       temp.set_criticalCurrent(value);
-    else if (itemToken.at(0) == "RTYPE")
+    } else if (tokens.at(i) == "RTYPE") {
       temp.set_resistanceType((int)value);
-    else if (itemToken.at(0) == "RN")
+    } else if (tokens.at(i) == "RN") {
       temp.set_normalResistance(value);
-    else if (itemToken.at(0) == "R0")
+    } else if (tokens.at(i) == "R0") {
       temp.set_subgapResistance(value);
-    else if (itemToken.at(0) == "CAP" || itemToken.at(0) == "C")
+    } else if (tokens.at(i) == "CAP" || tokens.at(i) == "C") {
       temp.set_capacitance(value);
-    else if (itemToken.at(0) == "T")
+    } else if (tokens.at(i) == "T") {
       temp.set_temperature(value);
-    else if (itemToken.at(0) == "TC")
+    } else if (tokens.at(i) == "TC") {
       temp.set_criticalTemperature(value);
-    else if (itemToken.at(0) == "DELV")
+    } else if (tokens.at(i) == "DELV") {
       temp.set_deltaV(value);
-    else if (itemToken.at(0) == "D")
+    } else if (tokens.at(i) == "D") {
       temp.set_transparency(value);
-    else if (itemToken.at(0) == "ICFACT" || itemToken.at(0) == "ICFCT")
+    } else if (tokens.at(i) == "ICFACT" || tokens.at(i) == "ICFCT") {
       temp.set_criticalToNormalRatio(value);
-    else if (itemToken.at(0) == "PHI")
+    } else if (tokens.at(i) == "PHI") {
       temp.set_phaseOffset(value);
+    }
   }
 
   models.emplace_back(std::make_pair(temp, s.second));

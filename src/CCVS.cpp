@@ -17,7 +17,7 @@ CCVS CCVS::create_CCVS(const std::pair<std::string, std::string> &s,
                         const std::unordered_map<ParameterName, Parameter> &p,
                         int &branchIndex, 
                         const Input &iObj) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize(s.first);
   CCVS temp;
   temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {

@@ -16,7 +16,7 @@ VCCS VCCS::create_VCCS(const std::pair<std::string, std::string> &s,
                         std::vector<std::vector<std::pair<double, int>>> &nc,
                         const std::unordered_map<ParameterName, Parameter> &p,
                         int &branchIndex, const Input &iObj) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize(s.first);
   VCCS temp;
   temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {

@@ -11,95 +11,137 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <thread>
 
 using namespace JoSIM;
 
-void Matrix::create_matrix(Input &iObj)
-{
-  int nodeCounter = 0;
-  for (const auto &i : iObj.netlist.expNetlist) {
-    // if(i.first.at(0) != 'K' && i.first.at(0) != 'T') {
-    if(std::string("EFGHKT").find(i.first.at(0)) == std::string::npos) {
-      std::vector<std::string> tokens = Misc::tokenize_space(i.first);
-      // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
-      if(tokens.size() < 4) {
-        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, i.first);
-      }
-      if(tokens.at(1).find("GND") == std::string::npos && tokens.at(1) != "0") {
-        if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
-      }
-      if(tokens.at(2).find("GND") == std::string::npos && tokens.at(2) != "0") {
-        if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
-      }
-    // } else if (i.first.at(0) == 'T' ) {
-    } else if(std::string("EFGHT").find(i.first.at(0)) != std::string::npos) {
-      std::vector<std::string> tokens = Misc::tokenize_space(i.first);
-      // Ensure the device has at least 4 parts: LABEL PNODE NNODE VALUE
-      if(tokens.size() < 6) {
-        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, i.first);
-      }
-      if(tokens.at(1).find("GND") == std::string::npos && tokens.at(1) != "0") {
-        if(nm.count(tokens.at(1)) == 0) nm[tokens.at(1)] = nodeCounter++;
-      }
-      if(tokens.at(2).find("GND") == std::string::npos && tokens.at(2) != "0") {
-        if(nm.count(tokens.at(2)) == 0) nm[tokens.at(2)] = nodeCounter++;
-      }
-      if(tokens.at(3).find("GND") == std::string::npos && tokens.at(3) != "0") {
-        if(nm.count(tokens.at(3)) == 0) nm[tokens.at(3)] = nodeCounter++;
-      }
-      if(tokens.at(4).find("GND") == std::string::npos && tokens.at(4) != "0") {
-        if(nm.count(tokens.at(4)) == 0) nm[tokens.at(4)] = nodeCounter++;
-      }
-    }
-  }
-
-  nc.resize(nm.size());
-  branchIndex = nm.size();
-
-  int fqtr, sqtr, tqtr;
-  fqtr = iObj.netlist.expNetlist.size()/4;
-  sqtr = iObj.netlist.expNetlist.size()/2;
-  tqtr = iObj.netlist.expNetlist.size()/4 * 3;
-
-  if(!iObj.argMin) {
+// Function that prints progress in a seperate thread
+void Matrix::print_progess(const int &i, const int &size) {
+  if(i == 0) {
     std::cout << "Matrix Creation Progress:" << std::endl;
     std::cout << "0%\r" << std::flush;
+  } else {
+    std::cout << std::ceil((double) i / (double) size * 100) 
+      << "%\r" << std::flush;
   }
-  int creationCounter = 0;
-  for (const auto &i : iObj.netlist.expNetlist) {
-    if(!iObj.argMin) {
-      if(creationCounter == fqtr) std::cout << "25%\r" << std::flush;
-      if(creationCounter == sqtr) std::cout << "50%\r" << std::flush;
-      if(creationCounter == tqtr) std::cout << "75%\r" << std::flush;
+}
+
+void Matrix::create_matrix(Input &iObj)
+{
+  // Create a seperate thread that will be used for printing creation progress
+  std::thread printingThread;
+  // Create a node counter variable
+  int nodeCounter = 0;
+  // Variables to store node configs since they are already identified here
+  NodeConfig nodeConfig = NodeConfig::GND;
+  // Optional, only available when 4 node components are detected
+  std::optional<NodeConfig> nodeConfig2;
+  for (auto &i : iObj.netlist.expNetlist) {
+    // Expand all inline parameters
+    expand_inline_parameters(i, iObj.parameters);
+    // All devices should atleast have 4 parts
+    if(i.first.size() < 4) {
+      // Complain if it doesnt
+      Errors::invalid_component_errors(
+        ComponentErrors::INVALID_COMPONENT_DECLARATION, 
+        Misc::vector_to_string(i.first));
     }
-    switch(i.first.at(0)){
-      case 'R':
-        components.devices.emplace_back(Resistor::create_resistor(i, 
-            nm, lm, nc, iObj.parameters, 
-            iObj.argAnal, iObj.argInt,
-            iObj.transSim.get_prstep(), branchIndex));
-        components.resistorIndices.emplace_back(components.devices.size() - 1);
-        break;
+    // Create a node map that maps the node names to numbers
+    if(i.first.at(1).find("GND") == std::string::npos && i.first.at(1) != "0") {
+      // Add the first node to the map if not ground
+      if(nm.count(i.first.at(1)) == 0) nm[i.first.at(1)] = nodeCounter++;
+      nodeConfig = NodeConfig::POSGND;
+    }
+    if(i.first.at(2).find("GND") == std::string::npos && i.first.at(2) != "0") {
+      // Add the second node to the map if not ground
+      if(nm.count(i.first.at(2)) == 0) nm[i.first.at(2)] = nodeCounter++;
+      if (nodeConfig == NodeConfig::POSGND) {
+        nodeConfig = NodeConfig::POSNEG;
+      } else {
+        nodeConfig = NodeConfig::GNDNEG;
+      }
+    }
+    // If the device is as 4 node device
+    if(std::string("EFGHT").find(i.first.front().at(0)) != std::string::npos) {
+      nodeConfig2 = NodeConfig::GND;
+      // Ensure the device has at least 6 parts
+      if(i.first.size() < 6) {
+        // Complain if it isnt
+        Errors::invalid_component_errors(
+          ComponentErrors::INVALID_COMPONENT_DECLARATION, 
+          Misc::vector_to_string(i.first));
+      }
+      if(i.first.at(3).find("GND") == std::string::npos && 
+        i.first.at(3) != "0") {
+        // Add the third node to the map if not ground
+        if(nm.count(i.first.at(3)) == 0) nm[i.first.at(3)] = nodeCounter++;
+        nodeConfig2 = NodeConfig::POSGND;
+      }
+      if(i.first.at(4).find("GND") == std::string::npos && 
+        i.first.at(4) != "0") {
+        // Add the fourth node to the map if not ground
+        if(nm.count(i.first.at(4)) == 0) nm[i.first.at(4)] = nodeCounter++;
+        if (nodeConfig2 == NodeConfig::POSGND) {
+          nodeConfig2 = NodeConfig::POSNEG;
+        } else {
+          nodeConfig2 = NodeConfig::GNDNEG;
+        }
+      }
+    }
+  }
+  // Resize the node connection vector to match the size of the node map
+  nc.resize(nm.size());
+  // Set the index to the first branch current to the size of the node map
+  branchIndex = nm.size();
+  // Counter for progress report
+  int creationCounter = 0;
+  // Loop through all the components in the netlist
+  for (const auto &i : iObj.netlist.expNetlist) {
+    // If not minimal printing
+    if(!iObj.argMin) {
+      // Report progress
+      printingThread = std::thread(
+        print_progess, creationCounter, iObj.netlist.expNetlist.size());
+    }
+    // First character of first token indicates device type
+    switch(i.first.front().at(0)){
+      // Inductors (most common so do them first)
       case 'L':
-        components.devices.emplace_back(Inductor::create_inductor(i, 
-            nm, lm, nc, iObj.parameters, 
-            iObj.argAnal, iObj.argInt,
-            iObj.transSim.get_prstep(), branchIndex));
+        // Create an inductor and add it to the component list
+        components.devices.emplace_back(
+          Inductor(i, nodeConfig, nm, lm, nc, iObj.parameters, iObj.argAnal,
+          iObj.transSim.get_prstep(), branchIndex));
+        // Store this inductor's component list index for reference
         components.inductorIndices.emplace_back(components.devices.size() - 1);
         break;
-      case 'C':
-        components.devices.emplace_back(Capacitor::create_capacitor(i, 
-            nm, lm, nc, iObj.parameters, 
-            iObj.argAnal, iObj.argInt,
-            iObj.transSim.get_prstep(), branchIndex));
-        components.capacitorIndices.emplace_back(components.devices.size() - 1);
-        break;
+      // Josephson junction (JJ)
       case 'B':
+        // Create a JJ and add it to the component list
         components.devices.emplace_back(JJ::create_jj(i, 
             nm, lm, nc, iObj.parameters, iObj.netlist.models_new, 
             iObj.argAnal, iObj.argInt,
             iObj.transSim.get_prstep(), branchIndex));
+        // Store this JJ's component list index for reference    
         components.junctionIndices.emplace_back(components.devices.size() - 1);
+        break;  
+      // Resistors
+      case 'R':
+        // Create a resistor and add it to the component list
+        components.devices.emplace_back(
+          Resistor(i, nodeConfig, nm, lm, nc, iObj.parameters, iObj.argAnal,
+            iObj.transSim.get_prstep(), branchIndex));
+        // Store this resistor's component list index for reference
+        components.resistorIndices.emplace_back(components.devices.size() - 1);
+        break;
+      // Capacitors
+      case 'C':
+        // Create a capacitor and add it to the component list
+        components.devices.emplace_back(Capacitor::create_capacitor(i, 
+            nm, lm, nc, iObj.parameters, 
+            iObj.argAnal, iObj.argInt,
+            iObj.transSim.get_prstep(), branchIndex));
+        // Store this capacitor's component list index for reference
+        components.capacitorIndices.emplace_back(components.devices.size() - 1);
         break;
       case 'V':
         if(iObj.argAnal == AnalysisType::Phase) {
@@ -177,14 +219,15 @@ void Matrix::create_matrix(Input &iObj)
     }
     creationCounter++;
   }
+  printingThread.join();
 
   for (const auto &s : components.mutualinductances) {
-    std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+    std::vector<std::string> tokens = Misc::tokenize(s.first);
     if(tokens.size() < 4) {
       Errors::invalid_component_errors(ComponentErrors::MUT_ERROR, s.first);
     }
 
-    std::optional<int> ind1Index, ind2Index;
+    int_o ind1Index, ind2Index;
     for (int i = 0; i < components.devices.size(); ++i) {
       const auto& label = std::visit([](const auto& device) noexcept -> const std::string& {
         return device.get_label();
@@ -239,10 +282,20 @@ void Matrix::create_csr() {
 
 void Matrix::create_nz() {
   nz.clear();
+  nz05.clear();
+  nz2.clear();
+  nz4.clear();
+  nz8.clear();
+  nz16.clear();
 
   for(const auto &it : nc) {
     for (const auto &ti : it) {
       nz.emplace_back(ti.first);
+      nz05.emplace_back(ti.first);
+      nz2.emplace_back(ti.first);
+      nz4.emplace_back(ti.first);
+      nz8.emplace_back(ti.first);
+      nz16.emplace_back(ti.first);
     }
   }
 

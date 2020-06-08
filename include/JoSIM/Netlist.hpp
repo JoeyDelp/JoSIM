@@ -3,6 +3,7 @@
 #ifndef JOSIM_NETLIST_HPP
 #define JOSIM_NETLIST_HPP
 
+#include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/InputType.hpp"
 #include "JoSIM/Model.hpp"
@@ -23,9 +24,9 @@ struct pair_hash {
 
 class Subcircuit {
   public:
-  std::vector<std::string> io;
-  std::vector<std::pair<std::string, std::string>> lines;
-  std::vector<std::string> subckts;
+  tokens_t io;
+  std::vector<std::pair<tokens_t, string_o>> lines;
+  tokens_t subckts;
   int jjCount, compCount, subcktCounter;
   bool containsSubckt;
   Subcircuit() :
@@ -39,18 +40,23 @@ class Subcircuit {
 };
 
 class Netlist {
+  void id_io_subc_label(
+    const tokens_t &lineTokens, tokens_t &io, 
+    std::string &subcktName, std::string &label);
+  bool rename_io_nodes(
+    std::string &node, const tokens_t &subIO, const tokens_t &parentIO);
+  void expand_io(
+    Subcircuit &subc, const tokens_t &io, const std::string &label);
   public:
-  std::unordered_map<std::pair<std::string, std::string>, std::string, pair_hash> models;
-  std::vector<std::pair<Model, std::string>> models_new;
+  std::unordered_map<
+    std::pair<std::string, string_o>, tokens_t, pair_hash> models;
+  std::vector<std::pair<Model, string_o>> models_new;
   std::unordered_map<std::string, Subcircuit> subcircuits;
   std::unordered_map<std::string, int> subcktLookup;
-  std::vector<std::string> maindesign;
-  std::vector<std::string> subckts;
-  std::vector<std::pair<std::string, std::string>> expNetlist;
-  int jjCount, 
-      compCount, 
-      subcktCounter, 
-      nestedSubcktCount;
+  std::vector<tokens_t> maindesign;
+  tokens_t subckts;
+  std::vector<std::pair<tokens_t, string_o>> expNetlist;
+  int jjCount, compCount, subcktCounter, nestedSubcktCount;
   bool containsSubckt;
   InputType argConv;
   Netlist() :

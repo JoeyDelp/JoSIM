@@ -20,7 +20,7 @@ Capacitor Capacitor::create_capacitor(const std::pair<std::string, std::string> 
                                       const IntegrationType & inttyp,
                                       const double &timestep,
                                       int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+  std::vector<std::string> tokens = Misc::tokenize(s.first);
   Capacitor temp;
   temp.set_label(tokens.at(0), lm);
   if(s.first.find("{") != std::string::npos) {
@@ -109,14 +109,17 @@ void Capacitor::set_indices(const std::pair<std::string, std::string> &n,
   if(n.second.find("GND") != std::string::npos || n.second == "0") {
     posIndex_ = nm.at(n.first);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
+    nodeConfig_ = 2;
   } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
     negIndex_ = nm.at(n.second);
     nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
+    nodeConfig_ = 1;
   } else {
     posIndex_ = nm.at(n.first);
     negIndex_ = nm.at(n.second);
     nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
     nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
+    nodeConfig_ = 3;
   }
 }
 

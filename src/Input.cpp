@@ -6,167 +6,189 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <cstring>
+#include <filesystem>
 
 using namespace JoSIM;
 
-std::vector<std::string> Input::read_file(const std::string &fileName){
+std::vector<tokens_t> Input::read_input(
+  LineInput &input, string_o fileName){
+  // Variable to store the read line
   std::string line;
-  std::fstream ifile(fileName);
-  std::vector<std::string> fileLines;
-  if (ifile.is_open()) {
-    while (!ifile.eof()) {
-      getline(ifile, line);
-      line = std::regex_replace(line, std::regex("^ +"), "");
-      std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
-      if (!line.empty() && line.back() == '\r')
-          line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-      if (line.find(".INCLUDE") != std::string::npos) {
-        std::vector<std::string> tempInclude = Input::read_file(fileName.substr(0, fileName.find_last_of('/') + 1) + line.substr(9));
-        fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
+  // Variable to store all the read lines
+  std::vector<tokens_t> fileLines;
+  // Variable to store the tokenized line
+  tokens_t tokens;
+  // Do this until the end of file is reached.
+  while (input.next()) {
+    // Create a mutable line
+    line = input.line();
+    // Remove all the leading, trailing and extra white spaces
+    line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
+    if (!line.empty() && line.at(0) != '*' && line.at(0) != '#') {
+      // Remove all Carriage Return characters
+      line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+      // Tokenize the line
+      tokens = Misc::tokenize(line);
+      // Uppercase just the first token for ".INCLUDE" check
+      std::transform(tokens.begin(), tokens.begin() + 1, tokens.begin(),
+                  [](std::string &c) -> std::string { 
+                    std::transform(c.begin(), c.end(), c.begin(), toupper);
+                    return c; });
+      // If the line contains a ".INCLUDE" statement
+      if (::strcmp(tokens.at(0).c_str(), ".INCLUDE") == 0) {
+        // Variable to store path to file to include
+        std::string includeFile;
+        // If reading from a file
+        if(fileName) {
+          // Sanity check to prevent cyclic includes
+          if (::strcmp(
+              std::filesystem::path(fileName.value()).c_str(),
+              std::filesystem::path(fileName.value()).parent_path().append(
+                tokens.at(1)).c_str()) == 0) {
+            Errors::input_errors(InputErrors::CYCLIC_INCLUDE, fileName);
+          }
+          includeFile = std::filesystem::path(
+            fileName.value()).parent_path().append(tokens.at(1));
+        } else {
+          includeFile = std::filesystem::current_path().append(tokens.at(1));
+        }
+        // Create a new LineInput variable for the included file
+        FileInput file(includeFile);
+        // Attempt to read the contents of the included file
+        std::vector<tokens_t> tempInclude = 
+          Input::read_input(file, includeFile);
+        // Insert the lines from the included file in place
+        fileLines.insert(
+          fileLines.end(), tempInclude.begin(), tempInclude.end());
+      // If the line does not contain an ".INCLUDE" statement
       } else {
-        std::transform(line.begin(), line.end(), line.begin(), toupper);
-        if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
-          if(Misc::starts_with(line, '+')) 
-            fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
-          else 
-            fileLines.emplace_back(line);
+        // Transform the entire line to upper case
+        std::transform(tokens.begin() + 1, tokens.end(), tokens.begin() + 1,
+                  [](std::string &c) -> std::string { 
+                    std::transform(c.begin(), c.end(), c.begin(), toupper);
+                    return c; });
+        // If the line starts with a '+' append it to the previous line.
+        if(tokens.at(0).at(0) == '+') {
+          fileLines.back().emplace_back(tokens);
+        // Add the line to the read in lines variable
+        } else {
+          fileLines.emplace_back(tokens);
         }
       }
     }
-    if (fileLines.empty()) { 
-      Errors::input_errors(InputErrors::EMPTY_FILE, fileName);
-    } else {
-      return fileLines;
-    }
-  } else {
-    Errors::input_errors(InputErrors::CANNOT_OPEN_FILE, fileName);
   }
-  return {};
-}
-
-std::vector<std::string> Input::read_input() {
-  std::string line;
-  std::vector<std::string> fileLines;
-  for (std::string line; std::getline(std::cin, line);) {
-    std::transform(line.begin(), line.begin() + 9, line.begin(), toupper);
-    if(line == ".END") break;
-    if (!line.empty() && line.back() == '\r')
-        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-    if (line.find(".INCLUDE") != std::string::npos) {
-      std::vector<std::string> tempInclude = Input::read_file(line.substr(9));
-      fileLines.insert(fileLines.end(), tempInclude.begin(), tempInclude.end());
-    } else {
-      std::transform(line.begin(), line.end(), line.begin(), toupper);
-      if (!line.empty() && !Misc::starts_with(line, '*') && !Misc::starts_with(line, '#') && line.find_first_not_of(' ') != std::string::npos) {
-        if(Misc::starts_with(line, '+')) 
-          fileLines.back() = fileLines.back() + line.substr(line.find_first_of('+') + 1);
-        else 
-          fileLines.emplace_back(line);
-      }
-    }
-  }
+  // If the file was read in but has no contents report an error
   if (fileLines.empty()) { 
-    Errors::input_errors(InputErrors::EMPTY_FILE, "standard_input");
+    Errors::input_errors(InputErrors::EMPTY_FILE, fileName);
+  // Return the read in file lines.
   } else {
     return fileLines;
   }
+  // Return to satisfy return type. This should never be reached.
   return {};
 }
 
-void Input::parse_file(const std::string &fileName) {
-  std::vector<std::string> fileLines;
-  if(fileName == "standard_input") {
-    fileLines = Input::read_input();
-  } else {
-    fileLines = Input::read_file(fileName);
-  }
-
-  bool subckt = false;
+void Input::parse_input(string_o fileName) {
+  // Variable to store the tokenized input
+  std::vector<tokens_t> fileLines;
+  // Create a optional string to store subcircuit names
+  string_o subckt;
+  // Create boolean to determine if in a control block
   bool control = false;
-  std::string subcktName = "";
-  std::vector<std::string> tokens;
+  // If a file name is provided then input is from file
+  if(fileName) {
+    // Create a stream input from file
+    FileInput input(fileName.value());
+    // Use stream input to read lines and return tokenized input
+    fileLines = Input::read_input(input, fileName);
+  // If no filename then input from standard input
+  } else {
+    // Create standard input stream
+    ConsoleInput input;
+    // Use stream input to read lines and return tokenized input
+    fileLines = Input::read_input(input);
+  }
+  // Loop through all the tokenized input
   for (int i = 0; i < fileLines.size(); ++i) {
-    // If line starts with '.' it is a control but could be the start or end
-    // of a subcircuit section.
-    if (fileLines.at(i)[0] == '.') {
-      if (fileLines.at(i).find(".SUBCKT") != std::string::npos) {
-        subckt = true;
+    // Determine if the line is a control (subcircuit, analysis, print, etc.)
+    if (fileLines.at(i).front().at(0) == '.') {
+      // If the line is the begining of a subcircuit
+      if (::strcmp(fileLines.at(i).front().c_str(), ".SUBCKT") == 0) {
+        // Indicate that subcircuits exist within this netlist
         netlist.containsSubckt = true;
-        tokens = Misc::tokenize_space(fileLines.at(i));
-        if (tokens.size() > 1) {
-          if (tokens.size() > 2) {
-            subcktName = tokens.at(1);
-            for (int j = 2; j < tokens.size(); ++j) {
-              netlist.subcircuits[subcktName].io.push_back(tokens.at(j));
+        // Subcircuit is required to atleast have a name
+        if (!fileLines.at(i).size() > 1) {
+          // Subcircuit is required to have at least some form of IO
+          if (fileLines.at(i).size() > 2) {
+            // Set the subcircuit name the second token
+            subckt = fileLines.at(i).at(1);
+            // Populate the a subcircuit at given name with its IO nodes
+            for (int j = 2; j < fileLines.at(i).size(); ++j) {
+              netlist.subcircuits[subckt.value()].io.push_back(
+                fileLines.at(i).at(j));
             }
-          } else
+          // Complain if no IO is found
+          } else {
             Errors::input_errors(InputErrors::MISSING_SUBCKT_IO);
-        } else
-          Errors::input_errors(InputErrors::MISSING_SUBCKT_NAME);
-        // If parameter, add to unparsed parameters list
-      } else if (fileLines.at(i).find(".PARAM") != std::string::npos) {
-        if (subckt) {
-          create_parameter(std::make_pair(subcktName, fileLines.at(i)), parameters);
+          }
+        // Complain if no subcircuit name is found
         } else {
-          create_parameter(std::make_pair("", fileLines.at(i)), parameters);
+          Errors::input_errors(InputErrors::MISSING_SUBCKT_NAME);
         }
-        // If control, set flag as start of controls
-      } else if (fileLines.at(i).find(".CONTROL") != std::string::npos) {
+      // If parameter, create a parameter
+      } else if (::strcmp(fileLines.at(i).front().c_str(), ".PARAM") == 0) {
+        create_parameter(fileLines.at(i), parameters, subckt);
+      // If control, set flag as start of controls
+      } else if (::strcmp(fileLines.at(i).front().c_str(), ".CONTROL") == 0) {
         control = true;
-        // End subcircuit, set flag
-      } else if (fileLines.at(i).find(".ENDS") != std::string::npos) {
-        subckt = false;
-        // End control section, set flag
-      } else if (fileLines.at(i).find(".ENDC") != std::string::npos) {
+      // End subcircuit, set flag
+      } else if (::strcmp(fileLines.at(i).front().c_str(), ".ENDS") == 0) {
+        subckt = std::nullopt;
+      // End control section, set flag
+      } else if (::strcmp(fileLines.at(i).front().c_str(), ".ENDC") == 0) {
         control = false;
-        // If model, add model to models list
-      } else if (fileLines.at(i).find(".MODEL") != std::string::npos) {
-        tokens = Misc::tokenize_space(fileLines.at(i));
-        if (subckt)
-          netlist.models[std::make_pair(tokens.at(1), subcktName)] =
-              fileLines.at(i);
-        else
-          netlist.models[std::make_pair(tokens.at(1), "")] = fileLines.at(i);
-        // If neither of these, normal control, add to controls list
+      // If model, add model to models list
+      } else if (::strcmp(fileLines.at(i).front().c_str(), ".MODEL") == 0) {
+        netlist.models[std::make_pair(fileLines.at(i).at(1), subckt)] =
+          fileLines.at(i);
+      // If neither of these, normal control, add to controls list
       } else {
-        if (!subckt)
+        // Controls cannot exist within a subcircuit
+        if (!subckt) {
           controls.push_back(fileLines.at(i));
-        else
-          Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subcktName);
+        // Complain that controls exist in subcircuit
+        } else {
+          Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subckt.value());
+        }
       }
-      // If control section flag set
+    // If control section flag set
     } else if (control) {
       // If parameter, add to unparsed parameter list
-      if (fileLines.at(i).find("PARAM") != std::string::npos) {
-        if (subckt) {
-          create_parameter(std::make_pair(subcktName, fileLines.at(i)), parameters);
-        } else {
-          create_parameter(std::make_pair("", fileLines.at(i)), parameters);
-        }
-        // If model, add to models list
-      } else if (fileLines.at(i).find("MODEL") != std::string::npos) {
-        tokens = Misc::tokenize_space(fileLines.at(i));
-        if (subckt)
-          netlist.models[std::make_pair(tokens.at(1), subcktName)] =
-              fileLines.at(i);
-        else
-          netlist.models[std::make_pair(tokens.at(1), "")] = fileLines.at(i);
-        // If neither, add to controls list
+      if (::strcmp(fileLines.at(i).front().c_str(), "PARAM") == 0) {
+        create_parameter(fileLines.at(i), parameters, subckt);
+      // If model, add to models list
+      } else if (::strcmp(fileLines.at(i).front().c_str(), "MODEL") == 0) {
+        netlist.models[std::make_pair(fileLines.at(i).at(1), subckt)] =
+            fileLines.at(i);
+      // If neither, add to controls list
       } else {
-        if (!subckt)
+        if (!subckt) {
           controls.push_back(fileLines.at(i));
-        else
-          Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subcktName);
+        } else {
+          Errors::input_errors(InputErrors::SUBCKT_CONTROLS, subckt.value());
+        }
       }
-      // If not a control, normal device line
+    // If not a control, normal device line
     } else {
       // If subcircuit flag, add line to relevant subcircuit
-      if (subckt)
-        netlist.subcircuits[subcktName].lines.push_back(
-            std::make_pair(fileLines.at(i), subcktName));
+      if (subckt) {
+        netlist.subcircuits[subckt.value()].lines.push_back(
+            std::make_pair(fileLines.at(i), subckt));
       // If not, add line to main design
-      else
+      } else {
         netlist.maindesign.push_back(fileLines.at(i));
+      }
     }
   }
   // If main is empty, complain

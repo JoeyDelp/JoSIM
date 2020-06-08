@@ -4,6 +4,7 @@
 #define JOSIM_J_ERRORS_H
 
 #include <string>
+
 namespace JoSIM {
 enum class CLIErrors : int { 
   NO_ANALYSIS,
@@ -12,6 +13,7 @@ enum class CLIErrors : int {
   NO_OUTPUT,
   NO_INPUT,
   UNKNOWN_SWITCH,
+  UNKNOWN_OUTPUT_TYPE,
   TOO_FEW_ARGUMENTS,
   INVALID_ANALYSIS,
   INVALID_INTEGRATION,
@@ -21,6 +23,7 @@ enum class CLIErrors : int {
 
 enum class InputErrors : int {
   CANNOT_OPEN_FILE,
+  CYCLIC_INCLUDE,
   MISSING_SUBCKT_IO,
   MISSING_SUBCKT_NAME,
   SUBCKT_CONTROLS,
@@ -157,41 +160,41 @@ enum class NetlistErrors : int {
 
 class Errors {
 public:
-  static void cli_errors(CLIErrors errorCode, 
-                          const std::string &whatPart = "");
+  static void cli_errors(
+    CLIErrors errorCode, string_o message = std::nullopt);
 
-  static void input_errors(InputErrors errorCode, 
-                            const std::string &whatPart = "");
+  static void input_errors(
+    InputErrors errorCode, string_o message = std::nullopt);
 
-  static void invalid_component_errors(ComponentErrors errorCode,
-                                       const std::string &componentLabel);
+  static void invalid_component_errors(
+    ComponentErrors errorCode, string_o componentLabel = std::nullopt);
 
-  static void control_errors(ControlErrors errorCode, 
-                              const std::string &whatPart);
+  static void control_errors(
+    ControlErrors errorCode, string_o message = std::nullopt);
 
-  [[noreturn]] static void model_errors(ModelErrors errorCode,
-                                        const std::string &whatPart);
+  [[noreturn]] static void model_errors(
+    ModelErrors errorCode, string_o message = std::nullopt);
 
-  static void matrix_errors(MatrixErrors errorCode, 
-                            const std::string &whatPart);
+  static void matrix_errors(
+    MatrixErrors errorCode, string_o message = std::nullopt);
 
-  [[noreturn]] static void misc_errors(MiscErrors errorCode,
-                                       const std::string &whatPart);
+  [[noreturn]] static void misc_errors(
+    MiscErrors errorCode, string_o message = std::nullopt);
 
-  static void function_errors(FunctionErrors errorCode, 
-                              const std::string &whatPart);
+  static void function_errors(
+    FunctionErrors errorCode, string_o message = std::nullopt);
 
-  [[noreturn]] static void simulation_errors(SimulationErrors errorCode,
-                                             const std::string &whatPart);
+  [[noreturn]] static void simulation_errors(
+    SimulationErrors errorCode, string_o message = std::nullopt);
 
-  static void parsing_errors(ParsingErrors errorCode, 
-                              const std::string &whatPart);
+  static void parsing_errors(
+    ParsingErrors errorCode, string_o message = std::nullopt);
   
-  static void output_errors(OutputErrors errorCode, 
-                            const std::string &whatPart);
+  static void output_errors(
+    OutputErrors errorCode, string_o message = std::nullopt);
   
-  static void netlist_errors(NetlistErrors errorCode, 
-                              const std::string &whatPart);
+  static void netlist_errors(
+    NetlistErrors errorCode, string_o message = std::nullopt);
   
   [[noreturn]] static void oor();
   
