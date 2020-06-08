@@ -110,16 +110,16 @@ void Matrix::create_matrix(Input &iObj)
         // Create an inductor and add it to the component list
         components.devices.emplace_back(
           Inductor(i, nodeConfig, nm, lm, nc, iObj.parameters, iObj.argAnal,
-          iObj.transSim.get_prstep(), branchIndex));
+            iObj.transSim.get_prstep(), branchIndex));
         // Store this inductor's component list index for reference
         components.inductorIndices.emplace_back(components.devices.size() - 1);
         break;
       // Josephson junction (JJ)
       case 'B':
         // Create a JJ and add it to the component list
-        components.devices.emplace_back(JJ::create_jj(i, 
-            nm, lm, nc, iObj.parameters, iObj.netlist.models_new, 
-            iObj.argAnal, iObj.argInt,
+        components.devices.emplace_back(
+          JJ(i, nodeConfig, nm, lm, nc, iObj.parameters, 
+            iObj.netlist.models_new, iObj.argAnal, 
             iObj.transSim.get_prstep(), branchIndex));
         // Store this JJ's component list index for reference    
         components.junctionIndices.emplace_back(components.devices.size() - 1);

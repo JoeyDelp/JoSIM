@@ -20,9 +20,9 @@ class JJ : public BasicComponent {
   public:
   int variableIndex_;
   double area_;
-  Model model_;
+  std::optional<Model> model_;
   double phaseConst_;
-  double lowerB_, upperB_, subCond_, transCond_, normalCond_, gLarge_;
+  double lowerB_, upperB_, subImp_, transImp_, normImp_, gLarge_;
   double del0_, del_, rncalc_;
   double pn1_, pn2_, phi0_;
   double vn1_, vn2_, vn3_;
@@ -34,6 +34,10 @@ class JJ : public BasicComponent {
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const vector_pair_t<Model, string_o> &models,
     const AnalysisType &at, const double &h, int &bi);
+
+  void set_model(
+    const tokens_t &t, const vector_pair_t<Model, string_o> &models, 
+    const string_o &subc);
 
   bool update_value(const double &v);
 }; // class JJ

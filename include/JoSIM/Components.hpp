@@ -74,7 +74,7 @@ class MatrixInfo {
   public:
   std::vector<double> nonZeros_;
   std::vector<int> columnIndex_;
-  int rowPointer_;
+  std::vector<int> rowPointer_;
 };
 
 class BasicComponent {
@@ -104,22 +104,22 @@ class BasicComponent {
     case NodeConfig::POSGND:
       matrixInfo.nonZeros_.emplace_back(1);
       matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
-      matrixInfo.rowPointer_ = 2;
+      matrixInfo.rowPointer_.emplace_back(2);
       break;
     case NodeConfig::GNDNEG:
       matrixInfo.nonZeros_.emplace_back(-1);
       matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-      matrixInfo.rowPointer_ = 2;
+      matrixInfo.rowPointer_.emplace_back(2);
       break;
     case NodeConfig::POSNEG:
       matrixInfo.nonZeros_.emplace_back(1);
       matrixInfo.nonZeros_.emplace_back(-1);
       matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
       matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-      matrixInfo.rowPointer_ = 3;
+      matrixInfo.rowPointer_.emplace_back(3);
       break;
     case NodeConfig::GND:
-      matrixInfo.rowPointer_ = 1;
+      matrixInfo.rowPointer_.emplace_back(1);
       break;
     }
     matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_);
