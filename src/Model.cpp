@@ -28,7 +28,7 @@ void Model::parse_model(
   // Create a temporary tokens variable containing the model parameters
   tokens_t tokens(s.first.begin() + 2, s.first.end());
   tokens = Misc::tokenize(
-    Misc::vector_to_string(tokens).substr(2), "=(), ", true, true);
+    Misc::vector_to_string(tokens).substr(2), "=(), ");
   // Sanity check, there should be an even number of tokens (parameter=value)
   if (tokens.size() % 2 != 0) {
     Errors::model_errors(

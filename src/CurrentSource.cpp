@@ -7,40 +7,39 @@
 
 using namespace JoSIM;
 
-CurrentSource CurrentSource::create_currentsource(const std::pair<std::string, std::string> &s,
-                                                  const std::unordered_map<std::string, int> &nm,
-                                                  std::unordered_set<std::string> &lm) {
-  std::vector<std::string> tokens = Misc::tokenize(s.first);
-  CurrentSource temp;
-  temp.set_label(tokens.at(0), lm);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm);
-  return temp;
+CurrentSource::CurrentSource(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const nodemap &nm, std::unordered_set<std::string> &lm, const int &si) {
+  // Check if the label has already been defined
+  if(lm.count(s.first.at(0)) != 0) {
+    Errors::invalid_component_errors(
+      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+  }
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s.first.at(0));
+  // Set the node configuration type
+  indexInfo.nodeConfig_ = ncon;
+  // Set te node indices, using token 2 and 3
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm);
+  // Set the source index
+  sourceIndex_ = si;
 }
 
-void CurrentSource::set_label(const std::string &s, 
-                              std::unordered_set<std::string> &lm) {
-  if(lm.count(s) != 0) {
-    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
-  } else {
-    label_ = s;
-    lm.emplace(s);
-  }
-}
-
-void CurrentSource::set_indices(const std::pair<std::string, std::string> &n, 
-                                const std::unordered_map<std::string, int> &nm) {
-  if(n.first != "0" && n.first.find("GND") == std::string::npos) {
-    if(nm.count(n.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.first);
-  }
-  if(n.second != "0" && n.second.find("GND") == std::string::npos) {
-    if(nm.count(n.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.second);
-  }
-  if(n.second.find("GND") != std::string::npos || n.second == "0") {
-    posIndex_ = nm.at(n.first);
-  } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
-    negIndex_ = nm.at(n.second);
-  } else {
-    posIndex_ = nm.at(n.first);
-    negIndex_ = nm.at(n.second);
+void CurrentSource::set_node_indices(const tokens_t &t, const nodemap &nm) {
+  switch(indexInfo.nodeConfig_) {
+  case NodeConfig::POSGND:
+    indexInfo.posIndex_ = nm.at(t.at(0));
+    break;
+  case NodeConfig::GNDNEG:
+    indexInfo.negIndex_ = nm.at(t.at(1));
+    break;
+  case NodeConfig::POSNEG:
+    indexInfo.posIndex_ = nm.at(t.at(0));
+    indexInfo.negIndex_ = nm.at(t.at(1));
+    break;
+  case NodeConfig::GND:
+    break;
   }
 }

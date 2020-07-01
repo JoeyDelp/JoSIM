@@ -5,6 +5,7 @@
 
 #include <string>
 #include <utility>
+#include <optional>
 
 namespace JoSIM {
 
@@ -27,8 +28,7 @@ class ParameterName {
 
   /// Equality comparison
   bool operator==(const ParameterName &other) const noexcept {
-    return (name_ == other.name_ && 
-      subcircuit_.value() == other.subcircuit_.value());
+    return (name_ == other.name_ && subcircuit_ == other.subcircuit_);
   }
 };
 

@@ -7,7 +7,7 @@
 
 using namespace JoSIM;
 
-void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
+void Errors::cli_errors(CLIErrors errorCode, string_o message) {
   std::string formattedMessage = "Command Line Interface\n";
   switch (errorCode) {
     case CLIErrors::NO_OUTPUT:
@@ -22,12 +22,12 @@ void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
       formattedMessage += "Continuing by reading from standard input.";
       warning_message(formattedMessage);
     case CLIErrors::UNKNOWN_SWITCH:
-      formattedMessage += "Unknown option '" + whatPart + 
+      formattedMessage += "Unknown option '" + message.value() + 
         "' specified. Please refer to the help menu.";
       warning_message(formattedMessage);
       break;
     case CLIErrors::UNKNOWN_OUTPUT_TYPE:
-      formattedMessage += "Unknown output type " + whatPart + 
+      formattedMessage += "Unknown output type " + message.value() + 
         " specified. CSV will be used instead.";
       warning_message(formattedMessage);
       break;
@@ -88,19 +88,19 @@ void Errors::cli_errors(CLIErrors errorCode, const std::string &whatPart) {
   }
 }
 
-void Errors::input_errors(InputErrors errorCode, 
-                          const std::string &whatPart) {
+void Errors::input_errors(InputErrors errorCode, string_o message) {
   std::string formattedMessage = "Input\n";
   switch (errorCode) {
     case InputErrors::CANNOT_OPEN_FILE:
       formattedMessage += 
-        "Input file " + whatPart + " cannot be found or opened.\n";
+        "Input file " + message.value() + " cannot be found or opened.\n";
       formattedMessage += 
         "Please ensure that the file exists and can be opened.\n\n";
       formattedMessage += "For further help use the -h switch";
       throw std::runtime_error(formattedMessage);
     case InputErrors::CYCLIC_INCLUDE:
-      formattedMessage += "Attempting to include file " + whatPart + ".\n";
+      formattedMessage += 
+        "Attempting to include file " + message.value() + ".\n";
       formattedMessage += "This is the same file as input file.\n\n";
       formattedMessage += "Preventing cyclic includes.";
       throw std::runtime_error(formattedMessage);
@@ -113,7 +113,8 @@ void Errors::input_errors(InputErrors errorCode,
       formattedMessage += "Please recheck the netlist and try again.";
       throw std::runtime_error(formattedMessage);
     case InputErrors::SUBCKT_CONTROLS:
-      formattedMessage += "Subcircuit " + whatPart + " contains controls.\n";
+      formattedMessage += 
+        "Subcircuit " + message.value() + " contains controls.\n";
       formattedMessage += "Controls are reserved for the main design.\n";
       formattedMessage += "These controls will be ignored.";
       warning_message(formattedMessage);
@@ -125,13 +126,14 @@ void Errors::input_errors(InputErrors errorCode,
       throw std::runtime_error(formattedMessage);
     case InputErrors::UNKNOWN_SUBCKT:
       formattedMessage += 
-        "The subcircuit named " + whatPart + " was not found in the netlist.\n";
+        "The subcircuit named " + message.value() + 
+        " was not found in the netlist.\n";
       formattedMessage += 
         "Please ensure all subcircuits exist and are correctly named.";
       throw std::runtime_error(formattedMessage);
     case InputErrors::EMPTY_FILE:
       formattedMessage += 
-        "The file \"" + whatPart + "\" contains no readable lines.\n";
+        "The file \"" + message.value() + "\" contains no readable lines.\n";
       formattedMessage += 
         "Please check the input file and ensure that the file is not empty.";
       throw std::runtime_error(formattedMessage);
@@ -139,125 +141,129 @@ void Errors::input_errors(InputErrors errorCode,
 }
 
 void Errors::invalid_component_errors(ComponentErrors errorCode,
-                                      const std::string &whatPart) {
+  string_o message) {
   std::string formattedMessage = "Components\n";
   switch (errorCode) {
     case ComponentErrors::INVALID_COMPONENT_DECLARATION:
       formattedMessage += "Invalid component declaration detected.\n";
-      formattedMessage += "Infringing line: " + whatPart + "\n";
+      formattedMessage += "Infringing line: " + message.value() + "\n";
       formattedMessage += 
         "Please refer to the documentation for the correct notation.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::BOTH_GROUND:
       formattedMessage += 
         "Both nodes are grounded for the following component.\n";
-      formattedMessage += "Component: " + whatPart;
+      formattedMessage += "Component: " + message.value();
       warning_message(formattedMessage);
       break;
     case ComponentErrors::GROUNDED_VOLTAGE_SOURCE:
       formattedMessage += "Both nodes are grounded for the following source.\n";
-      formattedMessage += "Component: " + whatPart;
+      formattedMessage += "Component: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::RES_ERROR:
       formattedMessage += "Resistor value error\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::CAP_ERROR:
       formattedMessage += "Capacitor value error\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::IND_ERROR:
       formattedMessage += "Inductor value error\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::LABEL_ERROR:
-      formattedMessage += "Invalid component label: " + whatPart;
+      formattedMessage += "Invalid component label: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_LABEL:
       formattedMessage += "No component label. This should not happen.\n";
-      formattedMessage += "Infringing line: " + whatPart + "\n";
+      formattedMessage += "Infringing line: " + message.value() + "\n";
       formattedMessage += 
         "Please contact the developer as this is possibly a bug.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_PNODE:
       formattedMessage += "No positive node. This should not happen.\n";
-      formattedMessage += "Infringing line: " + whatPart + "\n";
+      formattedMessage += "Infringing line: " + message.value() + "\n";
       formattedMessage += 
         "Please contact the developer as this is possibly a bug.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_NNODE:
       formattedMessage += "No negative node. This should not happen.\n";
-      formattedMessage += "Infringing line: " + whatPart + "\n";
+      formattedMessage += "Infringing line: " + message.value() + "\n";
       formattedMessage += 
         "Please contact the developer as this is possibly a bug.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_JJMODEL:
       formattedMessage += 
-        "No junction model is specified for junction " + whatPart;
+        "No junction model is specified for junction " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MODEL_NOT_DEFINED:
       formattedMessage += "The specified model is not defined.\n";
-      formattedMessage += "Missing model: " + whatPart + "\n";
+      formattedMessage += "Missing model: " + message.value() + "\n";
       formattedMessage += "Using default model as specified in the manual.";
       warning_message(formattedMessage);
       break;
     case ComponentErrors::MODEL_AREA_NOT_GIVEN:
-      formattedMessage += "No area specified for junction " + whatPart + "\n";
+      formattedMessage += 
+        "No area specified for junction " + message.value() + "\n";
       formattedMessage += "Using default: AREA=1.0";
       warning_message(formattedMessage);
       break;
     case ComponentErrors::DUPLICATE_LABEL:
-      formattedMessage += "Duplicate label " + whatPart + " detected.\n";
+      formattedMessage += "Duplicate label " + message.value() + " detected.\n";
       formattedMessage += 
         "The program will now terminate. Please recheck the netlist.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::INVALID_SUBCIRCUIT_NODES:
       formattedMessage += 
-        "The nodes of " + whatPart + " do not match the subcicuit nodes.\n";
+        "The nodes of " + message.value() + 
+        " do not match the subcicuit nodes.\n";
       formattedMessage += 
         "Please recheck the nodes required by the subcircuit and try again.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::TIME_ERROR:
       formattedMessage += "Time delay value error\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_SUBCIRCUIT_NAME:
       formattedMessage += 
-        "The subcircuit for " + whatPart + " was not found in the file.\n";
+        "The subcircuit for " + message.value() + 
+        " was not found in the file.\n";
       formattedMessage += "Please recheck the subcircuit name and try again.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MUT_ERROR:
       formattedMessage += "Invalid mutual coupling definition found.\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::INVALID_EXPR:
       formattedMessage += "Invalid expression statement found.\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::INVALID_TX_DEFINED:
       formattedMessage += "Invalid definition for transmission line found.\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::INVALID_TX_RESOLUTION:
       formattedMessage += 
         "Time delay for transmission line is less than simulation timestep.\n";
       formattedMessage += 
         "Please reduce timestep to less than any transmission line delay.\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::MISSING_INDUCTOR:
       formattedMessage += 
-        "Invalid mutual coupling defined. Missing inductor " + whatPart + "\n";
-      formattedMessage += "Please ensure that " + whatPart + " exists.";
+        "Invalid mutual coupling defined. Missing inductor " + message.value() +
+        "\n";
+      formattedMessage += "Please ensure that " + message.value() + " exists.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::UNKNOWN_DEVICE_TYPE:
-      formattedMessage += "Unkown device type " + whatPart + "\n";
+      formattedMessage += "Unkown device type " + message.value() + "\n";
       formattedMessage += 
         "Please refer to the syntax guide for a list of device types.";
       throw std::runtime_error(formattedMessage);
     case ComponentErrors::SPECIAL_CHARS:
       formattedMessage += 
-        "Label " + whatPart + " contains special characters.\n";
+        "Label " + message.value() + " contains special characters.\n";
       formattedMessage += 
         "The use of special characters in label names is not advised.\n";
       formattedMessage += "This might produce unexpected results.\n";
@@ -271,13 +277,12 @@ void Errors::invalid_component_errors(ComponentErrors errorCode,
   }
 }
 
-void Errors::control_errors(ControlErrors errorCode, 
-                            const std::string &whatPart) {
+void Errors::control_errors(ControlErrors errorCode, string_o message) {
   std::string formattedMessage = "Controls\n";
   switch (errorCode) {
     case ControlErrors::TRANS_ERROR:
       formattedMessage += 
-        "Invalid transient analysis specified. " + whatPart + "\n";
+        "Invalid transient analysis specified. " + message.value() + "\n";
       formattedMessage += "Substituting default parameters.\n";
       formattedMessage += 
         "Defaults: TSTEP=1PS TSTOP=1000PS TSTART=0PS MAXTSTEP=1PS";
@@ -286,7 +291,7 @@ void Errors::control_errors(ControlErrors errorCode,
     case ControlErrors::PRINT_TOO_MANY_ARGS:
       formattedMessage += 
         "Print request for device current has too many arguments.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "Ignoring the extra argument.";
       warning_message(formattedMessage);
       break;
@@ -307,179 +312,178 @@ void Errors::control_errors(ControlErrors errorCode,
         "No simulation type specified. Nothing will be simulated.";
       throw std::runtime_error(formattedMessage);
     case ControlErrors::UNKNOWN_DEVICE:
-      formattedMessage += "Unknown device/node " + whatPart + "\n";
+      formattedMessage += "Unknown device/node " + message.value() + "\n";
       formattedMessage += "Cannot store results for this device/node.\n";
       formattedMessage += "Ignoring this store request.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::CURRENT_THROUGH_VOLT:
       formattedMessage += "Requesting current through a voltage source.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This is invalid and the request will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::VOLT_WHEN_PHASE:
       formattedMessage += 
-        "Request to store voltage for device " + whatPart + "\n";
+        "Request to store voltage for device " + message.value() + "\n";
       formattedMessage += "Phase mode simulation performed.\n";
       formattedMessage += "Storing device phase instead.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::VOLT_ACROSS_CURRENT:
       formattedMessage += "Requesting voltage across a current source.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This is invalid and the request will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::NODEVOLT_WHEN_PHASE:
       formattedMessage += 
-        "Request to store nodal voltage for " + whatPart + "\n";
+        "Request to store nodal voltage for " + message.value() + "\n";
       formattedMessage += "Phase mode simulation performed.\n";
       formattedMessage += "Storing nodal phase instead.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::NODECURRENT:
       formattedMessage += 
-        "Request to store current for " + whatPart + " is invalid.\n";
+        "Request to store current for " + message.value() + " is invalid.\n";
       formattedMessage += 
         "Cannot find device or cannot store current of a node.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::UNKNOWN_NODE:
       formattedMessage += 
-        "Node " + whatPart + " was not found in the circuit.\n";
+        "Node " + message.value() + " was not found in the circuit.\n";
       formattedMessage += "This request for store will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::NODEPHASE_WHEN_VOLT:
       formattedMessage += 
-        "Request to store nodal phase for " + whatPart + "\n";
+        "Request to store nodal phase for " + message.value() + "\n";
       formattedMessage += "Voltage mode simulation performed.\n";
       formattedMessage += "Storing nodal voltage instead.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::INVALID_NODEV:
       formattedMessage += "Invalid node voltage request found.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This request for store will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::INVALID_NODEP:
       formattedMessage += "Invalid node phase request found.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This request for store will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::PHASE_WHEN_VOLT:
       formattedMessage += "Requesting phase in a voltage simulation.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This request will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::PHASE_OF_VOLT:
       formattedMessage += "Requesting phase of a voltage source.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This is invalid and the request will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::PHASE_OF_CURRENT:
       formattedMessage += "Requesting phase of a current source.\n";
-      formattedMessage += "Line: " + whatPart + "\n";
+      formattedMessage += "Line: " + message.value() + "\n";
       formattedMessage += "This is invalid and the request will be ignored.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::INVALID_CURRENT:
       formattedMessage += "Invalid request to plot current.\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       warning_message(formattedMessage);
       break;
     case ControlErrors::MATHOPS:
       formattedMessage += 
         "Mathematical operations on output vectors are not yet supported.\n";
-      formattedMessage += "Ignoring plotting of " + whatPart;
+      formattedMessage += "Ignoring plotting of " + message.value();
       warning_message(formattedMessage);
       break;
     case ControlErrors::UNKNOWN_PLOT:
-      formattedMessage += "Unknown plot type " + whatPart + "\n";
+      formattedMessage += "Unknown plot type " + message.value() + "\n";
       formattedMessage += "Ignoring request to plot.";
       warning_message(formattedMessage);
       break;
     case ControlErrors::INVALID_OUTPUT_COMMAND:
       formattedMessage += "Invalid request for output found.\n";
-      formattedMessage += whatPart + "\n";
+      formattedMessage += message.value() + "\n";
       formattedMessage += "Ignoring request and continuing.";
       warning_message(formattedMessage);
       break;
     default:
-      formattedMessage += "Unknown control error: " + whatPart + "\n";
+      formattedMessage += "Unknown control error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-[[noreturn]] void Errors::model_errors(ModelErrors errorCode,
-                                       const std::string &whatPart) {
+[[noreturn]] void Errors::model_errors(ModelErrors errorCode, 
+  string_o message) {
   std::string formattedMessage = "Model\n";                                         
   switch (errorCode) {
     case ModelErrors::PARAM_TYPE_ERROR:
       formattedMessage += "Unknown model parameter specified.\n";
-      formattedMessage += "Model line: " + whatPart + "\n";
+      formattedMessage += "Model line: " + message.value() + "\n";
       formattedMessage += 
         "Please refer to the model definition in the documentation";
       throw std::runtime_error(formattedMessage);
     case ModelErrors::UNKNOWN_MODEL_TYPE:
       formattedMessage += "Unknown model type specified.\n";
-      formattedMessage += "Model line: " + whatPart;
+      formattedMessage += "Model line: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ModelErrors::BAD_MODEL_DEFINITION:
       formattedMessage += "Bad model definition found.\n";
-      formattedMessage += "Infringing line: " + whatPart;
+      formattedMessage += "Infringing line: " + message.value();
       throw std::runtime_error(formattedMessage);
     default:
-      formattedMessage += "Unknown model error: " + whatPart + "\n";
+      formattedMessage += "Unknown model error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-void Errors::matrix_errors(MatrixErrors errorCode, 
-                            const std::string &whatPart) {
+void Errors::matrix_errors(MatrixErrors errorCode, string_o message) {
   std::string formattedMessage = "Matrix\n";                                         
   switch (errorCode) {
     case MatrixErrors::NON_SQUARE:
       formattedMessage += 
-        "Matrix is not square. Dimensions are " + whatPart + "\n";
+        "Matrix is not square. Dimensions are " + message.value() + "\n";
       formattedMessage += 
         "Please contact the developer as this is potentially a bug.";
       throw std::runtime_error(formattedMessage);
     default:
-      formattedMessage += "Unknown matrix error: " + whatPart + "\n";
+      formattedMessage += "Unknown matrix error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-[[noreturn]] void Errors::misc_errors(MiscErrors errorCode,
-                                      const std::string &whatPart) {
+[[noreturn]] void Errors::misc_errors(MiscErrors errorCode, 
+  string_o message) {
   std::string formattedMessage = "Miscellaneous\n";                                                                                 
   switch (errorCode) {
     case MiscErrors::STOD_ERROR:
-      formattedMessage += "Cannot convert string to double: " + whatPart;
+      formattedMessage += "Cannot convert string to double: " + message.value();
       throw std::runtime_error(formattedMessage);
     default:
-      formattedMessage += "Unknown misc error: " + whatPart + "\n";
+      formattedMessage += "Unknown misc error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-void Errors::function_errors(FunctionErrors errorCode, 
-                              const std::string &whatPart) {
+void Errors::function_errors(FunctionErrors errorCode, string_o message) {
   std::string formattedMessage = "Function\n";                                         
   switch (errorCode) {
     case FunctionErrors::INITIAL_VALUES:
       formattedMessage += "Invalid PWL definition found.\n"; 
-      formattedMessage += "The value of " + whatPart + " is expected to be 0\n";
+      formattedMessage += 
+        "The value of " + message.value() + " is expected to be 0\n";
       formattedMessage += "Please refer to the PWL definition:\n";
       formattedMessage += "PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
       warning_message(formattedMessage);
@@ -487,27 +491,28 @@ void Errors::function_errors(FunctionErrors errorCode,
     case FunctionErrors::TOO_FEW_TIMESTEPS:
       formattedMessage += 
         "Total timesteps specified do not match the values specified.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the PWL definition:\n";
       formattedMessage += "PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
       throw std::runtime_error(formattedMessage);
     case FunctionErrors::TOO_FEW_VALUES:
       formattedMessage += 
         "Total values specified do not match the timesteps specified.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the PWL definition:\n";
       formattedMessage += "PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
       throw std::runtime_error(formattedMessage);
     case FunctionErrors::INITIAL_PULSE_VALUE:
       formattedMessage += "Invalid PULSE definition found.\n"; 
-      formattedMessage += "The value of " + whatPart + " is expected to be 0\n";
+      formattedMessage += 
+        "The value of " + message.value() + " is expected to be 0\n";
       formattedMessage += "Please refer to the PULSE definition:\n";
       formattedMessage += "PULSE(0 V2 TD TR TF PW PER)";
       throw std::runtime_error(formattedMessage);
     case FunctionErrors::PULSE_TOO_FEW_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for PULSE.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the PULSE definition:\n";
       formattedMessage += "PULSE(0 V2 TD TR TF PW PER)";
       throw std::runtime_error(formattedMessage);
@@ -535,14 +540,14 @@ void Errors::function_errors(FunctionErrors errorCode,
     case FunctionErrors::SIN_TOO_FEW_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for SIN.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the SIN definition:\n";
       formattedMessage += "SIN(VO VA FREQ TD THETA)";
       throw std::runtime_error(formattedMessage);
     case FunctionErrors::SIN_TOO_MANY_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for SIN.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the SIN definition:\n";
       formattedMessage += "SIN(VO VA FREQ TD THETA)";
       throw std::runtime_error(formattedMessage);
@@ -555,7 +560,7 @@ void Errors::function_errors(FunctionErrors errorCode,
     case FunctionErrors::CUS_TOO_FEW_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for CUS.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the CUS definition:\n";
       formattedMessage += "CUS(WaveFile.dat TS SF IM <TD PER>)";
       warning_message(formattedMessage);
@@ -563,7 +568,7 @@ void Errors::function_errors(FunctionErrors errorCode,
     case FunctionErrors::CUS_TOO_MANY_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for CUS.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the CUS definition:\n";
       formattedMessage += "CUS(WaveFile.dat TS SF IM <TD PER>)";
       warning_message(formattedMessage);
@@ -576,20 +581,20 @@ void Errors::function_errors(FunctionErrors errorCode,
       break;
     case FunctionErrors::CUS_WF_NOT_FOUND:
       formattedMessage += "CUS waveform file was not found.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Program will terminate.";
       throw std::runtime_error(formattedMessage);
     case FunctionErrors::NOISE_TOO_FEW_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for NOISE.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the NOISE definition:\n";
       formattedMessage += "NOISE(0 VA TSTEP TD)";
       throw std::runtime_error(formattedMessage);
     case FunctionErrors::NOISE_TOO_MANY_ARGUMENTS:
       formattedMessage += 
         "Total arguments specified do not match the required for NOISE.\n"; 
-      formattedMessage += whatPart + " specified.\n";
+      formattedMessage += message.value() + " specified.\n";
       formattedMessage += "Please refer to the NOISE definition:\n";
       formattedMessage += "NOISE(0 VA TSTEP TD)";
       throw std::runtime_error(formattedMessage);
@@ -608,40 +613,41 @@ void Errors::function_errors(FunctionErrors errorCode,
       warning_message(formattedMessage);
       break;
     default:
-      formattedMessage += "Unknown function error: " + whatPart + "\n";
+      formattedMessage += "Unknown function error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
 [[noreturn]] void Errors::simulation_errors(SimulationErrors errorCode,
-                                            const std::string &whatPart) {
+  string_o message) {
   std::string formattedMessage = "Simulation\n";                                         
   switch (errorCode) {
     case SimulationErrors::JJCAP_NOT_FOUND:
       formattedMessage += 
-        "Capacitor value for " + whatPart + " could not be found.\n";
+        "Capacitor value for " + message.value() + " could not be found.\n";
       formattedMessage += 
         "This is a bug and the developer should be contacted.\n"; 
       formattedMessage += "The program will abort.";
       throw std::runtime_error(formattedMessage);
     case SimulationErrors::JJICRIT_NOT_FOUND:
       formattedMessage += 
-        "Critical current value for " + whatPart + " could not be found.\n";
+        "Critical current value for " + message.value() + 
+        " could not be found.\n";
       formattedMessage += 
         "This is a bug and the developer should be contacted.\n"; 
       formattedMessage += "The program will abort.";
       throw std::runtime_error(formattedMessage);
     case SimulationErrors::JJPHASE_NODE_NOT_FOUND:
       formattedMessage += 
-        "Junction phase node not found for " + whatPart + ".\n";
+        "Junction phase node not found for " + message.value() + ".\n";
       formattedMessage += 
         "This is a bug and the developer should be contacted.\n"; 
       formattedMessage += "The program will abort.";
       throw std::runtime_error(formattedMessage);
     case SimulationErrors::INDUCTOR_CURRENT_NOT_FOUND:
       formattedMessage += 
-        "Inductor current not defined for " + whatPart + ".\n"; 
+        "Inductor current not defined for " + message.value() + ".\n"; 
       formattedMessage += "Matrix will have no solution.\n";
       formattedMessage += 
         "This is a bug and the developer should be contacted.\n"; 
@@ -653,23 +659,23 @@ void Errors::function_errors(FunctionErrors errorCode,
       formattedMessage += "The program will abort.";
       throw std::runtime_error(formattedMessage);
     case SimulationErrors::PHASEGUESS_TOO_LARGE:
-      formattedMessage += "Junction " + whatPart + " has gone too far.\n";
+      formattedMessage += 
+        "Junction " + message.value() + " has gone too far.\n";
       formattedMessage += "This is a result of integration error.\n";
       formattedMessage += "Please reduce the timestep and try again.";
       throw std::runtime_error(formattedMessage);
     default:
-      formattedMessage += "Unknown simulation error: " + whatPart + "\n";
+      formattedMessage += "Unknown simulation error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-void Errors::parsing_errors(ParsingErrors errorCode, 
-                            const std::string &whatPart) {
+void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
   std::string formattedMessage = "Parsing\n";                                         
   switch (errorCode) {
     case ParsingErrors::EXPRESSION_ARLEADY_DEFINED:
-      formattedMessage += "Expression duplication: " + whatPart + "\n";
+      formattedMessage += "Expression duplication: " + message.value() + "\n";
       formattedMessage += "Replacing.";
       warning_message(formattedMessage);
       break;
@@ -677,57 +683,55 @@ void Errors::parsing_errors(ParsingErrors errorCode,
       formattedMessage += "The following variables were not found/defined.\n";
       formattedMessage += 
         "Please ensure that these variables exist within the netlist.\n";
-      formattedMessage += "Variables: \n" + whatPart;
+      formattedMessage += "Variables: \n" + message.value();
       throw std::runtime_error(formattedMessage);
     case ParsingErrors::MISMATCHED_PARENTHESIS:
       formattedMessage += 
-        "Mismatched parenthesis in expression: " + whatPart + "\n";
+        "Mismatched parenthesis in expression: " + message.value() + "\n";
       formattedMessage += "Please correct the expression before trying again.";
       throw std::runtime_error(formattedMessage);
     case ParsingErrors::INVALID_RPN:
       formattedMessage += "Invalid RPN detected.\n"; 
       formattedMessage += 
         "This might be an algorithm fault or an incorrect expression parse.\n";
-      formattedMessage += "The expression in question: " + whatPart;
+      formattedMessage += "The expression in question: " + message.value();
       throw std::runtime_error(formattedMessage);
     case ParsingErrors::INVALID_DECLARATION:
       formattedMessage += 
-        "Missing parameter declaration in: " + whatPart + "\n";
+        "Missing parameter declaration in: " + message.value() + "\n";
       formattedMessage += 
         "Please ensure that a valid .PARAM definition is declared.";
       throw std::runtime_error(formattedMessage);
     default:
-      formattedMessage += "Unknown parsing error: " + whatPart + "\n";
+      formattedMessage += "Unknown parsing error: " + message.value() + "\n";
       formattedMessage += "Please contact the developer.";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-void Errors::netlist_errors(NetlistErrors errorCode, 
-                            const std::string &whatPart) {
+void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
   std::string formattedMessage = "Netlist\n";
   switch (errorCode) {
     case NetlistErrors::NO_SUCH_NODE:
       formattedMessage += 
-        "Node \"" + whatPart + "\" was not found in the netlist\n";
+        "Node \"" + message.value() + "\" was not found in the netlist\n";
       formattedMessage += "Please check for any disconnections in the netlist";
       throw std::runtime_error(formattedMessage);
     case NetlistErrors::MISSING_IO:
       formattedMessage += "Missing I/O nodes for subcircuit:\n";
-      formattedMessage += whatPart + "\n";
+      formattedMessage += message.value() + "\n";
       formattedMessage += "Please check for any disconnections in the netlist";
       throw std::runtime_error(formattedMessage);
   }
 }
 
-void Errors::output_errors(OutputErrors errorCode, 
-                          const std::string &whatPart) {
+void Errors::output_errors(OutputErrors errorCode, string_o message) {
   std::string formattedMessage = "Output\n";
   switch (errorCode) {
     case OutputErrors::CANNOT_OPEN_FILE:
       formattedMessage += "Cannot open the requested file for output.\n";
       formattedMessage += 
-        "Please ensure write permission in for the file: " + whatPart;
+        "Please ensure write permission in for the file: " + message.value();
       throw std::runtime_error(formattedMessage);
     case OutputErrors::NOTHING_SPECIFIED:
       formattedMessage += "Nothing specified to output.\n";

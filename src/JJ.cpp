@@ -11,6 +11,33 @@
 
 using namespace JoSIM;
 
+/*
+  Blabel V⁺ V⁻ jjmodel area=value
+
+  V - (hbar/2e)(3/2h)φ = (hbar/2e)(-(2/h)φn-1 + (1/2h)φn-2)
+  V - (2Rh/(3RC + 2h))Io = -(2Rh/(3RC + 2h))(Icsinφ0 - (2C/h)Vn-1 + (C/2h)Vn-2)
+  φ0 = (4/3)φn-1 - (1/3)φn-2 + (2e/hbar)(2h/3)v0
+  v0 = (5/2)Vn-1 - 2Vn-2 + (1/2)Vn-3
+
+  ⎡ 0  0                0                 1⎤ ⎡ V⁺⎤   ⎡    0⎤
+  ⎜ 0  0                0                -1⎟ ⎜ V⁻⎟ = ⎜    0⎟
+  ⎜ 1 -1 -(hbar/2e)(3/2h)                 0⎟ ⎜ φ ⎟   ⎜ RHS1⎟
+  ⎣ 1 -1                0 -(2Rh/(3RC + 2h))⎦ ⎣ Io⎦   ⎣ RHS2⎦
+
+  RHS1 = (hbar/2e)(-(2/h)φn-1 + (1/2h)φn-2)
+  RHS2 = -(2Rh/(3RC + 2h))(Icsinφ0 - (2C/h)Vn-1 + (C/2h)Vn-2)
+
+  (PHASE)
+  φ - (2e/hbar)(2h/3)V = (4/3)φn-1 - (1/3)φn-2
+
+  ⎡ 0  0                0                 1⎤ ⎡ φ⁺⎤   ⎡    0⎤
+  ⎜ 0  0                0                -1⎟ ⎜ φ⁻⎟ = ⎜    0⎟
+  ⎜ 1 -1 -(2e/hbar)(2h/3)                 0⎟ ⎜ V ⎟   ⎜ RHS1⎟
+  ⎣ 1 -1                0 -(2Rh/(3RC + 2h))⎦ ⎣ Io⎦   ⎣ RHS2⎦
+
+  RHS1 = (4/3)φn-1 - (1/3)φn-2
+*/ 
+
 JJ::JJ(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
@@ -26,7 +53,7 @@ JJ::JJ(
   // Set the label
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list
-  lm.emplace(s);
+  lm.emplace(s.first.at(0));
   // Junction line has potential to have up to 6 parts
   for(int i = 0; i < s.first.size(); ++i) {
     // If the part contains the AREA specifiere
@@ -44,7 +71,7 @@ JJ::JJ(
   // Set the transitional conductance value
   gLarge_ = model_.value().get_criticalCurrent() /
           (model_.value().get_criticalToNormalRatio() * 
-            model_.value().get_deltaV()));
+            model_.value().get_deltaV());
   // Set subgap impedance (1/R0) + (3C/2h)
   subImp_ = ((1/model_.value().get_subgapResistance()) + 
     ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
@@ -77,30 +104,58 @@ JJ::JJ(
     tanh(del_ / (2 * Constants::BOLTZMANN * model_.value().get_temperature()));
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
-  // Set te node indices, using token 2 and 3
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+2), nm);
   // Set variable index and increment it
   variableIndex_ = bi++;
   // Set current index and increment it
   indexInfo.currentIndex_ = bi++;
+  // Set te node indices, using token 2 and 3
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm, nc);
   // Set the non zero, column index and row pointer vectors
-  set_matrix_info();
-  // The non zero vector should have 2 subsets, the variable row and current row
-  std::vector<double> tempNZ = matrixInfo.nonZeros_;
-  // Add the phase constant to the end of the non zero vector
+  set_matrix_info(at);
+}
+
+void JJ::set_matrix_info(const AnalysisType &at) {
+  switch(indexInfo.nodeConfig_) {
+  case NodeConfig::POSGND:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::GNDNEG:
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::POSNEG:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(3);
+    break;
+  case NodeConfig::GND:
+    matrixInfo.rowPointer_.emplace_back(1);
+    break;
+  }
   matrixInfo.nonZeros_.emplace_back(-phaseConst_);
-  // Add the temporary non zero vector to the end of the non zero vector
-  matrixInfo.nonZeros_.insert(
-    matrixInfo.nonZeros_.end(), tempNZ.begin(), tempNZ.end());
-  // Append the RC conductance to the non zero vector
-  matrixInfo.nonZeros_.emplace_back(-1/subImp_);
-  // Now alter the column indices vector
-  matrixInfo.columnIndex_.back() = variableIndex_;
-  matrixInfo.columnIndex_.insert(matrixInfo.columnIndex_.end(), 
-    matrixInfo.columnIndex_.begin(), matrixInfo.columnIndex_.end());
-  matrixInfo.columnIndex_.back() = indexInfo.currentIndex_.value();
-  // There are two rows of information for a JJ, duplicate the nz count
-  matrixInfo.rowPointer_.emplace_back(matrixInfo.rowPointer_.back());
+  matrixInfo.columnIndex_.emplace_back(variableIndex_);
+  if(at == AnalysisType::Voltage) {
+    matrixInfo.nonZeros_.insert(
+      matrixInfo.nonZeros_.end(), 
+      matrixInfo.nonZeros_.begin(), matrixInfo.nonZeros_.end());
+    matrixInfo.nonZeros_.back() = -1/subImp_;
+    matrixInfo.columnIndex_.insert(
+      matrixInfo.columnIndex_.end(), 
+      matrixInfo.columnIndex_.begin(), matrixInfo.columnIndex_.end());
+    matrixInfo.columnIndex_.back() = indexInfo.currentIndex_.value();
+    matrixInfo.rowPointer_.emplace_back(matrixInfo.rowPointer_.back());
+  } else if (at == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(variableIndex_);
+    matrixInfo.nonZeros_.emplace_back(-1/subImp_);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+  }
 }
 
 void JJ::set_model(
@@ -109,11 +164,15 @@ void JJ::set_model(
   // Loop through all models
   for(auto &i : models) {
     // If the model name matches that of an identified model
-    if(i.first.get_modelName() == t.back() && 
-        i.second == subc) {
-      // Check that the subcircuit names match (if any)
-      if((subc && subc.value() == i.second.value()) || (!subc)) {
-        // Set the model
+    if(i.first.get_modelName() == t.back()) {
+      // If both models belong to a subcircuit and the subcircuit names match
+      if ((i.second && subc) && (subc.value() == i.second.value())){
+        // Set the model to the exact identified model
+        model_ = i.first;
+        break;
+      // JJ might be in a subcircuit but model in global scope
+      } else if (!i.second) {
+        // Set the model to the globally identified model
         model_ = i.first;
         break;
       }

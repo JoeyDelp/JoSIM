@@ -1,9 +1,13 @@
 * Resistor component test
 * Date modified: 2020/01/16
+Vtest   1   0   pwl(0 0 5p 5)
+Itest   0   3   pwl(0 0 5p 5 10p 0)
 R1  1   2   5
 R2  2   0   1
-Vtest   1   0   pwl(0 0 5p 5)
+R3  3   0   1
 .tran 0.25p 100p
 .print devv r2
 .print devi r2
 .print devp r2
+.print devi Itest
+.print devv R3

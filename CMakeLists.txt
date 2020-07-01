@@ -26,32 +26,32 @@ endif()
 # -------------
 
 add_library(josim
-            src/CliOptions.cpp
-            src/Simulation.cpp
-            src/Output.cpp
-            src/Misc.cpp
-            src/Matrix.cpp
-            src/Input.cpp
-            src/Errors.cpp
-            src/Verbose.cpp
-            src/Netlist.cpp
-            src/Model.cpp
-            src/Parameters.cpp
-            src/Transient.cpp
-            src/Resistor.cpp
-            src/Inductor.cpp
             src/Capacitor.cpp
-            src/JJ.cpp
-            src/VoltageSource.cpp
-            src/PhaseSource.cpp
+            src/CCCS.cpp
+            src/CCVS.cpp
+            src/CliOptions.cpp
             src/CurrentSource.cpp
+            src/Errors.cpp
+            src/Function.cpp
+            src/Inductor.cpp
+            src/Input.cpp
+            src/JJ.cpp
+            src/Matrix.cpp
+            src/Misc.cpp
+            src/Model.cpp
+            src/Netlist.cpp
+            src/Output.cpp
+            src/Parameters.cpp
+            src/PhaseSource.cpp
+            src/RelevantTrace.cpp
+            src/Resistor.cpp
+            src/Simulation.cpp
+            src/Transient.cpp
             src/TransmissionLine.cpp
             src/VCCS.cpp
-            src/CCCS.cpp
             src/VCVS.cpp
-            src/CCVS.cpp
-            src/RelevantTrace.cpp
-            src/Function.cpp)
+            src/Verbose.cpp
+            src/VoltageSource.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

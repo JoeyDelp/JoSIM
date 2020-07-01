@@ -55,27 +55,21 @@ void Netlist::expand_io(
     tokens_t &tokens = subc.lines.at(k).first;
     // Append the label of the parent to the subcircuit label
     tokens.at(0) = tokens.at(0) + "|" + label;
-    // If the subcircuit IO contains the first node 
-    if (rename_io_nodes(tokens.at(1), subc.io, io) && tokens.at(1) != "GND") {
-      // Append the parent label to the node name
-      tokens.at(1) = tokens.at(1) + "|" + label;
-    }
-    // If the subcircuit IO contains the second node
-    if (rename_io_nodes(tokens.at(2), subc.io, io) && tokens.at(2) != "GND") {
-      // Append the parent label to the node name
-      tokens.at(2) = tokens.at(2) + "|" + label;
-    }
+    // Determine amount of nodes to process
+    int nodeCount = 2;
     // If device type identifier is any of "EFGHT" check the next two nodes
     if(std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) {
-      // If the subcircuit IO contains the third node
-      if (rename_io_nodes(tokens.at(3), subc.io, io) && tokens.at(3) != "GND") {
-        // Append the parent label to the node name
-        tokens.at(3) = tokens.at(3) + "|" + label;
-      }
-      // If the subcircuit IO contains the fourth node 
-      if (rename_io_nodes(tokens.at(4), subc.io, io) && tokens.at(4) != "GND") {
-        // Append the parent label to the node name
-        tokens.at(4) = tokens.at(4) + "|" + label;
+      nodeCount = 4;
+    }
+    // Loop through all the nodes changing where necessary
+    for (int n = 1; n < nodeCount + 1; ++n) {
+      // Ensure nodes don't identify as ground
+      if (tokens.at(n) != "0" && tokens.at(n) != "GND") {
+        // Ensure the node is not part of the IO
+        if (!rename_io_nodes(tokens.at(n), subc.io, io)) {
+          // Append the label to the node number to make it unique
+          tokens.at(n) = tokens.at(n) + "|" + label;
+        }
       }
     }
   }

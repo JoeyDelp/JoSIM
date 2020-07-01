@@ -3,6 +3,8 @@
 #ifndef JOSIM_J_ERRORS_H
 #define JOSIM_J_ERRORS_H
 
+#include "JoSIM/TypeDefines.hpp"
+
 #include <string>
 
 namespace JoSIM {

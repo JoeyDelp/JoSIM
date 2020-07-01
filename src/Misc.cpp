@@ -56,50 +56,66 @@ std::string Misc::vector_to_string(const tokens_t &s, std::string d) {
   return ss.str();
 }
 
-tokens_t Misc::tokenize(const std::string &c,
-                        std::string d,
-                        int count,
-                        bool trimEmpty,
-                        bool trimSpaces) {
-  // Variables containg integer string position data
-  std::string::size_type pos, lastPos = 0, length = c.length();
-  // If count is 0 then find delimiter as much as possible
-  if(count == 0) {
-    count = length;
-  }
-  // Integer counter counting times delimiter was found
-  int counter = 0;
-  // Variable container for tokens
+tokens_t Misc::tokenize(
+  const std::string &c, std::string d, bool trimEmpty, bool trimSpaces,
+  int count) {
+  // Create a position token to point to the found delimiter
+  size_t pos = 0, lastPos = 0;
+  // Tokens to return
   tokens_t tokens;
-  // Syntax helpers
-  using value_type = typename std::vector<std::string>::value_type;
-  using size_type = typename std::vector<std::string>::size_type;
-  // While not the end of the string & counter less than count
-  while ((lastPos < length + 1) && (counter < count)) {
-    // Find the position of the delimiter from the last position
-    pos = c.find_first_of(d, lastPos);
-    // If the position is the end of the string (no delimiter found)
-    if (pos == std::string::npos) {
-      // Change the found position to the string length
-      pos = length;
+  // Counter to count times delimiter was found
+  int counter = 0;
+  // If times to delimit is 0 then delimit as much as we can
+  if (count == 0) {
+    count = c.length();
+  }
+  // While the delimiter can be found in the string
+  while((pos = c.find_first_of(d, lastPos)) != std::string::npos) {
+    // If we reach the number of times to delimit
+    if(counter == count) {
+      // Break from the while loop
+      break;
     }
-    // If the found position is not equal to the last position
-    // And of the trim empty is false (store all tokens)
-    if (pos != lastPos || !trimEmpty) {
-      // Append to tokens the string between last position and current position
-      tokens.push_back(
-          value_type(c.data() + lastPos, (size_type)pos - lastPos));
-      // If trim spaces is enabled
-      if(trimSpaces) {
-        // Remove trailing, leading and duplicate spaces between tokens
-        tokens.back() = std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+    // If trim empty tokens is enabled
+    if(trimEmpty) {
+      // Check if the substring represents an empty string
+      if(!c.substr(lastPos, pos - lastPos).empty()) {
+        // Store the string between the identified positions
+        tokens.emplace_back(c.substr(lastPos, pos - lastPos));
       }
+    // If we want to keep empty tokens
+    } else {
+      // Store the string between the identified positions
+      tokens.emplace_back(c.substr(lastPos, pos - lastPos));
     }
-    // Set the last position to the current position + 1
+    // If trim spaces is enabled
+    if(trimSpaces) {
+      // Remove trailing, leading and duplicate spaces between tokens
+      tokens.back() = 
+        std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+    }
     lastPos = pos + 1;
-    // Update counter
     ++counter;
   }
+  // If trim empty tokens is enabled
+  if(trimEmpty) {
+    // Check if the substring represents an empty string
+    if(!c.substr(lastPos).empty()) {
+      // Store the string between the identified positions
+      tokens.emplace_back(c.substr(lastPos));
+    }
+  // If we want to keep empty tokens
+  } else {
+    // Store the string between the identified positions
+    tokens.emplace_back(c.substr(lastPos));
+  }
+  // If trim spaces is enabled
+  if(trimSpaces) {
+    // Remove trailing, leading and duplicate spaces between tokens
+    tokens.back() = 
+      std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+  }
+  // Return the tokens
   return tokens;
 }
 

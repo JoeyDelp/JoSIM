@@ -10,138 +10,124 @@
 
 using namespace JoSIM;
 
-VCCS VCCS::create_VCCS(const std::pair<std::string, std::string> &s,
-                        const std::unordered_map<std::string, int> &nm, 
-                        std::unordered_set<std::string> &lm,
-                        std::vector<std::vector<std::pair<double, int>>> &nc,
-                        const std::unordered_map<ParameterName, Parameter> &p,
-                        int &branchIndex, const Input &iObj) {
-  std::vector<std::string> tokens = Misc::tokenize(s.first);
-  VCCS temp;
-  temp.set_label(tokens.at(0), lm);
-  if(s.first.find("{") != std::string::npos) {
-    if(s.first.find("}") != std::string::npos) {
-      tokens.at(5) = s.first.substr(s.first.find("{")+1, s.first.find("}") - s.first.find("{"));
-    } else {
-      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
-    }
-  }
-  temp.set_value(std::make_pair(tokens.at(5), s.second), p, iObj);
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
-  temp.set_currentIndex(branchIndex - 1);
-  return temp;
-}
+ /*
+  Glabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
+  
+  Io = GVc
+  
+  ⎡ 0  0  0  0    1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+  ⎜ 0  0  0  0   -1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+  ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+  ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+  ⎣ 0  0  1 -1 -1/G⎦ ⎣Io ⎦   ⎣ 0⎦
 
-void VCCS::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
-  if(lm.count(s) != 0) {
-    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
-  } else {
-    label_ = s;
-    lm.emplace(s);
-  }
-}
+  (PHASE)
+  φ - (2e/hbar)(2h/3G)Io = (4/3)φn-1 - (1/3)φn-2
 
-void VCCS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-                                        const std::pair<std::string, std::string> &n2, 
-                                        const std::unordered_map<std::string, int> &nm, 
-                                        const std::string &s, 
-                                        int &branchIndex) {
-  nonZeros_.clear();
-  columnIndex_.clear();
-  if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
-    if(nm.count(n1.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.first);
-  }
-  if(n1.second != "0" && n1.second.find("GND") == std::string::npos) {
-    if(nm.count(n1.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.second);
-  }
-  if(n2.first != "0" && n2.first.find("GND") == std::string::npos) {
-    if(nm.count(n2.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.first);
-  }
-  if(n2.second != "0" && n2.second.find("GND") == std::string::npos) {
-    if(nm.count(n2.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.second);
-  }
-  // 0
-  if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-    // 0 0
-    if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(1);
-      branchIndex++;
-      columnIndex_.emplace_back(branchIndex - 1);
-    // 0 1  
-    } else {
-      nonZeros_.emplace_back(-1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n2.second));
-      columnIndex_.emplace_back(branchIndex - 1);
-    }
-  // 1
-  } else {
-    // 1 0
-    if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n2.first));
-      columnIndex_.emplace_back(branchIndex - 1);
-    // 1 1  
-    } else {
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(3);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n2.first));
-      columnIndex_.emplace_back(nm.at(n2.second));
-      columnIndex_.emplace_back(branchIndex - 1);
-    }
+  ⎡ 0  0  0  0                 1⎤ ⎡φo⁺⎤   ⎡                     0⎤
+  ⎜ 0  0  0  0                -1⎟ ⎜φo⁻⎟   ⎜                     0⎟
+  ⎜ 0  0  0  0                 0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
+  ⎜ 0  0  0  0                 0⎟ ⎜φc⁻⎟   ⎜                     0⎟
+  ⎣ 0  0  1 -1 -(2e/hbar)(2h/3G)⎦ ⎣Io ⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦  
+ */ 
+
+VCCS::VCCS(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
+    std::unordered_set<std::string> &lm, nodeconnections &nc,
+    const param_map &pm, int &bi, const AnalysisType &at, const double &h) {
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s.first.at(0));
+  // Set the value this should be the 6th token
+  netlistInfo.value_ = parse_param(s.first.at(5), pm, s.second);
+  // Set the node configuration type
+  indexInfo.nodeConfig_ = ncon;
+  // Set the secondary node configuration type
+  nodeConfig2_ = ncon2.value();
+  // Set current index and increment it
+  indexInfo.currentIndex_ = bi++;
+  // Set te node indices, using tokens 2 to 5
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+5), nm, nc);
+  // Set the non zero, column index and row pointer vectors
+  set_matrix_info();
+  if(at == AnalysisType::Voltage) {
+    // Append the value to the non zero vector
+    matrixInfo.nonZeros_.emplace_back(-(1.0 / netlistInfo.value_));
+  } else if(at == AnalysisType::Phase) {
+    // Set initial value of phase node at n-2
+    pn2_ = 0;
+    // Append the value to the non zero vector
+    matrixInfo.nonZeros_.emplace_back(
+      -(1.0 / Constants::SIGMA) * ((2.0 * h)/ (3 * netlistInfo.value_)));
   }
 }
 
-void VCCS::set_indices(const std::pair<std::string, std::string> &n1, 
-                        const std::pair<std::string, std::string> &n2, 
-                        const std::unordered_map<std::string, int> &nm, 
-                        std::vector<std::vector<std::pair<double, int>>> &nc, 
-                        const int &branchIndex) {
-  if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
-    if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
-      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
-    } else {
-      posIndex1_ = nm.at(n1.first);
-      nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    }
-  } else if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
-    negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  } else {
-    posIndex1_ = nm.at(n1.first);
-    negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
+void VCCS::set_node_indices(
+  const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
+  // Set the node indices for the controlled nodes and add column index info  
+  switch(indexInfo.nodeConfig_) {
+  case NodeConfig::POSGND:
+    indexInfo.posIndex_ = nm.at(t.at(0));
+    nc.at(nm.at(t.at(0))).emplace_back(
+      std::make_pair(1, indexInfo.currentIndex_.value()));
+    break;
+  case NodeConfig::GNDNEG:
+    indexInfo.negIndex_ = nm.at(t.at(1));
+    nc.at(nm.at(t.at(1))).emplace_back(
+      std::make_pair(-1, indexInfo.currentIndex_.value()));
+    break;
+  case NodeConfig::POSNEG:
+    indexInfo.posIndex_ = nm.at(t.at(0));
+    indexInfo.negIndex_ = nm.at(t.at(1));
+    nc.at(nm.at(t.at(0))).emplace_back(
+      std::make_pair(1, indexInfo.currentIndex_.value()));
+    nc.at(nm.at(t.at(1))).emplace_back(
+      std::make_pair(-1, indexInfo.currentIndex_.value()));
+    break;
+  case NodeConfig::GND:
+    break;
   }
-  if(n2.second.find("GND") != std::string::npos || n2.second == "0") {
-    if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
-      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
-    } else {
-      posIndex2_ = nm.at(n2.first);
-    }
-  } else if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
-    negIndex2_ = nm.at(n2.second);
-  } else {
-    posIndex2_ = nm.at(n2.first);
-    negIndex2_ = nm.at(n2.second);
+  // Set the node indices for the controlling nodes
+  switch(nodeConfig2_) {
+  case NodeConfig::POSGND:
+    posIndex2_ = nm.at(t.at(2));
+    break;
+  case NodeConfig::GNDNEG:
+    negIndex2_ = nm.at(t.at(3));
+    break;
+  case NodeConfig::POSNEG:
+    posIndex2_ = nm.at(t.at(2));
+    negIndex2_ = nm.at(t.at(3));
+    break;
+  case NodeConfig::GND:
+    break;
   }
 }
 
-void VCCS::set_value(const std::pair<std::string, std::string> &s, 
-  const std::unordered_map<ParameterName, Parameter> &p, const Input &iObj) {
-  if (iObj.argAnal == AnalysisType::Voltage) {
-    value_ = 1 / parse_param(s.first, p, s.second);
-  } else {
-    value_ = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA * parse_param(s.first, p, s.second)));
+void VCCS::set_matrix_info() {
+  switch(nodeConfig2_) {
+  case NodeConfig::POSGND:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::GNDNEG:
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::POSNEG:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+    matrixInfo.rowPointer_.emplace_back(3);
+    break;
+  case NodeConfig::GND:
+    matrixInfo.rowPointer_.emplace_back(1);
+    break;
   }
+  matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
 }

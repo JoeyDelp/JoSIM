@@ -23,11 +23,11 @@ std::vector<tokens_t> Input::read_input(
   while (input.next()) {
     // Create a mutable line
     line = input.line();
+    // Remove all Carriage Return characters
+    line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
     // Remove all the leading, trailing and extra white spaces
     line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
     if (!line.empty() && line.at(0) != '*' && line.at(0) != '#') {
-      // Remove all Carriage Return characters
-      line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
       // Tokenize the line
       tokens = Misc::tokenize(line);
       // Uppercase just the first token for ".INCLUDE" check
@@ -70,7 +70,10 @@ std::vector<tokens_t> Input::read_input(
                     return c; });
         // If the line starts with a '+' append it to the previous line.
         if(tokens.at(0).at(0) == '+') {
-          fileLines.back().emplace_back(tokens);
+          // Remove the '+'
+          tokens.at(0) = tokens.at(0).substr(1);
+          fileLines.back().insert(
+            fileLines.back().end(), tokens.begin(), tokens.end());
         // Add the line to the read in lines variable
         } else {
           fileLines.emplace_back(tokens);
@@ -118,7 +121,7 @@ void Input::parse_input(string_o fileName) {
         // Indicate that subcircuits exist within this netlist
         netlist.containsSubckt = true;
         // Subcircuit is required to atleast have a name
-        if (!fileLines.at(i).size() > 1) {
+        if (fileLines.at(i).size() > 1) {
           // Subcircuit is required to have at least some form of IO
           if (fileLines.at(i).size() > 2) {
             // Set the subcircuit name the second token
@@ -156,6 +159,9 @@ void Input::parse_input(string_o fileName) {
       } else {
         // Controls cannot exist within a subcircuit
         if (!subckt) {
+          // Remove the preceding '.' from the first token
+          fileLines.at(i).front() = fileLines.at(i).front().substr(1);
+          // Store the control
           controls.push_back(fileLines.at(i));
         // Complain that controls exist in subcircuit
         } else {

@@ -11,10 +11,29 @@
 
 using namespace JoSIM;
 
+ /*
+  Llabel V⁺ V⁻ L
+
+  V - (3*L)/(2*h)Io = -(2*L)/(h)In-1 + (L)/(2*h)In-2
+
+  ⎡ 0  0            1⎤ ⎡V⁺⎤   ⎡                              0⎤
+  ⎜ 0  0           -1⎟ ⎜V⁻⎟ = ⎜                              0⎟
+  ⎣ 1 -1 -(3*L)/(2*h)⎦ ⎣Io⎦   ⎣ -(2*L)/(h)In-1 + (L)/(2*h)In-2⎦
+
+  (PHASE)
+  φ - L(2e/hbar)Io = 0
+  
+  ⎡ 0  0           1⎤ ⎡φ⁺⎤   ⎡ 0⎤
+  ⎜ 0  0          -1⎟ ⎜φ⁻⎟ = ⎜ 0⎟
+  ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
+ */ 
+
 Inductor::Inductor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  // Set previous current value
+  In2_ = 0.0;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
@@ -23,15 +42,15 @@ Inductor::Inductor(
   // Set the label
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list
-  lm.emplace(s);
+  lm.emplace(s.first.at(0));
   // Set the value (Inductance), this should be the 4th token
   netlistInfo.value_ = parse_param(s.first.at(3), pm, s.second);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
-  // Set te node indices, using token 2 and 3
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+2), nm);
   // Set current index and increment it
   indexInfo.currentIndex_ = bi++;
+  // Set te node indices, using token 2 and 3
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   // Append the value to the non zero vector
@@ -51,7 +70,7 @@ void Inductor::add_mutualInductance(
   // Adds the mutual inductance to the non zero vector
   if(at == AnalysisType::Voltage) {
     // If voltage mode then add -(3/2) * (m/h)
-    matrixInfo.nonZeros_.emplace_back(-(3 / 2) * (m / h));
+    matrixInfo.nonZeros_.emplace_back(-(3.0 / 2.0) * (m / h));
   } else if(at == AnalysisType::Phase) {
     // If phase mode then add -(m/σ)
     matrixInfo.nonZeros_.emplace_back(-m / Constants::SIGMA);
@@ -59,5 +78,5 @@ void Inductor::add_mutualInductance(
   // Append the column index of the current branch of the second inductor
   matrixInfo.columnIndex_.emplace_back(ci);
   // Increase the row pointer vector by 1
-  matrixInfo.rowPointer_++;
+  matrixInfo.rowPointer_.back()++;
 }

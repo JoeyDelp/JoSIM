@@ -4,6 +4,7 @@
 #define JOSIM_LINEINPUT_HPP
 
 #include "JoSIM/Errors.hpp"
+
 #include <string>
 #include <string_view>
 #include <iostream>
@@ -26,7 +27,7 @@ class ConsoleInput : public LineInput {
   bool next() override {
     return bool(std::getline(std::cin, buffer_));
   }
-  ConsoleInput();
+  ConsoleInput() {};
 };
 
 class FileInput : public LineInput {

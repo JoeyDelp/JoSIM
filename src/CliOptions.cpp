@@ -15,9 +15,9 @@
 
 using namespace JoSIM;
 
-tokens_t argv_to_tokens(const int &argc, const char **argv) {
+tokens_t CliOptions::argv_to_tokens(const int &argc, const char **argv) {
   // Tokens variable of size argc to store arguments
-  tokens_t tokens(argc);
+  tokens_t tokens(argc - 1);
   // If argument count is less or equal to one
   if (argc <= 1) {
     // Complain that josim was run without arguments
@@ -26,13 +26,14 @@ tokens_t argv_to_tokens(const int &argc, const char **argv) {
   // Loop through arguments, starting at 1 (0 is josim-cli)
   for (int i = 1; i < argc; ++i) {
     // Add the arguments at the appropriate position
-    tokens.at(i) = std::string(argv[i]);
+    tokens.at(i - 1) = std::string(argv[i]);
   }
   // Return the tokens
   return tokens;
 }
 
-vector_pair_t<char_o, string_o> argument_pairs(const tokens_t &tokens) {
+vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
+  const tokens_t &tokens) {
   // Variable to store the argument pairs
   vector_pair_t<char_o, string_o> ap;
   // Loop through the argument tokens
@@ -60,6 +61,9 @@ vector_pair_t<char_o, string_o> argument_pairs(const tokens_t &tokens) {
         // If the previous switch was alone then this must be the argument
         if(!ap.back().second) {
           ap.back().second = tempT.at(0);
+        // If the last pair has a value then this must be file name
+        } else {
+          ap.emplace_back(std::make_pair(std::nullopt, tempT.at(0)));
         }
       // Else if they are empty then this is the input file name
       } else {
@@ -67,6 +71,7 @@ vector_pair_t<char_o, string_o> argument_pairs(const tokens_t &tokens) {
       }
     }
   }
+  return ap;
 }
 
 CliOptions CliOptions::parse(int argc, const char **argv) {
@@ -127,7 +132,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
           exit(0);
         // Set input to standard input
         case 'i':
-          out.cir_file_name == std::nullopt;
+          out.cir_file_name = std::nullopt;
           break;
         // Enable minimal reporting
         case 'm':
@@ -193,7 +198,7 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
   }
   // Do a few sanity checks
   // If the input was not specified
-  if (out.cir_file_name) {
+  if (!out.cir_file_name) {
     // Complain and assume standard input
     Errors::cli_errors(CLIErrors::NO_INPUT);
   }

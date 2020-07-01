@@ -3,7 +3,7 @@
 #ifndef JOSIM_INDUCTOR_HPP
 #define JOSIM_INDUCTOR_HPP
 
-#include "JoSIM/Components.hpp"
+#include "JoSIM/BasicComponent.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/AnalysisType.hpp"
@@ -16,10 +16,28 @@
 
 namespace JoSIM {
 
+ /*
+  Llabel V⁺ V⁻ L
+
+  V - (3*L)/(2*h)Io = -(2*L)/(h)In-1 + (L)/(2*h)In-2
+
+  ⎡ 0  0            1⎤ ⎡V⁺⎤   ⎡                              0⎤
+  ⎜ 0  0           -1⎟ ⎜V⁻⎟ = ⎜                              0⎟
+  ⎣ 1 -1 -(3*L)/(2*h)⎦ ⎣Io⎦   ⎣ -(2*L)/(h)In-1 + (L)/(2*h)In-2⎦
+
+  (PHASE)
+  φ - L(2e/hbar)Io = 0
+  
+  ⎡ 0  0           1⎤ ⎡φ⁺⎤   ⎡ 0⎤
+  ⎜ 0  0          -1⎟ ⎜φ⁻⎟ = ⎜ 0⎟
+  ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
+ */ 
+
 using mutualinductors = std::vector<std::pair<int, double>>;
 
 class Inductor : public BasicComponent {
   public:
+  double In2_;
   mutualinductors mutualInductances_;
 
   Inductor(

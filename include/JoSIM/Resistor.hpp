@@ -3,7 +3,7 @@
 #ifndef JOSIM_RESISTOR_HPP
 #define JOSIM_RESISTOR_HPP
 
-#include "JoSIM/Components.hpp"
+#include "JoSIM/BasicComponent.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/AnalysisType.hpp"
@@ -14,6 +14,22 @@
 #include <optional>
 
 namespace JoSIM {
+
+ /*
+  Rlabel V⁺ V⁻ R
+
+  V = RIo
+  ⎡ 0  0  1⎤ ⎡V⁺⎤   ⎡ 0⎤
+  ⎜ 0  0 -1⎟ ⎜V⁻⎟ = ⎜ 0⎟
+  ⎣ 1 -1 -R⎦ ⎣Io⎦   ⎣ 0⎦
+
+  (PHASE)
+  φ - R(2e/hbar)(2h/3)Io = (4/3)φn-1 - (1/3)φn-2
+  
+  ⎡ 0  0                 1⎤ ⎡φ⁺⎤   ⎡                     0⎤
+  ⎜ 0  0                -1⎟ ⎜φ⁻⎟ = ⎜                     0⎟
+  ⎣ 1 -1 -R(2e/hbar)(2h/3)⎦ ⎣Io⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦
+ */ 
 
 class Resistor : public BasicComponent {
   public:

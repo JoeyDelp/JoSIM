@@ -15,415 +15,144 @@
 
 using namespace JoSIM;
 
-TransmissionLine TransmissionLine::create_transmissionline(const std::pair<std::string, std::string> &s,
-                                                            const std::unordered_map<std::string, int> &nm, 
-                                                            std::unordered_set<std::string> &lm,
-                                                            std::vector<std::vector<std::pair<double, int>>> &nc,
-                                                            const std::unordered_map<ParameterName, Parameter> &p,
-                                                            const AnalysisType &antyp,
-                                                            const IntegrationType & inttyp,
-                                                            const double &timestep,
-                                                            int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize(s.first);
-  // Ensure the device has at least 6 parts: LABEL PNODE1 NNODE1 PNODE2 NNODE2 VALUE
-  if(tokens.size() < 6) {
-    Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, s.first);
+TransmissionLine::TransmissionLine(
+  const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
+  const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
+  std::unordered_set<std::string> &lm, nodeconnections &nc, 
+  const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  // Check if the label has already been defined
+  if(lm.count(s.first.at(0)) != 0) {
+    Errors::invalid_component_errors(
+      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
   }
-
-  TransmissionLine temp;
-  temp.set_label(tokens.at(0), lm);
-  std::string strippedLine = s.first;
-  strippedLine.erase(std::remove_if(strippedLine.begin(), strippedLine.end(), std::bind(std::isspace<char>,
-									std::placeholders::_1,
-									std::locale::classic()
-							)), strippedLine.end());
-  auto impedance = strippedLine.find("Z0=");
-  if(impedance == std::string::npos) {
-    Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED, s.first);
-  }
-  auto timeDelay = strippedLine.find("TD=");
-  if(timeDelay == std::string::npos) {
-    Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED, s.first);
-  }
-  std::string impedanceValue;
-  std::string timeDelayValue;
-  if(timeDelay > impedance) {
-    impedanceValue = strippedLine;
-    impedanceValue.erase(impedanceValue.begin() + timeDelay, impedanceValue.end());
-    impedanceValue.erase(impedanceValue.begin(), impedanceValue.begin() + impedance + 3);
-    timeDelayValue = strippedLine;
-    timeDelayValue.erase(timeDelayValue.begin(), timeDelayValue.begin() + timeDelay + 3);
-  } else {
-    timeDelayValue = strippedLine;
-    timeDelayValue.erase(timeDelayValue.begin() + impedance, timeDelayValue.end());
-    timeDelayValue.erase(timeDelayValue.begin(), timeDelayValue.begin() + timeDelay + 3);
-    impedanceValue = strippedLine;
-    impedanceValue.erase(impedanceValue.begin(), impedanceValue.begin() + impedance + 3);
-  }
-  if(impedanceValue.find("{") != std::string::npos) {
-    if(impedanceValue.find("}") != std::string::npos) {
-      impedanceValue = impedanceValue.substr(impedanceValue.find("{")+1, impedanceValue.find("}") - impedanceValue.find("{"));
-    } else {
-      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
-    }
-  }
-  if(timeDelayValue.find("{") != std::string::npos) {
-    if(timeDelayValue.find("}") != std::string::npos) {
-      timeDelayValue = timeDelayValue.substr(timeDelayValue.find("{")+1, timeDelayValue.find("}") - timeDelayValue.find("{"));
-    } else {
-      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
-    }
-  }
-  if(inttyp == IntegrationType::Trapezoidal) {
-    temp.set_value(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
-  } else {
-    temp.set_value_gear(std::make_pair(impedanceValue, s.second), p, antyp, timestep);
-  }
-  temp.set_timestepDelay(std::make_pair(timeDelayValue, s.second), p, timestep);
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
-  temp.set_currentIndex1(branchIndex - 2);
-  temp.set_currentIndex2(branchIndex - 1);
-  return temp;
-}
-
-void TransmissionLine::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
-  if(lm.count(s) != 0) {
-    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
-  } else {
-    label_ = s;
-    lm.emplace(s);
-  }
-}
-
-void TransmissionLine::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-                                                    const std::pair<std::string, std::string> &n2,
-                                                    const std::unordered_map<std::string, int> &nm, 
-                                                    const std::string &s, 
-                                                    int &branchIndex) {
-  nonZeros_.clear();
-  columnIndex_.clear();
-  if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
-    if(nm.count(n1.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.first);
-  }
-  if(n1.second != "0" && n1.second.find("GND") == std::string::npos) {
-    if(nm.count(n1.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.second);
-  }
-  if(n2.first != "0" && n2.first.find("GND") == std::string::npos) {
-    if(nm.count(n2.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.first);
-  }
-  if(n2.second != "0" && n2.second.find("GND") == std::string::npos) {
-    if(nm.count(n2.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.second);
-  }
-  // 0
-  if(n1.first.find("GND") != std::string::npos || n1.first == "0")  {
-    // 0 0
-    if(n1.second.find("GND") != std::string::npos || n1.second == "0")  {
-      // 0 0 0
-      if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-        // 0 0 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(branchIndex - 1);
-        // 0 0 0 1
-        } else {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(branchIndex - 1);
-        }
-      // 0 0 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(1);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(branchIndex - 1);
-      // 0 0 1 1
-      } else {
-        Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(1);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(branchIndex - 1);
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s.first.at(0));
+  // Find the parts that contain the impedance and time delay
+  for(int i = 5; i < s.first.size(); ++i) {
+    // Impedance
+    if(::memcmp(s.first.at(i).c_str(), "Z0=", 3) == 0) {
+      // If impedance keyword is specified but no value given
+      if(s.first.at(i).length() < 4) {
+        // Complain
+        Errors::invalid_component_errors(
+          ComponentErrors::INVALID_TX_DEFINED, 
+            Misc::vector_to_string(s.first));
       }
-    // 0 1  
-    } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-      // 0 1 0
-      if(n2.first.find("GND") != std::string::npos)  {
-        // 0 1 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(branchIndex - 1);
-        // 0 1 0 1
-        } else {
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(branchIndex - 1);
-        }
-      // 0 1 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(branchIndex - 1);
-      // 0 1 1 1
-      } else {
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(branchIndex - 1);
+      // Set the value (Z0), this should be a value
+      netlistInfo.value_ = parse_param(s.first.at(i).substr(3), pm, s.second);
+      // If not a value
+      if(isnan(netlistInfo.value_)) {
+        // Complain
+        Errors::invalid_component_errors(
+          ComponentErrors::INVALID_TX_DEFINED, 
+            Misc::vector_to_string(s.first));
       }
     }
-  // 1
-  } else {
-    // 1 0
-    if(n1.second.find("GND") != std::string::npos || n1.second == "0")  {
-      // 1 0 0
-      if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-        // 1 0 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-        // 1 0 0 1
-        } else {
-          nonZeros_.emplace_back(1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(branchIndex - 1);
-        }
-      // 1 0 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(branchIndex - 1);
-      // 1 0 1 1
-      } else {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(branchIndex - 1);
+    // Time Delay
+    if(::memcmp(s.first.at(i).c_str(), "TD=", 3) == 0) {
+      // If impedance keyword is specified but no value given
+      if(s.first.at(i).length() < 4) {
+        // Complain
+        Errors::invalid_component_errors(
+          ComponentErrors::INVALID_TX_DEFINED, 
+            Misc::vector_to_string(s.first));
       }
-    // 1 1  
-    } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-      // 1 1 0
-      if(n2.first.find("GND") != std::string::npos)  {
-        // 1 1 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(1);
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(3);
-          branchIndex++;
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(branchIndex - 1);
-        // 1 1 0 1
-        } else {
-          nonZeros_.emplace_back(1);
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(3);
-          branchIndex++;
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(branchIndex - 2);
-          columnIndex_.emplace_back(nm.at(n2.second));
-          columnIndex_.emplace_back(branchIndex - 1);
-        }
-      // 1 1 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(branchIndex - 1);
-      // 1 1 1 1
-      } else {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-        columnIndex_.emplace_back(branchIndex - 1);
+      // Set the time delay (TD), this should be a value
+      timestepDelay_ = parse_param(s.first.at(i).substr(3), pm, s.second) / h;
+      // If not a value
+      if(isnan(timestepDelay_)) {
+        // Complain
+        Errors::invalid_component_errors(
+          ComponentErrors::INVALID_TX_DEFINED, 
+            Misc::vector_to_string(s.first));
       }
     }
   }
-}
-
-void TransmissionLine::set_indices(const std::pair<std::string, std::string> &n1, 
-                                    const std::pair<std::string, std::string> &n2, 
-                                    const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
-  if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
-    posIndex1_ = nm.at(n1.first);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 2));
-  } else if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
-    negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 2));
-  } else {
-    posIndex1_ = nm.at(n1.first);
-    negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 2));
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 2));
+  // Set the node configuration type
+  indexInfo.nodeConfig_ = ncon;
+  // Set current index and increment it
+  indexInfo.currentIndex_ = bi++;
+  // Set second current index and increment it
+  currentIndex2_ = bi++;
+  // Set te node indices, using token 2 and 3
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm, nc);
+  // Set the node configuration type for secondary nodes
+  nodeConfig2_ = ncon2.value();
+  // Set te node indices, using token 4 and 5
+  set_secondary_node_indices(
+    tokens_t(s.first.begin()+3, s.first.begin()+5), nm, nc);
+  // Set the non zero, column index and row pointer vectors
+  set_matrix_info();
+  // Append the value to the non zero vector
+  if (at == AnalysisType::Voltage) { 
+    // If voltage mode analysis then append -Z0
+    matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
+  } else if (at == AnalysisType::Phase) { 
+    // If phase mdoe analysis then append -(2*h/3) * (Z0/σ)
+    matrixInfo.nonZeros_.emplace_back(
+      -(2.0*h/3.0) * (netlistInfo.value_ / Constants::SIGMA));
   }
-  if(n2.second.find("GND") != std::string::npos || n2.second == "0") {
-    posIndex2_ = nm.at(n2.first);
-    nc.at(nm.at(n2.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-  } else if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
-    negIndex2_ = nm.at(n2.second);
-    nc.at(nm.at(n2.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  } else {
-    posIndex2_ = nm.at(n2.first);
-    negIndex2_ = nm.at(n2.second);
-    nc.at(nm.at(n2.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    nc.at(nm.at(n2.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  }
-}
-
-void TransmissionLine::set_value(const std::pair<std::string, std::string> &s, 
-                                  const std::unordered_map<ParameterName, Parameter> &p,
-                                  const AnalysisType &antyp, 
-                                  const double &timestep) {
-  if (antyp == AnalysisType::Voltage) {
-    value_ = parse_param(s.first, p, s.second);
-  } else if (antyp == AnalysisType::Phase) {
-    value_ = (timestep * parse_param(s.first, p, s.second)) / (2 * Constants::SIGMA);
-  }
-}
-void TransmissionLine::set_value_gear(const std::pair<std::string, std::string> &s, 
-                                      const std::unordered_map<ParameterName, Parameter> &p,
-                                      const AnalysisType &antyp, 
-                                      const double &timestep) {
-  if (antyp == AnalysisType::Voltage) {
-    value_ = parse_param(s.first, p, s.second);
-  } else if (antyp == AnalysisType::Phase) {
-    value_ = (2.0 * timestep * parse_param(s.first, p, s.second)) / (3.0 * Constants::SIGMA);
+  // Set the non zero, column index and row pointer vectors
+  set_secondary_matrix_info();
+  // Append the value to the non zero vector
+  if (at == AnalysisType::Voltage) { 
+    // If voltage mode analysis then append -Z0
+    matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
+  } else if (at == AnalysisType::Phase) { 
+    // If phase mdoe analysis then append -(2*h/3) * (Z0/σ)
+    matrixInfo.nonZeros_.emplace_back(
+      -(2.0*h/3.0) * (netlistInfo.value_ / Constants::SIGMA));
   }
 }
 
-void TransmissionLine::set_timestepDelay(const std::pair<std::string, std::string> &s, 
-                                          const std::unordered_map<ParameterName, Parameter> &p,
-                                          const double &timestep) {
-  timestepDelay_ = (int)(parse_param(s.first, p, s.second) / timestep);
-  if(timestepDelay_ < timestep) {
-    Errors::invalid_component_errors(ComponentErrors::INVALID_TX_RESOLUTION, label_);
+void TransmissionLine::set_secondary_node_indices(
+  const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
+  // Transmission lines have 4 nodes, this sets the 2nd pair of the 4
+  switch(nodeConfig2_) {
+  case NodeConfig::POSGND:
+    posIndex2_ = nm.at(t.at(0));
+    nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
+    break;
+  case NodeConfig::GNDNEG:
+    negIndex2_ = nm.at(t.at(1));
+    nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
+    break;
+  case NodeConfig::POSNEG:
+    posIndex2_ = nm.at(t.at(0));
+    negIndex2_ = nm.at(t.at(1));
+    nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
+    nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
+    break;
+  case NodeConfig::GND:
+    break;
   }
+}
+
+void TransmissionLine::set_secondary_matrix_info() {
+  // Tranmission lines have two current branches, this sets the second branch
+  switch(nodeConfig2_) {
+  case NodeConfig::POSGND:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::GNDNEG:
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::POSNEG:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+    matrixInfo.rowPointer_.emplace_back(3);
+    break;
+  case NodeConfig::GND:
+    matrixInfo.rowPointer_.emplace_back(1);
+    break;
+  }
+  matrixInfo.columnIndex_.emplace_back(currentIndex2_);
 }

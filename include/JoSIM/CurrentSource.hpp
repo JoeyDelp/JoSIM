@@ -3,37 +3,24 @@
 #ifndef JOSIM_CURRENTSOURCE_HPP
 #define JOSIM_CURRENTSOURCE_HPP
 
+#include "JoSIM/BasicComponent.hpp"
+
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
 
 namespace JoSIM {
-class CurrentSource {
-  private:
-    std::string label_;
-    int_o posIndex_, negIndex_;
-    int sourceIndex_;
-  
+class CurrentSource : public BasicComponent {
   public:
-    CurrentSource() :
-      sourceIndex_(-1)
-      {};
-      
-    static CurrentSource create_currentsource(const std::pair<std::string, std::string> &s,
-                                              const std::unordered_map<std::string, int> &nm,
-                                              std::unordered_set<std::string> &lm);
-    void set_label(const std::string &s, 
-                    std::unordered_set<std::string> &lm);
-    void set_indices(const std::pair<std::string, std::string> &n, 
-                      const std::unordered_map<std::string, int> &nm);
-    void set_sourceIndex(const int &i) { sourceIndex_ = i; }
+  int sourceIndex_;
 
-    std::string get_label() const { return label_; }
-    int_o get_posIndex() const { return posIndex_; }
-    int_o get_negIndex() const { return negIndex_; }
-    int get_sourceIndex() const { return sourceIndex_; }
-};
+  CurrentSource(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const nodemap &nm, std::unordered_set<std::string> &lm, const int &si);
+
+  void set_node_indices(const tokens_t &t, const nodemap &nm);
+}; // class CurrentSource
 
 } // namespace JoSIM
 #endif

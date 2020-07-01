@@ -3,6 +3,7 @@
 #ifndef JOSIM_VCVS_HPP
 #define JOSIM_VCVS_HPP
 
+#include "JoSIM/BasicComponent.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/AnalysisType.hpp"
@@ -14,56 +15,32 @@
 
 namespace JoSIM {
 
-class VCVS {
-  private:
-    std::string label_;
-    std::vector<double> nonZeros_;
-    std::vector<int> columnIndex_;
-    std::vector<int> rowPointer_;
-    int_o posIndex1_, negIndex1_;
-    int_o posIndex2_, negIndex2_;
-    int currentIndex_;
-    double value_;
+ /*
+  Elabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
+
+  Vo = GVc
+  ⎡ 0  0  0  0   -1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+  ⎜ 0  0  0  0    1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+  ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+  ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+  ⎣-1  1  G -G    0⎦ ⎣Io ⎦   ⎣ 0⎦
+ */   
+
+class VCVS : public BasicComponent {
   public:
-    VCVS() :
-      currentIndex_(-1),
-      value_(1)
-      {};
-    
-    static VCVS create_VCVS(const std::pair<std::string, std::string> &s,
-                            const std::unordered_map<std::string, int> &nm, 
-                            std::unordered_set<std::string> &lm,
-                            std::vector<std::vector<std::pair<double, int>>> &nc,
-                            const std::unordered_map<ParameterName, Parameter> &p,
-                            int &branchIndex);
-    void set_label(const std::string &s, 
-                    std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-                                      const std::pair<std::string, std::string> &n2, 
-                                      const std::unordered_map<std::string, int> &nm, 
-                                      const std::string &s, 
-                                      int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n1, 
-                      const std::pair<std::string, std::string> &n2, 
-                      const std::unordered_map<std::string, int> &nm, 
-                      std::vector<std::vector<std::pair<double, int>>> &nc, 
-                      const int &branchIndex);
-    void set_currentIndex(const int &cc) { currentIndex_ = cc; }
-    void set_value(const std::pair<std::string, std::string> &s, 
-                    const std::unordered_map<ParameterName, Parameter> &p);
+  NodeConfig nodeConfig2_;
+  int_o posIndex2_, negIndex2_;
 
-    const std::string& get_label() const { return label_; }
-    const std::vector<double>& get_nonZeros() const { return nonZeros_; }
-    const std::vector<int>& get_columnIndex() const { return columnIndex_; }
-    const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const int_o& get_posIndex() const { return posIndex1_; }
-    const int_o& get_negIndex() const { return negIndex1_; }
-    const int_o& get_posIndex2() const { return posIndex2_; }
-    const int_o& get_negIndex2() const { return negIndex2_; }
-    const int& get_currentIndex() const { return currentIndex_; }
-    const double& get_value() const { return value_; }
+  VCVS(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
+    std::unordered_set<std::string> &lm, nodeconnections &nc,
+    const param_map &pm, int &bi);
 
-};
+  void set_node_indices(
+    const tokens_t &t, const nodemap &nm, nodeconnections &nc);
+  void set_matrix_info();
+}; // class VCVS
 
 } // namespace JoSIM
 #endif

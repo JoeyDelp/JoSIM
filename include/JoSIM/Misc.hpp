@@ -34,9 +34,9 @@ class Input;
     // Split a string into tokens with a default delimiter
     tokens_t tokenize(const std::string &c,
                       std::string d = " \t",
-                      int count = 0,
                       bool trimEmpty = true,
-                      bool trimSpaces = false);
+                      bool trimSpaces = false,
+                      int count = 0);
 
     void ltrim(std::string &s);
 
@@ -78,9 +78,9 @@ class Input;
     }
 
     template <typename T>
-    std::string precise_to_string(const T a_value, const int n = 50) {
+    std::string precise_to_string(const T a_value) {
       std::ostringstream out;
-      out << std::fixed << std::setprecision(n) << a_value;
+      out << std::fixed << std::scientific << a_value;
       return out.str();
     }
 

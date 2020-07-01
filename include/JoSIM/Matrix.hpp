@@ -15,7 +15,6 @@
 namespace JoSIM {
 
 class Matrix {
-  void print_progess(const int &i, const int &size);
   public:
   AnalysisType analysisType;
   std::vector<std::vector<double>> sources;
