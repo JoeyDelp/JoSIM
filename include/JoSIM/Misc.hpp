@@ -3,6 +3,7 @@
 #ifndef JOSIM_J_MISC_H
 #define JOSIM_J_MISC_H
 
+#include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/Input.hpp"
 
@@ -11,6 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <regex>
 
 namespace JoSIM {
 class Input;
@@ -25,12 +27,16 @@ class Input;
     bool starts_with(const std::string &input, 
                       char test);
 
-    std::vector<std::string> tokenize_space(const std::string &c);
+    // View vector of strings as a string with a default delimiter
+    std::string vector_to_string(const tokens_t &s, std::string d = " ");
 
-    std::vector<std::string> tokenize_space_once(const std::string &c);
 
-    std::vector<std::string> tokenize_delimiter(const std::string &c,
-                                                const std::string &d);
+    // Split a string into tokens with a default delimiter
+    tokens_t tokenize(const std::string &c,
+                      std::string d = " \t",
+                      bool trimEmpty = true,
+                      bool trimSpaces = false,
+                      int count = 0);
 
     void ltrim(std::string &s);
 
@@ -72,9 +78,9 @@ class Input;
     }
 
     template <typename T>
-    std::string precise_to_string(const T a_value, const int n = 50) {
+    std::string precise_to_string(const T a_value) {
       std::ostringstream out;
-      out << std::fixed << std::setprecision(n) << a_value;
+      out << std::fixed << std::scientific << a_value;
       return out.str();
     }
 

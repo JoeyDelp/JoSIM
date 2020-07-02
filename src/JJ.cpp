@@ -11,285 +11,251 @@
 
 using namespace JoSIM;
 
-JJ JJ::create_jj(const std::pair<std::string, std::string> &s,
-                  const std::unordered_map<std::string, int> &nm, 
-                  std::unordered_set<std::string> &lm,
-                  std::vector<std::vector<std::pair<double, int>>> &nc,
-                  const std::unordered_map<ParameterName, Parameter> &p,
-                  const std::vector<std::pair<Model, std::string>> &models,
-                  const AnalysisType &antyp,
-                  const IntegrationType & inttyp,
-                  const double &timestep,
-                  int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+/*
+  Blabel V⁺ V⁻ jjmodel area=value
 
-  JJ temp;
-  temp.set_label(tokens.at(0), lm);
-  // Junction line has potential to have up to 6 parts, identifying the last 3 can be tricky.
-  for(int i = 0; i < tokens.size(); ++i) {
-    if(tokens.at(i).find("AREA=") != std::string::npos) {
-      temp.set_area(std::make_pair(tokens.at(i).substr(tokens.at(i).find("AREA=") + 5), s.second), p);
-      tokens.erase(tokens.begin() + i);
+  V - (hbar/2e)(3/2h)φ = (hbar/2e)(-(2/h)φn-1 + (1/2h)φn-2)
+  V - (2Rh/(3RC + 2h))Io = -(2Rh/(3RC + 2h))(Icsinφ0 - (2C/h)Vn-1 + (C/2h)Vn-2)
+  φ0 = (4/3)φn-1 - (1/3)φn-2 + (2e/hbar)(2h/3)v0
+  v0 = (5/2)Vn-1 - 2Vn-2 + (1/2)Vn-3
+
+  ⎡ 0  0                0                 1⎤ ⎡ V⁺⎤   ⎡    0⎤
+  ⎜ 0  0                0                -1⎟ ⎜ V⁻⎟ = ⎜    0⎟
+  ⎜ 1 -1 -(hbar/2e)(3/2h)                 0⎟ ⎜ φ ⎟   ⎜ RHS1⎟
+  ⎣ 1 -1                0 -(2Rh/(3RC + 2h))⎦ ⎣ Io⎦   ⎣ RHS2⎦
+
+  RHS1 = (hbar/2e)(-(2/h)φn-1 + (1/2h)φn-2)
+  RHS2 = -(2Rh/(3RC + 2h))(Icsinφ0 - (2C/h)Vn-1 + (C/2h)Vn-2)
+
+  (PHASE)
+  φ - (2e/hbar)(2h/3)V = (4/3)φn-1 - (1/3)φn-2
+
+  ⎡ 0  0                0                 1⎤ ⎡ φ⁺⎤   ⎡    0⎤
+  ⎜ 0  0                0                -1⎟ ⎜ φ⁻⎟ = ⎜    0⎟
+  ⎜ 1 -1 -(2e/hbar)(2h/3)                 0⎟ ⎜ V ⎟   ⎜ RHS1⎟
+  ⎣ 1 -1                0 -(2Rh/(3RC + 2h))⎦ ⎣ Io⎦   ⎣ RHS2⎦
+
+  RHS1 = (4/3)φn-1 - (1/3)φn-2
+*/ 
+
+JJ::JJ(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
+    const param_map &pm, const vector_pair_t<Model, string_o> &models,
+    const AnalysisType &at, const double &h, int &bi) {
+  // Make a copy of the tokens so that they are mutable
+  tokens_t t = s.first;
+  // Check if the label has already been defined
+  if(lm.count(s.first.at(0)) != 0) {
+    Errors::invalid_component_errors(
+      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+  }
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s.first.at(0));
+  // Junction line has potential to have up to 6 parts
+  for(int i = 0; i < s.first.size(); ++i) {
+    // If the part contains the AREA specifiere
+    if(s.first.at(i).find("AREA=") != std::string::npos) {
+      // Set the area
+      area_ = parse_param(
+        s.first.at(i).substr(s.first.at(i).find("AREA=") + 5), pm, s.second);
+      t.erase(t.begin() + i);
     }
   }
-  temp.set_model(std::make_pair(tokens.back(), s.second), models);
-  temp.set_pn1(temp.get_model().get_phaseOffset());
-  temp.set_gLarge(temp.get_model().get_criticalCurrent() /
-          (temp.get_model().get_criticalToNormalRatio() * temp.get_model().get_deltaV()));
-  if(inttyp == IntegrationType::Trapezoidal) {
-    // (1/R0) + (2C/h)
-    temp.set_subCond((1/temp.get_model().get_subgapResistance()) + ((2.0 * temp.get_model().get_capacitance()) / timestep));
-    // (GL) + (2C/h)
-    temp.set_transCond(temp.get_gLarge() + ((2.0 * temp.get_model().get_capacitance()) / timestep));
-    // (1/RN) + (2C/h)
-    temp.set_normalCond((1/temp.get_model().get_normalResistance()) + ((2.0 * temp.get_model().get_capacitance()) / timestep));
-    temp.set_phaseConst(timestep, antyp);
-  } else {
-    // (1/R0) + (3C/2h)
-    temp.set_subCond((1/temp.get_model().get_subgapResistance()) + ((3.0 * temp.get_model().get_capacitance()) / (2.0 * timestep)));
-    // (GL) + (3C/2h)
-    temp.set_transCond(temp.get_gLarge() + ((3.0 * temp.get_model().get_capacitance()) / (2.0 * timestep)));
-    // (1/RN) + (3C/2h)
-    temp.set_normalCond((1/temp.get_model().get_normalResistance()) + ((3.0 * temp.get_model().get_capacitance()) / (2.0 * timestep)));
-    temp.set_phaseConst_gear(timestep, antyp);
+  // Set the model for this JJ instance
+  set_model(t, models, s.second);
+  // Get and set the phase offset from the model
+  pn1_ = model_.value().get_phaseOffset();
+  // Set the transitional conductance value
+  gLarge_ = model_.value().get_criticalCurrent() /
+          (model_.value().get_criticalToNormalRatio() * 
+            model_.value().get_deltaV());
+  // Set subgap impedance (1/R0) + (3C/2h)
+  subImp_ = ((1/model_.value().get_subgapResistance()) + 
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
+  // Set transitional impedance (GL) + (3C/2h)
+  transImp_ = (gLarge_ + 
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
+  // Set normal impedance (1/RN) + (3C/2h)
+  normImp_ = ((1/model_.value().get_normalResistance()) + 
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
+  // Set the phase constant
+  if(at == AnalysisType::Voltage) {
+    // If voltage mode set this to (3 * hbar) / (4 * h * eV)
+    phaseConst_ = (3 * Constants::HBAR) / (4 * h * Constants::EV);
+  } else if (at == AnalysisType::Phase) { 
+    // If phase mode set this to (4 * h * eV) / (3 * hbar)
+    phaseConst_ = (4 * h * Constants::EV) / (3 * Constants::HBAR);
   }
-  temp.set_value(1/temp.get_subCond());
-  temp.set_del0(1.76 * Constants::BOLTZMANN * temp.get_model().get_criticalTemperature());
-  temp.set_del(temp.get_del0() * sqrt(cos((Constants::PI / 2) 
-               * (temp.get_model().get_temperature() / temp.get_model().get_criticalTemperature())
-               * (temp.get_model().get_temperature() / temp.get_model().get_criticalTemperature()))));
-  temp.set_rncalc(((Constants::PI * temp.get_del()) / (2 * Constants::EV * temp.get_model().get_criticalCurrent()))
-                  * tanh(temp.get_del() / (2 * Constants::BOLTZMANN * temp.get_model().get_temperature())));
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex, antyp, timestep);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
-  temp.set_variableIndex(branchIndex - 2);
-  temp.set_currentIndex(branchIndex - 1);
-  return temp;
+  // Set the Del0 parameter
+  del0_ = 1.76 * Constants::BOLTZMANN * 
+    model_.value().get_criticalTemperature();
+  // Set the del parameter
+  del_ = del0_ * sqrt(cos((Constants::PI / 2) * 
+    (model_.value().get_temperature() /
+       model_.value().get_criticalTemperature()) * 
+    (model_.value().get_temperature() / 
+      model_.value().get_criticalTemperature())));
+  // Set the calculated Rn value
+  rncalc_ = ((Constants::PI * del_) / 
+    (2 * Constants::EV * model_.value().get_criticalCurrent())) * 
+    tanh(del_ / (2 * Constants::BOLTZMANN * model_.value().get_temperature()));
+  // Set the node configuration type
+  indexInfo.nodeConfig_ = ncon;
+  // Set variable index and increment it
+  variableIndex_ = bi++;
+  // Set current index and increment it
+  indexInfo.currentIndex_ = bi++;
+  // Set te node indices, using token 2 and 3
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm, nc);
+  // Set the non zero, column index and row pointer vectors
+  set_matrix_info(at);
 }
 
-void JJ::set_label(const std::string &s, 
-                    std::unordered_set<std::string> &lm) {
-  if(lm.count(s) != 0) {
-    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
-  } else {
-    label_ = s;
-    lm.emplace(s);
+void JJ::set_matrix_info(const AnalysisType &at) {
+  switch(indexInfo.nodeConfig_) {
+  case NodeConfig::POSGND:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::GNDNEG:
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::POSNEG:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(3);
+    break;
+  case NodeConfig::GND:
+    matrixInfo.rowPointer_.emplace_back(1);
+    break;
   }
-}
-
-void JJ::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
-                                      const std::unordered_map<std::string, int> &nm, 
-                                      const std::string &s, 
-                                      int &branchIndex, 
-                                      const AnalysisType &antyp, 
-                                      const double &timestep) {
-  nonZeros_.clear();
-  columnIndex_.clear();
-  if(n.first != "0" && n.first.find("GND") == std::string::npos) {
-    if(nm.count(n.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.first);
-  }
-  if(n.second != "0" && n.second.find("GND") == std::string::npos) {
-    if(nm.count(n.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.second);
-  }
-  if(n.second.find("GND") != std::string::npos || n.second == "0") {
-    // 0 0
-    if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-      nonZeros_.emplace_back(-phaseConst_);
-      rowPointer_.emplace_back(1);
-      if(antyp == AnalysisType::Voltage) { 
-        nonZeros_.emplace_back(-value_); 
-        rowPointer_.emplace_back(1);
-        branchIndex++;
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(branchIndex - 1);
-      } else if (antyp == AnalysisType::Phase) {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(-value_); 
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(branchIndex - 2);
-        columnIndex_.emplace_back(branchIndex - 1);
-      }
-    // 1 0
-    } else {
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-phaseConst_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n.first));
-      columnIndex_.emplace_back(branchIndex - 2);
-      if(antyp == AnalysisType::Voltage) { 
-        columnIndex_.emplace_back(nm.at(n.first));
-      } else if(antyp == AnalysisType::Phase) {
-        columnIndex_.emplace_back(branchIndex - 2);
-      }
-      columnIndex_.emplace_back(branchIndex - 1);
-    }
-  // 0 1
-  } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      nonZeros_.emplace_back(-1);
-      nonZeros_.emplace_back(-phaseConst_); 
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      if(antyp == AnalysisType::Voltage) { 
-        nonZeros_.emplace_back(-1);
-      } else if(antyp == AnalysisType::Phase) {
-        nonZeros_.emplace_back(1);
-      }
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n.second));
-      columnIndex_.emplace_back(branchIndex - 2);
-      if(antyp == AnalysisType::Voltage) { 
-        columnIndex_.emplace_back(nm.at(n.second));
-      } else if(antyp == AnalysisType::Phase) {
-        columnIndex_.emplace_back(branchIndex - 2);
-      }
-      columnIndex_.emplace_back(branchIndex - 1);
-  // 1 1
-  } else {
-    nonZeros_.emplace_back(1);
-    nonZeros_.emplace_back(-1);
-    nonZeros_.emplace_back(-phaseConst_);
-    rowPointer_.emplace_back(3);
-    branchIndex++;
-    if(antyp == AnalysisType::Voltage) {
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(3);
-    } else if(antyp == AnalysisType::Phase) {
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-    }
-    branchIndex++;
-    columnIndex_.emplace_back(nm.at(n.first));
-    columnIndex_.emplace_back(nm.at(n.second));
-    columnIndex_.emplace_back(branchIndex - 2);
-    if(antyp == AnalysisType::Voltage) {
-      columnIndex_.emplace_back(nm.at(n.first));
-      columnIndex_.emplace_back(nm.at(n.second));
-    } else if(antyp == AnalysisType::Phase) {
-      columnIndex_.emplace_back(branchIndex - 2);
-    }
-    columnIndex_.emplace_back(branchIndex - 1);
+  matrixInfo.nonZeros_.emplace_back(-phaseConst_);
+  matrixInfo.columnIndex_.emplace_back(variableIndex_);
+  if(at == AnalysisType::Voltage) {
+    matrixInfo.nonZeros_.insert(
+      matrixInfo.nonZeros_.end(), 
+      matrixInfo.nonZeros_.begin(), matrixInfo.nonZeros_.end());
+    matrixInfo.nonZeros_.back() = -1/subImp_;
+    matrixInfo.columnIndex_.insert(
+      matrixInfo.columnIndex_.end(), 
+      matrixInfo.columnIndex_.begin(), matrixInfo.columnIndex_.end());
+    matrixInfo.columnIndex_.back() = indexInfo.currentIndex_.value();
+    matrixInfo.rowPointer_.emplace_back(matrixInfo.rowPointer_.back());
+  } else if (at == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(variableIndex_);
+    matrixInfo.nonZeros_.emplace_back(-1/subImp_);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
   }
 }
 
-void JJ::set_indices(const std::pair<std::string, std::string> &n, 
-                      const std::unordered_map<std::string, int> &nm, 
-                      std::vector<std::vector<std::pair<double, int>>> &nc, 
-                      const int &branchIndex) {
-  if(n.second.find("GND") != std::string::npos || n.second == "0") {
-    posIndex_ = nm.at(n.first);
-    nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-  } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
-    negIndex_ = nm.at(n.second);
-    nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  } else {
-    posIndex_ = nm.at(n.first);
-    negIndex_ = nm.at(n.second);
-    nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  }
-}
-
-void JJ::set_area(const std::pair<std::string, std::string> &s, 
-                  const std::unordered_map<ParameterName, Parameter> &p) {
-          area_ = parse_param(s.first, p, s.second);
-}
-
-void JJ::set_model(const std::pair<std::string, std::string> &s, 
-                    const std::vector<std::pair<Model, std::string>> &models) {
-  bool found = false;
+void JJ::set_model(
+    const tokens_t &t, const vector_pair_t<Model, string_o> &models, 
+    const string_o &subc) {
+  // Loop through all models
   for(auto &i : models) {
-    if(i.first.get_modelName() == s.first && i.second == s.second) {
-      model_ = i.first;
-      found = true;
-      break;
-    }
-  }
-  if(!found) {
-    for(auto &i : models) {
-      if(i.first.get_modelName() == s.first && i.second == "") {
+    // If the model name matches that of an identified model
+    if(i.first.get_modelName() == t.back()) {
+      // If both models belong to a subcircuit and the subcircuit names match
+      if ((i.second && subc) && (subc.value() == i.second.value())){
+        // Set the model to the exact identified model
         model_ = i.first;
-        found = true;
+        break;
+      // JJ might be in a subcircuit but model in global scope
+      } else if (!i.second) {
+        // Set the model to the globally identified model
+        model_ = i.first;
+        break;
       }
     }
   }
-  if(!found) {
-    Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED, s.first);
+  // If no model was found
+  if(!model_) {
+    // Complain about it
+    Errors::invalid_component_errors(
+      ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
   }
-
-  model_.set_capacitance(model_.get_capacitance() * area_);
-  model_.set_normalResistance(model_.get_normalResistance() / area_);
-  model_.set_subgapResistance(model_.get_subgapResistance() / area_);
-  model_.set_criticalCurrent(model_.get_criticalCurrent() * area_);
-
-  lowerB_ = model_.get_voltageGap() - 0.5 * model_.get_deltaV();
-  upperB_ = model_.get_voltageGap() + 0.5 * model_.get_deltaV();
-}
-
-void JJ::set_phaseConst(const double &timestep, 
-                        const AnalysisType &antyp){
-  if(antyp == AnalysisType::Voltage) phaseConst_ = Constants::HBAR / (timestep * Constants::EV);
-  else if (antyp == AnalysisType::Phase) phaseConst_ = (timestep * Constants::EV) / Constants::HBAR;
-}
-
-void JJ::set_phaseConst_gear(const double &timestep, 
-                        const AnalysisType &antyp){
-  if(antyp == AnalysisType::Voltage) phaseConst_ = Constants::SIGMA * (3.0 / (2.0 * timestep));
-  else if (antyp == AnalysisType::Phase) phaseConst_ = ((2.0 * timestep) / 3.0) * (1.0 / Constants::SIGMA);
+  // Set the model capacitance for this JJ instance
+  model_.value().set_capacitance(
+    model_.value().get_capacitance() * area_);
+  // Set the model normal resistance for this JJ instance  
+  model_.value().set_normalResistance(
+    model_.value().get_normalResistance() / area_);
+  // Set the model subgap resistance for this JJ instance  
+  model_.value().set_subgapResistance(
+    model_.value().get_subgapResistance() / area_);
+  // Set the model critical current for this JJ instance  
+  model_.value().set_criticalCurrent(
+    model_.value().get_criticalCurrent() * area_);
+  // Set the lower boundary for the transition region
+  lowerB_ = model_.value().get_voltageGap() - 0.5 * model_.value().get_deltaV();
+  // Set the upper boundary for the transition region
+  upperB_ = model_.value().get_voltageGap() + 0.5 * model_.value().get_deltaV();
 }
 
 // Update the value based on the matrix entry based on the current voltage value
 bool JJ::update_value(const double &v) {
+  // Shorthand for the model
+  const Model &m = model_.value();
+  // If the absolute value of the voltage is less than lower bounds
   if(fabs(v) < lowerB_) {
+    // Set the transition current to 0
     transitionCurrent_ = 0.0;
-    if(nonZeros_.back() != -1/subCond_) {
-      nonZeros_.back() = -1/subCond_;
+    // If the non zero vector does not end with the subgap conductance
+    if(matrixInfo.nonZeros_.back() != -1/subImp_) {
+      // Make it end with the subgap conductance
+      matrixInfo.nonZeros_.back() = -1/subImp_;
+      // Return that a value has been updated
       return true;
     } else {
+      // Return that nothing has changed
       return false;
     }
+  // If the absolute value of the voltage is less than the upperbounds
   } else if (fabs(v) < upperB_) {
-    if (v < 0) {
-      transitionCurrent_ = -lowerB_ * ((1 / model_.get_subgapResistance()) 
-                           - gLarge_);
-    } else {
-      transitionCurrent_ = lowerB_ * ((1 / model_.get_subgapResistance()) 
-                           - gLarge_);
-    }
-    if(nonZeros_.back() != -1/transCond_) {
-      nonZeros_.back() = -1/transCond_;
+    // Set the transition current
+    transitionCurrent_ = lowerB_ * ((1 / m.get_subgapResistance()) - gLarge_);
+    // If the voltage is negative, current must be negative
+    if (v < 0) transitionCurrent_ = -transitionCurrent_;
+    // If the back of the non zero vector is not the transition conductance
+    if(matrixInfo.nonZeros_.back() != -1/transImp_) {
+      // Set it to the transition conductance
+      matrixInfo.nonZeros_.back() = -1/transImp_;
+      // Return that a value has changed
       return true;
     } else {
+      // Return that nothing has changed
       return false;
     }
+  // If neither of the above then it must be in normal operating region
   } else {
-    if (v < 0) {
-      transitionCurrent_ = -(model_.get_criticalCurrent() / model_.get_criticalToNormalRatio() 
-                           + model_.get_voltageGap() * (1 / model_.get_subgapResistance()) 
-                           - lowerB_ * (1 / model_.get_normalResistance()));
-    } else { 
-      transitionCurrent_ = (model_.get_criticalCurrent() / model_.get_criticalToNormalRatio() 
-                           + model_.get_voltageGap() * (1 / model_.get_subgapResistance()) 
-                           - lowerB_ * (1 / model_.get_normalResistance()));
-    }
-    if(nonZeros_.back() != -1/normalCond_) {
-      nonZeros_.back() = -1/normalCond_;
+    // Set the transition current
+    transitionCurrent_ = 
+      (m.get_criticalCurrent() / m.get_criticalToNormalRatio() + 
+        m.get_voltageGap() * (1 / m.get_subgapResistance()) - lowerB_ * 
+        (1 / m.get_normalResistance()));
+    // If the voltage is negative, current must be negative
+    if (v < 0) transitionCurrent_ = -transitionCurrent_;
+    // If the back of the non zero vector is not the normal conductance
+    if(matrixInfo.nonZeros_.back() != -1/normImp_) {
+      // Set it to the normal conductance
+      matrixInfo.nonZeros_.back() = -1/normImp_;
+      // Return that a value has changed
       return true;
     } else {
+      // Return that nothing has changed
       return false;
     }
   }
+  // This should never happen, only here to appease the return type
   return false;
 }

@@ -16,7 +16,7 @@ constexpr IntegrationType integration_type_from_int(IntegrationType type) {
   case IntegrationType::Gear:
     return IntegrationType::Gear;
   default:
-    throw std::runtime_error("Invalid analysis type");
+    throw std::runtime_error("Invalid integration type");
   }
 }
 

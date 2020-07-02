@@ -6,7 +6,7 @@ JoSIM is ***CaSe InSeNsItIvE*** as each line is cast to uppercase upon read-in.
 
 Each line follows similar syntax which uses the first non-blank space character as identifier. Each identifier tells JoSIM how to handle that specific line. 
 
-Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of **0** and **GND** which indicate a grounded node. Additionally, the use of underscores (**\_**) or vertical bars (**\|**) in label or node names are prohibited as they are reserved characters within JoSIM.
+Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of **0** and **GND** which indicate a grounded node. Additionally, the use of period (**.**) or vertical bars (**|**) in label or node names are prohibited as these are reserved characters within JoSIM.
 
 Lines that start with a period (**.**) indicate that the line relates in some way to simulation control. In this case whatever follows the period identifies the control, e.g. .tran, .print, .end.
 
@@ -216,7 +216,9 @@ A subcircuit can be used in the main netlist or another subcircuit (nesting) usi
 
 **X**Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*IO Nodes*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*SubcktName*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(WRspice (normal SPICE) mode)
 
-Additional features of the subcircuit include isolation of parameters (discussed next) and the ability to plot/print the devices or nodes within a subcircuit by specifying the *XLabel* followed by either a *_* or a *|* and then the device or node.
+Additional features of the subcircuit include isolation of parameters (discussed next) and the ability to plot/print the devices or nodes within a subcircuit by specifying the device or node followed by either a **.** or a **|** and then the *XLabel*.
+
+i.e. **.print** v(14.X01) p(B01.X02)
 
 Subcircuits as mentioned before can also be nested almost indefinitely as they are expanded upon simulation.
 

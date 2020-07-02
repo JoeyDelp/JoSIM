@@ -228,9 +228,11 @@ void Output::format_csv_or_dat(const std::string &filename,
     outfile << traces.at(traces.size() - 1).name_ << "\n";
     for (int j = 0; j < traces.at(0).data_.size(); ++j) {
       for (int i = 0; i < traces.size() - 1; ++i) {
-        outfile << traces.at(i).data_.at(j) << delimiter;
+        outfile << std::scientific << std::setprecision(6) << 
+          traces.at(i).data_.at(j) << delimiter;
       }
-      outfile << traces.at(traces.size() - 1).data_.at(j) << "\n";
+      outfile << std::scientific << std::setprecision(6) << 
+        traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
   } else {
     Errors::output_errors(OutputErrors::CANNOT_OPEN_FILE, filename);
@@ -273,8 +275,9 @@ void Output::format_raw(const std::string &filename) {
       outfile << "Values:\n";
       for (int i = 0; i < loopsize; ++i) {
         for (int j = 0; j < traces.size(); ++j) {
-          outfile << " " << std::string(Misc::numDigits(i), ' ') << " "
-                  << traces.at(j).data_.at(i) << "\n";
+          outfile << " " << std::string(Misc::numDigits(i), ' ') << " " << 
+            std::scientific << std::setprecision(6) << 
+            traces.at(j).data_.at(i) << "\n";
         }
       }
       
@@ -295,9 +298,11 @@ void Output::format_cout(const bool &argMin) {
     std::cout << traces.at(traces.size() - 1).name_ << "\n";
     for (int j = 0; j < traces.at(0).data_.size(); ++j) {
       for (int i = 0; i < traces.size() - 1; ++i) {
-        std::cout << std::setw(15) << traces.at(i).data_.at(j) << " ";
+        std::cout << std::setw(15) << std::scientific << std::setprecision(6) << 
+          traces.at(i).data_.at(j) << " ";
       }
-      std::cout << std::setw(15) << traces.at(traces.size() - 1).data_.at(j) << "\n";
+      std::cout << std::setw(15) << std::scientific << std::setprecision(6) <<
+        traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
   }
 }

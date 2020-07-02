@@ -161,6 +161,12 @@ The command line interface has various switches which can be shown using the **-
   	<td>--convention=</td><td>0 is default</td>
   </tr>
   <tr>
+    <td>-d</td><td>0 or 1</td><td>Sets the differential method to either trapezoidal or Gear.<strong>*</strong></td>
+  </tr>
+  <tr>
+    <td>--differential=</td><td>0 is default</td>
+  </tr>
+  <tr>
     <td>-h</td><td></td><td rowspan="2">Displays the help menu that contains explanations for each of these switches.</td>
   </tr>
   <tr>
@@ -171,6 +177,12 @@ The command line interface has various switches which can be shown using the **-
   </tr>
   <tr>
     <td>--input</td><td></td>
+  </tr>
+  <tr>
+    <td>-m</td><td></td><td>Disables most output.<strong>*</strong></td>
+  </tr>
+  <tr>
+    <td>--minimal</td>
   </tr>
   <tr>
     <td>-o</td><td>output filename</td><td rowspan="2">Save the output to file as either .csv, .dat or raw</td>
@@ -197,6 +209,8 @@ The command line interface has various switches which can be shown using the **-
     <td>--version</td><td></td>
   </tr>
 </table>
+
+**\*** Only available in v2.5 (testing) at time of writing.
 
 These switches can be fed to the executable in any order as long as it makes sense. With this being said, the simulator will treat the first non switch related string line as the input file. It would make perfect sense to then have a command line as follows:
 

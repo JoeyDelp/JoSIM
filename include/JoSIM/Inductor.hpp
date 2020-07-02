@@ -3,10 +3,10 @@
 #ifndef JOSIM_INDUCTOR_HPP
 #define JOSIM_INDUCTOR_HPP
 
+#include "JoSIM/BasicComponent.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/IntegrationType.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -15,75 +15,43 @@
 
 
 namespace JoSIM {
-class Inductor {
-  private:
-    std::string label_;
-    std::vector<double> nonZeros_;
-    std::vector<int> columnIndex_;
-    std::vector<int> rowPointer_;
-    std::optional<int> posIndex_, negIndex_;
-    std::vector<std::pair<int, double>> mutualInductances_;
-    int currentIndex_;
-    double inductance_;
-    double value_;
-    double in2_;
+
+ /*
+  Llabel V⁺ V⁻ L
+
+  V - (3*L)/(2*h)Io = -(2*L)/(h)In-1 + (L)/(2*h)In-2
+
+  ⎡ 0  0            1⎤ ⎡V⁺⎤   ⎡                              0⎤
+  ⎜ 0  0           -1⎟ ⎜V⁻⎟ = ⎜                              0⎟
+  ⎣ 1 -1 -(3*L)/(2*h)⎦ ⎣Io⎦   ⎣ -(2*L)/(h)In-1 + (L)/(2*h)In-2⎦
+
+  (PHASE)
+  φ - L(2e/hbar)Io = 0
+  
+  ⎡ 0  0           1⎤ ⎡φ⁺⎤   ⎡ 0⎤
+  ⎜ 0  0          -1⎟ ⎜φ⁻⎟ = ⎜ 0⎟
+  ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
+ */ 
+
+using mutualinductors = std::vector<std::pair<int, double>>;
+
+class Inductor : public BasicComponent {
   public:
-    Inductor() :
-      currentIndex_(-1),
-      inductance_(0),
-      value_(0),
-      in2_(0)
-      {};
+  double In2_;
+  mutualinductors mutualInductances_;
+
+  Inductor(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
+    const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
+    const param_map &pm, const AnalysisType &at, const double &h, int &bi);
     
-    static Inductor create_inductor(const std::pair<std::string, std::string> &s,
-                                    const std::unordered_map<std::string, int> &nm, 
-                                    std::unordered_set<std::string> &lm,
-                                    std::vector<std::vector<std::pair<double, int>>> &nc,
-                                    const std::unordered_map<ParameterName, Parameter> &p,
-                                    const AnalysisType &antyp,
-                                    const IntegrationType & inttyp,
-                                    const double &timestep,
-                                    int &branchIndex);
-    void set_label(const std::string &s, 
-                    std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, 
-                                      const std::unordered_map<std::string, int> &nm, 
-                                      const std::string &s, 
-                                      int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n, 
-                      const std::unordered_map<std::string, int> &nm, 
-                      std::vector<std::vector<std::pair<double, int>>> &nc, 
-                      const int &branchIndex);
-    void set_currentIndex(const int &cc) { currentIndex_ = cc; }
-    void set_value(const std::pair<std::string, std::string> &s, 
-                    const std::unordered_map<ParameterName, Parameter> &p,
-                    const AnalysisType &antyp, 
-                    const double &timestep);
-    void set_value_gear(const std::pair<std::string, std::string> &s, 
-                        const std::unordered_map<ParameterName, Parameter> &p,
-                        const AnalysisType &antyp, 
-                        const double &timestep);
-    void add_mutualInductance(const double &m, 
-                              const AnalysisType &antyp, 
-                              const IntegrationType & inttyp, 
-                              const double &timestep, 
-                              const int &columnIndex);
-    void set_mutualInductance(const std::pair<int, double> &mut) { mutualInductances_.emplace_back(mut); }
-    void set_in2(const double &v) { in2_ = v; }
-
-    const std::string& get_label() const { return label_; }
-    const std::vector<double>& get_nonZeros() const { return nonZeros_; }
-    const std::vector<int>& get_columnIndex() const { return columnIndex_; }
-    const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const std::optional<int>& get_posIndex() const { return posIndex_; }
-    const std::optional<int>& get_negIndex() const { return negIndex_; }
-    const int& get_currentIndex() const { return currentIndex_; }
-    const double& get_value() const { return value_; }
-    const double& get_inductance() const { return inductance_; }
-    const std::vector<std::pair<int, double>> get_mutualInductance() const { return mutualInductances_; }
-    const double& get_in2() const { return in2_; }
-
-};
+  void set_mutualInductance(const std::pair<int, double> &mut) { 
+    mutualInductances_.emplace_back(mut); }
+  void add_mutualInductance(
+    const double &m, const AnalysisType &at, const double &h, const int &ci);
+  const mutualinductors get_mutualInductance() const { 
+    return mutualInductances_; } 
+}; // class Inductor
 
 } // namespace JoSIM
 #endif

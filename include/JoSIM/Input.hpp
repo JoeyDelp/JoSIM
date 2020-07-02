@@ -3,6 +3,7 @@
 #ifndef JOSIM_J_INPUT_H
 #define JOSIM_J_INPUT_H
 
+#include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/InputType.hpp"
 #include "JoSIM/ParameterName.hpp"
@@ -11,6 +12,7 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/IntegrationType.hpp"
+#include "JoSIM/LineInput.hpp"
 
 #include <string>
 #include <vector>
@@ -18,14 +20,10 @@
 
 namespace JoSIM {
 class Input {
-  private:
-    std::vector<std::string> read_file(const std::string &fileName);
-    std::vector<std::string> read_input();
-
   public:
   Netlist netlist;
   Transient transSim;
-  std::vector<std::string> fileLines, controls;
+  std::vector<tokens_t> fileLines, controls;
   std::vector<std::string> relevantX;
   std::unordered_map<ParameterName, Parameter> parameters;
 
@@ -49,7 +47,10 @@ class Input {
   bool argVerb = false;
   bool argMin = false;
 
-  void parse_file(const std::string &fileName);
+  std::vector<tokens_t> read_input(
+    LineInput &input, string_o fileName = std::nullopt);
+  void parse_input(string_o fileName = std::nullopt);
+
 };
 } // namespace JoSIM
 

@@ -3,6 +3,8 @@
 #ifndef JOSIM_TRANSIENT_HPP
 #define JOSIM_TRANSIENT_HPP
 
+#include "JoSIM/TypeDefines.hpp"
+
 #include <string>
 #include <vector>
 
@@ -35,7 +37,8 @@ class Transient {
   void set_maxtstep(double value) { maxtstep = value; }
   void set_simsize() { simsize = ((tstop - tstart) / prstep); }
 
-  static void identify_simulation(const std::vector<std::string> &controls, Transient &tObj);
+  static void identify_simulation(
+    const std::vector<tokens_t> &controls, Transient &tObj);
 };
 }
 

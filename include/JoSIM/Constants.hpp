@@ -15,6 +15,7 @@ namespace JoSIM {
     static constexpr double C = 299792458;
     static constexpr double MU0 = 12.566370614E-7;
     static constexpr double EPS0 = 8.854187817E-12;
+    // HBAR / 2 * EV
     static constexpr double SIGMA = 3.291059757e-16;
   }
 }

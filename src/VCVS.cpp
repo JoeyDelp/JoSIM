@@ -10,255 +10,123 @@
 
 using namespace JoSIM;
 
-VCVS VCVS::create_VCVS(const std::pair<std::string, std::string> &s,
-                        const std::unordered_map<std::string, int> &nm, 
-                        std::unordered_set<std::string> &lm,
-                        std::vector<std::vector<std::pair<double, int>>> &nc,
-                        const std::unordered_map<ParameterName, Parameter> &p,
-                        int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
-  
-  VCVS temp;
-  temp.set_label(tokens.at(0), lm);
-  if(s.first.find("{") != std::string::npos) {
-    if(s.first.find("}") != std::string::npos) {
-      tokens.at(5) = s.first.substr(s.first.find("{")+1, s.first.find("}") - s.first.find("{"));
-    } else {
-      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
-    }
-  }
-  temp.set_value(std::make_pair(tokens.at(5), s.second), p);
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, s.first, branchIndex);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), std::make_pair(tokens.at(3), tokens.at(4)), nm, nc, branchIndex);
-  temp.set_currentIndex(branchIndex - 1);
-  return temp;
+ /*
+  Elabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
+
+  Vo = GVc
+  ⎡ 0  0  0  0   -1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+  ⎜ 0  0  0  0    1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+  ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+  ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+  ⎣-1  1  G -G    0⎦ ⎣Io ⎦   ⎣ 0⎦
+ */ 
+
+VCVS::VCVS(
+    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
+    const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
+    std::unordered_set<std::string> &lm, nodeconnections &nc,
+    const param_map &pm, int &bi) {
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s.first.at(0));
+  // Set the value this should be the 6th token
+  netlistInfo.value_ = parse_param(s.first.at(5), pm, s.second);
+  // Set the node configuration type
+  indexInfo.nodeConfig_ = ncon;
+  // Set the secondary node configuration type
+  nodeConfig2_ = ncon2.value();
+  // Set current index and increment it
+  indexInfo.currentIndex_ = bi++;
+  // Set te node indices, using tokens 2 to 5
+  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+5), nm, nc);
+  // Set the non zero, column index and row pointer vectors
+  set_matrix_info();
 }
 
-void VCVS::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
-  if(lm.count(s) != 0) {
-    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
-  } else {
-    label_ = s;
-    lm.emplace(s);
+void VCVS::set_node_indices(
+  const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
+  // Set the node indices for the controlling nodes and add column index info
+  switch(indexInfo.nodeConfig_) {
+  case NodeConfig::POSGND:
+    indexInfo.posIndex_ = nm.at(t.at(0));
+    nc.at(nm.at(t.at(0))).emplace_back(
+      std::make_pair(-1, indexInfo.currentIndex_.value()));
+    break;
+  case NodeConfig::GNDNEG:
+    indexInfo.negIndex_ = nm.at(t.at(1));
+    nc.at(nm.at(t.at(1))).emplace_back(
+      std::make_pair(1, indexInfo.currentIndex_.value()));
+    break;
+  case NodeConfig::POSNEG:
+    indexInfo.posIndex_ = nm.at(t.at(0));
+    indexInfo.negIndex_ = nm.at(t.at(1));
+    nc.at(nm.at(t.at(0))).emplace_back(
+      std::make_pair(-1, indexInfo.currentIndex_.value()));
+    nc.at(nm.at(t.at(1))).emplace_back(
+      std::make_pair(1, indexInfo.currentIndex_.value()));
+    break;
+  case NodeConfig::GND:
+    break;
   }
-}
-
-void VCVS::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, 
-                                        const std::pair<std::string, std::string> &n2, 
-                                        const std::unordered_map<std::string, int> &nm, 
-                                        const std::string &s, 
-                                        int &branchIndex) {
-  nonZeros_.clear();
-  columnIndex_.clear();
-  if(n1.first != "0" && n1.first.find("GND") == std::string::npos) {
-    if(nm.count(n1.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.first);
-  }
-  if(n1.second != "0" && n1.second.find("GND") == std::string::npos) {
-    if(nm.count(n1.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n1.second);
-  }
-  if(n2.first != "0" && n2.first.find("GND") == std::string::npos) {
-    if(nm.count(n2.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.first);
-  }
-  if(n2.second != "0" && n2.second.find("GND") == std::string::npos) {
-    if(nm.count(n2.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n2.second);
-  }
-  // 0
-  if(n1.first.find("GND") != std::string::npos || n1.first == "0")  {
-    // 0 0
-    if(n1.second.find("GND") != std::string::npos || n1.second == "0")  {
-      // 0 0 0
-      if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-        // 0 0 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        // 0 0 0 1
-        } else {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n2.second));
-        }
-      // 0 0 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-        nonZeros_.emplace_back(value_);
-        rowPointer_.emplace_back(1);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n2.first));
-      // 0 0 1 1
-      } else {
-        Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-        nonZeros_.emplace_back(value_);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-      }
-    // 0 1  
-    } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-      // 0 1 0
-      if(n2.first.find("GND") != std::string::npos)  {
-        // 0 1 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(1);
-          rowPointer_.emplace_back(1);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.second));
-        // 0 1 0 1
-        } else {
-          nonZeros_.emplace_back(1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(nm.at(n2.second));
-        }
-      // 0 1 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nm.at(n2.first));
-      // 0 1 1 1
-      } else {
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(value_);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-      }
-    }
-  // 1
-  } else {
-    // 1 0
-    if(n1.second.find("GND") != std::string::npos || n1.second == "0")  {
-      // 1 0 0
-      if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-        // 1 0 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-        // 1 0 0 1
-        } else {
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(nm.at(n2.second));
-        }
-      // 1 0 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(value_);
-        rowPointer_.emplace_back(2);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nm.at(n2.first));
-      // 1 0 1 1
-      } else {
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(value_);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-      }
-    // 1 1  
-    } else if(n2.first.find("GND") != std::string::npos || n2.first == "0")  {
-      // 1 1 0
-      if(n2.first.find("GND") != std::string::npos)  {
-        // 1 1 0 0  
-        if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-          Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(1);
-          rowPointer_.emplace_back(2);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(nm.at(n1.second));
-        // 1 1 0 1
-        } else {
-          nonZeros_.emplace_back(-1);
-          nonZeros_.emplace_back(1);
-          nonZeros_.emplace_back(-value_);
-          rowPointer_.emplace_back(3);
-          branchIndex++;
-          columnIndex_.emplace_back(nm.at(n1.first));
-          columnIndex_.emplace_back(nm.at(n1.second));
-          columnIndex_.emplace_back(nm.at(n2.second));
-        }
-      // 1 1 1 0  
-      } else if(n2.second.find("GND") != std::string::npos || n2.second == "0")  {
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(value_);
-        rowPointer_.emplace_back(3);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nm.at(n2.first));
-      // 1 1 1 1
-      } else {
-        nonZeros_.emplace_back(-1);
-        nonZeros_.emplace_back(1);
-        nonZeros_.emplace_back(value_);
-        nonZeros_.emplace_back(-value_);
-        rowPointer_.emplace_back(4);
-        branchIndex++;
-        columnIndex_.emplace_back(nm.at(n1.first));
-        columnIndex_.emplace_back(nm.at(n1.second));
-        columnIndex_.emplace_back(nm.at(n2.first));
-        columnIndex_.emplace_back(nm.at(n2.second));
-      }
-    }
+  // Set the node indices for the controlled nodes
+  switch(nodeConfig2_) {
+  case NodeConfig::POSGND:
+    posIndex2_ = nm.at(t.at(2));
+    break;
+  case NodeConfig::GNDNEG:
+    negIndex2_ = nm.at(t.at(3));
+    break;
+  case NodeConfig::POSNEG:
+    posIndex2_ = nm.at(t.at(2));
+    negIndex2_ = nm.at(t.at(3));
+    break;
+  case NodeConfig::GND:
+    break;
   }
 }
 
-void VCVS::set_indices(const std::pair<std::string, std::string> &n1, 
-                        const std::pair<std::string, std::string> &n2, 
-                        const std::unordered_map<std::string, int> &nm, 
-                        std::vector<std::vector<std::pair<double, int>>> &nc, 
-                        const int &branchIndex) {
-  if(n1.second.find("GND") != std::string::npos || n1.second == "0") {
-    if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
-      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
-    } else {
-      posIndex1_ = nm.at(n1.first);
-      nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
+void VCVS::set_matrix_info() {
+    switch(indexInfo.nodeConfig_) {
+    case NodeConfig::POSGND:
+      matrixInfo.nonZeros_.emplace_back(-1);
+      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+      matrixInfo.rowPointer_.emplace_back(1);
+      break;
+    case NodeConfig::GNDNEG:
+      matrixInfo.nonZeros_.emplace_back(1);
+      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+      matrixInfo.rowPointer_.emplace_back(1);
+      break;
+    case NodeConfig::POSNEG:
+      matrixInfo.nonZeros_.emplace_back(-1);
+      matrixInfo.nonZeros_.emplace_back(1);
+      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+      matrixInfo.rowPointer_.emplace_back(2);
+      break;
+    case NodeConfig::GND:
+    break;
     }
-  } else if(n1.first.find("GND") != std::string::npos || n1.first == "0") {
-    negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  } else {
-    posIndex1_ = nm.at(n1.first);
-    negIndex1_ = nm.at(n1.second);
-    nc.at(nm.at(n1.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    nc.at(nm.at(n1.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  }
-  if(n2.second.find("GND") != std::string::npos || n2.second == "0") {
-    if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
-      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, label_);
-    } else {
-      posIndex2_ = nm.at(n2.first);
+    switch(nodeConfig2_) {
+    case NodeConfig::POSGND:
+      matrixInfo.nonZeros_.emplace_back(netlistInfo.value_);
+      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+      matrixInfo.rowPointer_.back()++;
+      break;
+    case NodeConfig::GNDNEG:
+      matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
+      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+      matrixInfo.rowPointer_.back()++;
+      break;
+    case NodeConfig::POSNEG:
+      matrixInfo.nonZeros_.emplace_back(netlistInfo.value_);
+      matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
+      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+      matrixInfo.rowPointer_.back() += 2;
+      break;
+    case NodeConfig::GND:
+    break;
     }
-  } else if(n2.first.find("GND") != std::string::npos || n2.first == "0") {
-    negIndex2_ = nm.at(n2.second);
-  } else {
-    posIndex2_ = nm.at(n2.first);
-    negIndex2_ = nm.at(n2.second);
   }
-}
-
-void VCVS::set_value(const std::pair<std::string, std::string> &s, 
-                      const std::unordered_map<ParameterName, Parameter> &p) {
-  value_ = parse_param(s.first, p, s.second);
-}

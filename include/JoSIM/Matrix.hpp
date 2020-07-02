@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 namespace JoSIM {
+
 class Matrix {
   public:
   AnalysisType analysisType;
@@ -20,10 +21,10 @@ class Matrix {
 
   Components components;
   std::unordered_map<std::string, int> nm;
-  std::vector<std::vector<std::pair<double, int>>> nc;
+  nodeconnections nc;
   std::unordered_set<std::string> lm;
   int branchIndex;
-  std::vector<double> nz;
+  std::vector<double> nz, nz05, nz2, nz4, nz8, nz16;
   std::vector<int> ci, rp;
   std::vector<RelevantTrace> relevantTraces;
   std::vector<int> relevantIndices;

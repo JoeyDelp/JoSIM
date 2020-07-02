@@ -48,57 +48,74 @@ bool Misc::starts_with(const std::string &input, char test) {
   return false;
 }
 
-std::vector<std::string> Misc::tokenize_space(const std::string &c) {
-  std::string::size_type pos, lastPos = 0, length = c.length();
-  std::string delimiters = " \t";
-  std::vector<std::string> tokens;
-  bool trimEmpty = true;
+std::string Misc::vector_to_string(const tokens_t &s, std::string d) {
+  std::stringstream ss;
+  for (const auto &i : s) {
+    ss << i << d;
+  }
+  return ss.str();
+}
 
-  using value_type = typename std::vector<std::string>::value_type;
-  using size_type = typename std::vector<std::string>::size_type;
-
-  while (lastPos < length + 1) {
-    pos = c.find_first_of(delimiters, lastPos);
-    if (pos == std::string::npos) {
-      pos = length;
+tokens_t Misc::tokenize(
+  const std::string &c, std::string d, bool trimEmpty, bool trimSpaces,
+  int count) {
+  // Create a position token to point to the found delimiter
+  size_t pos = 0, lastPos = 0;
+  // Tokens to return
+  tokens_t tokens;
+  // Counter to count times delimiter was found
+  int counter = 0;
+  // If times to delimit is 0 then delimit as much as we can
+  if (count == 0) {
+    count = c.length();
+  }
+  // While the delimiter can be found in the string
+  while((pos = c.find_first_of(d, lastPos)) != std::string::npos) {
+    // If we reach the number of times to delimit
+    if(counter == count) {
+      // Break from the while loop
+      break;
     }
-
-    if (pos != lastPos || !trimEmpty)
-      tokens.push_back(
-          value_type(c.data() + lastPos, (size_type)pos - lastPos));
-
+    // If trim empty tokens is enabled
+    if(trimEmpty) {
+      // Check if the substring represents an empty string
+      if(!c.substr(lastPos, pos - lastPos).empty()) {
+        // Store the string between the identified positions
+        tokens.emplace_back(c.substr(lastPos, pos - lastPos));
+      }
+    // If we want to keep empty tokens
+    } else {
+      // Store the string between the identified positions
+      tokens.emplace_back(c.substr(lastPos, pos - lastPos));
+    }
+    // If trim spaces is enabled
+    if(trimSpaces) {
+      // Remove trailing, leading and duplicate spaces between tokens
+      tokens.back() = 
+        std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+    }
     lastPos = pos + 1;
+    ++counter;
   }
-  return tokens;
-}
-
-std::vector<std::string> Misc::tokenize_space_once(const std::string &c) {
-  std::vector<std::string> tokens (2, "");
-  std::string::size_type pos = c.find_first_of(" \t");
-  std::string::size_type length = c.length();
-  if (pos == std::string::npos) {
-      pos = length;
-  }
-  tokens.at(0) = c.substr(0, pos);
-  if(pos != length) tokens.at(1) = c.substr(pos + 1, length);
-  return tokens;
-}
-
-std::vector<std::string> Misc::tokenize_delimiter(const std::string &c,
-                                                  const std::string &d) {
-  std::vector<std::string> tokens;
-  std::stringstream stringStream(c);
-  std::string line;
-  while (std::getline(stringStream, line)) {
-    std::size_t prev = 0, pos;
-    while ((pos = line.find_first_of(d, prev)) != std::string::npos) {
-      if (pos > prev)
-        tokens.push_back(line.substr(prev, pos - prev));
-      prev = pos + 1;
+  // If trim empty tokens is enabled
+  if(trimEmpty) {
+    // Check if the substring represents an empty string
+    if(!c.substr(lastPos).empty()) {
+      // Store the string between the identified positions
+      tokens.emplace_back(c.substr(lastPos));
     }
-    if (prev < line.length())
-      tokens.push_back(line.substr(prev, std::string::npos));
+  // If we want to keep empty tokens
+  } else {
+    // Store the string between the identified positions
+    tokens.emplace_back(c.substr(lastPos));
   }
+  // If trim spaces is enabled
+  if(trimSpaces) {
+    // Remove trailing, leading and duplicate spaces between tokens
+    tokens.back() = 
+      std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+  }
+  // Return the tokens
   return tokens;
 }
 

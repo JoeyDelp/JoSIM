@@ -21,9 +21,9 @@
 #include "JoSIM/VCVS.hpp"
 #include "JoSIM/CCVS.hpp"
 
-#include <unordered_map>
 #include <variant>
 namespace JoSIM {
+
 class Components {
   public:
     std::vector<std::variant<Resistor, 
@@ -49,7 +49,8 @@ class Components {
                       cccsIndices, 
                       vcvsIndices, 
                       ccvsIndices;
-    std::vector<std::pair<std::string, std::string>> mutualinductances;
-};
+    std::vector<std::pair<tokens_t, string_o>> mutualinductances;
+}; // class Components
+
 } // namespace JoSIM
 #endif

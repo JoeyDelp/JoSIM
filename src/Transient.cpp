@@ -9,44 +9,61 @@
 
 using namespace JoSIM;
 
-void Transient::identify_simulation(const std::vector<std::string> &controls, 
-                                    Transient &tObj) {
-  std::vector<std::string> simtokens;
+void Transient::identify_simulation(
+  const std::vector<tokens_t> &controls, Transient &tObj) {
+  // Flag to store that a transient simulation was found
   bool transFound = false;
+  // Loop through all the controls
   for (const auto &i : controls) {
-    if (i.find("TRAN") != std::string::npos) {
+    // If the first token of the line contains "TRAN"
+    if (i.front().find("TRAN") != std::string::npos) {
+      // Set the flag as true
       transFound = true;
-      simtokens = Misc::tokenize_delimiter(i, " ,");
-      if (simtokens.at(0).find("TRAN") != std::string::npos) {
-        if (simtokens.size() < 2) {
-          Errors::control_errors(ControlErrors::TRANS_ERROR, "Too few parameters: " + i);
-          tObj.set_prstep(1E-12);
-          tObj.set_maxtstep(1E-12);
-          tObj.set_tstop(1E-9);
-          tObj.set_tstart(0);
-        } else {
-          tObj.set_prstep(Misc::modifier(simtokens.at(1)));
-          if (simtokens.size() > 2) {
-            tObj.set_tstop(Misc::modifier(simtokens.at(2)));
-            if (simtokens.size() > 3) {
-              tObj.set_tstart(Misc::modifier(simtokens.at(3)));
-              if (simtokens.size() > 4) {
-                tObj.set_maxtstep(Misc::modifier(simtokens.at(4)));
-              } else
-                tObj.set_maxtstep(1E-12);
-            } else {
-              tObj.set_tstart(0);
+      // If there are less than 2 tokens
+      if (i.size() < 2) {
+        // Complain of invalid transient analysis specification
+        Errors::control_errors(
+          ControlErrors::TRANS_ERROR, 
+          "Too few parameters: " + Misc::vector_to_string(i));
+        // Set the parameters to default values and continue
+        tObj.set_prstep(1E-12);
+        tObj.set_maxtstep(1E-12);
+        tObj.set_tstop(1E-9);
+        tObj.set_tstart(0);
+      // If there are more than 2 tokens
+      } else {
+        // Set the step size
+        tObj.set_prstep(Misc::modifier(i.at(1)));
+        if (i.size() > 2) {
+          // Set the simulation stop time
+          tObj.set_tstop(Misc::modifier(i.at(2)));
+          if (i.size() > 3) {
+            // Set the simulation start time
+            tObj.set_tstart(Misc::modifier(i.at(3)));
+            if (i.size() > 4) {
+              // Set the maximum step size (not yet used)
+              tObj.set_maxtstep(Misc::modifier(i.at(4)));
+            } else
+              // Set default
               tObj.set_maxtstep(1E-12);
-            }
           } else {
-            tObj.set_tstop(1E-9);
+            // Set default
             tObj.set_tstart(0);
             tObj.set_maxtstep(1E-12);
           }
+        } else {
+          // Set default
+          tObj.set_tstop(1E-9);
+          tObj.set_tstart(0);
+          tObj.set_maxtstep(1E-12);
         }
       }
+      // If either the step size or stop time is 0
       if(tObj.get_prstep() == 0 || tObj.get_tstop() == 0 ) {
-        Errors::control_errors(ControlErrors::TRANS_ERROR, i);
+        // Complain
+        Errors::control_errors(
+          ControlErrors::TRANS_ERROR, Misc::vector_to_string(i));
+        // Set defaults and continue
         tObj.set_prstep(1E-12);
         tObj.set_maxtstep(1E-12);
         tObj.set_tstop(1E-9);
@@ -54,8 +71,11 @@ void Transient::identify_simulation(const std::vector<std::string> &controls,
       }
     }
   }
+  // Calculate the simulation size (Stop - Start / Step)
   tObj.set_simsize();
+  // If no transient was found in the controls
   if (!transFound) {
-    Errors::control_errors(ControlErrors::NO_SIM, "");
+    // Complain and exit as no simulation will take place
+    Errors::control_errors(ControlErrors::NO_SIM);
   }
 }

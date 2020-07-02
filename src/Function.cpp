@@ -10,14 +10,14 @@
 
 using namespace JoSIM;
 
-std::vector<double> Function::parse_function(const std::string &str, Input &iObj,
-                                              const std::string &subckt) {
+std::vector<double> Function::parse_function(
+      const std::string &str, Input &iObj, const string_o &subckt) {
   std::vector<double> functionOfT(iObj.transSim.get_simsize(), 0.0);
   std::vector<std::string> tokens;
   auto first = str.find('(') + 1;
   auto last = str.find(')');
   std::string params = str.substr(first, last - first);
-  tokens = Misc::tokenize_delimiter(params, " ,");
+  tokens = Misc::tokenize(params, " ,");
   /* PWL(0 0 T1 V1 T2 V2 ... TN VN) */
   if (str.find("PWL") != std::string::npos) {
     parse_pwl(tokens, functionOfT, iObj, subckt);
@@ -45,10 +45,9 @@ std::vector<double> Function::parse_function(const std::string &str, Input &iObj
   return functionOfT;
 }
 
-void Function::parse_pwl(const std::vector<std::string> &tokens, 
-                          std::vector<double> &functionOfT, 
-                          const Input &iObj, 
-                          const std::string &subckt) {
+void Function::parse_pwl(
+      const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+      const Input &iObj, const string_o &subckt) {
   std::vector<double> timesteps, values;
   if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
     Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
@@ -121,10 +120,9 @@ void Function::parse_pwl(const std::vector<std::string> &tokens,
   }
 }
 
-void Function::parse_pulse(const std::vector<std::string> &tokens, 
-                            std::vector<double> &functionOfT, 
-                            const Input &iObj, 
-                            const std::string &subckt) {
+void Function::parse_pulse(
+      const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+      const Input &iObj, const string_o &subckt) {
   if (std::stod(tokens.at(0)) != 0.0) {
       Errors::function_errors(FunctionErrors::INITIAL_PULSE_VALUE, tokens.at(0));
   }
@@ -215,8 +213,9 @@ void Function::parse_pulse(const std::vector<std::string> &tokens,
   }
 }
 
-void Function::parse_sinusoid(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                      const Input &iObj, const std::string &subckt) {
+void Function::parse_sinusoid(
+      const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+      const Input &iObj, const string_o &subckt) {
   if (tokens.size() < 2) {
       Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }
@@ -254,8 +253,9 @@ void Function::parse_sinusoid(const std::vector<std::string> &tokens, std::vecto
   }
 }
 
-void Function::parse_custom(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                    const Input &iObj, const std::string &subckt) {
+void Function::parse_custom(
+      const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+      const Input &iObj, const string_o &subckt) {
   if (tokens.size() < 2){
     Errors::function_errors(FunctionErrors::CUS_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }                            
@@ -286,7 +286,7 @@ void Function::parse_custom(const std::vector<std::string> &tokens, std::vector<
     Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, WFline);
   }
   wffile.close();
-  WF = Misc::tokenize_delimiter(WFline, " ,;");
+  WF = Misc::tokenize(WFline, " ,;");
   std::vector<double> timesteps, values;
   for (int i = 0; i < WF.size(); ++i) {
     values.push_back(Misc::modifier(WF.at(i)) * SF);
@@ -334,8 +334,9 @@ void Function::parse_custom(const std::vector<std::string> &tokens, std::vector<
   }
 }
 
-void Function::parse_noise(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                  const Input &iObj, const std::string &subckt) {
+void Function::parse_noise(
+      const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+      const Input &iObj, const string_o &subckt) {
   if (tokens.size() < 2) {
       Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(tokens.size()));
   }
@@ -372,8 +373,9 @@ void Function::parse_noise(const std::vector<std::string> &tokens, std::vector<d
   }
 }
 
-void Function::parse_pws(const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
-                                const Input &iObj, const std::string &subckt) {
+void Function::parse_pws(
+      const std::vector<std::string> &tokens, std::vector<double> &functionOfT, 
+      const Input &iObj, const string_o &subckt) {
   std::vector<double> timesteps, values;
   if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
     Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
@@ -443,7 +445,8 @@ void Function::parse_pws(const std::vector<std::string> &tokens, std::vector<dou
   }
 }
 
-void Function::voltage_to_phase(std::vector<double> &source, const Input &iObj) {
+void Function::voltage_to_phase(
+  std::vector<double> &source, const Input &iObj) {
   double vn1, value;
   for(int i = 0; i < source.size(); ++i) {
     if(i == 0) { 
@@ -456,7 +459,8 @@ void Function::voltage_to_phase(std::vector<double> &source, const Input &iObj) 
   }
 }
 
-void Function::phase_to_voltage(std::vector<double> &source, const Input &iObj) {
+void Function::phase_to_voltage(
+  std::vector<double> &source, const Input &iObj) {
   double pn1, value;
   for(int i = 0; i < source.size(); ++i) {
     if(i == 0) {

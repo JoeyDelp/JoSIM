@@ -2,9 +2,10 @@
 * Date modified: 2020/01/22
 IA  0   11  pwl(0 0 170p 0 176p 600u 182p 0 370p 0 376p 600u 382p 0 600p 0 606p 600u 612p 0 700p 0 706p 600u 712p 0)
 RA  11  0   1
-HA  1   0   0   11   2
+HA  1   0   11   0   2
 RB  1   0   1
 .tran 0.25p 1000p
+.print devi IA
 .print devv RB
 .print devi RB
 .print devp RB

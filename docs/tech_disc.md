@@ -8,15 +8,9 @@ This drawback lead to the creation of the modified nodal analysis which is an ex
 
 A useful feature of the MNA method allows every component to be represented as a sub-matrix called a stamp. The summation of all the stamps provide us with the **A**, **x** as well as **b** matrices that are required to solve the linear equations. These stamps will be discussed further in the following subsection.
 
-## Trapezoidal integration
+## Trapezoidal integration.
 
-<figure>
-  <fig>
-  </fig>
-  <figcaption 
-</figure>
-
-We therefore rather focus on higher order methods such as the trapezoidal rule for solving the linear equations as the accuracy of this method increases by reducing the time step size. 
+The trapezoidal method for solving linear equations is a second order method for which the solution accuracy improves by reducing the time step size.
 
 We can express the trapezoidal method as:
 
@@ -74,6 +68,64 @@ Which we can then write in matrix form as:
 The matrix above is a generic stamp that we can place into the A matrix which describes the inductor L1.
 
 We can do the same for a resistor, capacitor, current source, voltage source, Josephson junction and a transmission line. The stamps for each of these components can be found in the [Component Stamps](comp_stamps.md) section.
+
+## Gear Integration
+
+Similar to the trapezoidal method, the Gear method or BDF2 (backward differentiation formulae) is also a second order integration method. This method, however, is better known as a linear multistep method and is the most stable second order integration method. 
+
+This method is expressed as:
+$$
+\left(\frac{dx}{dt}\right)_n = \frac{3}{2h}\left[x_n - \frac{4}{3}x_{n-1} + \frac{1}{3}x_{n−2}\right]
+$$
+This method requires knowledge of at least 2 prior timesteps, indicated by \(n-1\) and \(n-2\). Though this method might seem like it requires extra computation for every component, it actually simplifies components that require differentials.
+
+We demonstrate this using the capacitor.
+
+<figure>
+	<img src="../img/capacitor.pdf" alt="Capacitor Symbol" class="center" width="25%">
+	<figcaption align="center">Fig. 2 - A basic capacitor with current flowing through it</figcaption>
+</figure>
+
+The capactor in Fig. 2 has a general equation to determine the current through it as:
+
+$$ i_{C1}(t) = C1\frac{dv}{dt} $$
+
+When we apply the Gear method to find that this equation can be rewritten as:
+
+\begin{align}
+	i_{n} &= C1 \frac{3}{2h} \left[ v_n -\frac{4}{3}v_{n-1}+\frac{1}{3}v_{n-2}\right] \\
+	& = \frac{3C1}{2h} V_n - \frac{2C1}{h}V_{n-1}+\frac{C1}{2h}V_{n-2}\  \\
+	\therefore \frac{3C1}{2h} V_n - I_{n} & =  \frac{2C1}{h}V_{n-1}-\frac{C1}{2h}V_{n-2}
+\end{align}
+
+or rather
+$$
+V_n - \frac{2h}{3C1}I_n = \frac{4}{3}V_{n-1}-\frac{1}{3}V_{n-2}
+$$
+Which we can then write in matrix form as:
+
+\begin{equation}
+	\begin{bmatrix}
+		0 & 0 & 1 \\
+		0 & 0 & -1 \\
+		1 & -1 & - \frac{2h}{3C1}
+	\end{bmatrix}
+	\begin{bmatrix}
+		V_{1} \\
+		V_{2} \\
+		I_{C1}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		0 \\
+		0 \\
+		\frac{4}{3}V_{n-1}-\frac{1}{3}V_{n-2}
+	\end{bmatrix}
+\end{equation}
+
+The matrix above is a generic stamp that we can place into the A matrix which describes the capacitor C1.
+
+The extension that will allow JoSIM to use Gear method is available in v2.5 (testing) at time of writing.
 
 ## Modified nodal phase analysis
 
