@@ -14,6 +14,15 @@
 
 
 namespace JoSIM {
+
+ /*
+  Plabel φ⁺ φ⁻ sourcetype
+
+  ⎡ 0  0  1⎤ ⎡φ⁺⎤   ⎡  0⎤
+  ⎜ 0  0 -1⎟ ⎜φ⁻⎟ = ⎜  0⎟
+  ⎣ 1 -1  0⎦ ⎣Io⎦   ⎣  0⎦
+ */ 
+
 class PhaseSource : public BasicComponent {
   public:
   int sourceIndex_;

@@ -14,6 +14,14 @@
 
 namespace JoSIM {
 
+ /*
+  Vlabel V⁺ V⁻ sourcetype
+
+  ⎡ 0  0  1⎤ ⎡V⁺⎤   ⎡  0⎤
+  ⎜ 0  0 -1⎟ ⎜V⁻⎟ = ⎜  0⎟
+  ⎣ 1 -1  0⎦ ⎣Io⎦   ⎣  0⎦
+ */ 
+
 class VoltageSource : public BasicComponent {
   public:
   int sourceIndex_;

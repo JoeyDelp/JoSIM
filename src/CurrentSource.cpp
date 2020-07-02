@@ -7,6 +7,13 @@
 
 using namespace JoSIM;
 
+/*
+  Ilabel V⁺ V⁻ sourcetype
+
+  ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
+  ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
+*/ 
+
 CurrentSource::CurrentSource(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, const int &si) {

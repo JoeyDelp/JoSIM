@@ -11,6 +11,14 @@
 #include <string>
 
 namespace JoSIM {
+
+/*
+  Ilabel V⁺ V⁻ sourcetype
+
+  ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
+  ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
+*/ 
+
 class CurrentSource : public BasicComponent {
   public:
   int sourceIndex_;

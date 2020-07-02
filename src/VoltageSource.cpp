@@ -10,6 +10,14 @@
 
 using namespace JoSIM;
 
+ /*
+  Vlabel V⁺ V⁻ sourcetype
+
+  ⎡ 0  0  1⎤ ⎡V⁺⎤   ⎡  0⎤
+  ⎜ 0  0 -1⎟ ⎜V⁻⎟ = ⎜  0⎟
+  ⎣ 1 -1  0⎦ ⎣Io⎦   ⎣  0⎦
+ */ 
+
 VoltageSource::VoltageSource(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm,
