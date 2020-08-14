@@ -13,7 +13,7 @@
         <meta name="author" content="Johannes Delport">
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.6">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.4b9ffd7b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
       
       
     
@@ -44,6 +44,7 @@
   
     <body dir="ltr">
   
+    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -324,6 +325,14 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#independent-sources" class="md-nav__link">
+    Independent Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Independent Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#voltage-source" class="md-nav__link">
     Voltage Source
   </a>
@@ -341,6 +350,52 @@
   <a href="#phase-source" class="md-nav__link">
     Phase Source
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependent-sources" class="md-nav__link">
+    Dependent Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependent Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-controlled-current-source" class="md-nav__link">
+    Current controlled current source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-controlled-voltage-source" class="md-nav__link">
+    Current controlled voltage source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source" class="md-nav__link">
+    Voltage controlled current source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source_1" class="md-nav__link">
+    Voltage controlled current source
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -560,6 +615,14 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#independent-sources" class="md-nav__link">
+    Independent Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Independent Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#voltage-source" class="md-nav__link">
     Voltage Source
   </a>
@@ -577,6 +640,52 @@
   <a href="#phase-source" class="md-nav__link">
     Phase Source
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependent-sources" class="md-nav__link">
+    Dependent Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependent Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-controlled-current-source" class="md-nav__link">
+    Current controlled current source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-controlled-voltage-source" class="md-nav__link">
+    Current controlled voltage source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source" class="md-nav__link">
+    Voltage controlled current source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source_1" class="md-nav__link">
+    Voltage controlled current source
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -775,12 +884,22 @@
 <p><strong>K</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inductor1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inductor2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>VALUE</strong></p>
 <p>The value is the coupling factor <em>k</em>.</p>
 <h2 id="sources">Sources</h2>
-<h3 id="voltage-source">Voltage Source</h3>
+<h3 id="independent-sources">Independent Sources</h3>
+<h4 id="voltage-source">Voltage Source</h4>
 <p><strong>V</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
-<h3 id="current-source">Current Source</h3>
+<h4 id="current-source">Current Source</h4>
 <p><strong>I</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
-<h3 id="phase-source">Phase Source</h3>
+<h4 id="phase-source">Phase Source</h4>
 <p><strong>P</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>SOURCETYPE</strong></p>
+<h3 id="dependent-sources">Dependent Sources</h3>
+<h4 id="current-controlled-current-source">Current controlled current source</h4>
+<p><strong>F</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>PosControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<strong>GAIN</strong></p>
+<h4 id="current-controlled-voltage-source">Current controlled voltage source</h4>
+<p><strong>H</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>PosControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<strong>GAIN</strong></p>
+<h4 id="voltage-controlled-current-source">Voltage controlled current source</h4>
+<p><strong>G</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>PosControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<strong>GAIN</strong></p>
+<h4 id="voltage-controlled-current-source_1">Voltage controlled current source</h4>
+<p><strong>E</strong>Label&nbsp;&nbsp;&nbsp;&nbsp;<em>PosNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>PosControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<em>NegControlNode</em>&nbsp;&nbsp;&nbsp;&nbsp;<strong>GAIN</strong></p>
 <h3 id="source-types">Source Types</h3>
 <h4 id="piece-wise-linear-pwl">Piece Wise Linear (PWL)</h4>
 <p><strong>pwl(0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Time1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Amplitude1</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>...</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>TimeN</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>AmplitudeN</em> <strong>)</strong></p>
@@ -843,6 +962,7 @@
 <p><strong>.param</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>VarName</em>=<em>Expression</em></p>
 <p><em>VarName</em> is the variable name that can be used anywhere else in the circuit and <em>Expression</em> is a mathematical expression that is evaluated using an implementation of Dijkstra's shunting yard algorithm, whereby the expression is converted into reverse polish notation (RPN) and evaluated.</p>
 <p>Additionally, expressions can also contain other variables and parameters will be continuosly evaluated untill all variables are reduced to values. If variables are not defined the program will halt and produce an error.</p>
+<p>Expression parsing is exclusive to the <em>.param</em> control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in <em>std::invalid_argument: stod: no conversion</em> as it tries to convert a string into a double. Please be mindful when using expressions and restrict them to <em>.param</em> controls.</p>
 <h3 id="control-block">Control Block</h3>
 <p>Any of the above controls can be wrapped inside a control block with the following syntax</p>
 <p><strong>.control</strong></p>
@@ -923,15 +1043,15 @@
       
     </div>
     
-      <script src="../assets/javascripts/vendor.a0c4167b.min.js"></script>
-      <script src="../assets/javascripts/bundle.fb26dd1d.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
+      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.37585f48.min.js"
+            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
