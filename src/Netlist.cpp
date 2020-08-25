@@ -11,20 +11,28 @@ using namespace JoSIM;
 
 void Netlist::id_io_subc_label(
   const tokens_t &lineTokens, tokens_t &io, 
-  std::string &subcktName, std::string &label) {
+  std::string &subcktName, std::string &label,
+  const std::unordered_map<std::string, Subcircuit> &subcircuits) {
   // Id the label 
   label = lineTokens.front();
   // Check the convention
-  if (argConv == InputType::Jsim) /* LEFT */ {
-    // Set subcircuit name
+  // At this point in the program all subcircuits should have been identified
+  // Thus we can determine the convention from code
+  // If the token right after the label exists in the subcircuits map
+  if(subcircuits.count(lineTokens.at(1)) != 0) {
+    // This is the subcircuit name
     subcktName = lineTokens.at(1);
     // Assign the IO
     io.assign(lineTokens.begin() + 2, lineTokens.end());
-  } else if (argConv == InputType::WrSpice) /* RIGHT */ {
-    // Set subcircuit name
+  // Else if the last token exists in the subcircuit map
+  } else if(subcircuits.count(lineTokens.back()) != 0) {
+    // Then this is the subcircuit name
     subcktName = lineTokens.back();
     // Assign the IO
     io.assign(lineTokens.begin() + 1, lineTokens.end() - 1);
+  // Else if the neither then this subcircuit surely does not exist
+  } else {
+    Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, subcktName);
   }
 }
 
@@ -105,32 +113,28 @@ void Netlist::expand_subcircuits() {
         tokens_t &subcCurrentLine = subcircuit.lines.at(j).first;
         // If the line denotes a subcircuit
         if (subcCurrentLine.front().at(0) == 'X') {
-          id_io_subc_label(subcCurrentLine, io, subcktName, label);
-          // If the identified subcircuit exists within known subcircuits
-          if (subcircuits.count(subcktName) != 0) {
-            // Create a copy of the subircuit for this instance
-            Subcircuit subc = subcircuits.at(subcktName);
-            // If not nested
-            if (!subc.containsSubckt) {
-              // Expand the IO nodes of the subcircuit for this instance
-              expand_io(subc, io, label);
-              // Erase the current line (tokens)
-              subcircuit.lines.erase(subcircuit.lines.begin() + j);
-              // Insert the subcircuit token lines at the erased line position
-              subcircuit.lines.insert(subcircuit.lines.begin() + j,
-                subc.lines.begin(), subc.lines.end());
-              // Reduce the total amound of subcircuits in this subcircuit by 1
-              --subcircuit.subcktCounter;
-              // Reduce the total nested subcircuit count by 1
-              --nestedSubcktCount;
-              // If this subcircuit subcircuit counter becomes zero
-              if(subcircuit.subcktCounter == 0)
-                // This subcircuit no longer contains subcircuits
-                subcircuit.containsSubckt = false;
-            }
-          // Complain if the subcircuit is not within known subcircuits
-          } else
-            Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, subcktName);
+          id_io_subc_label(
+            subcCurrentLine, io, subcktName, label, subcircuits);
+          // Create a copy of the subircuit for this instance
+          Subcircuit subc = subcircuits.at(subcktName);
+          // If not nested
+          if (!subc.containsSubckt) {
+            // Expand the IO nodes of the subcircuit for this instance
+            expand_io(subc, io, label);
+            // Erase the current line (tokens)
+            subcircuit.lines.erase(subcircuit.lines.begin() + j);
+            // Insert the subcircuit token lines at the erased line position
+            subcircuit.lines.insert(subcircuit.lines.begin() + j,
+              subc.lines.begin(), subc.lines.end());
+            // Reduce the total amound of subcircuits in this subcircuit by 1
+            --subcircuit.subcktCounter;
+            // Reduce the total nested subcircuit count by 1
+            --nestedSubcktCount;
+            // If this subcircuit subcircuit counter becomes zero
+            if(subcircuit.subcktCounter == 0)
+              // This subcircuit no longer contains subcircuits
+              subcircuit.containsSubckt = false;
+          }
         }
       }
     }
@@ -146,20 +150,14 @@ void Netlist::expand_maindesign() {
   for (int i = 0; i < maindesign.size(); ++i) {
     // If the line denotes a subcircuit
     if (maindesign.at(i).front().at(0) == 'X') {
-      id_io_subc_label(maindesign.at(i), io, subcktName, label);
-      // If the identified subcircuit exists within known subcircuits
-      if (subcircuits.count(subcktName) != 0) {
-        // Copy of subcircuit for this instance
-        Subcircuit subc = subcircuits.at(subcktName);
-        // Expand the appropriate IO nodes of the subcircuit for this instance
-        expand_io(subc, io, label);
-        // Add the expanded subcircuit lines to the expanded netlist
-        expNetlist.insert(expNetlist.end(), subc.lines.begin(),
-                          subc.lines.end());
-      // Complain if subcircuit does not exist
-      } else {
-        Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, subcktName);
-      }
+      id_io_subc_label(maindesign.at(i), io, subcktName, label, subcircuits);
+      // Copy of subcircuit for this instance
+      Subcircuit subc = subcircuits.at(subcktName);
+      // Expand the appropriate IO nodes of the subcircuit for this instance
+      expand_io(subc, io, label);
+      // Add the expanded subcircuit lines to the expanded netlist
+      expNetlist.insert(expNetlist.end(), subc.lines.begin(),
+                        subc.lines.end());
     // If the line is not a subcircuit 
     } else {
       // Add the line tokens to the expanded netlist

@@ -251,6 +251,10 @@ void Matrix::create_matrix(Input &iObj)
         // Store the ccvs component list index for reference
         components.ccvsIndices.emplace_back(components.devices.size() - 1);        
         break;
+      // This is an error. This means that the component was unidentified.
+      default:
+        Errors::invalid_component_errors(
+          ComponentErrors::UNKNOWN_DEVICE_TYPE, i.first.front());
     }
     // Increment the component counter
     cc++;

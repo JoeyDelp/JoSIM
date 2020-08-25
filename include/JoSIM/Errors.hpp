@@ -20,6 +20,7 @@ enum class CLIErrors : int {
   INVALID_ANALYSIS,
   INVALID_INTEGRATION,
   INVALID_CONVENTION,
+  INVALID_MINIMAL,
   INPUT_SAME_OUTPUT
 };
 
@@ -160,6 +161,11 @@ enum class NetlistErrors : int {
   MISSING_IO
 };
 
+enum class VerbosityErrors : int {
+  NO_SUCH_LEVEL,
+  INVALID_VERBOSITY_LEVEL
+};
+
 class Errors {
 public:
   static void cli_errors(
@@ -197,6 +203,9 @@ public:
   
   static void netlist_errors(
     NetlistErrors errorCode, string_o message = std::nullopt);
+
+  static void verbosity_errors( 
+    VerbosityErrors errorCode, string_o message = std::nullopt);
   
   [[noreturn]] static void oor();
   

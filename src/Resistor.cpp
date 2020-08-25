@@ -2,7 +2,6 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Resistor.hpp"
-#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"

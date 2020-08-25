@@ -14,12 +14,12 @@
 #include <iterator>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 using namespace JoSIM;
 
-void Output::write_output(const Input &iObj, 
-                          const Matrix &mObj, 
-                          const Simulation &sObj) {
+void Output::write_output(
+  const Input &iObj, const Matrix &mObj, const Simulation &sObj) {
   traces.emplace_back("time");
   traces.back().data_ = sObj.results.timeAxis;
   traces.back().type_ = 'T';
@@ -217,8 +217,8 @@ void Output::write_output(const Input &iObj,
   }
 }
 
-void Output::format_csv_or_dat(const std::string &filename, 
-                                const char &delimiter) {
+void Output::format_csv_or_dat(
+  const std::string &filename, const char &delimiter) {
   std::ofstream outfile(filename);
   outfile << std::setprecision(15);
   if (outfile.is_open()) {
@@ -239,53 +239,73 @@ void Output::format_csv_or_dat(const std::string &filename,
   }
 }
 
+// Writes the output to a standard spice raw file
 void Output::format_raw(const std::string &filename) {
-  std::vector<std::string> tokens;
+  // Variable to store the total number of points to be saved
   int loopsize = 0;
+  // Opens an output stream with provided file name
   std::ofstream outfile(filename);
-  outfile << std::setprecision(15);
+  // Set the output presicion
+  outfile << std::setprecision(6);
+  // Ensure that the file could be opened
   if (outfile.is_open()) {
+    // If the traces are not empty
     if (!traces.empty()) {
-      outfile << "Title: CKT1\n";
+      // Write the rawfile preamble
+      outfile << "Title: " << std::filesystem::path(filename).stem() << "\n";
       std::time_t result = std::time(nullptr);
       outfile << "Date: " << std::asctime(std::localtime(&result));
-      outfile << "Plotname: Transient analysis using JoSIM\n";
+      outfile << "Plotname: Transient Analysis\n";
       outfile << "Flags: real\n";
       outfile << "No. Variables: " << traces.size() << "\n";
       loopsize = traces.at(0).data_.size();
       outfile << "No. Points: " << loopsize << "\n";
-      outfile << "Command: version 4.3.8\n";
+      outfile << "Command: JoSIM v" << VERSION << "\n";
       outfile << "Variables:\n";
-      outfile << " 0 time S\n";
+      outfile << " 0 time Seconds\n";
+      // Determine the variable name and type in a format acceptable for raw
       for (int i = 1; i < traces.size(); ++i) {
+        // Make a copy of the name so we can alter it
         std::string name = traces.at(i).name_;
+        // Erase all the double quote characters
         name.erase(std::remove(name.begin(), name.end(), '\"'), name.end());
+        // If this is a voltage variable
         if (traces.at(i).type_ == 'V') {
-          outfile << " " << i << " " << name << " V\n";
+          outfile << " " << i << " " << name << " Voltage\n";
+        // If this is a phase variable
         } else if (traces.at(i).type_ == 'P') {
-          outfile << " " << i << " " << name << " P\n";
+          outfile << " " << i << " " << name << " Phase\n";
+        // If this is a current variable
         } else if (traces.at(i).type_ == 'I') {
           std::replace(name.begin(), name.end(), '|', '.');
           name = name.substr(2);
           name = name.substr(0, name.size() - 1);
-          outfile << " " << i << " "
-                  << name << "#branch A\n";
+          // Append '#branch' since currents always flow in branches
+          outfile << " " << i << " " << name << "#branch Current\n";
         }
       }
+      // Start filling the values
       outfile << "Values:\n";
+      int pointSizeSpacing = std::to_string(loopsize).length() + 1;
       for (int i = 0; i < loopsize; ++i) {
-        for (int j = 0; j < traces.size(); ++j) {
-          outfile << " " << std::string(Misc::numDigits(i), ' ') << " " << 
-            std::scientific << std::setprecision(6) << 
+        // Point and time value
+        outfile << std::left << std::setw(pointSizeSpacing) << i << 
+          traces.at(0).data_.at(i) << "\n";
+        // Fill in rest of variable values
+        for (int j = 1; j < traces.size(); ++j) {
+          outfile << std::left << std::setw(pointSizeSpacing) << "" <<
             traces.at(j).data_.at(i) << "\n";
         }
       }
-      
+    // If the traces were empty (aka nothing to plot)
     } else if (traces.empty()) {
-      Errors::output_errors(OutputErrors::NOTHING_SPECIFIED, "");
+      // Complain about it
+      Errors::output_errors(OutputErrors::NOTHING_SPECIFIED);
     }
     outfile.close();
+    // If the file could not be opened for writing
   } else {
+    // Complain about it
     Errors::output_errors(OutputErrors::CANNOT_OPEN_FILE, filename);
   }
 }

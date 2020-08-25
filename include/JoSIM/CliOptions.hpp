@@ -4,7 +4,6 @@
 #define JOSIM_CLIOPTIONS_HPP
 
 #include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/FileOutputType.hpp"
 #include "JoSIM/InputType.hpp"
 #include "JoSIM/TypeDefines.hpp"
@@ -26,12 +25,10 @@ struct CliOptions {
   string_o cir_file_name;
   string_o output_file_name;
 
-  InputType input_type = InputType::Jsim;
   AnalysisType analysis_type = AnalysisType::Voltage;
-  IntegrationType integration_type = IntegrationType::Trapezoidal;
   FileOutputType output_file_type = FileOutputType::Csv;
 
-  bool verbose = false;
+  int verbose = 0;
   bool minimal = false;
   bool parallel = false;
 

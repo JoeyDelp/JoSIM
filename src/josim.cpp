@@ -23,9 +23,7 @@ int main(int argc,
     // Parse input arguments for command line interface
     auto cli_options = CliOptions::parse(argc, argv);
     // Generate input object based on cli arguements
-    Input iObj(cli_options.analysis_type, 
-              cli_options.input_type,
-              cli_options.integration_type,
+    Input iObj(cli_options.analysis_type,
               cli_options.verbose,
               cli_options.minimal);    
     // Parse input file as specified by the cli arguments
@@ -46,14 +44,12 @@ int main(int argc,
     iObj.netlist.expand_maindesign();
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
-    // If verbose mode was requested, print the expanded netlist
-    if (iObj.argVerb) {
-      Verbose::print_expanded_netlist(iObj.netlist.expNetlist);
-    }
     // Create matrix object
     Matrix mObj;
     // Create the matrix in csr format
     mObj.create_matrix(iObj);
+    // Do verbosity
+    Verbose::handle_verbosity(iObj.argVerb, iObj, mObj);
     // Find the relevant traces to store
     find_relevant_traces(iObj.controls, mObj);
     // Create a simulation object
@@ -68,7 +64,7 @@ int main(int argc,
         oObj.Output::format_csv_or_dat(cli_options.output_file_name.value(), ',');
       } else if (cli_options.output_file_type == FileOutputType::Dat) {
         oObj.Output::format_csv_or_dat(cli_options.output_file_name.value(), ' ');
-      } else if (cli_options.output_file_type == FileOutputType::WrSpice) {
+      } else if (cli_options.output_file_type == FileOutputType::Raw) {
         oObj.Output::format_raw(cli_options.output_file_name.value());
       }
     } else {

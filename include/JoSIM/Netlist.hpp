@@ -42,7 +42,8 @@ class Subcircuit {
 class Netlist {
   void id_io_subc_label(
     const tokens_t &lineTokens, tokens_t &io, 
-    std::string &subcktName, std::string &label);
+    std::string &subcktName, std::string &label,
+    const std::unordered_map<std::string, Subcircuit> &subcircuits);
   bool rename_io_nodes(
     std::string &node, const tokens_t &subIO, const tokens_t &parentIO);
   void expand_io(
@@ -58,17 +59,12 @@ class Netlist {
   std::vector<std::pair<tokens_t, string_o>> expNetlist;
   int jjCount, compCount, subcktCounter, nestedSubcktCount;
   bool containsSubckt;
-  InputType argConv;
   Netlist() :
     jjCount(0),
     compCount(0),
     subcktCounter(0),
     nestedSubcktCount(0),
-    containsSubckt(false),
-    argConv(InputType::Jsim)
-  {
-  
-  };
+    containsSubckt(false) { };
   void expand_subcircuits();
   void expand_maindesign();
 };

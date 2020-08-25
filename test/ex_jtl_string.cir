@@ -117,10 +117,6 @@ XEND SINK 3
 *XEND SINK 6
 *XEND SINK 7
 
-.tran 0.25p 1000p 0 0.25p
-.print nodev 1 0
-.print nodev 2 0
-.print nodev 3 0
-*.print nodev 4 0
-*.print nodev 5 0
+.tran 0.25p 20n
+.print v(1) v(2) v(3)
 .end

@@ -4,7 +4,6 @@
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Components.hpp"
-#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Model.hpp"

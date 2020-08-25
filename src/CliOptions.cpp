@@ -4,7 +4,6 @@
 #include "JoSIM/CliOptions.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
-#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/TypeDefines.hpp"
 
 #include <iostream>
@@ -71,6 +70,16 @@ vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
       }
     }
   }
+  // Sanity check
+  if(ap.size() == 1) {
+    // If there is only one pair with both switch and value populated
+    if(ap.at(0).first && ap.at(0).second) {
+      // We are most likely misinterpreting the input file as the value
+      ap.emplace_back(std::make_pair(std::nullopt, ap.at(0).second));
+      // Split the pair into 2, one the switch and one the input
+      ap.at(0).second = std::nullopt;
+    }
+  }
   return ap;
 }
 
@@ -102,30 +111,6 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             Errors::cli_errors(CLIErrors::INVALID_ANALYSIS);
           }
           break;
-        // Set convention
-        case 'c':
-          if (!i.second) {
-            Errors::cli_errors(CLIErrors::NO_CONVENTION);
-          } else if (i.second.value() == "0") {
-            out.input_type = InputType::Jsim;
-          } else if (i.second.value() == "1") {
-            out.input_type = InputType::WrSpice;
-          } else {
-            Errors::cli_errors(CLIErrors::INVALID_CONVENTION);
-          }
-          break;
-        // Set differential type
-        case 'd':
-          if (!i.second) {
-            Errors::cli_errors(CLIErrors::NO_INTEGRATION);
-          } else if (i.second.value() == "0") {
-            out.integration_type = IntegrationType::Trapezoidal;
-          } else if (i.second.value() == "1") {
-            out.integration_type = IntegrationType::Gear;
-          } else {
-            Errors::cli_errors(CLIErrors::INVALID_INTEGRATION);
-          }
-          break;
         // Show help menu
         case 'h':
           display_help();
@@ -136,7 +121,12 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
           break;
         // Enable minimal reporting
         case 'm':
-          out.minimal = true;
+          try {
+            out.minimal = std::stoi(i.second.value_or("1"));
+          } catch(const std::invalid_argument& ia) {
+            Errors::cli_errors(
+              CLIErrors::INVALID_MINIMAL, i.second.value());
+          }
           break;
         // Set output file
         case 'o':
@@ -156,8 +146,8 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
             // If the extension is empty
             if (ext.empty()) {
-              // Set the file type to RAW 
-              out.output_file_type = FileOutputType::WrSpice;
+              // Set the file type to CSV 
+              out.output_file_type = FileOutputType::Csv;
             // If the extension is ".CSV"
             } else if (ext == ".CSV") {
               // Set the file type to CSV 
@@ -166,6 +156,10 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
             } else if (ext == ".DAT") {
               // Set the file type to DAT 
               out.output_file_type = FileOutputType::Dat;
+            // If the extension is ".RAW"
+            } else if (ext == ".RAW") {
+              // Set the file type to RAW 
+              out.output_file_type = FileOutputType::Raw; 
             // Unknown file type
             } else {
               // Complain about it. Default to CSV
@@ -183,7 +177,12 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
           break;
         // Enable verbose mode
         case 'V':
-          out.verbose = true;
+          try {
+            out.verbose = std::stoi(i.second.value_or("1"));
+          } catch(const std::invalid_argument& ia) {
+            Errors::verbosity_errors(
+              VerbosityErrors::INVALID_VERBOSITY_LEVEL, i.second.value());
+          }
           break;
         // Show version info
         case 'v':
@@ -247,34 +246,6 @@ void CliOptions::display_help() {
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|"
             << "1 for Phase analysis." << std::endl;
-  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
-  // Convention flag
-  // ---------------------------------------------------------------------------
-  std::cout << std::setw(16) << std::left << "-c" << std::setw(3) << std::left
-            << "|"
-            << "Sets the subcircuit convention to left(0) or right(1)."
-            << std::endl;
-  std::cout << std::setw(16) << std::left << "--convention=" << std::setw(3)
-            << std::left << "|"
-            << "Default is left. WRSpice (normal SPICE) use right."
-            << std::endl;
-  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|"
-            << "Eg. X01 SUBCKT 1 2 3     vs.     X01 1 2 3 SUBCKT" << std::endl;
-  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
-  // Derivation type
-  // ---------------------------------------------------------------------------
-  std::cout << std::setw(16) << std::left << "-d" << std::setw(3) << std::left
-            << "|"
-            << "Specifies the integration method." << std::endl;
-  std::cout << std::setw(16) << std::left << "--differential=" << std::setw(3)
-            << std::left << "|"
-            << "0 for Trapezoidal method (Default)." << std::endl;
-  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|"
-            << "1 for Gear method." << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
   // Help menu
@@ -346,9 +317,10 @@ void CliOptions::display_help() {
   std::cout << std::setw(16) << std::left << "-V" << std::setw(3) << std::left
             << "|"
             << "Runs JoSIM in verbose mode." << std::endl;
-  std::cout << std::setw(16) << std::left << "--Verbose" << std::setw(3)
+  std::cout << std::setw(16) << std::left << "--Verbose=" << std::setw(3)
             << std::left << "|"
-            << " " << std::endl;
+            << "Defaults to minimal(1), can be medium(2) or maximum(3)" 
+            << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
   // Version info

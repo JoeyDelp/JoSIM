@@ -2,7 +2,6 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/JJ.hpp"
-#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
@@ -56,12 +55,15 @@ JJ::JJ(
   lm.emplace(s.first.at(0));
   // Junction line has potential to have up to 6 parts
   for(int i = 0; i < s.first.size(); ++i) {
-    // If the part contains the AREA specifiere
+    // If the part contains the AREA specifier
     if(s.first.at(i).find("AREA=") != std::string::npos) {
       // Set the area
       area_ = parse_param(
         s.first.at(i).substr(s.first.at(i).find("AREA=") + 5), pm, s.second);
       t.erase(t.begin() + i);
+    } else {
+      // If no AREA specifier found, assume area as unity
+      area_ = 1;
     }
   }
   // Set the model for this JJ instance
@@ -238,13 +240,15 @@ bool JJ::update_value(const double &v) {
     }
   // If neither of the above then it must be in normal operating region
   } else {
-    // Set the transition current
-    transitionCurrent_ = 
-      (m.get_criticalCurrent() / m.get_criticalToNormalRatio() + 
-        m.get_voltageGap() * (1 / m.get_subgapResistance()) - lowerB_ * 
-        (1 / m.get_normalResistance()));
-    // If the voltage is negative, current must be negative
-    if (v < 0) transitionCurrent_ = -transitionCurrent_;
+    // // Set the transition current
+    // transitionCurrent_ = 
+    //   (m.get_criticalCurrent() / m.get_criticalToNormalRatio() + 
+    //     lowerB_ * (1 / m.get_subgapResistance()) - lowerB_ * 
+    //     (1 / m.get_normalResistance()));
+    // // If the voltage is negative, current must be negative
+    // if (v < 0) transitionCurrent_ = -transitionCurrent_;
+    // Reset the transition current, transition has passed.
+    transitionCurrent_ = 0.0;
     // If the back of the non zero vector is not the normal conductance
     if(matrixInfo.nonZeros_.back() != -1/normImp_) {
       // Set it to the normal conductance

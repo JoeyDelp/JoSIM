@@ -11,7 +11,6 @@
 #include "JoSIM/Netlist.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Transient.hpp"
-#include "JoSIM/IntegrationType.hpp"
 #include "JoSIM/LineInput.hpp"
 
 #include <string>
@@ -28,23 +27,15 @@ class Input {
   std::unordered_map<ParameterName, Parameter> parameters;
 
   Input(AnalysisType analysis_type = AnalysisType::Voltage,
-        InputType input_type = InputType::Jsim,
-        IntegrationType int_type = IntegrationType::Trapezoidal,
-        bool verbose = false,
+        int verbose = 0,
         bool minimal = false) : 
     argAnal(analysis_type), 
-    argConv(input_type), 
-    argInt(int_type),
     argVerb(verbose),
     argMin(minimal) 
-    {
-      netlist.argConv = argConv;
-    };
+    {};
 
   AnalysisType argAnal;
-  InputType argConv;
-  IntegrationType argInt;
-  bool argVerb = false;
+  int argVerb = 0;
   bool argMin = false;
 
   std::vector<tokens_t> read_input(

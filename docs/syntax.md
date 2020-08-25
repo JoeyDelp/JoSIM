@@ -104,17 +104,37 @@ The value is the coupling factor *k*.
 
 ## Sources
 
-### Voltage Source
+### Independent Sources
+
+#### Voltage Source
 
 **V**Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**SOURCETYPE**
 
-### Current Source
+#### Current Source
 
 **I**Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**SOURCETYPE**
 
-### Phase Source
+#### Phase Source
 
 **P**Label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**SOURCETYPE**
+
+### Dependent Sources
+
+#### Current controlled current source
+
+**F**Label&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;*PosControlNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegControlNode*&nbsp;&nbsp;&nbsp;&nbsp;**GAIN**
+
+#### Current controlled voltage source
+
+**H**Label&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;*PosControlNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegControlNode*&nbsp;&nbsp;&nbsp;&nbsp;**GAIN**
+
+#### Voltage controlled current source
+
+**G**Label&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;*PosControlNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegControlNode*&nbsp;&nbsp;&nbsp;&nbsp;**GAIN**
+
+#### Voltage controlled current source
+
+**E**Label&nbsp;&nbsp;&nbsp;&nbsp;*PosNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegNode*&nbsp;&nbsp;&nbsp;&nbsp;*PosControlNode*&nbsp;&nbsp;&nbsp;&nbsp;*NegControlNode*&nbsp;&nbsp;&nbsp;&nbsp;**GAIN**
 
 ### Source Types
 
@@ -231,6 +251,8 @@ The final control command that is of importance in JoSIM is the parameters comma
 *VarName* is the variable name that can be used anywhere else in the circuit and *Expression* is a mathematical expression that is evaluated using an implementation of Dijkstra's shunting yard algorithm, whereby the expression is converted into reverse polish notation (RPN) and evaluated.
 
 Additionally, expressions can also contain other variables and parameters will be continuosly evaluated untill all variables are reduced to values. If variables are not defined the program will halt and produce an error.
+
+Expression parsing is exclusive to the *.param* control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in *std::invalid_argument: stod: no conversion* as it tries to convert a string into a double. Please be mindful when using expressions and restrict them to *.param* controls.
 
 ### Control Block
 

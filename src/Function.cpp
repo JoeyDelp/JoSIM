@@ -3,6 +3,7 @@
 
 #include "JoSIM/Function.hpp"
 #include "JoSIM/Misc.hpp"
+#include "JoSIM/Parameters.hpp"
 
 #include <fstream>
 #include <cmath>
@@ -22,7 +23,7 @@ std::vector<double> Function::parse_function(
   if (str.find("PWL") != std::string::npos) {
     parse_pwl(tokens, functionOfT, iObj, subckt);
   }
-  /* PULSE */
+  /* PULSE(A1 A2 <TD <TR <TF <PW <PER>>>>>)*/
   else if (str.find("PULSE") != std::string::npos) {
     parse_pulse(tokens, functionOfT, iObj, subckt);
   }
@@ -42,6 +43,22 @@ std::vector<double> Function::parse_function(
   else if (str.find("PWS") != std::string::npos) {
     parse_pws(tokens, functionOfT, iObj, subckt);
   }
+  /* DC VALUE */
+  else if (str.find("PWS") != std::string::npos) {
+    if (!std::isnan(parse_param(
+      Misc::tokenize(str).back(), iObj.parameters, subckt))) {
+      tokens = {"0", "0", Misc::precise_to_string(iObj.transSim.get_prstep()), 
+        Misc::tokenize(str).back()};
+      parse_pwl(tokens, functionOfT, iObj, subckt);
+    }
+  }
+  /* Only a value was provided? Assume user is trying to make a DC source */
+  else if (!std::isnan(parse_param(
+      Misc::tokenize(str).back(), iObj.parameters, subckt))) {
+    tokens = {"0", "0", Misc::precise_to_string(iObj.transSim.get_prstep()), 
+      Misc::tokenize(str).back()};
+    parse_pwl(tokens, functionOfT, iObj, subckt);
+  }
   return functionOfT;
 }
 
@@ -50,8 +67,8 @@ void Function::parse_pwl(
       const Input &iObj, const string_o &subckt) {
   std::vector<double> timesteps, values;
   if (std::stod(tokens.at(0)) != 0.0 || std::stod(tokens.at(1)) != 0.0) {
-    Errors::function_errors(FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
-  } else {
+    Errors::function_errors(
+      FunctionErrors::INITIAL_VALUES, tokens.at(0) + " & " + tokens.at(1));
     timesteps.push_back(0.0);
     values.push_back(0.0);
   }
@@ -59,18 +76,7 @@ void Function::parse_pwl(
     timesteps.push_back(Misc::modifier(tokens.at(i)));
   }
   for (int i = 1; i < tokens.size(); i = i + 2) {
-    if (iObj.parameters.count(
-            ParameterName(tokens.at(i), subckt)) != 0) {
-      values.push_back(iObj.parameters.at(
-          ParameterName(tokens.at(i), subckt)).get_value().value());
-    } else if (iObj.parameters.count(
-            ParameterName(tokens.at(i), "")) != 0) {
-      values.push_back(iObj.parameters.at(
-          ParameterName(tokens.at(i), "")).get_value().value());
-    } else {
-      values.push_back(parse_param(
-          tokens.at(i), iObj.parameters, subckt));
-    }
+    values.push_back(parse_param(tokens.at(i), iObj.parameters, subckt));
   }
   if (timesteps.size() < values.size()) {
     Errors::function_errors(FunctionErrors::TOO_FEW_TIMESTEPS,
