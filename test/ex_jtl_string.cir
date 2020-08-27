@@ -117,6 +117,6 @@ XEND SINK 3
 *XEND SINK 6
 *XEND SINK 7
 
-.tran 0.25p 20n
+.tran 0.25p 2n
 .print v(1) v(2) v(3)
 .end
