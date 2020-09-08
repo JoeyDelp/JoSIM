@@ -495,7 +495,7 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
       formattedMessage += 
         "The value of " + message.value_or("") + " is expected to be 0\n";
       formattedMessage += "Please refer to the PWL definition:\n";
-      formattedMessage += "PWL(0 0 T1 V1 T2 V2 ... Tn Vn)";
+      formattedMessage += "PWL(0 V0 T1 V1 T2 V2 ... Tn Vn)";
       warning_message(formattedMessage);
       break;
     case FunctionErrors::TOO_FEW_TIMESTEPS:
@@ -622,6 +622,14 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
         "Program will continue but NOISE command is redundant.";
       warning_message(formattedMessage);
       break;
+    case FunctionErrors::EXP_TOO_FEW_ARGUMENTS:
+      formattedMessage += 
+        "Total arguments specified do not match the required for NOISE.\n"; 
+      formattedMessage += message.value_or("") + " specified.\n";
+      formattedMessage += "Please refer to the NOISE definition:\n";
+      formattedMessage += 
+        "EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TD1+TSTEP] TAU2[TSTEP])";
+      throw std::runtime_error(formattedMessage);
     default:
       formattedMessage += 
         "Unknown function error: " + message.value_or("") + "\n";

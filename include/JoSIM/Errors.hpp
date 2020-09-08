@@ -131,7 +131,8 @@ enum class FunctionErrors : int {
   NOISE_TOO_FEW_ARGUMENTS,
   NOISE_TOO_MANY_ARGUMENTS,
   NOISE_VA_ZERO,
-  NOISE_VO_ZERO
+  NOISE_VO_ZERO,
+  EXP_TOO_FEW_ARGUMENTS
 };
 
 enum class SimulationErrors : int {

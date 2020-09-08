@@ -32,6 +32,8 @@ namespace JoSIM {
  */ 
 
 class Resistor : public BasicComponent {
+  private:
+  JoSIM::AnalysisType at_;
   public:
   double_o pn2_;
 
@@ -39,6 +41,8 @@ class Resistor : public BasicComponent {
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const AnalysisType &at, const double &h, int &bi);
+
+  void update_timestep(const double &factor) override;
 }; // class Resistor
 
 } // namespace JoSIM

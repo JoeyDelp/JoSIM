@@ -42,6 +42,11 @@ JJ::JJ(
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const vector_pair_t<Model, string_o> &models,
     const AnalysisType &at, const double &h, int &bi) {
+  // Set component timestep
+  h_ = h;
+  at_ = at;
+  // Set state to 0 (subgap)
+  state_ = 0;
   // Make a copy of the tokens so that they are mutable
   tokens_t t = s.first;
   // Check if the label has already been defined
@@ -74,22 +79,13 @@ JJ::JJ(
   gLarge_ = model_.value().get_criticalCurrent() /
           (model_.value().get_criticalToNormalRatio() * 
             model_.value().get_deltaV());
-  // Set subgap impedance (1/R0) + (3C/2h)
-  subImp_ = ((1/model_.value().get_subgapResistance()) + 
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
-  // Set transitional impedance (GL) + (3C/2h)
-  transImp_ = (gLarge_ + 
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
-  // Set normal impedance (1/RN) + (3C/2h)
-  normImp_ = ((1/model_.value().get_normalResistance()) + 
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h)));
   // Set the phase constant
   if(at == AnalysisType::Voltage) {
     // If voltage mode set this to (3 * hbar) / (4 * h * eV)
-    phaseConst_ = (3 * Constants::HBAR) / (4 * h * Constants::EV);
+    phaseConst_ = (3 * Constants::HBAR) / (4 * h_ * Constants::EV);
   } else if (at == AnalysisType::Phase) { 
     // If phase mode set this to (4 * h * eV) / (3 * hbar)
-    phaseConst_ = (4 * h * Constants::EV) / (3 * Constants::HBAR);
+    phaseConst_ = (4 * h_ * Constants::EV) / (3 * Constants::HBAR);
   }
   // Set the Del0 parameter
   del0_ = 1.76 * Constants::BOLTZMANN * 
@@ -113,10 +109,28 @@ JJ::JJ(
   // Set te node indices, using token 2 and 3
   set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm, nc);
   // Set the non zero, column index and row pointer vectors
-  set_matrix_info(at);
+  set_matrix_info();
 }
 
-void JJ::set_matrix_info(const AnalysisType &at) {
+double JJ::subgap_impedance(const double factor) {
+  // Set subgap impedance (1/R0) + (3C/2h)
+  return ((1/model_.value().get_subgapResistance()) + 
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_ * factor)));
+}
+
+double JJ::transient_impedance(const double factor) {
+  // Set transitional impedance (GL) + (3C/2h)
+  return (gLarge_ + 
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_ * factor)));
+}
+
+double JJ::normal_impedance(const double factor) {
+  // Set normal impedance (1/RN) + (3C/2h)
+  return ((1/model_.value().get_normalResistance()) + 
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_ * factor)));
+}
+
+void JJ::set_matrix_info() {
   switch(indexInfo.nodeConfig_) {
   case NodeConfig::POSGND:
     matrixInfo.nonZeros_.emplace_back(1);
@@ -140,21 +154,22 @@ void JJ::set_matrix_info(const AnalysisType &at) {
     break;
   }
   matrixInfo.nonZeros_.emplace_back(-phaseConst_);
+  hDepPos_ = matrixInfo.nonZeros_.size() - 1;
   matrixInfo.columnIndex_.emplace_back(variableIndex_);
-  if(at == AnalysisType::Voltage) {
+  if(at_ == AnalysisType::Voltage) {
     matrixInfo.nonZeros_.insert(
       matrixInfo.nonZeros_.end(), 
       matrixInfo.nonZeros_.begin(), matrixInfo.nonZeros_.end());
-    matrixInfo.nonZeros_.back() = -1/subImp_;
+    matrixInfo.nonZeros_.back() = -1/subgap_impedance();
     matrixInfo.columnIndex_.insert(
       matrixInfo.columnIndex_.end(), 
       matrixInfo.columnIndex_.begin(), matrixInfo.columnIndex_.end());
     matrixInfo.columnIndex_.back() = indexInfo.currentIndex_.value();
     matrixInfo.rowPointer_.emplace_back(matrixInfo.rowPointer_.back());
-  } else if (at == AnalysisType::Phase) {
+  } else if (at_ == AnalysisType::Phase) {
     matrixInfo.nonZeros_.emplace_back(1);
     matrixInfo.columnIndex_.emplace_back(variableIndex_);
-    matrixInfo.nonZeros_.emplace_back(-1/subImp_);
+    matrixInfo.nonZeros_.emplace_back(-1/subgap_impedance());
     matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
     matrixInfo.rowPointer_.emplace_back(2);
   }
@@ -213,9 +228,11 @@ bool JJ::update_value(const double &v) {
     // Set the transition current to 0
     transitionCurrent_ = 0.0;
     // If the non zero vector does not end with the subgap conductance
-    if(matrixInfo.nonZeros_.back() != -1/subImp_) {
+    if(matrixInfo.nonZeros_.back() != -1/subgap_impedance()) {
       // Make it end with the subgap conductance
-      matrixInfo.nonZeros_.back() = -1/subImp_;
+      matrixInfo.nonZeros_.back() = -1/subgap_impedance();
+      // Set state to 0 (Subgap)
+      state_ = 0;
       // Return that a value has been updated
       return true;
     } else {
@@ -229,9 +246,11 @@ bool JJ::update_value(const double &v) {
     // If the voltage is negative, current must be negative
     if (v < 0) transitionCurrent_ = -transitionCurrent_;
     // If the back of the non zero vector is not the transition conductance
-    if(matrixInfo.nonZeros_.back() != -1/transImp_) {
+    if(matrixInfo.nonZeros_.back() != -1/transient_impedance()) {
       // Set it to the transition conductance
-      matrixInfo.nonZeros_.back() = -1/transImp_;
+      matrixInfo.nonZeros_.back() = -1/transient_impedance();
+      // Set state to 1 (Transition)
+      state_ = 1;
       // Return that a value has changed
       return true;
     } else {
@@ -240,19 +259,14 @@ bool JJ::update_value(const double &v) {
     }
   // If neither of the above then it must be in normal operating region
   } else {
-    // // Set the transition current
-    // transitionCurrent_ = 
-    //   (m.get_criticalCurrent() / m.get_criticalToNormalRatio() + 
-    //     lowerB_ * (1 / m.get_subgapResistance()) - lowerB_ * 
-    //     (1 / m.get_normalResistance()));
-    // // If the voltage is negative, current must be negative
-    // if (v < 0) transitionCurrent_ = -transitionCurrent_;
     // Reset the transition current, transition has passed.
     transitionCurrent_ = 0.0;
     // If the back of the non zero vector is not the normal conductance
-    if(matrixInfo.nonZeros_.back() != -1/normImp_) {
+    if(matrixInfo.nonZeros_.back() != -1/normal_impedance()) {
       // Set it to the normal conductance
-      matrixInfo.nonZeros_.back() = -1/normImp_;
+      matrixInfo.nonZeros_.back() = -1/normal_impedance();
+      // Set state to 2 (Normal)
+      state_ = 2;
       // Return that a value has changed
       return true;
     } else {
@@ -262,4 +276,22 @@ bool JJ::update_value(const double &v) {
   }
   // This should never happen, only here to appease the return type
   return false;
+}
+
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void JJ::update_timestep(const double &factor) {
+  if (state_ == 0) {
+    matrixInfo.nonZeros_.back() = -1/subgap_impedance(factor);
+  } else if (state_ == 1) {
+    matrixInfo.nonZeros_.back() = -1/transient_impedance(factor);
+  } else if (state_ == 2) {
+    matrixInfo.nonZeros_.back() = -1/normal_impedance(factor);
+  }
+  if (at_ == AnalysisType::Voltage) {
+    matrixInfo.nonZeros_.at(hDepPos_) = 
+      (1 / factor) * matrixInfo.nonZeros_.at(hDepPos_);
+  } else if (at_ == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.at(hDepPos_) = 
+      factor * matrixInfo.nonZeros_.at(hDepPos_);
+  }
 }

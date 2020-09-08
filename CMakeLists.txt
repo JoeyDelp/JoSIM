@@ -85,6 +85,7 @@ add_executable(josim-cli src/josim.cpp)
 
 # Dependencies
 target_link_libraries(josim-cli PRIVATE josim)
+target_link_libraries(josim-cli PRIVATE suitesparse::klu)
 
 # Properties
 make_target_static(josim-cli)

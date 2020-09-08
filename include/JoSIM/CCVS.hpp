@@ -40,6 +40,9 @@ namespace JoSIM {
  */ 
 
 class CCVS : public BasicComponent {
+  private:
+    int hDepPos_;
+    JoSIM::AnalysisType at_;
   public:
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
@@ -55,6 +58,8 @@ class CCVS : public BasicComponent {
   void set_node_indices(
     const tokens_t &t, const nodemap &nm, nodeconnections &nc);
   void set_matrix_info(const AnalysisType &at, const double &h);
+
+  void update_timestep(const double &factor) override;
 
 }; // class CCVS
 

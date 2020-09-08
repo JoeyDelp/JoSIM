@@ -44,16 +44,21 @@ namespace JoSIM {
 */ 
 
 class JJ : public BasicComponent {
+  private:
+    int hDepPos_;
+    int state_;
+    double h_;
   public:
   int variableIndex_;
   double area_;
   std::optional<Model> model_;
   double phaseConst_;
-  double lowerB_, upperB_, subImp_, transImp_, normImp_, gLarge_;
+  double lowerB_, upperB_, gLarge_;
   double del0_, del_, rncalc_;
   double pn1_, pn2_, phi0_;
   double vn1_, vn2_, vn3_;
   double transitionCurrent_;
+  JoSIM::AnalysisType at_;
 
   JJ(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
@@ -61,13 +66,19 @@ class JJ : public BasicComponent {
     const param_map &pm, const vector_pair_t<Model, string_o> &models,
     const AnalysisType &at, const double &h, int &bi);
 
-  void set_matrix_info(const AnalysisType &at);
+  double subgap_impedance(const double factor = 1);
+  double transient_impedance(const double factor = 1);
+  double normal_impedance(const double factor = 1);
+
+  void set_matrix_info();
 
   void set_model(
     const tokens_t &t, const vector_pair_t<Model, string_o> &models, 
     const string_o &subc);
 
   bool update_value(const double &v);
+
+  void update_timestep(const double &factor) override;
 }; // class JJ
 
 } // namespace JoSIM

@@ -36,6 +36,7 @@ VCCS::VCCS(
     const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
     std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, int &bi, const AnalysisType &at, const double &h) {
+  at_ = at;
   // Set the label
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list
@@ -130,4 +131,11 @@ void VCCS::set_matrix_info() {
     break;
   }
   matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
+}
+
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void VCCS::update_timestep(const double &factor) {
+  if (at_ == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
+  }
 }

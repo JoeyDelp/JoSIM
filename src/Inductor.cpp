@@ -31,6 +31,7 @@ Inductor::Inductor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  at_ = at;
   // Set previous current value
   In2_ = 0.0;
   // Check if the label has already been defined
@@ -78,4 +79,11 @@ void Inductor::add_mutualInductance(
   matrixInfo.columnIndex_.emplace_back(ci);
   // Increase the row pointer vector by 1
   matrixInfo.rowPointer_.back()++;
+}
+
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void Inductor::update_timestep(const double &factor) {
+  if (at_ == AnalysisType::Voltage) {
+    matrixInfo.nonZeros_.back() = (1.0 / factor) * matrixInfo.nonZeros_.back();
+  }
 }

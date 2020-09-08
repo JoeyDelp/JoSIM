@@ -9,33 +9,44 @@
 #include "JoSIM/Model.hpp"
 #include "JoSIM/ProgressPrinter.hpp"
 
-#include "suitesparse/klu.h"
 
-#include <cassert>
 #include <cmath>
 #include <iostream>
 
 using namespace JoSIM;
 
+Simulation::Simulation(Input &iObj, Matrix &mObj) {
+  // Simulation setup
+  simSize_ = iObj.transSim.get_simsize();
+  atyp_ = iObj.argAnal;
+  minOut_ = iObj.argMin;
+  needsLU_ = false;
+  stepSize_ = iObj.transSim.get_prstep();
+  x_.resize(mObj.branchIndex, 0.0);
+  if(!mObj.relevantTraces.empty()) {
+    results.xVector.resize(mObj.branchIndex);
+    for (const auto &i : mObj.relevantIndices) {
+      results.xVector.at(i).emplace();
+    }
+  } else {
+    results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
+  }
+  // KLU setup
+  simOK_ = klu_defaults(&Common_);
+  assert(simOK_);
+  Symbolic_ = klu_analyze(
+    mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
+  Numeric_ = klu_factor(
+    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
+    Symbolic_, &Common_);
+  // Run transient simulation
+  trans_sim(mObj);
+  // KLU cleanup
+  klu_free_symbolic(&Symbolic_, &Common_);
+  klu_free_numeric(&Numeric_, &Common_);
+}
+
 void Simulation::trans_sim(Matrix &mObj) {
-  // Indicator as to whether convergence was reached
-  int ok;
-  // Indicator as to wether a new LU decomposition is needed
-  // bool needsLU = false;
-  // KLU variables
-  klu_symbolic *Symbolic;
-  klu_common Common;
-  klu_numeric *Numeric;
-  // Do the KLU setup
-  ok = klu_defaults(&Common);
-  // Make sure that everything is okay
-  assert(ok);
-  // Create a symbolic LU object
-  Symbolic = klu_analyze(mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(),
-                         &Common);
-  // Create a numeric LU object
-  Numeric = klu_factor(&mObj.rp.front(), &mObj.ci.front(),
-                       &mObj.nz.front(), Symbolic, &Common);
   // Ensure time axis is cleared
   results.timeAxis.clear();
   std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
@@ -50,73 +61,108 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
-    // If not minimal printing
-    if(!minOut_) {
-      // Report progress
-      buffered_printer.value().update(i);
-    }
-    // Clear b matrix and reset
-    b_.clear();
-    b_.resize(mObj.rp.size(), 0.0);
-    // Handle current sources
-    handle_cs(mObj, i);
-    // Handle resistors
-    handle_resistors(mObj);
-    // Handle inductors
-    handle_inductors(mObj);
-    // Handle capacitors
-    handle_capacitors(mObj);
-    // Handle junctions
-    handle_jj(mObj, i);
-    if (needsLU_) {
-      mObj.create_nz();
-      klu_free_numeric(&Numeric, &Common);
-      Numeric = klu_factor(&mObj.rp.front(), &mObj.ci.front(),
-                          &mObj.nz.front(), Symbolic, &Common);
-      needsLU_ = false;
-    }
-    // Handle voltage sources
-    handle_vs(mObj, i);
-    // Handle phase sources
-    handle_ps(mObj, i);
-    // Handle ccvs
-    handle_ccvs(mObj);
-     // Handle vccs
-    handle_vccs(mObj);
-    // Handle transmission lines
-    handle_tx(mObj, i);
-
-    x_prev_ = b_;
-
-    ok = klu_tsolve(
-      Symbolic, Numeric, mObj.rp.size() - 1, 1, &x_prev_.front(), &Common);
-    if (!ok) {
-      Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
-    }
-
-    x_ = x_prev_;
+    // If not minimal printing report progress
+    if(!minOut_) buffered_printer.value().update(i);
+    // Setup the b matrix
+    setup_b(mObj, i);
+    // Assign x_prev the new b
+    x_ = b_;
+    // Solve Ax=b, storing the results in x_
+    simOK_ = klu_tsolve(
+      Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
+    // If anything is a amiss, complain about it
+    if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+    // Store results (only requested, to prevent massive memory usage)
     for(int j = 0; j < results.xVector.size(); ++j) {
       if(results.xVector.at(j)) {
         results.xVector.at(j).value().emplace_back(x_.at(j));
       }
     }
-
+    // Store the time step
     results.timeAxis.emplace_back(i * stepSize_);
   }
   if(!minOut_) {
     buffered_printer.value().done();
     std::cout << "\n";
   }
-  
-  klu_free_symbolic(&Symbolic, &Common);
-  klu_free_numeric(&Numeric, &Common);
 }
 
-void Simulation::reduce_step(Matrix &mObj, const int &factor) {
-
+void Simulation::reduce_step(
+  Matrix &mObj, const double &factor, 
+  const int &stepCount, const double &currentStep) {
+  // Backup the current nonzeros
+  mObj.nz_orig = mObj.nz;
+  // Update the non-zeros of each component to reflect the smaller timestep
+  for (auto &j : mObj.components.devices) {
+    BasicComponent &x = std::visit(
+          [](auto& x) -> BasicComponent &{ return x; },
+          j);
+      x.update_timestep(factor);
+  }
+  // Recreate the non-zero matrix for the simulation
+  mObj.create_nz();
+  // Do a new LU decomposition
+  klu_free_numeric(&Numeric_, &Common_);
+  Numeric_ = klu_factor(
+    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
+    Symbolic_, &Common_);
+  // Split the current step into smaller steps
+  for(int i = 0; i < (stepSize_ / factor); ++i) {
+    // Setup the b matrix
+    setup_b(mObj, i, factor);
+    // Assign x_prev the new b
+    x_ = b_;
+    // Solve Ax=b, storing the results in x_
+    simOK_ = klu_tsolve(
+      Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
+    // If anything is a amiss, complain about it
+    if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+  }
+  // Restor nonzeros from backup
+  mObj.nz = mObj.nz_orig;
+  // Recreate the non-zero matrix for the simulation
+  mObj.create_nz();
+  // Do a new LU decomposition
+  klu_free_numeric(&Numeric_, &Common_);
+  Numeric_ = klu_factor(
+    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
+    Symbolic_, &Common_);
 }
 
-void Simulation::setup_rhs(Matrix &mObj) {}
+void Simulation::setup_b(Matrix &mObj, const int &i, const double factor) {
+  // Clear b matrix and reset
+  b_.clear();
+  b_.resize(mObj.rp.size(), 0.0);
+  // Handle current sources
+  handle_cs(mObj, i);
+  // Handle resistors
+  handle_resistors(mObj);
+  // Handle inductors
+  handle_inductors(mObj);
+  // Handle capacitors
+  handle_capacitors(mObj);
+  // Handle jj
+  handle_jj(mObj, i);
+  // Re-factorize the LU if any jj transitions
+  if (needsLU_) {
+    mObj.create_nz();
+    klu_free_numeric(&Numeric_, &Common_);
+    Numeric_ = klu_factor(
+      &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
+      Symbolic_, &Common_);
+    needsLU_ = false;
+  }
+  // Handle voltage sources
+  handle_vs(mObj, i);
+  // Handle phase sources
+  handle_ps(mObj, i);
+  // Handle ccvs
+  handle_ccvs(mObj);
+    // Handle vccs
+  handle_vccs(mObj);
+  // Handle transmission lines
+  handle_tx(mObj, i);
+}
 
 void Simulation::handle_cs(const Matrix &mObj, const int &i) {
   for (const auto &j : mObj.components.currentsources) {
@@ -140,12 +186,12 @@ void Simulation::handle_resistors(Matrix &mObj) {
     auto &temp = std::get<Resistor>(mObj.components.devices.at(j));
     double prevNode;
     if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-      prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value()));
+      prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-      prevNode = (-x_prev_.at(temp.indexInfo.negIndex_.value()));
+      prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
-      prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value())
-              - x_prev_.at(temp.indexInfo.negIndex_.value()));
+      prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+              - x_.at(temp.indexInfo.negIndex_.value()));
     }
     if (atyp_ == AnalysisType::Phase) {
       // 4/3 φp1 - 1/3 φp2
@@ -156,26 +202,26 @@ void Simulation::handle_resistors(Matrix &mObj) {
   }
 }
 
-void Simulation::handle_inductors(Matrix &mObj) {
+void Simulation::handle_inductors(Matrix &mObj, const double factor) {
   for (const auto &j : mObj.components.inductorIndices) {
     auto &temp = std::get<Inductor>(mObj.components.devices.at(j));
     if(atyp_ == AnalysisType::Voltage) {
       // -2L/h Ip + L/2h Ip2
       b_.at(temp.indexInfo.currentIndex_.value()) = 
-        -(2.0 * temp.netlistInfo.value_/stepSize_) * 
-          x_prev_.at(temp.indexInfo.currentIndex_.value()) + 
-          ((temp.netlistInfo.value_/(2.0 * stepSize_)) * 
+        -(2.0 * temp.netlistInfo.value_/(stepSize_ * factor)) * 
+          x_.at(temp.indexInfo.currentIndex_.value()) + 
+          ((temp.netlistInfo.value_/(2.0 * (stepSize_ * factor))) * 
           temp.In2_);
       // -2M/h Im + M/2h Im2
       for(const auto &m : temp.get_mutualInductance()) {
         Inductor &mi = 
           std::get<Inductor>(mObj.components.devices.at(m.first));
         b_.at(temp.indexInfo.currentIndex_.value()) += 
-          (-((2 * m.second) / stepSize_) * 
-            x_prev_.at(mi.indexInfo.currentIndex_.value()) + 
-            (m.second / (2.0 * stepSize_)) * mi.In2_);
+          (-((2 * m.second) / (stepSize_ * factor)) * 
+            x_.at(mi.indexInfo.currentIndex_.value()) + 
+            (m.second / (2.0 * (stepSize_ * factor))) * mi.In2_);
       }
-      temp.In2_ = x_prev_.at(temp.indexInfo.currentIndex_.value());
+      temp.In2_ = x_.at(temp.indexInfo.currentIndex_.value());
     }
   }
 }
@@ -185,12 +231,12 @@ void Simulation::handle_capacitors(Matrix &mObj) {
     auto &temp = std::get<Capacitor>(mObj.components.devices.at(j));
     double prevNode;
     if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-      prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value()));
+      prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-      prevNode = (-x_prev_.at(temp.indexInfo.negIndex_.value()));
+      prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
-      prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value())
-              - x_prev_.at(temp.indexInfo.negIndex_.value()));
+      prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+              - x_.at(temp.indexInfo.negIndex_.value()));
     }
     if(atyp_ == AnalysisType::Voltage) {
       // 4/3 Vp1 - 1/3 Vp2
@@ -207,33 +253,34 @@ void Simulation::handle_capacitors(Matrix &mObj) {
   }
 }
 
-void Simulation::handle_jj(Matrix &mObj, const int &i) {
+void Simulation::handle_jj(Matrix &mObj, const int &i, const double factor) {
   for (const auto &j : mObj.components.junctionIndices) {
     auto &temp = std::get<JJ>(mObj.components.devices.at(j));
     const auto &model = temp.model_;
     double prevNode;
     if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-      prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value()));
+      prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-      prevNode = (-x_prev_.at(temp.indexInfo.negIndex_.value()));
+      prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
-      prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value())
-              - x_prev_.at(temp.indexInfo.negIndex_.value()));
+      prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+              - x_.at(temp.indexInfo.negIndex_.value()));
     }
     if(i > 0) {
       if(atyp_ == AnalysisType::Voltage) {
         temp.vn1_ = prevNode;
-        temp.pn1_ = x_prev_.at(temp.variableIndex_);
+        temp.pn1_ = x_.at(temp.variableIndex_);
       } else if (atyp_ == AnalysisType::Phase) {
-        temp.vn1_ = x_prev_.at(temp.variableIndex_);
+        temp.vn1_ = x_.at(temp.variableIndex_);
         temp.pn1_ = prevNode;
       }
     }
     // Ensure timestep is not too large
     if ((double)i/(double)simSize_ > 0.01) {
       if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
-        Errors::simulation_errors(
-          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
+        reduce_step(mObj, (0.25E-12 / (stepSize_ * factor)));
+        // Errors::simulation_errors(
+        //   SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
       }
     }
     double v0;
@@ -242,12 +289,12 @@ void Simulation::handle_jj(Matrix &mObj, const int &i) {
     // Phase guess (P0)
     temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
       ((1.0 / Constants::SIGMA) * 
-        ((2.0 * stepSize_) / 3.0)) * v0;
+        ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
     if(atyp_ == AnalysisType::Voltage) {
       b_.at(temp.variableIndex_) = 
-        (Constants::SIGMA) * (-(2.0 / stepSize_) * 
-          temp.pn1_ + (1.0 / (2.0 * stepSize_)) * temp.pn2_);
+        (Constants::SIGMA) * (-(2.0 / (stepSize_ * factor)) * 
+          temp.pn1_ + (1.0 / (2.0 * (stepSize_ * factor))) * temp.pn2_);
     // (4 / 3) φp1 - (1/3) φp2 
     } else if (atyp_ == AnalysisType::Phase) {
       b_.at(temp.variableIndex_) = 
@@ -272,15 +319,15 @@ void Simulation::handle_jj(Matrix &mObj, const int &i) {
         sqrt(1 - model.value().get_transparency() * 
           (sin(temp.phi0_ / 2) * sin(temp.phi0_ / 2))))) -
         (((2 * model.value().get_capacitance()) / 
-          stepSize_) * temp.vn1_) + 
+          (stepSize_ * factor)) * temp.vn1_) + 
         ((model.value().get_capacitance() / 
-          (2.0 * stepSize_)) * temp.vn2_) + 
+          (2.0 * (stepSize_ * factor))) * temp.vn2_) + 
         temp.transitionCurrent_);
     temp.vn2_ = temp.vn1_;
   }
 }
 
-void Simulation::handle_vs(Matrix &mObj, const int &i) {
+void Simulation::handle_vs(Matrix &mObj, const int &i, const double factor) {
   for (const auto &j : mObj.components.vsIndices) {
     const auto &temp = std::get<VoltageSource>(mObj.components.devices.at(j));
     if(atyp_ == AnalysisType::Voltage) {
@@ -289,20 +336,20 @@ void Simulation::handle_vs(Matrix &mObj, const int &i) {
     } else if (atyp_ == AnalysisType::Phase) {
       double prevNode;
       if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-        prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value()));
+        prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
       } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-        prevNode = (-x_prev_.at(temp.indexInfo.negIndex_.value()));
+        prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
       } else {
-        prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value())
-                - x_prev_.at(temp.indexInfo.negIndex_.value()));
+        prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+                - x_.at(temp.indexInfo.negIndex_.value()));
       }
       if(i < 1) {
         b_.at(temp.indexInfo.currentIndex_.value()) = 
-          (stepSize_ / (2 * Constants::SIGMA)) * 
+          ((stepSize_ * factor) / (2 * Constants::SIGMA)) * 
           (mObj.sources.at(temp.sourceIndex_).at(i)) + prevNode;
       } else {
         b_.at(temp.indexInfo.currentIndex_.value()) = 
-          (stepSize_ / (2 * Constants::SIGMA)) * 
+          ((stepSize_ * factor) / (2 * Constants::SIGMA)) * 
           (mObj.sources.at(temp.sourceIndex_).at(i) - 
             mObj.sources.at(temp.sourceIndex_).at(i-1)) + prevNode;
       }
@@ -310,7 +357,7 @@ void Simulation::handle_vs(Matrix &mObj, const int &i) {
   }
 }
 
-void Simulation::handle_ps(Matrix &mObj, const int &i) {
+void Simulation::handle_ps(Matrix &mObj, const int &i, const double factor) {
   for (const auto &j : mObj.components.psIndices) {
     const auto &temp = std::get<PhaseSource>(mObj.components.devices.at(j));
     if (atyp_ == AnalysisType::Phase) {
@@ -319,20 +366,20 @@ void Simulation::handle_ps(Matrix &mObj, const int &i) {
     } else if(atyp_ == AnalysisType::Voltage) {
       double prevNode;
       if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-        prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value()));
+        prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
       } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-        prevNode = (-x_prev_.at(temp.indexInfo.negIndex_.value()));
+        prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
       } else {
-        prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value())
-                - x_prev_.at(temp.indexInfo.negIndex_.value()));
+        prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+                - x_.at(temp.indexInfo.negIndex_.value()));
       }
       if(i == 0) {
         b_.at(temp.indexInfo.currentIndex_.value()) = 
-          ((Constants::SIGMA * 2) / stepSize_) * 
+          ((Constants::SIGMA * 2) / (stepSize_ * factor)) * 
           (mObj.sources.at(temp.sourceIndex_).at(i)) - prevNode;
       } else {
         b_.at(temp.indexInfo.currentIndex_.value()) = 
-          ((Constants::SIGMA * 2) / stepSize_) * 
+          ((Constants::SIGMA * 2) / (stepSize_ * factor)) * 
           (mObj.sources.at(temp.sourceIndex_).at(i) - 
             mObj.sources.at(temp.sourceIndex_).at(i-1)) - prevNode;
       }
@@ -346,12 +393,12 @@ void Simulation::handle_ccvs(Matrix &mObj) {
     if (atyp_ == AnalysisType::Phase) {
       double prevNode;
       if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-        prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value()));
+        prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
       } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-        prevNode = (-x_prev_.at(temp.indexInfo.negIndex_.value()));
+        prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
       } else {
-        prevNode = (x_prev_.at(temp.indexInfo.posIndex_.value())
-                - x_prev_.at(temp.indexInfo.negIndex_.value()));
+        prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+                - x_.at(temp.indexInfo.negIndex_.value()));
       }
       b_.at(temp.indexInfo.currentIndex_.value()) = 
         (4.0 / 3.0) * prevNode - (1.0 / 3.0) * temp.pn2_.value(); 
@@ -366,12 +413,12 @@ void Simulation::handle_vccs(Matrix &mObj) {
     if (atyp_ == AnalysisType::Phase) {
       double prevNode;
       if(temp.posIndex2_ && !temp.negIndex2_) {
-        prevNode = (x_prev_.at(temp.posIndex2_.value()));
+        prevNode = (x_.at(temp.posIndex2_.value()));
       } else if(!temp.posIndex2_ && temp.negIndex2_) {
-        prevNode = (-x_prev_.at(temp.negIndex2_.value()));
+        prevNode = (-x_.at(temp.negIndex2_.value()));
       } else {
-        prevNode = (x_prev_.at(temp.posIndex2_.value())
-                - x_prev_.at(temp.negIndex2_.value()));
+        prevNode = (x_.at(temp.posIndex2_.value())
+                - x_.at(temp.negIndex2_.value()));
       }
       b_.at(temp.indexInfo.currentIndex_.value()) = 
         (4.0 / 3.0) * prevNode - (1.0 / 3.0) * temp.pn2_.value(); 

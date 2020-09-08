@@ -24,7 +24,7 @@ class Matrix {
   nodeconnections nc;
   std::unordered_set<std::string> lm;
   int branchIndex;
-  std::vector<double> nz, nz05, nz2, nz4, nz8, nz16;
+  std::vector<double> nz, nz_orig;
   std::vector<int> ci, rp;
   std::vector<RelevantTrace> relevantTraces;
   std::vector<int> relevantIndices;
@@ -35,6 +35,7 @@ class Matrix {
   void create_nz();
   void create_ci();
   void create_rp();
+  void mod_timestep(const int factor);
 };
 } // namespace JoSIM
 #endif

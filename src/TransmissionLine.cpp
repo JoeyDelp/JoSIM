@@ -53,6 +53,7 @@ TransmissionLine::TransmissionLine(
   const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
   std::unordered_set<std::string> &lm, nodeconnections &nc, 
   const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  at_ = at;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
@@ -127,6 +128,7 @@ TransmissionLine::TransmissionLine(
     matrixInfo.nonZeros_.emplace_back(
       -(2.0*h/3.0) * (netlistInfo.value_ / Constants::SIGMA));
   }
+  hDepPos_ = matrixInfo.nonZeros_.size() - 1;
   // Set the non zero, column index and row pointer vectors
   set_secondary_matrix_info();
   // Append the value to the non zero vector
@@ -188,4 +190,13 @@ void TransmissionLine::set_secondary_matrix_info() {
     break;
   }
   matrixInfo.columnIndex_.emplace_back(currentIndex2_);
+}
+
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void TransmissionLine::update_timestep(const double &factor) {
+  if (at_ == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.at(hDepPos_) = 
+      factor * matrixInfo.nonZeros_.at(hDepPos_);
+    matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
+  }
 }

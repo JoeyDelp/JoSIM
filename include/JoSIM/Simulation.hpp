@@ -7,6 +7,10 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Matrix.hpp"
 
+#include "suitesparse/klu.h"
+
+#include <cassert>
+
 namespace JoSIM{
 
 #define TRANSIENT 0
@@ -24,24 +28,30 @@ class Results {
 
 class Simulation {
   private:
-  std::vector<double> x_, x_prev_, b_;
+  std::vector<double> x_, b_;
   int simSize_;
   JoSIM::AnalysisType atyp_;
   bool minOut_;
   bool needsLU_;
   double stepSize_;
+  int simOK_;
+  klu_symbolic *Symbolic_;
+  klu_common Common_;
+  klu_numeric *Numeric_;
 
   void trans_sim(Matrix &mObj);
-  void setup_rhs(Matrix &mObj);
-  void reduce_step(Matrix &mObj, const int &factor);
+  void setup_b(Matrix &mObj, const int &i, const double factor = 1);
+  void reduce_step(
+    Matrix &mObj, const double &factor, 
+    const int &stepCount, const double &currentStep);
   
   void handle_cs(const Matrix &mObj, const int &i);
   void handle_resistors(Matrix &mObj);
-  void handle_inductors(Matrix &mObj);
+  void handle_inductors(Matrix &mObj, const double factor = 1);
   void handle_capacitors(Matrix &mObj);
-  void handle_jj(Matrix &mObj, const int &i);
-  void handle_vs(Matrix &mObj, const int &i);
-  void handle_ps(Matrix &mObj, const int &i);
+  void handle_jj(Matrix &mObj, const int &i, const double factor = 1);
+  void handle_vs(Matrix &mObj, const int &i, const double factor = 1);
+  void handle_ps(Matrix &mObj, const int &i, const double factor = 1);
   void handle_ccvs(Matrix &mObj);
   void handle_vccs(Matrix &mObj);
   void handle_tx(Matrix &mObj, const int &i);
@@ -49,25 +59,7 @@ class Simulation {
   public:
   Results results;
 
-  Simulation(Input &iObj, Matrix &mObj) {
-    // Simulation setup
-    simSize_ = iObj.transSim.get_simsize();
-    atyp_ = iObj.argAnal;
-    minOut_ = iObj.argMin;
-    needsLU_ = false;
-    stepSize_ = iObj.transSim.get_prstep();
-    x_prev_.resize(mObj.branchIndex, 0.0);
-    if(!mObj.relevantTraces.empty()) {
-      results.xVector.resize(mObj.branchIndex);
-      for (const auto &i : mObj.relevantIndices) {
-        results.xVector.at(i).emplace();
-      }
-    } else {
-      results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
-    }
-    // Run transient simulation
-    trans_sim(mObj);
-  }
+  Simulation(Input &iObj, Matrix &mObj);
 };
 } // namespace JoSIM
 #endif

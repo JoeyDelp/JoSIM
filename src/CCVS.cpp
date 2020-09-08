@@ -38,6 +38,7 @@ CCVS::CCVS(
       const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
       std::unordered_set<std::string> &lm, nodeconnections &nc,
       const param_map &pm, int &bi, const AnalysisType &at, const double &h) {
+  at_ = at;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
@@ -138,6 +139,7 @@ void CCVS::set_matrix_info(const AnalysisType &at, const double &h) {
     pn2_ = 0;
     matrixInfo.nonZeros_.emplace_back(
       -netlistInfo.value_ * (1.0 / Constants::SIGMA) * ((2 * h) / 3.0));
+    hDepPos_ = matrixInfo.nonZeros_.size() - 1;
   }
   matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
   switch(nodeConfig2_) {
@@ -160,5 +162,13 @@ void CCVS::set_matrix_info(const AnalysisType &at, const double &h) {
     break;
   case NodeConfig::GND:
     break;
+  }
+}
+
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void CCVS::update_timestep(const double &factor) {
+  if (at_ == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.at(hDepPos_) = 
+      factor * matrixInfo.nonZeros_.at(hDepPos_);
   }
 }

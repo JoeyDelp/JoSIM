@@ -36,6 +36,8 @@ namespace JoSIM {
 using mutualinductors = std::vector<std::pair<int, double>>;
 
 class Inductor : public BasicComponent {
+  private:
+  JoSIM::AnalysisType at_;
   public:
   double In2_;
   mutualinductors mutualInductances_;
@@ -51,6 +53,8 @@ class Inductor : public BasicComponent {
     const double &m, const AnalysisType &at, const double &h, const int &ci);
   const mutualinductors get_mutualInductance() const { 
     return mutualInductances_; } 
+
+  void update_timestep(const double &factor) override;
 }; // class Inductor
 
 } // namespace JoSIM

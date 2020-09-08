@@ -39,6 +39,8 @@ namespace JoSIM {
 
 
 class VCCS : public BasicComponent {
+  private:
+  JoSIM::AnalysisType at_;
   public:
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
@@ -53,6 +55,8 @@ class VCCS : public BasicComponent {
   void set_node_indices(
     const tokens_t &t, const nodemap &nm, nodeconnections &nc);
   void set_matrix_info();
+
+  void update_timestep(const double &factor) override;
 }; // class VCCS
 
 } // namespace JoSIM

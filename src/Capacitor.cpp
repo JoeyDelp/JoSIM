@@ -31,6 +31,7 @@ Capacitor::Capacitor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  at_ = at;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
@@ -59,5 +60,14 @@ Capacitor::Capacitor(
     // If phase mdoe analysis then append -(4/9) * ((h*h)/C) * (1/σ)
     matrixInfo.nonZeros_.emplace_back(
       -(4.0 / 9.0) * ((h * h) / netlistInfo.value_) * (1 / Constants::SIGMA));
+  }
+}
+
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void Capacitor::update_timestep(const double &factor) {
+  if (at_ == AnalysisType::Voltage) {
+    matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
+  } else if (at_ == AnalysisType::Phase) {
+    matrixInfo.nonZeros_.back() = factor * factor * matrixInfo.nonZeros_.back();
   }
 }

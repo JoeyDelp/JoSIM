@@ -93,6 +93,8 @@ namespace JoSIM
       matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
     }
 
+    virtual void update_timestep(const double &factor) {};
+
   }; // class BasicComponent
 
 } // namespace JoSIM
