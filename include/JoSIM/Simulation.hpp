@@ -28,7 +28,7 @@ class Results {
 
 class Simulation {
   private:
-  std::vector<double> x_, b_;
+  std::vector<double> x_, b_, xPrev_;
   int simSize_;
   JoSIM::AnalysisType atyp_;
   bool minOut_;
@@ -40,18 +40,17 @@ class Simulation {
   klu_numeric *Numeric_;
 
   void trans_sim(Matrix &mObj);
-  void setup_b(Matrix &mObj, const int &i, const double factor = 1);
-  void reduce_step(
-    Matrix &mObj, const double &factor, 
-    const int &stepCount, const double &currentStep);
+  void setup_b(Matrix &mObj, int i, double step, double factor = 1);
+  void reduce_step(Matrix &mObj, double factor, 
+    int &stepCount, double &currentStep);
   
-  void handle_cs(const Matrix &mObj, const int &i);
+  void handle_cs(Matrix &mObj, double &step, const int &i);
   void handle_resistors(Matrix &mObj);
-  void handle_inductors(Matrix &mObj, const double factor = 1);
+  void handle_inductors(Matrix &mObj, double factor = 1);
   void handle_capacitors(Matrix &mObj);
-  void handle_jj(Matrix &mObj, const int &i, const double factor = 1);
-  void handle_vs(Matrix &mObj, const int &i, const double factor = 1);
-  void handle_ps(Matrix &mObj, const int &i, const double factor = 1);
+  void handle_jj(Matrix &mObj, int &i, double &step, double factor = 1);
+  void handle_vs(Matrix &mObj, const int &i, double &step, double factor = 1);
+  void handle_ps(Matrix &mObj, const int &i, double &step, double factor = 1);
   void handle_ccvs(Matrix &mObj);
   void handle_vccs(Matrix &mObj);
   void handle_tx(Matrix &mObj, const int &i);

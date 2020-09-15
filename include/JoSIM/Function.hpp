@@ -56,19 +56,19 @@ namespace JoSIM {
       void parse_noise(const tokens_t &t, const Input &iObj, const string_o &s);
       void parse_dc(const tokens_t &t, const Input &iObj, const string_o &s);
       void parse_exp(const tokens_t &t, const Input &iObj, const string_o &s);
-      double return_pwl(const double &x);
-      double return_pulse(const double &x);
-      double return_sin(const double &x);
-      double return_cus(const double &x);
-      double return_noise(const double &x);
-      double return_pws(const double &x);
+      double return_pwl(double &x);
+      double return_pulse(double &x);
+      double return_sin(double &x);
+      double return_cus(double &x);
+      double return_noise(double &x);
+      double return_pws(double &x);
       double return_dc();
-      double return_exp(const double &x);
+      double return_exp(double &x);
     public:
-      FunctObj();
+      FunctObj() {};
       void parse_function(const std::string &str, const Input &iObj, 
         const string_o &subckt);
-      double value(const double &x);  
+      double value(double x);  
 
   }; // class Function
 

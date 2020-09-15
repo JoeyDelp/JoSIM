@@ -6,6 +6,7 @@
 #include "JoSIM/BasicComponent.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Parameters.hpp"
+#include "JoSIM/Function.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -25,6 +26,7 @@ namespace JoSIM {
 class VoltageSource : public BasicComponent {
   public:
   int sourceIndex_;
+  double pn1_ = 0.0, pn2_ = pn1_;
   VoltageSource(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm,

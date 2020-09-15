@@ -581,8 +581,11 @@ void FunctObj::parse_pulse(
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
   // Set default values for optional arguments
-  timeValues_.emplace_back(
-    std::vector<double>{0.0, tstep, tstep, tstop, tstop});
+  timeValues_.emplace_back(0.0);
+  timeValues_.emplace_back(tstep);
+  timeValues_.emplace_back(tstep);
+  timeValues_.emplace_back(tstop);
+  timeValues_.emplace_back(tstop);
   // Test if values exist
   if(t.size() >= 3)
     timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
@@ -625,7 +628,9 @@ void FunctObj::parse_sin(
     }
   }
   // Set default optional values
-  timeValues_.emplace_back(std::vector<double>{(1.0/tstop), 0.0, 0.0});
+  timeValues_.emplace_back((1.0/tstop));
+  timeValues_.emplace_back(0.0);
+  timeValues_.emplace_back(0.0);
   // Test if optional values exist
   if(t.size() >= 3)
     timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
@@ -647,7 +652,11 @@ void FunctObj::parse_cus(
   std::vector<std::string> WF;
   const double &tstep = iObj.transSim.get_prstep();
   // Default values for the arguments
-  timeValues_.emplace_back(std::vector<double>{tstep, 1.0, 1, 0.0, 0});
+  timeValues_.emplace_back(tstep);
+  timeValues_.emplace_back(1.0);
+  timeValues_.emplace_back(1);
+  timeValues_.emplace_back(0.0);
+  timeValues_.emplace_back(0);
   // Test if optional values exist
   if(t.size() >= 3)
     timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
@@ -695,7 +704,8 @@ void FunctObj::parse_noise(
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
   // Default values for the arguments
-  timeValues_.emplace_back(std::vector<double>{tstep, 0.0});
+  timeValues_.emplace_back(tstep);
+  timeValues_.emplace_back(0.0);
   // Test if optional values exist
   if(t.size() >= 3)
     timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
@@ -731,7 +741,10 @@ void FunctObj::parse_exp(
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
   // Default values for the arguments
-  timeValues_.emplace_back(std::vector<double>{0.0, tstep, tstep, tstep});
+  timeValues_.emplace_back(0.0);
+  timeValues_.emplace_back(tstep);
+  timeValues_.emplace_back(tstep);
+  timeValues_.emplace_back(tstep);
   // Test if optional values exist
   if(t.size() >= 3)
     timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
@@ -739,7 +752,7 @@ void FunctObj::parse_exp(
     timeValues_.at(1) = parse_param(t.at(3), iObj.parameters, s);
 }
 
-double FunctObj::return_pwl(const double &x) {
+double FunctObj::return_pwl(double &x) {
   // If x larger than the last timestep then assume last amplitude value
   if(x >= timeValues_.back()) {
     return ampValues_.back();
@@ -752,13 +765,14 @@ double FunctObj::return_pwl(const double &x) {
         double &x2 = timeValues_.at(i+1);
         double &x1 = timeValues_.at(i);
         // Calculate function value and return it
-        return y1 + ((y2 - y1) / (x2 - x1)) * x;
+        return y1 + ((y2 - y1) / (x2 - x1)) * (x - x1);
       }
     }
   }
+  return 0.0;
 }
 
-double FunctObj::return_pulse(const double &x) {
+double FunctObj::return_pulse(double &x) {
   // Shorthand for the relevant time values
   double &td = timeValues_.at(0);
   double &tr = timeValues_.at(1);
@@ -776,7 +790,7 @@ double FunctObj::return_pulse(const double &x) {
         // Calculate function value and return it
         return ampValues_.at(0) + 
           ((ampValues_.at(1) - ampValues_.at(0)) / 
-          ((i * per + tr) - (i * per))) * x;
+          ((i * per + tr) - (i * per))) * (x - (i * per));
       // Within pulse width
       } else if(x >= (i * per + tr) && x < (i * per + tr + pw)) {
         return ampValues_.at(1);
@@ -785,22 +799,24 @@ double FunctObj::return_pulse(const double &x) {
         // Calculate function value and return it
         return ampValues_.at(1) + 
           ((ampValues_.at(0) - ampValues_.at(1)) / 
-          ((i * per + tr + pw) - (i * per + tr + pw + tf))) * x;
+          ((i * per + tr + pw + tf) - (i * per + tr + pw))) * 
+          (x - (i * per + tr + pw));
       // Between two pulses
       } else {
         return ampValues_.at(0);
       }
     }
   }
+  return 0.0;
 }
 
-double FunctObj::return_sin(const double &x) {
+double FunctObj::return_sin(double &x) {
   return ampValues_.at(0) + ampValues_.at(1) * 
     sin(2 * Constants::PI * timeValues_.at(0) * (x - timeValues_.at(1))) *
                       exp(-timeValues_.at(2) * (x - timeValues_.at(1)));
 }
 
-double FunctObj::return_cus(const double &x) {
+double FunctObj::return_cus(double &x) {
   // Shorthand for the relevant time values
   double &ts = timeValues_.at(0);
   double &sf = timeValues_.at(1);
@@ -818,27 +834,29 @@ double FunctObj::return_cus(const double &x) {
     if(x >= (i * repTime) && x < (i * repTime + td)) {
       return 0;
     } else if (x >= (i * repTime + td) && x < (i * repTime + td + ts)) {
-      return ((ampValues_.at(0) * sf) / ts) * x;
+      return ((ampValues_.at(0) * sf) / ts) * (x - (i * repTime + td));
     } else {
       for (int j = 1; j < ampValues_.size(); ++j) {
         if (x >= (i * repTime + td + j * ts) && 
           x < (i * repTime + td + (j + 1) * ts)) {
             return ((ampValues_.at(j - 1) * sf) + 
-              ((ampValues_.at(j) * sf) - (ampValues_.at(j-1) * sf)) / ts) * x;
+              ((ampValues_.at(j) * sf) - (ampValues_.at(j-1) * sf)) / ts) * 
+              (x - (i * repTime + td + j * ts));
         }
       }
     } 
   }
+  return 0.0;
 }
 
-double FunctObj::return_noise(const double &x) {
+double FunctObj::return_noise(double &x) {
   if(x < timeValues_.back()) 
     return 0.0;
   else 
     return ampValues_.at(1) * Misc::grand() / sqrt(2.0 * timeValues_.front());
 }
 
-double FunctObj::return_pws(const double &x) {
+double FunctObj::return_pws(double &x) {
   // If x larger than the last timestep then assume last amplitude value
   if(x >= timeValues_.back()) {
     return ampValues_.back();
@@ -854,22 +872,63 @@ double FunctObj::return_pws(const double &x) {
         double ba;
         if (y1 < y2) {
           ba = (y2 - y1) / 2;
-          return y1 + ba * sin((2 * Constants::PI * (x - (period/4)))/period) + ba;
+          return y1 + ba * sin((2 * Constants::PI * 
+            (x - (period/4)))/period) + ba;
         } else if (y1 > y2) {
           ba = (y1 - y2) / 2;
-          return y1 - ba * sin((2 * Constants::PI * (x + (period/4)))/period) - ba;
+          return y1 - ba * sin((2 * Constants::PI * 
+            (x + (period/4)))/period) - ba;
         } else if (y1 == y2) {
           return y1;
         }
       }
     }
   }
+  return 0.0;
 }
 
 double FunctObj::return_dc() {
   return ampValues_.back();
 }
 
-double FunctObj::return_exp(const double &x) {
+double FunctObj::return_exp(double &x) {
+  // Shorthand for time values
+  double &td1 = timeValues_.at(0);
+  double &tau1 = timeValues_.at(1);
+  double &td2 = timeValues_.at(2);
+  double &tau2 = timeValues_.at(3);
+  if(x < td1) {
+    return ampValues_.at(0);
+  } else if (x >= td1 && x < td2) {
+    return ampValues_.at(0) + (ampValues_.at(1) - ampValues_.at(0)) * 
+      (1 - exp(-(x - td1)/tau1));
+  } else if (x >= td2 ) {
+    return ampValues_.at(0) + (ampValues_.at(1) - ampValues_.at(0)) * 
+      (1 - exp(-(x - td1)/tau1)) + (ampValues_.at(0) - ampValues_.at(1)) * 
+      (1 - exp(-(x - td2)/tau2));
+  }
+  return 0.0;
+}
 
+double FunctObj::value(double x) {
+  switch(fType_){
+    case FunctionType::PWL:
+      return return_pwl(x);
+    case FunctionType::PULSE:
+      return return_pulse(x);
+    case FunctionType::SINUSOID:
+      return return_sin(x);
+    case FunctionType::CUS:
+      return return_cus(x);
+    case FunctionType::NOISE:
+      return return_noise(x);
+    case FunctionType::PWS:
+      return return_pws(x);
+    case FunctionType::DC:
+      return return_dc();
+    case FunctionType::EXP:
+      return return_exp(x);
+    default:
+      return 0.0;
+  }
 }

@@ -95,6 +95,8 @@ namespace JoSIM
 
     virtual void update_timestep(const double &factor) {};
 
+    virtual ~BasicComponent() {}
+
   }; // class BasicComponent
 
 } // namespace JoSIM

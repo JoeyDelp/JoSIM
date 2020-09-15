@@ -26,8 +26,8 @@ class Output {
   std::vector<double> timesteps;
   Output(){};
   void write_output(const Input &iObj, 
-                    const Matrix &mObj, 
-                    const Simulation &sObj);
+                    Matrix &mObj, 
+                    Simulation &sObj);
 
   void format_csv_or_dat(const std::string &filename, 
                           const char &delimiter);

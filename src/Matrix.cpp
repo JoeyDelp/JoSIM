@@ -143,9 +143,9 @@ void Matrix::create_matrix(Input &iObj)
         components.currentsources.emplace_back(
           CurrentSource(i, nodeConfig.at(cc), nm, lm, sources.size()));
         // Add it to the global sources list
-        sources.emplace_back(
-          Function::parse_function(
-            Misc::vector_to_string(i.first), iObj, i.second));
+        sourcegen.emplace_back();
+        sourcegen.back().parse_function(
+          Misc::vector_to_string(i.first), iObj, i.second);
         break;
       // Capacitors
       case 'C':
@@ -166,13 +166,9 @@ void Matrix::create_matrix(Input &iObj)
             PhaseSource(
               i, nodeConfig.at(cc), nm, lm, nc, branchIndex, sources.size()));
           // Add it to the global sources list
-          sources.emplace_back(
-            Function::parse_function(
-              Misc::vector_to_string(i.first), iObj, i.second));
-          // If the original source was a voltage source, convert to a phase
-          if(i.first.front().at(0) == 'V') {
-            Function::voltage_to_phase(sources.back(), iObj);
-          }
+          sourcegen.emplace_back();
+          sourcegen.back().parse_function(
+            Misc::vector_to_string(i.first), iObj, i.second);
           // Store this phase source component list index for reference
           components.psIndices.emplace_back(components.devices.size() - 1);
           break;
@@ -182,13 +178,9 @@ void Matrix::create_matrix(Input &iObj)
             VoltageSource(
               i, nodeConfig.at(cc), nm, lm, nc, branchIndex, sources.size()));
           // Add it to the global sources list
-          sources.emplace_back(
-            Function::parse_function(
-              Misc::vector_to_string(i.first), iObj, i.second));
-          // If the original source was a phase source, convert to a voltage
-          if(i.first.front().at(0) == 'P') {
-            Function::phase_to_voltage(sources.back(), iObj);
-          }
+          sourcegen.emplace_back();
+          sourcegen.back().parse_function(
+            Misc::vector_to_string(i.first), iObj, i.second);
           // Store this voltage source component list index for reference
           components.vsIndices.emplace_back(components.devices.size() - 1);
           break;

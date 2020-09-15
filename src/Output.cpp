@@ -19,7 +19,7 @@
 using namespace JoSIM;
 
 void Output::write_output(
-  const Input &iObj, const Matrix &mObj, const Simulation &sObj) {
+  const Input &iObj, Matrix &mObj, Simulation &sObj) {
   traces.emplace_back("time");
   traces.back().data_ = sObj.results.timeAxis;
   traces.back().type_ = 'T';
@@ -194,7 +194,8 @@ void Output::write_output(
           }
         } else {
           for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-            double value = mObj.sources.at(i.sourceIndex.value()).at(j);
+            double value = mObj.sourcegen.at(i.sourceIndex.value()).value(
+              sObj.results.timeAxis.at(j));
             traces.back().data_.emplace_back(value);
             traces.back().type_ = 'I';
           }

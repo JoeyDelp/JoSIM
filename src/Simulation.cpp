@@ -59,12 +59,12 @@ void Simulation::trans_sim(Matrix &mObj) {
     buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
       std::move(printer), 0);
   }
+  // Initialize the b matrix
+  b_.resize(mObj.rp.size(), 0.0);
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
     // If not minimal printing report progress
     if(!minOut_) buffered_printer.value().update(i);
-    // Setup the b matrix
-    setup_b(mObj, i);
     // Assign x_prev the new b
     x_ = b_;
     // Solve Ax=b, storing the results in x_
@@ -78,6 +78,10 @@ void Simulation::trans_sim(Matrix &mObj) {
         results.xVector.at(j).value().emplace_back(x_.at(j));
       }
     }
+    // Setup the b matrix
+    setup_b(mObj, i, i * stepSize_);
+    // Set backup the x vector in case we need to step back
+    xPrev_ = x_;
     // Store the time step
     results.timeAxis.emplace_back(i * stepSize_);
   }
@@ -87,11 +91,49 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
 }
 
+void Simulation::setup_b(
+  Matrix &mObj, int i, double step, double factor) {
+  // Clear b matrix and reset
+  b_.clear();
+  b_.resize(mObj.rp.size(), 0.0);
+  // Handle current sources
+  handle_cs(mObj, step, i);
+  // Handle resistors
+  handle_resistors(mObj);
+  // Handle inductors
+  handle_inductors(mObj);
+  // Handle capacitors
+  handle_capacitors(mObj);
+  // Handle jj
+  handle_jj(mObj, i, step);
+  // Re-factorize the LU if any jj transitions
+  if (needsLU_) {
+    mObj.create_nz();
+    klu_free_numeric(&Numeric_, &Common_);
+    Numeric_ = klu_factor(
+      &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
+      Symbolic_, &Common_);
+    needsLU_ = false;
+  }
+  // Handle voltage sources
+  handle_vs(mObj, i, step);
+  // Handle phase sources
+  handle_ps(mObj, i, step);
+  // Handle ccvs
+  handle_ccvs(mObj);
+    // Handle vccs
+  handle_vccs(mObj);
+  // Handle transmission lines
+  handle_tx(mObj, i);
+}
+
 void Simulation::reduce_step(
-  Matrix &mObj, const double &factor, 
-  const int &stepCount, const double &currentStep) {
+  Matrix &mObj, double factor, 
+  int &stepCount, double &currentStep) {
   // Backup the current nonzeros
   mObj.nz_orig = mObj.nz;
+  // Restore the previous x
+  x_ = xPrev_;
   // Update the non-zeros of each component to reflect the smaller timestep
   for (auto &j : mObj.components.devices) {
     BasicComponent &x = std::visit(
@@ -106,10 +148,11 @@ void Simulation::reduce_step(
   Numeric_ = klu_factor(
     &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
     Symbolic_, &Common_);
+  int smallSteps = static_cast<int>(stepSize_ / (factor * stepSize_));
   // Split the current step into smaller steps
-  for(int i = 0; i < (stepSize_ / factor); ++i) {
+  for(int i = 1; i < smallSteps; ++i) {
     // Setup the b matrix
-    setup_b(mObj, i, factor);
+    setup_b(mObj, stepCount - 1, (currentStep + i * (factor * stepSize_)), factor);
     // Assign x_prev the new b
     x_ = b_;
     // Solve Ax=b, storing the results in x_
@@ -129,54 +172,20 @@ void Simulation::reduce_step(
     Symbolic_, &Common_);
 }
 
-void Simulation::setup_b(Matrix &mObj, const int &i, const double factor) {
-  // Clear b matrix and reset
-  b_.clear();
-  b_.resize(mObj.rp.size(), 0.0);
-  // Handle current sources
-  handle_cs(mObj, i);
-  // Handle resistors
-  handle_resistors(mObj);
-  // Handle inductors
-  handle_inductors(mObj);
-  // Handle capacitors
-  handle_capacitors(mObj);
-  // Handle jj
-  handle_jj(mObj, i);
-  // Re-factorize the LU if any jj transitions
-  if (needsLU_) {
-    mObj.create_nz();
-    klu_free_numeric(&Numeric_, &Common_);
-    Numeric_ = klu_factor(
-      &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
-      Symbolic_, &Common_);
-    needsLU_ = false;
-  }
-  // Handle voltage sources
-  handle_vs(mObj, i);
-  // Handle phase sources
-  handle_ps(mObj, i);
-  // Handle ccvs
-  handle_ccvs(mObj);
-    // Handle vccs
-  handle_vccs(mObj);
-  // Handle transmission lines
-  handle_tx(mObj, i);
-}
 
-void Simulation::handle_cs(const Matrix &mObj, const int &i) {
+void Simulation::handle_cs(Matrix &mObj, double &step, const int &i) {
   for (const auto &j : mObj.components.currentsources) {
     if(j.indexInfo.posIndex_ && !j.indexInfo.negIndex_) {
-        b_.at(j.indexInfo.posIndex_.value()) -= 
-          (mObj.sources.at(j.sourceIndex_).at(i));
+      b_.at(j.indexInfo.posIndex_.value()) -= 
+        (mObj.sourcegen.at(j.sourceIndex_).value(step));
     } else if(!j.indexInfo.posIndex_ && j.indexInfo.negIndex_) {
       b_.at(j.indexInfo.negIndex_.value()) += 
-        (mObj.sources.at(j.sourceIndex_).at(i));
+        (mObj.sourcegen.at(j.sourceIndex_).value(step));
     } else {
       b_.at(j.indexInfo.posIndex_.value()) -= 
-        (mObj.sources.at(j.sourceIndex_).at(i));
+        (mObj.sourcegen.at(j.sourceIndex_).value(step));
       b_.at(j.indexInfo.negIndex_.value()) += 
-        (mObj.sources.at(j.sourceIndex_).at(i));
+        (mObj.sourcegen.at(j.sourceIndex_).value(step));
     }
   }
 }
@@ -202,7 +211,7 @@ void Simulation::handle_resistors(Matrix &mObj) {
   }
 }
 
-void Simulation::handle_inductors(Matrix &mObj, const double factor) {
+void Simulation::handle_inductors(Matrix &mObj, double factor) {
   for (const auto &j : mObj.components.inductorIndices) {
     auto &temp = std::get<Inductor>(mObj.components.devices.at(j));
     if(atyp_ == AnalysisType::Voltage) {
@@ -253,7 +262,8 @@ void Simulation::handle_capacitors(Matrix &mObj) {
   }
 }
 
-void Simulation::handle_jj(Matrix &mObj, const int &i, const double factor) {
+void Simulation::handle_jj(
+  Matrix &mObj, int &i, double &step, double factor) {
   for (const auto &j : mObj.components.junctionIndices) {
     auto &temp = std::get<JJ>(mObj.components.devices.at(j));
     const auto &model = temp.model_;
@@ -275,14 +285,6 @@ void Simulation::handle_jj(Matrix &mObj, const int &i, const double factor) {
         temp.pn1_ = prevNode;
       }
     }
-    // Ensure timestep is not too large
-    if ((double)i/(double)simSize_ > 0.01) {
-      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
-        reduce_step(mObj, (0.25E-12 / (stepSize_ * factor)));
-        // Errors::simulation_errors(
-        //   SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
-      }
-    }
     double v0;
     // Guess voltage (V0)
     v0 = (5.0/2.0) * temp.vn1_ - 2.0 * temp.vn2_ + (1.0 / 2.0) * temp.vn3_;
@@ -290,6 +292,14 @@ void Simulation::handle_jj(Matrix &mObj, const int &i, const double factor) {
     temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
       ((1.0 / Constants::SIGMA) * 
         ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
+    // Ensure timestep is not too large
+    if ((double)i/(double)simSize_ > 0.01) {
+      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
+        reduce_step(mObj, (0.25E-12 / (stepSize_ * factor)), i, step);
+        // Errors::simulation_errors(
+        //   SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
+      }
+    }
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
     if(atyp_ == AnalysisType::Voltage) {
       b_.at(temp.variableIndex_) = 
@@ -327,62 +337,45 @@ void Simulation::handle_jj(Matrix &mObj, const int &i, const double factor) {
   }
 }
 
-void Simulation::handle_vs(Matrix &mObj, const int &i, const double factor) {
+void Simulation::handle_vs(
+  Matrix &mObj, const int &i, double &step, double factor) {
   for (const auto &j : mObj.components.vsIndices) {
-    const auto &temp = std::get<VoltageSource>(mObj.components.devices.at(j));
-    if(atyp_ == AnalysisType::Voltage) {
+    auto &temp = std::get<VoltageSource>(mObj.components.devices.at(j));
+    if(temp.netlistInfo.label_.at(0) == 'V') {
       b_.at(temp.indexInfo.currentIndex_.value()) = 
-        mObj.sources.at(temp.sourceIndex_).at(i);
-    } else if (atyp_ == AnalysisType::Phase) {
-      double prevNode;
-      if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-        prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
-      } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-        prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
-      } else {
-        prevNode = (x_.at(temp.indexInfo.posIndex_.value())
-                - x_.at(temp.indexInfo.negIndex_.value()));
-      }
-      if(i < 1) {
-        b_.at(temp.indexInfo.currentIndex_.value()) = 
-          ((stepSize_ * factor) / (2 * Constants::SIGMA)) * 
-          (mObj.sources.at(temp.sourceIndex_).at(i)) + prevNode;
-      } else {
-        b_.at(temp.indexInfo.currentIndex_.value()) = 
-          ((stepSize_ * factor) / (2 * Constants::SIGMA)) * 
-          (mObj.sources.at(temp.sourceIndex_).at(i) - 
-            mObj.sources.at(temp.sourceIndex_).at(i-1)) + prevNode;
-      }
+        (mObj.sourcegen.at(temp.sourceIndex_).value(step));
+    } else if (temp.netlistInfo.label_.at(0) == 'P') {
+      b_.at(temp.indexInfo.currentIndex_.value()) = 
+        (3 * Constants::SIGMA) / (2 * stepSize_ * factor) *
+        (mObj.sourcegen.at(temp.sourceIndex_).value(step)) + 
+        (4.0 / 3.0) * temp.pn1_ - (1.0 / 3.0) * temp.pn2_;
+      temp.pn2_ = temp.pn1_;
+      temp.pn1_ = (mObj.sourcegen.at(temp.sourceIndex_).value(step));
     }
   }
 }
 
-void Simulation::handle_ps(Matrix &mObj, const int &i, const double factor) {
+void Simulation::handle_ps(
+  Matrix &mObj, const int &i, double &step, double factor) {
   for (const auto &j : mObj.components.psIndices) {
-    const auto &temp = std::get<PhaseSource>(mObj.components.devices.at(j));
-    if (atyp_ == AnalysisType::Phase) {
+    auto &temp = std::get<PhaseSource>(mObj.components.devices.at(j));
+    if (temp.netlistInfo.label_.at(0) == 'P') {
       b_.at(temp.indexInfo.currentIndex_.value()) = 
-        mObj.sources.at(temp.sourceIndex_).at(i);
-    } else if(atyp_ == AnalysisType::Voltage) {
-      double prevNode;
+        (mObj.sourcegen.at(temp.sourceIndex_).value(step));
+    } else if(temp.netlistInfo.label_.at(0) == 'V') {
       if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-        prevNode = (x_.at(temp.indexInfo.posIndex_.value()));
+        temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
       } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-        prevNode = (-x_.at(temp.indexInfo.negIndex_.value()));
+        temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
       } else {
-        prevNode = (x_.at(temp.indexInfo.posIndex_.value())
+        temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value())
                 - x_.at(temp.indexInfo.negIndex_.value()));
       }
-      if(i == 0) {
-        b_.at(temp.indexInfo.currentIndex_.value()) = 
-          ((Constants::SIGMA * 2) / (stepSize_ * factor)) * 
-          (mObj.sources.at(temp.sourceIndex_).at(i)) - prevNode;
-      } else {
-        b_.at(temp.indexInfo.currentIndex_.value()) = 
-          ((Constants::SIGMA * 2) / (stepSize_ * factor)) * 
-          (mObj.sources.at(temp.sourceIndex_).at(i) - 
-            mObj.sources.at(temp.sourceIndex_).at(i-1)) - prevNode;
-      }
+      b_.at(temp.indexInfo.currentIndex_.value()) = 
+        (2 * stepSize_ * factor) / (3 * Constants::SIGMA) * 
+        (mObj.sourcegen.at(temp.sourceIndex_).value(step)) + 
+        (4.0/3.0) * temp.pn1_ - (1.0 / 3.0) * temp.pn2_;
+      temp.pn2_ = temp.pn1_;
     }
   }
 }
