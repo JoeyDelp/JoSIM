@@ -21,13 +21,14 @@ void Verbose::handle_verbosity(
       print_parameters(iObj);
       print_circuit_stats(iObj, mObj);
       break;
-    default:
-      Errors::verbosity_errors(
-        VerbosityErrors::NO_SUCH_LEVEL, std::to_string(vl));
     case 3:
       print_expanded_netlist(iObj);
       print_parameters(iObj);
       print_circuit_stats(iObj, mObj);
+      break;
+    default:
+      Errors::verbosity_errors(
+        VerbosityErrors::NO_SUCH_LEVEL, std::to_string(vl));
       break;
   }
 }

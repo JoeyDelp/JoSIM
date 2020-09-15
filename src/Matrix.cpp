@@ -171,7 +171,6 @@ void Matrix::create_matrix(Input &iObj)
             Misc::vector_to_string(i.first), iObj, i.second);
           // Store this phase source component list index for reference
           components.psIndices.emplace_back(components.devices.size() - 1);
-          break;
         } else if(iObj.argAnal == AnalysisType::Voltage) {
           // Create a voltage source and add it to the component list
           components.devices.emplace_back(
@@ -183,8 +182,8 @@ void Matrix::create_matrix(Input &iObj)
             Misc::vector_to_string(i.first), iObj, i.second);
           // Store this voltage source component list index for reference
           components.vsIndices.emplace_back(components.devices.size() - 1);
-          break;
         }
+        break;
       // Mutual inductance
       case 'K':
         // Add line to the mutual inductance list for later inspection

@@ -21,6 +21,7 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
       formattedMessage += "No input file was specified.\n";
       formattedMessage += "Continuing by reading from standard input.";
       warning_message(formattedMessage);
+      break;
     case CLIErrors::UNKNOWN_SWITCH:
       formattedMessage += "Unknown option '" + message.value_or("") + 
         "' specified. Please refer to the help menu.";
