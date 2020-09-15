@@ -21,7 +21,7 @@ namespace Verbose {
   void print_parameters(const Input &iObj);
 
   void print_expanded_netlist(const Input &iObj);
-}; // namespace Verbose
+} // namespace Verbose
 
 } // namespace JoSIM
 

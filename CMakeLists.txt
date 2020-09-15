@@ -63,6 +63,9 @@ target_include_directories(josim PUBLIC
 
 # Dependencies
 target_link_libraries(josim PRIVATE suitesparse::klu)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(josim PRIVATE Threads::Threads)
 
 # Properties
 set_target_properties(josim
