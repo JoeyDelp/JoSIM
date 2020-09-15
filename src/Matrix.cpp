@@ -141,7 +141,7 @@ void Matrix::create_matrix(Input &iObj)
       case 'I':
         // Create a current source and add it to the current sources list
         components.currentsources.emplace_back(
-          CurrentSource(i, nodeConfig.at(cc), nm, lm, sources.size()));
+          CurrentSource(i, nodeConfig.at(cc), nm, lm, sourcegen.size()));
         // Add it to the global sources list
         sourcegen.emplace_back();
         sourcegen.back().parse_function(
@@ -164,7 +164,7 @@ void Matrix::create_matrix(Input &iObj)
           // Create a phase source and add it to the component list
           components.devices.emplace_back(
             PhaseSource(
-              i, nodeConfig.at(cc), nm, lm, nc, branchIndex, sources.size()));
+              i, nodeConfig.at(cc), nm, lm, nc, branchIndex, sourcegen.size()));
           // Add it to the global sources list
           sourcegen.emplace_back();
           sourcegen.back().parse_function(
@@ -176,7 +176,7 @@ void Matrix::create_matrix(Input &iObj)
           // Create a voltage source and add it to the component list
           components.devices.emplace_back(
             VoltageSource(
-              i, nodeConfig.at(cc), nm, lm, nc, branchIndex, sources.size()));
+              i, nodeConfig.at(cc), nm, lm, nc, branchIndex, sourcegen.size()));
           // Add it to the global sources list
           sourcegen.emplace_back();
           sourcegen.back().parse_function(
