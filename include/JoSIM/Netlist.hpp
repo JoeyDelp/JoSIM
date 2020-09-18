@@ -57,8 +57,8 @@ class Netlist {
   std::vector<tokens_t> maindesign;
   tokens_t subckts;
   std::vector<std::pair<tokens_t, string_o>> expNetlist;
-  int jjCount, compCount, subcktCounter, nestedSubcktCount;
-  bool containsSubckt;
+  int jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal;
+  bool containsSubckt, argMin = false;
   Netlist() :
     jjCount(0),
     compCount(0),

@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Input.hpp"
+#include "JoSIM/ProgressPrinter.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -93,6 +94,8 @@ std::vector<tokens_t> Input::read_input(
 }
 
 void Input::parse_input(string_o fileName) {
+  // Create a seperate thread that will be used for printing creation progress
+  std::thread printingThread;
   // Variable to store the tokenized input
   std::vector<tokens_t> fileLines;
   // Create a optional string to store subcircuit names
@@ -112,8 +115,24 @@ void Input::parse_input(string_o fileName) {
     // Use stream input to read lines and return tokenized input
     fileLines = Input::read_input(input);
   }
+  // If not minimal printing
+  std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
+  if(!argMin) {
+    netlist.argMin = argMin;
+    // Start progress printing
+    std::cout << "Input parsing progress:" << std::endl;
+    // Threaded printer object to move printing away from main thread
+    auto printer = TimeProgressPrinter(fileLines.size());
+    buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
+      std::move(printer), 0);
+  }
   // Loop through all the tokenized input
   for (int i = 0; i < fileLines.size(); ++i) {
+    // If not minimal printing
+    if(!argMin) {
+      // Report progress
+      buffered_printer.value().update(i);
+    }
     // Determine if the line is a control (subcircuit, analysis, print, etc.)
     if (fileLines.at(i).front().at(0) == '.') {
       // If the line is the begining of a subcircuit
@@ -196,6 +215,11 @@ void Input::parse_input(string_o fileName) {
         netlist.maindesign.push_back(fileLines.at(i));
       }
     }
+  }
+  // Let the user know the input reading is complete
+  if(!argMin) {
+    buffered_printer.value().done();
+    std::cout << "\n";
   }
   // If main is empty, complain
   if (netlist.maindesign.empty())

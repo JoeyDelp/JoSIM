@@ -40,7 +40,7 @@ void Verbose::print_circuit_stats(const Input &iObj, const Matrix &mObj) {
     iObj.netlist.maindesign.size() << "\n";
   // Print the total number of subcircuits lines
   std::cout << std::left << std::setw(26) << "Subcircuit count:" << 
-    iObj.netlist.subcircuits.size() << "\n";
+    iObj.netlist.subcktTotal << "\n";
   // Print the total component count
   std::cout << std::left << std::setw(26) << "Component count:" << 
     mObj.components.devices.size() << "\n";
