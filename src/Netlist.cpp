@@ -164,4 +164,8 @@ void Netlist::expand_maindesign() {
       expNetlist.push_back(std::make_pair(maindesign.at(i), std::nullopt));
     }
   }
+  for(auto &i : subcircuits) {
+    i.second.lines.clear();
+    i.second.lines.shrink_to_fit();
+  }
 }
