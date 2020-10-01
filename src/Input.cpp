@@ -43,16 +43,16 @@ std::vector<tokens_t> Input::read_input(
         // If reading from a file
         if(fileName) {
           // Sanity check to prevent cyclic includes
-          if (::strcmp(
-              std::filesystem::path(fileName.value()).c_str(),
+          if (std::filesystem::path(fileName.value()).c_str() == 
               std::filesystem::path(fileName.value()).parent_path().append(
-                tokens.at(1)).c_str()) == 0) {
+                tokens.at(1)).c_str()) {
             Errors::input_errors(InputErrors::CYCLIC_INCLUDE, fileName);
           }
-          includeFile = std::filesystem::path(
-            fileName.value()).parent_path().append(tokens.at(1));
+          includeFile = static_cast<std::string>(std::filesystem::path(
+            fileName.value()).parent_path().append(tokens.at(1)));
         } else {
-          includeFile = std::filesystem::current_path().append(tokens.at(1));
+          includeFile = static_cast<std::string>(
+            std::filesystem::current_path().append(tokens.at(1)));
         }
         // Create a new LineInput variable for the included file
         FileInput file(includeFile);
