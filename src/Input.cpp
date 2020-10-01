@@ -118,7 +118,7 @@ void Input::parse_input(string_o fileName) {
   }
   ProgressBar bar;
   bar.set_bar_width(30);
-  bar.fill_bar_progress_with("■");
+  bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
   bar.set_status_text("Parsing Input");
   float progress = 0.0;

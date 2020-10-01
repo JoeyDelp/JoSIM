@@ -51,7 +51,7 @@ void Simulation::trans_sim(Matrix &mObj) {
   results.timeAxis.clear();
   ProgressBar bar;
   bar.set_bar_width(30);
-  bar.fill_bar_progress_with("■");
+  bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
   bar.set_status_text("Simulating");
   float progress = 0;

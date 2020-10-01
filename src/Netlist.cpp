@@ -107,7 +107,7 @@ void Netlist::expand_subcircuits() {
   }
   ProgressBar bar;
   bar.set_bar_width(30);
-  bar.fill_bar_progress_with("■");
+  bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
   bar.set_status_text("Expanding Subcircuits");
   float progress = 0;
@@ -172,7 +172,7 @@ void Netlist::expand_maindesign() {
   std::string subcktName, label;
   ProgressBar bar;
   bar.set_bar_width(30);
-  bar.fill_bar_progress_with("■");
+  bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
   bar.set_status_text("Expanding Main Circuit");
   float progress = 0;
