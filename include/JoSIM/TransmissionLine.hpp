@@ -51,16 +51,16 @@ namespace JoSIM {
 
 class TransmissionLine : public BasicComponent {
   private:
-    int hDepPos_;
+    int hDepPos_ = 0;
     JoSIM::AnalysisType at_;
   public:
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
-  int currentIndex2_;
-  double p1n2_, p2n2_, p1nk2_, p2nk2_;
-  double dp1n1_, dp1n2_, dv2n1_, dp2n2_;
-  double dp1nk_, dp1nk1_, dp2nk_, dp2nk1_;
-  int timestepDelay_;
+  int currentIndex2_ = 0;
+  double p1n2_ = 0.0, p2n2_ = 0.0, p1nk2_ = 0.0, p2nk2_ = 0.0;
+  double dp1n1_ = 0.0, dp1n2_ = 0.0, dv2n1_ = 0.0, dp2n2_ = 0.0;
+  double dp1nk_ = 0.0, dp1nk1_ = 0.0, dp2nk_ = 0.0, dp2nk1_ = 0.0;
+  int timestepDelay_ = 0.0;
 
   TransmissionLine(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 

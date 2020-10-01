@@ -6,11 +6,12 @@
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Function.hpp"
-#include "JoSIM/ProgressPrinter.hpp"
+#include "JoSIM/ProgressBar.hpp"
 
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include <thread>
 
 using namespace JoSIM;
 
@@ -86,24 +87,21 @@ void Matrix::create_matrix(Input &iObj)
   nc.resize(nm.size());
   // Set the index to the first branch current to the size of the node map
   branchIndex = nm.size();
+  ProgressBar bar;
+  bar.set_bar_width(30);
+  bar.fill_bar_progress_with("■");
+  bar.fill_bar_remainder_with(" ");
+  bar.set_status_text("Creating Matrix");
+  float progress = 0;
   // Counter for progress report
   int cc = 0;
-  std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
-  // If not minimal printing
-  if(!iObj.argMin) {
-    // Start progress printing
-    std::cout << "Matrix creation progress:" << std::endl;
-    // Threaded printer object to move printing away from main thread
-    auto printer = TimeProgressPrinter(iObj.netlist.expNetlist.size());
-    buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
-      std::move(printer), 0);
-  }
   // Loop through all the components in the netlist
   for (const auto &i : iObj.netlist.expNetlist) {
     // If not minimal printing
     if(!iObj.argMin) {
       // Report progress
-      buffered_printer.value().update(cc);
+      progress = (float)cc / (float)iObj.netlist.expNetlist.size() * 100;
+      bar.update(progress);
     }
     // First character of first token indicates device type
     switch(i.first.front().at(0)){
@@ -248,7 +246,7 @@ void Matrix::create_matrix(Input &iObj)
           ComponentErrors::UNKNOWN_DEVICE_TYPE, i.first.front());
     }
     // Increment the component counter
-    cc++;
+    ++cc;
   }
 
   // Loop through all identified mutual inductances
@@ -309,7 +307,7 @@ void Matrix::create_matrix(Input &iObj)
   create_csr();
   // Led the user know the matrix creation is complete
   if(!iObj.argMin) {
-    buffered_printer.value().done();
+    bar.update(100);
     std::cout << "\n";
   }
 

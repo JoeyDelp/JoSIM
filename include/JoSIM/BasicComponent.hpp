@@ -18,7 +18,7 @@ namespace JoSIM
   class NetlistInfo {
     public:
     std::string label_;
-    double value_;
+    double value_ = 0.0;
   };
 
   class IndexInfo {

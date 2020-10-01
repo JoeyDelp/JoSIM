@@ -36,10 +36,10 @@ class Capacitor : public BasicComponent {
   private:
   JoSIM::AnalysisType at_;
   public:
-  double pn1_;
-  double dpn1_;
-  double pn2_;
-  double pn3_;
+  double pn1_ = 0.0;
+  double dpn1_ = 0.0;
+  double pn2_ = 0.0;
+  double pn3_ = 0.0;
   Capacitor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,

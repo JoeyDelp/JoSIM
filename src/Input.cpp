@@ -2,13 +2,14 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Input.hpp"
-#include "JoSIM/ProgressPrinter.hpp"
+#include "JoSIM/ProgressBar.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <regex>
 #include <cstring>
 #include <filesystem>
+#include <thread>
 
 using namespace JoSIM;
 
@@ -115,23 +116,21 @@ void Input::parse_input(string_o fileName) {
     // Use stream input to read lines and return tokenized input
     fileLines = Input::read_input(input);
   }
+  ProgressBar bar;
+  bar.set_bar_width(30);
+  bar.fill_bar_progress_with("■");
+  bar.fill_bar_remainder_with(" ");
+  bar.set_status_text("Parsing Input");
+  float progress = 0.0;
   // If not minimal printing
-  std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
-  if(!argMin) {
-    netlist.argMin = argMin;
-    // Start progress printing
-    std::cout << "Input parsing progress:" << std::endl;
-    // Threaded printer object to move printing away from main thread
-    auto printer = TimeProgressPrinter(fileLines.size());
-    buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
-      std::move(printer), 0);
-  }
+  netlist.argMin = argMin;
   // Loop through all the tokenized input
   for (int i = 0; i < fileLines.size(); ++i) {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      buffered_printer.value().update(i);
+      progress = (float)i / (float)fileLines.size() * 100;
+      bar.update(progress);
     }
     // Determine if the line is a control (subcircuit, analysis, print, etc.)
     if (fileLines.at(i).front().at(0) == '.') {
@@ -218,7 +217,7 @@ void Input::parse_input(string_o fileName) {
   }
   // Let the user know the input reading is complete
   if(!argMin) {
-    buffered_printer.value().done();
+    bar.update(100);
     std::cout << "\n";
   }
   // If main is empty, complain

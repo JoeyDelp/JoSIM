@@ -6,7 +6,9 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/InputType.hpp"
-#include "JoSIM/ProgressPrinter.hpp"
+#include "JoSIM/ProgressBar.hpp"
+
+#include <thread>
 
 using namespace JoSIM;
 
@@ -103,23 +105,22 @@ void Netlist::expand_subcircuits() {
       }
     }
   }
+  ProgressBar bar;
+  bar.set_bar_width(30);
+  bar.fill_bar_progress_with("■");
+  bar.fill_bar_remainder_with(" ");
+  bar.set_status_text("Expanding Subcircuits");
+  float progress = 0;
+  float totalSubckts = (float)nestedSubcktCount;
   // If not minimal printing
   int cc = 0;
-  std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
-  if(!argMin) {
-    // Start progress printing
-    std::cout << "Subcircuit expansion progress:" << std::endl;
-    // Threaded printer object to move printing away from main thread
-    auto printer = TimeProgressPrinter(nestedSubcktCount);
-    buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
-      std::move(printer), 0);
-  }
   // While we are nested (depth not zero)
   while (nestedSubcktCount != 0) {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      buffered_printer.value().update(cc);
+      progress = (float)cc / totalSubckts * 100;
+      bar.update(progress);
     }
     // Loop through subcircuits
     for (const auto &i : subcircuits) {
@@ -159,7 +160,7 @@ void Netlist::expand_subcircuits() {
   }
   // Let the user know subcircuit expansion is complete
   if(!argMin) {
-    buffered_printer.value().done();
+    bar.update(100);
     std::cout << "\n";
   }
 }
@@ -169,22 +170,19 @@ void Netlist::expand_maindesign() {
   tokens_t io;
   // std::vector<std::pair<std::string, std::string>> moddedLines;
   std::string subcktName, label;
-  // If not minimal printing
-  std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
-  if(!argMin) {
-    // Start progress printing
-    std::cout << "Main design expansion progress:" << std::endl;
-    // Threaded printer object to move printing away from main thread
-    auto printer = TimeProgressPrinter(maindesign.size());
-    buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
-      std::move(printer), 0);
-  }
+  ProgressBar bar;
+  bar.set_bar_width(30);
+  bar.fill_bar_progress_with("■");
+  bar.fill_bar_remainder_with(" ");
+  bar.set_status_text("Expanding Main Circuit");
+  float progress = 0;
   // Loop through the identified main design, line by line
   for (int i = 0; i < maindesign.size(); ++i) {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      buffered_printer.value().update(i);
+      progress = (float)i / (float)maindesign.size() * 100;
+      bar.update(progress);
     }
     // If the line denotes a subcircuit
     if (maindesign.at(i).front().at(0) == 'X') {
@@ -204,7 +202,7 @@ void Netlist::expand_maindesign() {
   }
   // Let the user know main design expansion is complete
   if(!argMin) {
-    buffered_printer.value().done();
+    bar.update(100);
     std::cout << "\n";
   }
   subcktTotal = subcircuits.size();

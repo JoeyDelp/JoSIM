@@ -41,13 +41,13 @@ namespace JoSIM {
 
 class CCVS : public BasicComponent {
   private:
-    int hDepPos_;
+    int hDepPos_ = 0;
     JoSIM::AnalysisType at_;
   public:
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
-  int currentIndex2_;
-  double_o pn2_;
+  int currentIndex2_ = 0;
+  double_o pn2_ = 0.0;
   
   CCVS(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,

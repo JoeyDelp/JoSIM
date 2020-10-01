@@ -39,7 +39,7 @@ class Inductor : public BasicComponent {
   private:
   JoSIM::AnalysisType at_;
   public:
-  double In2_;
+  double In2_ = 0.0;
   mutualinductors mutualInductances_;
 
   Inductor(

@@ -7,11 +7,11 @@
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Model.hpp"
-#include "JoSIM/ProgressPrinter.hpp"
-
+#include "JoSIM/ProgressBar.hpp"
 
 #include <cmath>
 #include <iostream>
+#include <thread>
 
 using namespace JoSIM;
 
@@ -49,22 +49,23 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
 void Simulation::trans_sim(Matrix &mObj) {
   // Ensure time axis is cleared
   results.timeAxis.clear();
-  std::optional<BufferedProgressPrinter<TimeProgressPrinter>> buffered_printer;
-  // If minimal reporting is not enabled
-  if(!minOut_) {
-    // Begin simulation progress reporting
-    std::cout << "Simulation Progress:" << std::endl;
-    // Threaded printer object to move printing away from main thread
-    auto printer = TimeProgressPrinter(simSize_);
-    buffered_printer = BufferedProgressPrinter<TimeProgressPrinter>(
-      std::move(printer), 0);
-  }
+  ProgressBar bar;
+  bar.set_bar_width(30);
+  bar.fill_bar_progress_with("■");
+  bar.fill_bar_remainder_with(" ");
+  bar.set_status_text("Simulating");
+  float progress = 0;
   // Initialize the b matrix
   b_.resize(mObj.rp.size(), 0.0);
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
     // If not minimal printing report progress
-    if(!minOut_) buffered_printer.value().update(i);
+    if(!minOut_) {
+      progress = (float)i / (float)simSize_ * 100;
+      bar.update(progress);
+    }
+    // Setup the b matrix
+    setup_b(mObj, i, i * stepSize_);
     // Assign x_prev the new b
     x_ = b_;
     // Solve Ax=b, storing the results in x_
@@ -78,16 +79,14 @@ void Simulation::trans_sim(Matrix &mObj) {
         results.xVector.at(j).value().emplace_back(x_.at(j));
       }
     }
-    // Setup the b matrix
-    setup_b(mObj, i, i * stepSize_);
     // Set backup the x vector in case we need to step back
     xPrev_ = x_;
     // Store the time step
     results.timeAxis.emplace_back(i * stepSize_);
   }
   if(!minOut_) {
-    buffered_printer.value().done();
-    std::cout << "\n";
+    bar.update(100);
+    std::cout << "\n\n";
   }
 }
 
@@ -285,21 +284,21 @@ void Simulation::handle_jj(
         temp.pn1_ = prevNode;
       }
     }
-    double v0;
+    // Ensure timestep is not too large
+    if ((double)i/(double)simSize_ > 0.01) {
+      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
+        // reduce_step(mObj, (0.25E-12 / (stepSize_ * factor)), i, step);
+        Errors::simulation_errors(
+          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
+      }
+    }
     // Guess voltage (V0)
-    v0 = (5.0/2.0) * temp.vn1_ - 2.0 * temp.vn2_ + (1.0 / 2.0) * temp.vn3_;
+    double v0 = 
+      (5.0/2.0) * temp.vn1_ - 2.0 * temp.vn2_ + (1.0 / 2.0) * temp.vn3_;
     // Phase guess (P0)
     temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
       ((1.0 / Constants::SIGMA) * 
         ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
-    // Ensure timestep is not too large
-    if ((double)i/(double)simSize_ > 0.01) {
-      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
-        reduce_step(mObj, (0.25E-12 / (stepSize_ * factor)), i, step);
-        // Errors::simulation_errors(
-        //   SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
-      }
-    }
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
     if(atyp_ == AnalysisType::Voltage) {
       b_.at(temp.variableIndex_) = 

@@ -45,19 +45,19 @@ namespace JoSIM {
 
 class JJ : public BasicComponent {
   private:
-    int hDepPos_;
-    int state_;
-    double h_;
+    int hDepPos_ = 0;
+    int state_ = 0;
+    double h_ = 0.0;
   public:
-  int variableIndex_;
-  double area_;
+  int variableIndex_ = 0;
+  double area_ = 0.0;
   std::optional<Model> model_;
-  double phaseConst_;
-  double lowerB_, upperB_, gLarge_;
-  double del0_, del_, rncalc_;
-  double pn1_, pn2_, phi0_;
-  double vn1_, vn2_, vn3_;
-  double transitionCurrent_;
+  double phaseConst_ = 0.0;
+  double lowerB_ = 0.0, upperB_ = 0.0, gLarge_ = 0.0;
+  double del0_ = 0.0, del_ = 0.0, rncalc_ = 0.0;
+  double pn1_ = 0.0, pn2_ = 0.0, phi0_ = 0.0;
+  double vn1_ = 0.0, vn2_ = 0.0, vn3_ = 0.0;
+  double transitionCurrent_ = 0.0;
   JoSIM::AnalysisType at_;
 
   JJ(
