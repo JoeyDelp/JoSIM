@@ -48,11 +48,11 @@ std::vector<tokens_t> Input::read_input(
                 tokens.at(1)).c_str()) {
             Errors::input_errors(InputErrors::CYCLIC_INCLUDE, fileName);
           }
-          includeFile = static_cast<std::string>(std::filesystem::path(
-            fileName.value()).parent_path().append(tokens.at(1)));
+          includeFile = std::filesystem::path(
+            fileName.value()).parent_path().append(tokens.at(1)).string();
         } else {
-          includeFile = static_cast<std::string>(
-            std::filesystem::current_path().append(tokens.at(1)));
+          includeFile =
+            std::filesystem::current_path().append(tokens.at(1)).string();
         }
         // Create a new LineInput variable for the included file
         FileInput file(includeFile);

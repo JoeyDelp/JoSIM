@@ -133,17 +133,15 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
           // If no file name is specified but output is specified
           if (!i.second) {
             // Store the output in a file called output.csv at cwd
-            out.output_file_name = 
-              static_cast<std::string>(
-                std::filesystem::current_path().append("output.csv"));
+            out.output_file_name =
+                std::filesystem::current_path().append("output.csv").string();
           // If a file name was given
           } else {
             // Set the output file name
             out.output_file_name = i.second.value();
             // Extract the extension (if any)
             std::string ext = 
-              static_cast<std::string>(
-                std::filesystem::path(i.second.value()).extension());
+                std::filesystem::path(i.second.value()).extension().string();
             // Cast the extension to uppercase
             std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
             // If the extension is empty
