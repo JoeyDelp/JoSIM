@@ -76,13 +76,13 @@ TransmissionLine::TransmissionLine(
       }
       // Set the value (Z0), this should be a value
       netlistInfo.value_ = parse_param(s.first.at(i).substr(3), pm, s.second);
-      // If not a value
-      if(isnan(netlistInfo.value_)) {
-        // Complain
-        Errors::invalid_component_errors(
-          ComponentErrors::INVALID_TX_DEFINED, 
-            Misc::vector_to_string(s.first));
-      }
+      // // If not a value
+      // if(isnan(netlistInfo.value_)) {
+      //   // Complain
+      //   Errors::invalid_component_errors(
+      //     ComponentErrors::INVALID_TX_DEFINED, 
+      //       Misc::vector_to_string(s.first));
+      // }
     }
     // Time Delay
     if(::memcmp(s.first.at(i).c_str(), "TD=", 3) == 0) {
@@ -95,13 +95,13 @@ TransmissionLine::TransmissionLine(
       }
       // Set the time delay (TD), this should be a value
       timestepDelay_ = parse_param(s.first.at(i).substr(3), pm, s.second) / h;
-      // If not a value
-      if(isnan(timestepDelay_)) {
-        // Complain
-        Errors::invalid_component_errors(
-          ComponentErrors::INVALID_TX_DEFINED, 
-            Misc::vector_to_string(s.first));
-      }
+      // // If not a value
+      // if(isnan(timestepDelay_)) {
+      //   // Complain
+      //   Errors::invalid_component_errors(
+      //     ComponentErrors::INVALID_TX_DEFINED, 
+      //       Misc::vector_to_string(s.first));
+      // }
     }
   }
   // Set the node configuration type
