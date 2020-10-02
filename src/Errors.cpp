@@ -784,19 +784,19 @@ void Errors::verbosity_errors(VerbosityErrors errorCode, string_o message) {
 
 
 [[noreturn]] void Errors::oor() {
-  std::cerr << "E: Out of range error. This is a bug." << std::endl;
+  std::cerr << "\nE: Out of range error. This is a bug." << std::endl;
   std::cerr << "E: Please contact the developer." << std::endl;
   std::cerr << std::endl;
   exit(-1);
 }
 
 [[noreturn]] void Errors::error_message(const std::string &formattedMessage) {
-  std::cerr << "E: " << formattedMessage << std::endl;
+  std::cerr << "\nE: " << formattedMessage << std::endl;
   std::cerr << std::endl;
   exit(-1);
 }
 
 void Errors::warning_message(const std::string &formattedMessage) {
-  std::cerr << "W: " << formattedMessage << std::endl;
+  std::cerr << "\nW: " << formattedMessage << std::endl;
   std::cerr << std::endl;
 }

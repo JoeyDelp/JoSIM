@@ -117,6 +117,7 @@ void Input::parse_input(string_o fileName) {
     fileLines = Input::read_input(input);
   }
   ProgressBar bar;
+  bar.create_thread();
   bar.set_bar_width(30);
   bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
@@ -218,6 +219,7 @@ void Input::parse_input(string_o fileName) {
   // Let the user know the input reading is complete
   if(!argMin) {
     bar.update(100);
+    bar.complete();
     std::cout << "\n";
   }
   // If main is empty, complain

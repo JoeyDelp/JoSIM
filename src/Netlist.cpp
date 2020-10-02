@@ -106,6 +106,7 @@ void Netlist::expand_subcircuits() {
     }
   }
   ProgressBar bar;
+  bar.create_thread();
   bar.set_bar_width(30);
   bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
@@ -161,6 +162,7 @@ void Netlist::expand_subcircuits() {
   // Let the user know subcircuit expansion is complete
   if(!argMin) {
     bar.update(100);
+    bar.complete();
     std::cout << "\n";
   }
 }
@@ -171,6 +173,7 @@ void Netlist::expand_maindesign() {
   // std::vector<std::pair<std::string, std::string>> moddedLines;
   std::string subcktName, label;
   ProgressBar bar;
+  bar.create_thread();
   bar.set_bar_width(30);
   bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
@@ -203,6 +206,7 @@ void Netlist::expand_maindesign() {
   // Let the user know main design expansion is complete
   if(!argMin) {
     bar.update(100);
+    bar.complete();
     std::cout << "\n";
   }
   subcktTotal = subcircuits.size();

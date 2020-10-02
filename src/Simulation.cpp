@@ -11,7 +11,6 @@
 
 #include <cmath>
 #include <iostream>
-#include <thread>
 
 using namespace JoSIM;
 
@@ -50,6 +49,7 @@ void Simulation::trans_sim(Matrix &mObj) {
   // Ensure time axis is cleared
   results.timeAxis.clear();
   ProgressBar bar;
+  bar.create_thread();
   bar.set_bar_width(30);
   bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
@@ -86,6 +86,7 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
   if(!minOut_) {
     bar.update(100);
+    bar.complete();
     std::cout << "\n\n";
   }
 }

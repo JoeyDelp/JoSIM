@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
-#include <thread>
 
 using namespace JoSIM;
 
@@ -88,6 +87,7 @@ void Matrix::create_matrix(Input &iObj)
   // Set the index to the first branch current to the size of the node map
   branchIndex = nm.size();
   ProgressBar bar;
+  bar.create_thread();
   bar.set_bar_width(30);
   bar.fill_bar_progress_with("O");
   bar.fill_bar_remainder_with(" ");
@@ -308,6 +308,7 @@ void Matrix::create_matrix(Input &iObj)
   // Led the user know the matrix creation is complete
   if(!iObj.argMin) {
     bar.update(100);
+    bar.complete();
     std::cout << "\n";
   }
 
