@@ -15,6 +15,7 @@ private:
   std::atomic<bool> complete_ = false;
   std::atomic<float> c_progress_{0.0f};
   std::atomic<float> progress_{0.0f};
+  std::atomic<float> total_{1.0f};
   std::atomic<size_t> bar_width_{60};
   std::string fill_{"#"}, remainder_{" "}, status_text_{""};
   std::vector<std::thread> threads_;
@@ -22,6 +23,10 @@ private:
 public: 
   void set_progress(float value) {
     progress_ = value;
+  }
+
+  void set_total(float value) {
+    total_ = value;
   }
 
   void set_currentprogress(float value) {
@@ -84,9 +89,10 @@ public:
 
   void thread_print() {
     while(!complete_) {
-      if(progress_ > c_progress_) {
+      float perc = progress_ / total_ * 100;
+      if(perc > c_progress_) {
         write_progress();
-        set_currentprogress(progress_);
+        set_currentprogress(perc);
       }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

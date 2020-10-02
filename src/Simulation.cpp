@@ -55,16 +55,15 @@ void Simulation::trans_sim(Matrix &mObj) {
     bar.fill_bar_progress_with("O");
     bar.fill_bar_remainder_with(" ");
     bar.set_status_text("Simulating");
+    bar.set_total((float)simSize_);
   }
-  float progress = 0;
   // Initialize the b matrix
   b_.resize(mObj.rp.size(), 0.0);
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
     // If not minimal printing report progress
     if(!minOut_) {
-      progress = (float)i / (float)simSize_ * 100;
-      bar.update(progress);
+      bar.update(i);
     }
     // Setup the b matrix
     setup_b(mObj, i, i * stepSize_);

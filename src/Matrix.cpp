@@ -93,8 +93,8 @@ void Matrix::create_matrix(Input &iObj)
     bar.fill_bar_progress_with("O");
     bar.fill_bar_remainder_with(" ");
     bar.set_status_text("Creating Matrix");
+    bar.set_total((float)iObj.netlist.expNetlist.size());
   }
-  float progress = 0;
   // Counter for progress report
   int cc = 0;
   // Loop through all the components in the netlist
@@ -102,8 +102,7 @@ void Matrix::create_matrix(Input &iObj)
     // If not minimal printing
     if(!iObj.argMin) {
       // Report progress
-      progress = (float)cc / (float)iObj.netlist.expNetlist.size() * 100;
-      bar.update(progress);
+      bar.update(cc);
     }
     // First character of first token indicates device type
     switch(i.first.front().at(0)){

@@ -112,9 +112,8 @@ void Netlist::expand_subcircuits() {
     bar.fill_bar_progress_with("O");
     bar.fill_bar_remainder_with(" ");
     bar.set_status_text("Expanding Subcircuits");
+    bar.set_total((float)nestedSubcktCount);
   }
-  float progress = 0;
-  float totalSubckts = (float)nestedSubcktCount;
   // If not minimal printing
   int cc = 0;
   // While we are nested (depth not zero)
@@ -122,8 +121,7 @@ void Netlist::expand_subcircuits() {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      progress = (float)cc / totalSubckts * 100;
-      bar.update(progress);
+      bar.update(cc);
     }
     // Loop through subcircuits
     for (const auto &i : subcircuits) {
@@ -181,15 +179,14 @@ void Netlist::expand_maindesign() {
     bar.fill_bar_progress_with("O");
     bar.fill_bar_remainder_with(" ");
     bar.set_status_text("Expanding Main Circuit");
+    bar.set_total((float)maindesign.size());
   }
-  float progress = 0;
   // Loop through the identified main design, line by line
   for (int i = 0; i < maindesign.size(); ++i) {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      progress = (float)i / (float)maindesign.size() * 100;
-      bar.update(progress);
+      bar.update(i);
     }
     // If the line denotes a subcircuit
     if (maindesign.at(i).front().at(0) == 'X') {

@@ -123,8 +123,8 @@ void Input::parse_input(string_o fileName) {
     bar.fill_bar_progress_with("O");
     bar.fill_bar_remainder_with(" ");
     bar.set_status_text("Parsing Input");
+    bar.set_total((float)fileLines.size());
   }
-  float progress = 0.0;
   // If not minimal printing
   netlist.argMin = argMin;
   // Loop through all the tokenized input
@@ -132,8 +132,7 @@ void Input::parse_input(string_o fileName) {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      progress = (float)i / (float)fileLines.size() * 100;
-      bar.update(progress);
+      bar.update(i);
     }
     // Determine if the line is a control (subcircuit, analysis, print, etc.)
     if (fileLines.at(i).front().at(0) == '.') {
