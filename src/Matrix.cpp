@@ -87,11 +87,13 @@ void Matrix::create_matrix(Input &iObj)
   // Set the index to the first branch current to the size of the node map
   branchIndex = nm.size();
   ProgressBar bar;
-  bar.create_thread();
-  bar.set_bar_width(30);
-  bar.fill_bar_progress_with("O");
-  bar.fill_bar_remainder_with(" ");
-  bar.set_status_text("Creating Matrix");
+  if(!iObj.argMin) {
+    bar.create_thread();
+    bar.set_bar_width(30);
+    bar.fill_bar_progress_with("O");
+    bar.fill_bar_remainder_with(" ");
+    bar.set_status_text("Creating Matrix");
+  }
   float progress = 0;
   // Counter for progress report
   int cc = 0;

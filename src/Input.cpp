@@ -117,11 +117,13 @@ void Input::parse_input(string_o fileName) {
     fileLines = Input::read_input(input);
   }
   ProgressBar bar;
-  bar.create_thread();
-  bar.set_bar_width(30);
-  bar.fill_bar_progress_with("O");
-  bar.fill_bar_remainder_with(" ");
-  bar.set_status_text("Parsing Input");
+  if(!argMin) {
+    bar.create_thread();
+    bar.set_bar_width(30);
+    bar.fill_bar_progress_with("O");
+    bar.fill_bar_remainder_with(" ");
+    bar.set_status_text("Parsing Input");
+  }
   float progress = 0.0;
   // If not minimal printing
   netlist.argMin = argMin;

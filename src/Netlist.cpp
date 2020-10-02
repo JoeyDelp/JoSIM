@@ -106,11 +106,13 @@ void Netlist::expand_subcircuits() {
     }
   }
   ProgressBar bar;
-  bar.create_thread();
-  bar.set_bar_width(30);
-  bar.fill_bar_progress_with("O");
-  bar.fill_bar_remainder_with(" ");
-  bar.set_status_text("Expanding Subcircuits");
+  if(!argMin) {
+    bar.create_thread();
+    bar.set_bar_width(30);
+    bar.fill_bar_progress_with("O");
+    bar.fill_bar_remainder_with(" ");
+    bar.set_status_text("Expanding Subcircuits");
+  }
   float progress = 0;
   float totalSubckts = (float)nestedSubcktCount;
   // If not minimal printing
@@ -173,11 +175,13 @@ void Netlist::expand_maindesign() {
   // std::vector<std::pair<std::string, std::string>> moddedLines;
   std::string subcktName, label;
   ProgressBar bar;
-  bar.create_thread();
-  bar.set_bar_width(30);
-  bar.fill_bar_progress_with("O");
-  bar.fill_bar_remainder_with(" ");
-  bar.set_status_text("Expanding Main Circuit");
+  if(!argMin) {
+    bar.create_thread();
+    bar.set_bar_width(30);
+    bar.fill_bar_progress_with("O");
+    bar.fill_bar_remainder_with(" ");
+    bar.set_status_text("Expanding Main Circuit");
+  }
   float progress = 0;
   // Loop through the identified main design, line by line
   for (int i = 0; i < maindesign.size(); ++i) {

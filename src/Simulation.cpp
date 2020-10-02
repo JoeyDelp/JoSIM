@@ -49,11 +49,13 @@ void Simulation::trans_sim(Matrix &mObj) {
   // Ensure time axis is cleared
   results.timeAxis.clear();
   ProgressBar bar;
-  bar.create_thread();
-  bar.set_bar_width(30);
-  bar.fill_bar_progress_with("O");
-  bar.fill_bar_remainder_with(" ");
-  bar.set_status_text("Simulating");
+  if(!minOut_) {
+    bar.create_thread();
+    bar.set_bar_width(30);
+    bar.fill_bar_progress_with("O");
+    bar.fill_bar_remainder_with(" ");
+    bar.set_status_text("Simulating");
+  }
   float progress = 0;
   // Initialize the b matrix
   b_.resize(mObj.rp.size(), 0.0);
