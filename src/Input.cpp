@@ -132,7 +132,7 @@ void Input::parse_input(string_o fileName) {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      bar.update(i);
+      bar.update((float)i);
     }
     // Determine if the line is a control (subcircuit, analysis, print, etc.)
     if (fileLines.at(i).front().at(0) == '.') {
@@ -219,7 +219,6 @@ void Input::parse_input(string_o fileName) {
   }
   // Let the user know the input reading is complete
   if(!argMin) {
-    bar.update(100);
     bar.complete();
     std::cout << "\n";
   }

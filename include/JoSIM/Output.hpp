@@ -30,9 +30,10 @@ class Output {
                     Simulation &sObj);
 
   void format_csv_or_dat(const std::string &filename, 
-                          const char &delimiter);
+                          const char &delimiter,
+                          bool argmin = true);
 
-  void format_raw(const std::string &filename);
+  void format_raw(const std::string &filename, bool argmin = true);
 
   void format_cout(const bool &argMin);
 };

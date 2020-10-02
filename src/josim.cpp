@@ -64,11 +64,14 @@ int main(int argc,
     // Format the output into the relevant type
     if (cli_options.output_file_name) {
       if (cli_options.output_file_type == FileOutputType::Csv) {
-        oObj.Output::format_csv_or_dat(cli_options.output_file_name.value(), ',');
+        oObj.Output::format_csv_or_dat(
+          cli_options.output_file_name.value(), ',', iObj.argMin);
       } else if (cli_options.output_file_type == FileOutputType::Dat) {
-        oObj.Output::format_csv_or_dat(cli_options.output_file_name.value(), ' ');
+        oObj.Output::format_csv_or_dat(
+          cli_options.output_file_name.value(), ' ', iObj.argMin);
       } else if (cli_options.output_file_type == FileOutputType::Raw) {
-        oObj.Output::format_raw(cli_options.output_file_name.value());
+        oObj.Output::format_raw(
+          cli_options.output_file_name.value(), iObj.argMin);
       }
     } else {
       oObj.Output::format_cout(iObj.argMin);

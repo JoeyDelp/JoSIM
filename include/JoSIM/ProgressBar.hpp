@@ -53,11 +53,11 @@ public:
     set_progress(value);
   }
 
-  void write_progress(std::ostream &os = std::cout) {
+  void write_progress(float perc, std::ostream &os = std::cout) {
     os << "\r" << std::flush;
     os << "[";
     const auto completed = static_cast<size_t>(
-      progress_ * static_cast<float>(bar_width_) / 100.0);
+      perc * static_cast<float>(bar_width_) / 100.0);
     for (size_t i = 0; i < bar_width_; ++i) {
       if (i <= completed) 
         os << fill_;
@@ -65,37 +65,19 @@ public:
         os << remainder_;
     }
     os << "]";
-    os << " " << std::min(static_cast<size_t>(progress_), size_t(100)) << "%"; 
+    os << " " << std::min(static_cast<size_t>(perc), size_t(100)) << "%"; 
     os << " " << status_text_;
-
-    if (progress_ >= 100.0f) {
-      os << "\r" << std::flush;
-      os << "[";
-      const auto completed = static_cast<size_t>(
-        progress_ * static_cast<float>(bar_width_) / 100.0);
-      for (size_t i = 0; i < bar_width_; ++i) {
-        if (i <= completed) 
-          os << fill_;
-        else 
-          os << remainder_;
-      }
-      os << "]";
-      os << " " << std::min(static_cast<size_t>(progress_), size_t(100)) << "%"; 
-      os << " " << status_text_;
-      complete_ = true;
-      return;
-    }
   }
 
   void thread_print() {
     while(!complete_) {
       float perc = progress_ / total_ * 100;
       if(perc > c_progress_) {
-        write_progress();
+        write_progress(perc);
         set_currentprogress(perc);
       }
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    write_progress(100.0f);
   }
 
   void create_thread() {
@@ -103,9 +85,8 @@ public:
   }
 
   void complete(std::ostream &os = std::cout) {
-    if (!threads_.empty()) { 
-      if(threads_.back().joinable()) threads_.back().join();
-    }
+    complete_ = true;
+    if (!threads_.empty()) threads_.back().join();
   }
 
 };

@@ -102,7 +102,7 @@ void Matrix::create_matrix(Input &iObj)
     // If not minimal printing
     if(!iObj.argMin) {
       // Report progress
-      bar.update(cc);
+      bar.update((float)cc);
     }
     // First character of first token indicates device type
     switch(i.first.front().at(0)){
@@ -308,7 +308,6 @@ void Matrix::create_matrix(Input &iObj)
   create_csr();
   // Led the user know the matrix creation is complete
   if(!iObj.argMin) {
-    bar.update(100);
     bar.complete();
     std::cout << "\n";
   }

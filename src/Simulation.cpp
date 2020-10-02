@@ -63,7 +63,7 @@ void Simulation::trans_sim(Matrix &mObj) {
   for(int i = 0; i < simSize_; ++i) {
     // If not minimal printing report progress
     if(!minOut_) {
-      bar.update(i);
+      bar.update(static_cast<float>(i));
     }
     // Setup the b matrix
     setup_b(mObj, i, i * stepSize_);
@@ -86,9 +86,8 @@ void Simulation::trans_sim(Matrix &mObj) {
     results.timeAxis.emplace_back(i * stepSize_);
   }
   if(!minOut_) {
-    bar.update(100);
     bar.complete();
-    std::cout << "\n\n";
+    std::cout << "\n";
   }
 }
 

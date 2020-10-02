@@ -7,6 +7,7 @@
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/ProgressBar.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -24,7 +25,20 @@ void Output::write_output(
   traces.back().data_ = sObj.results.timeAxis;
   traces.back().type_ = 'T';
   if(mObj.relevantTraces.size() != 0){
+    ProgressBar bar;
+    if(!iObj.argMin) {
+      bar.create_thread();
+      bar.set_bar_width(30);
+      bar.fill_bar_progress_with("O");
+      bar.fill_bar_remainder_with(" ");
+      bar.set_status_text("Formatting Output");
+      bar.set_total((float)mObj.relevantTraces.size());
+    }
+    int cc = 0;
     for (const auto &i : mObj.relevantTraces) {
+      if(!iObj.argMin) {
+        bar.update(cc);
+      }
       if(i.storageType == StorageType::Voltage) {
         traces.emplace_back(i.deviceLabel.value());
         double voltN1 = 0;
@@ -201,9 +215,27 @@ void Output::write_output(
           }
         }
       }
+      ++cc;
     }
+    if(!iObj.argMin) {
+      bar.complete();
+      std::cout << "\n";
+    }  
   } else {
+    ProgressBar bar;
+    if(!iObj.argMin) {
+      bar.create_thread();
+      bar.set_bar_width(30);
+      bar.fill_bar_progress_with("O");
+      bar.fill_bar_remainder_with(" ");
+      bar.set_status_text("Formatting Output");
+      bar.set_total((float)mObj.nm.size());
+    }
+    int cc = 0;
     for (const auto &i : mObj.nm) {
+      if(!iObj.argMin) {
+        bar.update(cc);
+      }
       if(iObj.argAnal == AnalysisType::Voltage) {
         traces.emplace_back("V(" + i.first + ")");
         traces.back().type_ = 'V';
@@ -214,12 +246,18 @@ void Output::write_output(
       for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
         traces.back().data_.emplace_back(sObj.results.xVector.at(i.second).value().at(j));
       }
+      ++cc;
+    }
+    if(!iObj.argMin) {
+      bar.update(100);
+      bar.complete();
+      std::cout << "\n";
     }
   }
 }
 
 void Output::format_csv_or_dat(
-  const std::string &filename, const char &delimiter) {
+  const std::string &filename, const char &delimiter, bool argmin) {
   std::ofstream outfile(filename);
   outfile << std::setprecision(15);
   if (outfile.is_open()) {
@@ -227,7 +265,19 @@ void Output::format_csv_or_dat(
       outfile << traces.at(i).name_ << delimiter;
     }
     outfile << traces.at(traces.size() - 1).name_ << "\n";
+    ProgressBar bar;
+    if(!argmin) {
+      bar.create_thread();
+      bar.set_bar_width(30);
+      bar.fill_bar_progress_with("O");
+      bar.fill_bar_remainder_with(" ");
+      bar.set_status_text("Writing Output");
+      bar.set_total((float)traces.at(0).data_.size());
+    }
     for (int j = 0; j < traces.at(0).data_.size(); ++j) {
+      if(!argmin) {
+        bar.update(j);
+      }
       for (int i = 0; i < traces.size() - 1; ++i) {
         outfile << std::scientific << std::setprecision(6) << 
           traces.at(i).data_.at(j) << delimiter;
@@ -235,13 +285,17 @@ void Output::format_csv_or_dat(
       outfile << std::scientific << std::setprecision(6) << 
         traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
+    if(!argmin) {
+      bar.complete();
+      std::cout << "\n\n";
+    }
   } else {
     Errors::output_errors(OutputErrors::CANNOT_OPEN_FILE, filename);
   }
 }
 
 // Writes the output to a standard spice raw file
-void Output::format_raw(const std::string &filename) {
+void Output::format_raw(const std::string &filename, bool argmin) {
   // Variable to store the total number of points to be saved
   int loopsize = 0;
   // Opens an output stream with provided file name
@@ -288,7 +342,19 @@ void Output::format_raw(const std::string &filename) {
       // Start filling the values
       outfile << "Values:\n";
       int pointSizeSpacing = std::to_string(loopsize).length() + 1;
+      ProgressBar bar;
+      if(!argmin) {
+        bar.create_thread();
+        bar.set_bar_width(30);
+        bar.fill_bar_progress_with("O");
+        bar.fill_bar_remainder_with(" ");
+        bar.set_status_text("Writing Output");
+        bar.set_total((float)loopsize);
+      }
       for (int i = 0; i < loopsize; ++i) {
+        if(!argmin) {
+          bar.update(i);
+        }
         // Point and time value
         outfile << std::left << std::setw(pointSizeSpacing) << i << 
           traces.at(0).data_.at(i) << "\n";
@@ -297,6 +363,10 @@ void Output::format_raw(const std::string &filename) {
           outfile << std::left << std::setw(pointSizeSpacing) << "" <<
             traces.at(j).data_.at(i) << "\n";
         }
+      }
+      if(!argmin) {
+        bar.complete();
+        std::cout << "\n\n";
       }
     // If the traces were empty (aka nothing to plot)
     } else if (traces.empty()) {

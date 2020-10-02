@@ -121,7 +121,7 @@ void Netlist::expand_subcircuits() {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      bar.update(cc);
+      bar.update((float)cc);
     }
     // Loop through subcircuits
     for (const auto &i : subcircuits) {
@@ -161,7 +161,6 @@ void Netlist::expand_subcircuits() {
   }
   // Let the user know subcircuit expansion is complete
   if(!argMin) {
-    bar.update(100);
     bar.complete();
     std::cout << "\n";
   }
@@ -186,7 +185,7 @@ void Netlist::expand_maindesign() {
     // If not minimal printing
     if(!argMin) {
       // Report progress
-      bar.update(i);
+      bar.update((float)i);
     }
     // If the line denotes a subcircuit
     if (maindesign.at(i).front().at(0) == 'X') {
@@ -206,7 +205,6 @@ void Netlist::expand_maindesign() {
   }
   // Let the user know main design expansion is complete
   if(!argMin) {
-    bar.update(100);
     bar.complete();
     std::cout << "\n";
   }
