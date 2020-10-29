@@ -45,7 +45,7 @@ def main():
 
 
     # Set the offset start point to 0
-    offsetstart = 0
+    offseprstart = 0
     # Create a dictionary in which we will store the initial phase offset
     phaseOffset = {}
     # Create a list of rows which will eventually populate the SP file
@@ -58,7 +58,7 @@ def main():
         # If the timestep reaches stability (usually around 20ps)
         if(math.isclose(csvfile.loc[i, 'time'], 20.0E-12)):
             # Take note of the position (counter) where the offset was found
-            offsetstart = i
+            offseprstart = i
             # Store the timestep at this point (we know it's 20ps but we want it from the source)
             datarow = [csvfile.loc[i, 'time']]
             # Loop through each phase column
@@ -87,7 +87,7 @@ def main():
         stabilityCounter[csvfile.columns[j]] = 0
         jumpFlags[csvfile.columns[j]] = False
     # Start looping through each timestep from the point where offset was idenitified
-    for i in range(offsetstart, csvfile.shape[0]):
+    for i in range(offseprstart, csvfile.shape[0]):
         # Set the time value for this jump value
         dataRow = [csvfile.loc[i, 'time']]
         # Loop through each column to see if a jump was detected

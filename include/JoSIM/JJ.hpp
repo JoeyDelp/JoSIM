@@ -79,6 +79,14 @@ class JJ : public BasicComponent {
   bool update_value(const double &v);
 
   void update_timestep(const double &factor) override;
+
+  void interp_previous(const int &smallteps) override {
+    double pndiff = (pn1_ - pn2_) / smallteps;
+    double vndiff = (vn1_ - vn2_) / smallteps;
+    vn2_ = vn1_ - 1 * vndiff;
+    vn3_ = vn1_ - 2 * vndiff;
+    pn2_ = pn1_ - 1 * pndiff;
+  }
 }; // class JJ
 
 } // namespace JoSIM

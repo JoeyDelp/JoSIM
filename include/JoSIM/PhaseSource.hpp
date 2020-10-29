@@ -26,7 +26,6 @@ namespace JoSIM {
 class PhaseSource : public BasicComponent {
   public:
   int sourceIndex_;
-  double pn1_ = 0.0, pn2_ = pn1_;
   PhaseSource(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, 

@@ -165,9 +165,6 @@ double Misc::modifier(const std::string &value) {
     /* femto */
   case 'F':
     return number * 1E-15;
-    /* Atto */
-  case 'A':
-    return number * 1E-18;
     /* kilo */
   case 'K':
     return number * 1E3;

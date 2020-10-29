@@ -56,10 +56,6 @@ class Input;
     std::string substring_before(const std::string &str,
                                   const std::string &whatpart);
 
-    std::vector<double> parse_function(const std::string &str, 
-                                        Input &iObj,
-                                        const std::string &subckt = "");
-
     bool findX(const std::vector<std::string> &segment,
                 std::string &theLine, 
                 int &linePos);

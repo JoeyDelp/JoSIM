@@ -89,6 +89,13 @@ public:
     if (!threads_.empty()) threads_.back().join();
   }
 
+  ~ProgressBar() { 
+    complete_ = true; 
+    if(!threads_.empty()) 
+      if(threads_.back().joinable())
+        threads_.back().join();   
+  }
+
 };
 
 }  // namespace JoSIM

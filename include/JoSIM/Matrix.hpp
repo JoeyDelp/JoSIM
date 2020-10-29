@@ -17,7 +17,7 @@ namespace JoSIM {
 class Matrix {
   public:
   AnalysisType analysisType;
-  std::vector<FunctObj> sourcegen;
+  std::vector<Function> sourcegen;
 
   Components components;
   std::unordered_map<std::string, int> nm;

@@ -31,9 +31,9 @@ namespace JoSIM {
   ⎣ 0  0  1 -1  0 -Z⎦ ⎣I2 ⎦   ⎣ ZI1n-k + V1n-k⎦
 
   (PHASE)
-  φ1 - Z(2e/hbar)(2h/3)I1 = Z(2e/hbar)(2h/3)I2n-k - (4/3)φ1n-1 - (1/3)φ1n-2 +
+  φ1 - Z(2e/hbar)(2h/3)I1 = Z(2e/hbar)(2h/3)I2n-k + (4/3)φ1n-1 - (1/3)φ1n-2 +
                             φ2n-k - (4/3)φ2n-k-1 + (1/3)φ2n-k-2
-  φ2 - Z(2e/hbar)(2h/3)I2 = Z(2e/hbar)(2h/3)I1n-k - (4/3)φ2n-1 - (1/3)φ2n-2 +
+  φ2 - Z(2e/hbar)(2h/3)I2 = Z(2e/hbar)(2h/3)I1n-k + (4/3)φ2n-1 - (1/3)φ2n-2 +
                             φ1n-k - (4/3)φ1n-k-1 + (1/3)φ1n-k-2
 
   ⎡ 0  0  0  0                -1                  0⎤ ⎡φo⁺⎤   ⎡    0⎤
@@ -43,9 +43,9 @@ namespace JoSIM {
   ⎜ 1 -1  0  0 -Z(2e/hbar)(2h/3)                  0⎟ ⎜Ic ⎟   ⎜ RHS1⎟  
   ⎣ 0  0  1 -1                 0  -Z(2e/hbar)(2h/3)⎦ ⎣Io ⎦   ⎣ RHS2⎦
 
-  RHS1 = Z(2e/hbar)(2h/3)I2n-k - (4/3)φ1n-1 - (1/3)φ1n-2 +
+  RHS1 = Z(2e/hbar)(2h/3)I2n-k + (4/3)φ1n-1 - (1/3)φ1n-2 +
           φ2n-k - (4/3)φ2n-k-1 + (1/3)φ2n-k-2
-  RHS2 = Z(2e/hbar)(2h/3)I1n-k - (4/3)φ2n-1 - (1/3)φ2n-2 +
+  RHS2 = Z(2e/hbar)(2h/3)I1n-k + (4/3)φ2n-1 - (1/3)φ2n-2 +
           φ1n-k - (4/3)φ1n-k-1 + (1/3)φ1n-k-2
  */ 
 
@@ -57,9 +57,9 @@ class TransmissionLine : public BasicComponent {
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
   int currentIndex2_ = 0;
-  double p1n2_ = 0.0, p2n2_ = 0.0, p1nk2_ = 0.0, p2nk2_ = 0.0;
-  double dp1n1_ = 0.0, dp1n2_ = 0.0, dv2n1_ = 0.0, dp2n2_ = 0.0;
-  double dp1nk_ = 0.0, dp1nk1_ = 0.0, dp2nk_ = 0.0, dp2nk1_ = 0.0;
+  double n1_1_ = 0.0, n1_2_ = 0.0, n2_1_ = 0.0, n2_2_ = 0.0;
+  double nk_1_ = 0.0, nk_2_ = 0.0, nk1_1_ = 0.0, nk1_2_ = 0.0, nk2_1_ = 0.0, 
+    nk2_2_ = 0.0;
   int timestepDelay_ = 0.0;
 
   TransmissionLine(

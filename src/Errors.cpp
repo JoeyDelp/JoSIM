@@ -133,8 +133,8 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
       throw std::runtime_error(formattedMessage);
     case InputErrors::UNKNOWN_SUBCKT:
       formattedMessage += 
-        "The subcircuit named " + message.value_or("") + 
-        " was not found in the netlist.\n";
+        "The subcircuit in the following line was not found:\n";
+      formattedMessage += message.value() + "\n";
       formattedMessage += 
         "Please ensure all subcircuits exist and are correctly named.";
       throw std::runtime_error(formattedMessage);
@@ -293,7 +293,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
         "Invalid transient analysis specified. " + message.value_or("") + "\n";
       formattedMessage += "Substituting default parameters.\n";
       formattedMessage += 
-        "Defaults: TSTEP=1PS TSTOP=1000PS TSTART=0PS MAXTSTEP=1PS";
+        "Defaults: TSTEP=1PS TSTOP=1000PS prstart=0PS PRSTEP=1PS";
       warning_message(formattedMessage);
       break;
     case ControlErrors::PRINT_TOO_MANY_ARGS:

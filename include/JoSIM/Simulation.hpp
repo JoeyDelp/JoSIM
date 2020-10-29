@@ -33,7 +33,8 @@ class Simulation {
   JoSIM::AnalysisType atyp_;
   bool minOut_;
   bool needsLU_;
-  double stepSize_;
+  bool needsTR_;
+  double stepSize_, prstep_, prstart_;
   int simOK_;
   klu_symbolic *Symbolic_;
   klu_common Common_;
@@ -42,7 +43,7 @@ class Simulation {
   void trans_sim(Matrix &mObj);
   void setup_b(Matrix &mObj, int i, double step, double factor = 1);
   void reduce_step(Matrix &mObj, double factor, 
-    int &stepCount, double &currentStep);
+    int stepCount, double currentStep);
   
   void handle_cs(Matrix &mObj, double &step, const int &i);
   void handle_resistors(Matrix &mObj);
@@ -53,7 +54,7 @@ class Simulation {
   void handle_ps(Matrix &mObj, const int &i, double &step, double factor = 1);
   void handle_ccvs(Matrix &mObj);
   void handle_vccs(Matrix &mObj);
-  void handle_tx(Matrix &mObj, const int &i);
+  void handle_tx(Matrix &mObj, const int &i, double &step, double factor = 1);
 
   public:
   Results results;

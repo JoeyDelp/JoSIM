@@ -30,9 +30,9 @@ using namespace JoSIM;
   ⎣ 0  0  1 -1  0 -Z⎦ ⎣I2 ⎦   ⎣ ZI1n-k + V1n-k⎦
 
   (PHASE)
-  φ1 - Z(2e/hbar)(2h/3)I1 = Z(2e/hbar)(2h/3)I2n-k - (4/3)φ1n-1 - (1/3)φ1n-2 +
+  φ1 - Z(2e/hbar)(2h/3)I1 = Z(2e/hbar)(2h/3)I2n-k + (4/3)φ1n-1 - (1/3)φ1n-2 +
                             φ2n-k - (4/3)φ2n-k-1 + (1/3)φ2n-k-2
-  φ2 - Z(2e/hbar)(2h/3)I2 = Z(2e/hbar)(2h/3)I1n-k - (4/3)φ2n-1 - (1/3)φ2n-2 +
+  φ2 - Z(2e/hbar)(2h/3)I2 = Z(2e/hbar)(2h/3)I1n-k + (4/3)φ2n-1 - (1/3)φ2n-2 +
                             φ1n-k - (4/3)φ1n-k-1 + (1/3)φ1n-k-2
 
   ⎡ 0  0  0  0                -1                  0⎤ ⎡φo⁺⎤   ⎡    0⎤
@@ -42,9 +42,9 @@ using namespace JoSIM;
   ⎜ 1 -1  0  0 -Z(2e/hbar)(2h/3)                  0⎟ ⎜Ic ⎟   ⎜ RHS1⎟  
   ⎣ 0  0  1 -1                 0  -Z(2e/hbar)(2h/3)⎦ ⎣Io ⎦   ⎣ RHS2⎦
 
-  RHS1 = Z(2e/hbar)(2h/3)I2n-k - (4/3)φ1n-1 - (1/3)φ1n-2 +
+  RHS1 = Z(2e/hbar)(2h/3)I2n-k + (4/3)φ1n-1 - (1/3)φ1n-2 +
           φ2n-k - (4/3)φ2n-k-1 + (1/3)φ2n-k-2
-  RHS2 = Z(2e/hbar)(2h/3)I1n-k - (4/3)φ2n-1 - (1/3)φ2n-2 +
+  RHS2 = Z(2e/hbar)(2h/3)I1n-k + (4/3)φ2n-1 - (1/3)φ2n-2 +
           φ1n-k - (4/3)φ1n-k-1 + (1/3)φ1n-k-2
  */ 
 
@@ -76,13 +76,6 @@ TransmissionLine::TransmissionLine(
       }
       // Set the value (Z0), this should be a value
       netlistInfo.value_ = parse_param(s.first.at(i).substr(3), pm, s.second);
-      // // If not a value
-      // if(isnan(netlistInfo.value_)) {
-      //   // Complain
-      //   Errors::invalid_component_errors(
-      //     ComponentErrors::INVALID_TX_DEFINED, 
-      //       Misc::vector_to_string(s.first));
-      // }
     }
     // Time Delay
     if(::memcmp(s.first.at(i).c_str(), "TD=", 3) == 0) {
@@ -95,13 +88,6 @@ TransmissionLine::TransmissionLine(
       }
       // Set the time delay (TD), this should be a value
       timestepDelay_ = parse_param(s.first.at(i).substr(3), pm, s.second) / h;
-      // // If not a value
-      // if(isnan(timestepDelay_)) {
-      //   // Complain
-      //   Errors::invalid_component_errors(
-      //     ComponentErrors::INVALID_TX_DEFINED, 
-      //       Misc::vector_to_string(s.first));
-      // }
     }
   }
   // Set the node configuration type

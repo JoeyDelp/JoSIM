@@ -26,11 +26,16 @@ namespace JoSIM {
 class VoltageSource : public BasicComponent {
   public:
   int sourceIndex_;
-  double pn1_ = 0.0, pn2_ = pn1_;
+  double pn1_ = 0.0, pn2_ = pn1_, pn3_ = pn2_;
   VoltageSource(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm,
     nodeconnections &nc, int &bi, const int &ci);
+
+  void interp_previous(const int &smallteps) override {
+    pn1_ = pn2_;
+    pn2_ = pn3_;
+  }
 }; // class VoltageSource
 
 } // namespace JoSIM

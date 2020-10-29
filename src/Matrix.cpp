@@ -112,7 +112,7 @@ void Matrix::create_matrix(Input &iObj)
         components.devices.emplace_back(
           Inductor(
             i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, iObj.argAnal,
-            iObj.transSim.get_prstep(), branchIndex));
+            iObj.transSim.get_tstep(), branchIndex));
         // Store this inductor's component list index for reference
         components.inductorIndices.emplace_back(components.devices.size() - 1);
         break;
@@ -122,7 +122,7 @@ void Matrix::create_matrix(Input &iObj)
         components.devices.emplace_back(
           JJ(i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, 
             iObj.netlist.models_new, iObj.argAnal, 
-            iObj.transSim.get_prstep(), branchIndex));
+            iObj.transSim.get_tstep(), branchIndex));
         // Store this JJ's component list index for reference    
         components.junctionIndices.emplace_back(components.devices.size() - 1);
         break;  
@@ -132,7 +132,7 @@ void Matrix::create_matrix(Input &iObj)
         components.devices.emplace_back(
           Resistor(
             i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, iObj.argAnal,
-            iObj.transSim.get_prstep(), branchIndex));
+            iObj.transSim.get_tstep(), branchIndex));
         // Store this resistor's component list index for reference
         components.resistorIndices.emplace_back(components.devices.size() - 1);
         break;
@@ -152,14 +152,13 @@ void Matrix::create_matrix(Input &iObj)
         components.devices.emplace_back(
           Capacitor(
             i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, iObj.argAnal,
-            iObj.transSim.get_prstep(), branchIndex));
+            iObj.transSim.get_tstep(), branchIndex));
         // Store this capacitor's component list index for reference
         components.capacitorIndices.emplace_back(components.devices.size() - 1);
         break;
       // Voltage/Phase Source
       case 'P':
-      case 'V':
-        if(iObj.argAnal == AnalysisType::Phase) {
+        //if(iObj.argAnal == AnalysisType::Phase) {
           // Create a phase source and add it to the component list
           components.devices.emplace_back(
             PhaseSource(
@@ -170,7 +169,9 @@ void Matrix::create_matrix(Input &iObj)
             Misc::vector_to_string(i.first), iObj, i.second);
           // Store this phase source component list index for reference
           components.psIndices.emplace_back(components.devices.size() - 1);
-        } else if(iObj.argAnal == AnalysisType::Voltage) {
+        break;
+        //} else if(iObj.argAnal == AnalysisType::Voltage) {
+      case 'V':
           // Create a voltage source and add it to the component list
           components.devices.emplace_back(
             VoltageSource(
@@ -181,7 +182,7 @@ void Matrix::create_matrix(Input &iObj)
             Misc::vector_to_string(i.first), iObj, i.second);
           // Store this voltage source component list index for reference
           components.vsIndices.emplace_back(components.devices.size() - 1);
-        }
+        //}
         break;
       // Mutual inductance
       case 'K':
@@ -194,7 +195,7 @@ void Matrix::create_matrix(Input &iObj)
         components.devices.emplace_back(
           TransmissionLine(
             i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc, 
-            iObj.parameters, iObj.argAnal, iObj.transSim.get_prstep(), 
+            iObj.parameters, iObj.argAnal, iObj.transSim.get_tstep(), 
             branchIndex));
         // Store the transmission line component list index for reference
         components.txIndices.emplace_back(components.devices.size() - 1);        
@@ -206,7 +207,7 @@ void Matrix::create_matrix(Input &iObj)
           VCCS(
             i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc, 
             iObj.parameters, branchIndex, iObj.argAnal, 
-            iObj.transSim.get_prstep()));
+            iObj.transSim.get_tstep()));
         // Store the vccs component list index for reference
         components.vccsIndices.emplace_back(components.devices.size() - 1);        
         break;
@@ -237,7 +238,7 @@ void Matrix::create_matrix(Input &iObj)
           CCVS(
             i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc, 
             iObj.parameters, branchIndex, iObj.argAnal, 
-            iObj.transSim.get_prstep()));
+            iObj.transSim.get_tstep()));
         // Store the ccvs component list index for reference
         components.ccvsIndices.emplace_back(components.devices.size() - 1);        
         break;
@@ -295,10 +296,10 @@ void Matrix::create_matrix(Input &iObj)
       cf * std::sqrt(ind1.netlistInfo.value_ * ind2.netlistInfo.value_);
     // Add the mutual inductance to each inductor respectively
     ind1.add_mutualInductance(
-      mutual, iObj.argAnal, iObj.transSim.get_prstep(), 
+      mutual, iObj.argAnal, iObj.transSim.get_tstep(), 
       ind2.indexInfo.currentIndex_.value());
     ind2.add_mutualInductance(
-      mutual, iObj.argAnal, iObj.transSim.get_prstep(), 
+      mutual, iObj.argAnal, iObj.transSim.get_tstep(), 
       ind1.indexInfo.currentIndex_.value());
     // Add this mutual inductance to each inductor's matrix stamp
     ind1.set_mutualInductance(std::make_pair(ind2Index.value(), mutual));

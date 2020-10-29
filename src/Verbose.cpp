@@ -115,10 +115,17 @@ void Verbose::print_circuit_stats(const Input &iObj, const Matrix &mObj) {
 void Verbose::print_parameters(const Input &iObj) {
   if(iObj.parameters.size() != 0) {
     std::cout << "Printing parsed parameters" << std::endl;
+    tokens_t sortedParams;
     for (auto i : iObj.parameters) {
-      std::cout << i.first.subcircuit().value_or("") << " : " 
-        << i.first.name() << " = " 
-        << i.second.get_value().value() << "\n";
+      std::stringstream value;
+      value << std::scientific << std::setprecision(6) << 
+        i.second.get_value().value();
+      sortedParams.emplace_back(i.first.subcircuit().value_or("") + " : " 
+        + i.first.name() + " = " + value.str());
+    }
+    std::sort(sortedParams.begin(), sortedParams.end());
+    for(auto i : sortedParams) {
+      std::cout << i << std::endl;
     }
     std::cout << std::endl;
   }

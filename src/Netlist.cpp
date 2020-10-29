@@ -35,7 +35,8 @@ void Netlist::id_io_subc_label(
     io.assign(lineTokens.begin() + 1, lineTokens.end() - 1);
   // Else if the neither then this subcircuit surely does not exist
   } else {
-    Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, subcktName);
+    Errors::input_errors(
+      InputErrors::UNKNOWN_SUBCKT, Misc::vector_to_string(lineTokens));
   }
 }
 
@@ -170,7 +171,6 @@ void Netlist::expand_maindesign() {
   // Variable to store io
   tokens_t io;
   // std::vector<std::pair<std::string, std::string>> moddedLines;
-  std::string subcktName, label;
   ProgressBar bar;
   if(!argMin) {
     bar.create_thread();
@@ -182,6 +182,7 @@ void Netlist::expand_maindesign() {
   }
   // Loop through the identified main design, line by line
   for (int i = 0; i < maindesign.size(); ++i) {
+    std::string subcktName, label;
     // If not minimal printing
     if(!argMin) {
       // Report progress

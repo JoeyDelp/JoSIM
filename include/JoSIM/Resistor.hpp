@@ -36,6 +36,7 @@ class Resistor : public BasicComponent {
   JoSIM::AnalysisType at_;
   public:
   double_o pn2_;
+  double_o pn3_;
 
   Resistor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
@@ -43,6 +44,7 @@ class Resistor : public BasicComponent {
     const param_map &pm, const AnalysisType &at, const double &h, int &bi);
 
   void update_timestep(const double &factor) override;
+  void interp_previous(const int &smallteps) override { pn2_ = pn3_; }
 }; // class Resistor
 
 } // namespace JoSIM

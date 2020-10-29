@@ -117,6 +117,34 @@ double JoSIM::parse_param(
             // Find the next operator since this operator is not an operator
             opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
           }
+        } else {
+          // If the character after the operator is a digit but not before
+          if ((opLoc != expToEval.length() - 1) && !qType.empty()){
+            if(qType.back() != 'V') {
+              if (std::isdigit(expToEval[opLoc + 1])) {
+                // Find the next operator since this operator is not an operator
+                opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
+                // Do a few checks
+                bool digitBeforeE = false;
+                bool eBefore = false;
+                bool digitAfter = false;
+                // If the character preceeding this operator is an E
+                if (expToEval[opLoc - 1] == 'E') eBefore = true;
+                // If the character after the operator is a digit
+                if (opLoc != expToEval.length() - 1){
+                  if (std::isdigit(expToEval[opLoc + 1])) digitAfter = true;
+                }
+                // If the char before E is a digit
+                if ((opLoc - 1) != 0){
+                  if (std::isdigit(expToEval[opLoc - 2])) digitBeforeE = true;
+                }
+                if(eBefore && digitAfter && digitBeforeE) {
+                  // Find the next operator since this operator is not an operator
+                  opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
+                }
+              }
+            }
+          }
         }
       }
       // If the operator is at the start of the string
@@ -130,7 +158,9 @@ double JoSIM::parse_param(
       }
     }
     // Handle a numerical value
-    if (isdigit(partToEval.at(0))) {
+    if (isdigit(partToEval.at(0)) || 
+      ((partToEval.at(0) == '-' || partToEval.at(0) == '+') && 
+      partToEval.size() > 1)) {
       // Add the value to the RPN queue
       rpnQueue.push_back(
         Misc::precise_to_string(Misc::modifier(partToEval)));
