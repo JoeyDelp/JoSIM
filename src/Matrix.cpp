@@ -21,12 +21,9 @@ void Matrix::create_matrix(Input &iObj)
   // Create a node counter variable
   int nodeCounter = 0;
   // Variables to store node configs since they are already identified here
-  std::vector<NodeConfig> nodeConfig(
-    iObj.netlist.expNetlist.size(), NodeConfig::GND);
+  std::vector<NodeConfig> nodeConfig;
   // Optional, only available when 4 node components are detected
-  std::vector<std::optional<NodeConfig>> nodeConfig2(
-    iObj.netlist.expNetlist.size(), NodeConfig::GND);
-  int ncount = 0;
+  std::vector<std::optional<NodeConfig>> nodeConfig2;
   for (auto &i : iObj.netlist.expNetlist) {
     if (i.first.at(0).at(0) != 'K') {
       // Expand all inline parameters
@@ -42,15 +39,17 @@ void Matrix::create_matrix(Input &iObj)
       if(i.first.at(1).find("GND") == std::string::npos && i.first.at(1) != "0") {
         // Add the first node to the map if not ground
         if(nm.count(i.first.at(1)) == 0) nm[i.first.at(1)] = nodeCounter++;
-        nodeConfig.at(ncount) = NodeConfig::POSGND;
+        nodeConfig.emplace_back(NodeConfig::POSGND);
+      } else { 
+        nodeConfig.emplace_back(NodeConfig::GND);
       }
       if(i.first.at(2).find("GND") == std::string::npos && i.first.at(2) != "0") {
         // Add the second node to the map if not ground
         if(nm.count(i.first.at(2)) == 0) nm[i.first.at(2)] = nodeCounter++;
-        if (nodeConfig.at(ncount) == NodeConfig::POSGND) {
-          nodeConfig.at(ncount) = NodeConfig::POSNEG;
+        if (nodeConfig.back() == NodeConfig::POSGND) {
+          nodeConfig.back() = NodeConfig::POSNEG;
         } else {
-          nodeConfig.at(ncount) = NodeConfig::GNDNEG;
+          nodeConfig.back() = NodeConfig::GNDNEG;
         }
       }
       // If the device is as 4 node device
@@ -66,20 +65,21 @@ void Matrix::create_matrix(Input &iObj)
           i.first.at(3) != "0") {
           // Add the third node to the map if not ground
           if(nm.count(i.first.at(3)) == 0) nm[i.first.at(3)] = nodeCounter++;
-          nodeConfig2.at(ncount) = NodeConfig::POSGND;
+          nodeConfig2.emplace_back(NodeConfig::POSGND);
+        } else {
+          nodeConfig2.emplace_back(NodeConfig::GND);
         }
         if(i.first.at(4).find("GND") == std::string::npos && 
           i.first.at(4) != "0") {
           // Add the fourth node to the map if not ground
           if(nm.count(i.first.at(4)) == 0) nm[i.first.at(4)] = nodeCounter++;
-          if (nodeConfig2.at(ncount) == NodeConfig::POSGND) {
-            nodeConfig2.at(ncount) = NodeConfig::POSNEG;
+          if (nodeConfig2.back() == NodeConfig::POSGND) {
+            nodeConfig2.back() = NodeConfig::POSNEG;
           } else {
-            nodeConfig2.at(ncount) = NodeConfig::GNDNEG;
+            nodeConfig2.back() = NodeConfig::GNDNEG;
           }
         }
       }
-      ncount++;
     }
   }
   // Resize the node connection vector to match the size of the node map
@@ -115,6 +115,8 @@ void Matrix::create_matrix(Input &iObj)
             iObj.transSim.get_tstep(), branchIndex));
         // Store this inductor's component list index for reference
         components.inductorIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;    
         break;
       // Josephson junction (JJ)
       case 'B':
@@ -125,6 +127,8 @@ void Matrix::create_matrix(Input &iObj)
             iObj.transSim.get_tstep(), branchIndex));
         // Store this JJ's component list index for reference    
         components.junctionIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;    
         break;  
       // Resistors
       case 'R':
@@ -135,6 +139,8 @@ void Matrix::create_matrix(Input &iObj)
             iObj.transSim.get_tstep(), branchIndex));
         // Store this resistor's component list index for reference
         components.resistorIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;    
         break;
       // Current Source
       case 'I':
@@ -145,6 +151,8 @@ void Matrix::create_matrix(Input &iObj)
         sourcegen.emplace_back();
         sourcegen.back().parse_function(
           Misc::vector_to_string(i.first), iObj, i.second);
+        // Increment the component counter
+        ++cc;    
         break;
       // Capacitors
       case 'C':
@@ -155,6 +163,8 @@ void Matrix::create_matrix(Input &iObj)
             iObj.transSim.get_tstep(), branchIndex));
         // Store this capacitor's component list index for reference
         components.capacitorIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;    
         break;
       // Voltage/Phase Source
       case 'P':
@@ -169,6 +179,8 @@ void Matrix::create_matrix(Input &iObj)
             Misc::vector_to_string(i.first), iObj, i.second);
           // Store this phase source component list index for reference
           components.psIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;    
         break;
         //} else if(iObj.argAnal == AnalysisType::Voltage) {
       case 'V':
@@ -183,6 +195,8 @@ void Matrix::create_matrix(Input &iObj)
           // Store this voltage source component list index for reference
           components.vsIndices.emplace_back(components.devices.size() - 1);
         //}
+        // Increment the component counter
+        ++cc;    
         break;
       // Mutual inductance
       case 'K':
@@ -198,7 +212,9 @@ void Matrix::create_matrix(Input &iObj)
             iObj.parameters, iObj.argAnal, iObj.transSim.get_tstep(), 
             branchIndex));
         // Store the transmission line component list index for reference
-        components.txIndices.emplace_back(components.devices.size() - 1);        
+        components.txIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;            
         break;
       // Voltage controlled current source (4 node device)
       case 'G':
@@ -209,7 +225,9 @@ void Matrix::create_matrix(Input &iObj)
             iObj.parameters, branchIndex, iObj.argAnal, 
             iObj.transSim.get_tstep()));
         // Store the vccs component list index for reference
-        components.vccsIndices.emplace_back(components.devices.size() - 1);        
+        components.vccsIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;            
         break;
       // Current controlled current source (4 node device)
       case 'F':
@@ -219,7 +237,9 @@ void Matrix::create_matrix(Input &iObj)
             i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc, 
             iObj.parameters, branchIndex));
         // Store the cccs component list index for reference
-        components.cccsIndices.emplace_back(components.devices.size() - 1);        
+        components.cccsIndices.emplace_back(components.devices.size() - 1); 
+        // Increment the component counter
+        ++cc;           
         break;
       // Voltage controlled voltage source (4 node device)
       case 'E':
@@ -229,7 +249,9 @@ void Matrix::create_matrix(Input &iObj)
             i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc, 
             iObj.parameters, branchIndex));
         // Store the vcvs component list index for reference
-        components.vcvsIndices.emplace_back(components.devices.size() - 1);        
+        components.vcvsIndices.emplace_back(components.devices.size() - 1);  
+        // Increment the component counter
+        ++cc;        
         break;
       // Current controlled voltage source (4 node device)
       case 'H':
@@ -240,15 +262,15 @@ void Matrix::create_matrix(Input &iObj)
             iObj.parameters, branchIndex, iObj.argAnal, 
             iObj.transSim.get_tstep()));
         // Store the ccvs component list index for reference
-        components.ccvsIndices.emplace_back(components.devices.size() - 1);        
+        components.ccvsIndices.emplace_back(components.devices.size() - 1);
+        // Increment the component counter
+        ++cc;        
         break;
       // This is an error. This means that the component was unidentified.
       default:
         Errors::invalid_component_errors(
           ComponentErrors::UNKNOWN_DEVICE_TYPE, i.first.front());
     }
-    // Increment the component counter
-    ++cc;
   }
 
   // Loop through all identified mutual inductances
