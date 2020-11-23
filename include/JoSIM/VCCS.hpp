@@ -44,7 +44,7 @@ class VCCS : public BasicComponent {
   public:
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
-  double_o pn2_;
+  double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
 
   VCCS(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
@@ -57,6 +57,10 @@ class VCCS : public BasicComponent {
   void set_matrix_info();
 
   void update_timestep(const double &factor) override;
+
+  void step_back() override {
+    pn2_ = pn4_;
+  }
 }; // class VCCS
 
 } // namespace JoSIM

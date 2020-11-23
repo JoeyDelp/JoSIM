@@ -95,7 +95,7 @@ namespace JoSIM
 
     virtual void update_timestep(const double &factor) {};
 
-    virtual void interp_previous(const int &smallteps) {};
+    virtual void step_back() {};
 
     virtual ~BasicComponent() {}
 

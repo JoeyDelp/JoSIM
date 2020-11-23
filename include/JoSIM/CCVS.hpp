@@ -47,7 +47,7 @@ class CCVS : public BasicComponent {
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
   int currentIndex2_ = 0;
-  double_o pn2_ = 0.0;
+  double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
   
   CCVS(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
@@ -60,6 +60,10 @@ class CCVS : public BasicComponent {
   void set_matrix_info(const AnalysisType &at, const double &h);
 
   void update_timestep(const double &factor) override;
+
+  void step_back() override {
+    pn2_ = pn4_;
+  }
 
 }; // class CCVS
 

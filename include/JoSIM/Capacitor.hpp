@@ -38,19 +38,19 @@ class Capacitor : public BasicComponent {
   private:
   JoSIM::AnalysisType at_;
   public:
-  double pn1_ = 0.0;
-  double pn2_ = 0.0;
-  double pn3_ = 0.0;
+  double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0, pn5_ = 0.0, pn6_ = 0.0,
+    pn7_ = 0.0;
   Capacitor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const AnalysisType &at, const double &h, int &bi);
   
   void update_timestep(const double &factor) override;
-  void interp_previous(const int &smallteps) override {
-    double pndiff = (pn1_ - pn2_) / smallteps;
-    pn2_ = pn1_ - 1 * pndiff;
-    pn3_ = pn1_ - 2 * pndiff;
+
+  void step_back() override {
+    pn4_ = pn7_;
+    pn3_ = pn6_;
+    pn2_ = pn5_;
   }
 }; // class Capacitor
 

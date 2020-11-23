@@ -39,8 +39,7 @@ class Inductor : public BasicComponent {
   private:
   JoSIM::AnalysisType at_;
   public:
-  double In2_ = 0.0;
-  double In3_ = 0.0;
+  double In2_ = 0.0, In3_ = 0.0, In4_ = 0.0;
   mutualinductors mutualInductances_;
 
   Inductor(
@@ -56,7 +55,10 @@ class Inductor : public BasicComponent {
     return mutualInductances_; } 
 
   void update_timestep(const double &factor) override;
-  void interp_previous(const int &smallteps) override { In2_ = In3_; };
+
+  void step_back() override {
+    In2_ = In4_;
+  }
 }; // class Inductor
 
 } // namespace JoSIM

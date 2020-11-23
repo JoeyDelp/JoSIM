@@ -112,22 +112,22 @@ JJ::JJ(
   set_matrix_info();
 }
 
-double JJ::subgap_impedance(const double factor) {
+double JJ::subgap_impedance() {
   // Set subgap impedance (1/R0) + (3C/2h)
   return ((1/model_.value().get_subgapResistance()) + 
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_ * factor)));
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
 }
 
-double JJ::transient_impedance(const double factor) {
+double JJ::transient_impedance() {
   // Set transitional impedance (GL) + (3C/2h)
   return (gLarge_ + 
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_ * factor)));
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
 }
 
-double JJ::normal_impedance(const double factor) {
+double JJ::normal_impedance() {
   // Set normal impedance (1/RN) + (3C/2h)
   return ((1/model_.value().get_normalResistance()) + 
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_ * factor)));
+    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
 }
 
 void JJ::set_matrix_info() {
@@ -280,12 +280,13 @@ bool JJ::update_value(const double &v) {
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
 void JJ::update_timestep(const double &factor) {
+  h_ = h_ * factor;
   if (state_ == 0) {
-    matrixInfo.nonZeros_.back() = -1/subgap_impedance(factor);
+    matrixInfo.nonZeros_.back() = -1/subgap_impedance();
   } else if (state_ == 1) {
-    matrixInfo.nonZeros_.back() = -1/transient_impedance(factor);
+    matrixInfo.nonZeros_.back() = -1/transient_impedance();
   } else if (state_ == 2) {
-    matrixInfo.nonZeros_.back() = -1/normal_impedance(factor);
+    matrixInfo.nonZeros_.back() = -1/normal_impedance();
   }
   if (at_ == AnalysisType::Voltage) {
     matrixInfo.nonZeros_.at(hDepPos_) = 

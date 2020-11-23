@@ -55,8 +55,9 @@ class JJ : public BasicComponent {
   double phaseConst_ = 0.0;
   double lowerB_ = 0.0, upperB_ = 0.0, gLarge_ = 0.0;
   double del0_ = 0.0, del_ = 0.0, rncalc_ = 0.0;
-  double pn1_ = 0.0, pn2_ = 0.0, phi0_ = 0.0;
-  double vn1_ = 0.0, vn2_ = 0.0, vn3_ = 0.0;
+  double pn1_ = 0.0, pn2_ = pn1_, pn3_ = pn2_, pn4_ = pn3_, phi0_ = 0.0;
+  double vn1_ = 0.0, vn2_ = vn1_, vn3_ = vn2_, vn4_ = vn3_, vn5_ = vn4_, 
+    vn6_ = vn5_;
   double transitionCurrent_ = 0.0;
   JoSIM::AnalysisType at_;
 
@@ -66,9 +67,9 @@ class JJ : public BasicComponent {
     const param_map &pm, const vector_pair_t<Model, string_o> &models,
     const AnalysisType &at, const double &h, int &bi);
 
-  double subgap_impedance(const double factor = 1);
-  double transient_impedance(const double factor = 1);
-  double normal_impedance(const double factor = 1);
+  double subgap_impedance();
+  double transient_impedance();
+  double normal_impedance();
 
   void set_matrix_info();
 
@@ -80,12 +81,10 @@ class JJ : public BasicComponent {
 
   void update_timestep(const double &factor) override;
 
-  void interp_previous(const int &smallteps) override {
-    double pndiff = (pn1_ - pn2_) / smallteps;
-    double vndiff = (vn1_ - vn2_) / smallteps;
-    vn2_ = vn1_ - 1 * vndiff;
-    vn3_ = vn1_ - 2 * vndiff;
-    pn2_ = pn1_ - 1 * pndiff;
+  void step_back() override {
+    pn2_ = pn4_;
+    vn3_ = vn6_;
+    vn2_ = vn5_;
   }
 }; // class JJ
 
