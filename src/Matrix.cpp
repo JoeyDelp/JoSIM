@@ -298,6 +298,7 @@ void Matrix::create_matrix(Input &iObj)
       if(label == s.first.at(2)) {
         ind2Index = i;
       }
+      if(ind2Index && ind1Index) break;
     }
     // Complain if any of these inductors do not exist
     if(!ind1Index) {

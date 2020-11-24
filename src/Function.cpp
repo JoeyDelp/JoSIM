@@ -343,9 +343,11 @@ double Function::return_pulse(double &x) {
 }
 
 double Function::return_sin(double &x) {
+  if(x >= timeValues_.at(1)) {
   return ampValues_.at(0) + ampValues_.at(1) * 
     sin(2 * Constants::PI * timeValues_.at(0) * (x - timeValues_.at(1))) *
                       exp(-timeValues_.at(2) * (x - timeValues_.at(1)));
+  } else return ampValues_.at(0);
 }
 
 double Function::return_cus(double &x) {
