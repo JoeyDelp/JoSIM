@@ -37,7 +37,7 @@ void Function::parse_function(
     fType_ = FunctionType::CUS;
     parse_cus(t, iObj, subckt);
   }
-  /* NOISE(VO VA TSTEP TD) */
+  /* NOISE(VA TD TSTEP) */
   else if (str.find("NOISE") != std::string::npos) {
     fType_ = FunctionType::NOISE;
     parse_noise(t, iObj, subckt);
@@ -226,7 +226,7 @@ void Function::parse_cus(
 
 void Function::parse_noise(
   const tokens_t &t, const Input &iObj, const string_o &s) {
-  /* NOISE(VO=0.0 VA TSTEP[TSTEP] TD[0.0]) */
+  /* NOISE(VA TD[0.0] TSTEP[TSTEP]) */
   if (t.size() < 2) {
       Errors::function_errors(
         FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
@@ -234,21 +234,16 @@ void Function::parse_noise(
   const double &tstep = iObj.transSim.get_tstep();
   // Set amplitudes
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
-  ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
   // Default values for the arguments
-  timeValues_.emplace_back(tstep);
   timeValues_.emplace_back(0.0);
+  timeValues_.emplace_back(tstep);
   // Test if optional values exist
+  if(t.size() >= 2)
+    timeValues_.at(0) = parse_param(t.at(1), iObj.parameters, s);
   if(t.size() >= 3)
-    timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
-  if(t.size() >= 4)
-    timeValues_.at(1) = parse_param(t.at(3), iObj.parameters, s);
+    timeValues_.at(1) = parse_param(t.at(2), iObj.parameters, s);
   if (iObj.argVerb) {
-    if(ampValues_.at(0) != 0.0) {
-      Errors::function_errors(FunctionErrors::NOISE_VO_ZERO, t.at(0));
-      ampValues_.at(0) = 0.0;
-    }
-    if (ampValues_.at(1) == 0.0) {
+    if (ampValues_.at(0) == 0.0) {
       Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, t.at(1));
     }
   }
@@ -384,10 +379,10 @@ double Function::return_cus(double &x) {
 }
 
 double Function::return_noise(double &x) {
-  if(x < timeValues_.back()) 
+  if(x < timeValues_.front()) 
     return 0.0;
   else 
-    return ampValues_.at(1) * Misc::grand() / sqrt(2.0 * timeValues_.front());
+    return ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back());
 }
 
 double Function::return_pws(double &x) {

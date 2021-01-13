@@ -231,7 +231,7 @@ void Input::parse_input(string_o fileName) {
 
 void Input::syntax_check_controls(std::vector<tokens_t> &controls) {
   // This will simply check controls, complaining if any of them are not allowed
-  std::vector<std::string> v = {"PRINT", "TRAN", "SAVE", "PLOT"};
+  std::vector<std::string> v = {"PRINT", "TRAN", "SAVE", "PLOT", "END"};
   for (auto i : controls) {
     if(std::find(v.begin(), v.end(), i.at(0)) == v.end()) {
       Errors::input_errors(InputErrors::UNKNOWN_CONTROL, i.at(0));

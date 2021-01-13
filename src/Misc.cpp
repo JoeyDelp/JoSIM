@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cmath>
 #include <cctype>
+#include <random>
 
 using namespace JoSIM;
 
@@ -252,13 +253,13 @@ int Misc::numDigits(int number) {
 }
 
 double Misc::grand() {
-  double r, v2, fac;
-  r = 2;
-  while (r >= 1) {
-    double v1 = (2*((double)rand()/(double)RAND_MAX)-1);
-    v2 = (2*((double)rand()/(double)RAND_MAX)-1);
-    r = v1*v1+v2*v2;
-  }
-  fac = sqrt(-2*log(r)/r);
-  return (v2*fac);
+    double r, u1, u2, lt;
+    double scale = 1.0 / 1024.0 / 1024.0 / 1024.0 / 2.0;
+    u1 = (static_cast<double>(rand()) + 1) / 
+        (static_cast<double>(RAND_MAX) + 1);
+    u2 = static_cast<double>(rand()) * 2 * Constants::PI / 
+        static_cast<double>(RAND_MAX);
+    lt = sqrt(-2.0 * log(u1));
+    r = cos(u2) * lt;
+    return r;
 }
