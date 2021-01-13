@@ -295,16 +295,18 @@ void Matrix::create_matrix(Input &iObj)
     // Calculate the mutual inductance for this pair
     double mutual = 
       cf * std::sqrt(ind1.netlistInfo.value_ * ind2.netlistInfo.value_);
-    // Add the mutual inductance to each inductor respectively
-    ind1.add_mutualInductance(
-      mutual, iObj.argAnal, iObj.transSim.get_tstep(), 
-      ind2.indexInfo.currentIndex_.value());
-    ind2.add_mutualInductance(
-      mutual, iObj.argAnal, iObj.transSim.get_tstep(), 
-      ind1.indexInfo.currentIndex_.value());
-    // Add this mutual inductance to each inductor's matrix stamp
-    ind1.set_mutualInductance(std::make_pair(ind2Index.value(), mutual));
-    ind2.set_mutualInductance(std::make_pair(ind1Index.value(), mutual));
+    if (mutual != 0) {
+        // Add the mutual inductance to each inductor respectively
+        ind1.add_mutualInductance(
+            mutual, iObj.argAnal, iObj.transSim.get_tstep(),
+            ind2.indexInfo.currentIndex_.value());
+        ind2.add_mutualInductance(
+            mutual, iObj.argAnal, iObj.transSim.get_tstep(),
+            ind1.indexInfo.currentIndex_.value());
+        // Add this mutual inductance to each inductor's matrix stamp
+        ind1.set_mutualInductance(std::make_pair(ind2Index.value(), mutual));
+        ind2.set_mutualInductance(std::make_pair(ind1Index.value(), mutual));
+    }
   }
   // Create the compressed storage row format required for simulation
   create_csr();

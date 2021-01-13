@@ -17,9 +17,11 @@ def main():
   # Add possible parser arguments
   parser.add_argument("input", help="the CSV input file")
   parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, webp, svg, eps, pdf")
+  parser.add_argument("-x", "--html", help="save the output as an html file for later viewing")
   parser.add_argument("-t", "--type", help="type of plot: grid, stacked, combined. Default: grid", default="grid")
   parser.add_argument("-s", "--subset", nargs='+', help="subset of traces to plot. specify list of column names (as shown in csv file header), ie. \"V(1)\" \"V(2)\". Default: None")
   parser.add_argument("-c", "--color", help="set the output plot color scheme to one of the following: light, dark, presentation. Default: dark", default='dark')
+  parser.add_argument("-w", "--title", help="set plot title to the provided string")
   parser.add_argument("-V", "--version", action='version', help="show script version", version=vers)
 
   # Read arguments from the command line
@@ -57,9 +59,14 @@ def main():
     print("Invalid plot color specified: " + args.color)
     print("Please provide either light, dark or presentation as color theme")
     sys.exit()
+    
+  if(args.title == None):
+    title=os.path.splitext(os.path.basename(args.input))[0]
+  else:
+    title=args.title
 
   fig.update_layout(
-    title=os.path.splitext(os.path.basename(args.input))[0],
+    title=title,
     title_font_size=30,
     template=template
   )
@@ -68,13 +75,15 @@ def main():
     'displaylogo': False
   })
 
-  if(args.output == None):
+  if(args.output == None and args.html == None):
     fig.show(config=config)
-  elif(os.path.splitext(args.output)[1] in outformats):
+  elif(args.html != None and args.output == None):
+    fig.write_html(args.html)
+  elif(args.html == None and os.path.splitext(args.output)[1] in outformats):
     fig.write_image(args.output, width=3508, height=2480)
   else:
     print("Unknown file format for output file specified.")
-    print("Please use: png, jpeg, webp, svg, eps or pdf")
+    print("Please use: png, jpeg, webp, svg, eps or pdf")  
 
 # Function that sets the Y-axis title relevant to the data
 def y_axis_title(figLabel):
