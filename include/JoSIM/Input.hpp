@@ -41,6 +41,7 @@ class Input {
   std::vector<tokens_t> read_input(
     LineInput &input, string_o fileName = std::nullopt);
   void parse_input(string_o fileName = std::nullopt);
+  void syntax_check_controls(std::vector<tokens_t> &controls);
 
 };
 } // namespace JoSIM

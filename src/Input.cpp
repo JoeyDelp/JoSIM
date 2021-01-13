@@ -217,6 +217,8 @@ void Input::parse_input(string_o fileName) {
       }
     }
   }
+  // Sanity check all conrols for syntax and functionality
+  syntax_check_controls(controls);
   // Let the user know the input reading is complete
   if(!argMin) {
     bar.complete();
@@ -225,4 +227,14 @@ void Input::parse_input(string_o fileName) {
   // If main is empty, complain
   if (netlist.maindesign.empty())
     Errors::input_errors(InputErrors::MISSING_MAIN);
+}
+
+void Input::syntax_check_controls(std::vector<tokens_t> &controls) {
+  // This will simply check controls, complaining if any of them are not allowed
+  std::vector<std::string> v = {"PRINT", "TRAN", "SAVE", "PLOT"};
+  for (auto i : controls) {
+    if(std::find(v.begin(), v.end(), i.at(0)) == v.end()) {
+      Errors::input_errors(InputErrors::UNKNOWN_CONTROL, i.at(0));
+    }
+  }
 }

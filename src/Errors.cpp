@@ -144,6 +144,16 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
       formattedMessage += 
         "Please check the input file and ensure that the file is not empty.";
       throw std::runtime_error(formattedMessage);
+    case InputErrors::UNKNOWN_CONTROL:
+      formattedMessage += 
+        "The control \"" + message.value_or("") + "\" is not known.\n";
+      formattedMessage += 
+        "Please consult the syntax guide for a list of available controls.";
+      throw std::runtime_error(formattedMessage);
+    default:
+      formattedMessage += "Unknown input error.\n";
+      formattedMessage += "Please contact the developer.";
+      throw std::runtime_error(formattedMessage);
   }
 }
 

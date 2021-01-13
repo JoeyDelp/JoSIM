@@ -32,7 +32,8 @@ enum class InputErrors : int {
   SUBCKT_CONTROLS,
   MISSING_MAIN,
   UNKNOWN_SUBCKT,
-  EMPTY_FILE
+  EMPTY_FILE,
+  UNKNOWN_CONTROL
 };
 
 enum class ComponentErrors : int {
