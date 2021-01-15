@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_J_INPUT_H
 #define JOSIM_J_INPUT_H
@@ -22,6 +22,7 @@ class Input {
   public:
   Netlist netlist;
   Transient transSim;
+  std::optional<double> globalTemp, neB;
   std::vector<tokens_t> fileLines, controls;
   std::vector<std::string> relevantX;
   std::unordered_map<ParameterName, Parameter> parameters;

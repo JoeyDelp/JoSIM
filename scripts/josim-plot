@@ -101,10 +101,10 @@ def grid_layout(df, subset):
   plots = df.columns[1:].tolist() if subset == None else subset
   fig = make_subplots(
     rows=math.ceil(len(plots)/2), 
-    cols=2,
+    cols= 2 if len(plots) > 1 else 1,
     subplot_titles=plots,
     horizontal_spacing=0.075,
-    vertical_spacing=0.2/int(len(plots)/2),
+    vertical_spacing=0.2/math.ceil(len(plots)/2),
     x_title='Time (seconds)')
   # Add the traces
   for i in range(0, len(plots)):
@@ -131,7 +131,7 @@ def stacked_layout(df, subset):
     rows=len(plots), 
     cols=1,
     subplot_titles=plots,
-    vertical_spacing=0.2/int(len(plots)/2),
+    vertical_spacing=0.2/math.ceil(len(plots)/2),
     x_title='Time (seconds)')
   # Add the traces
   for i in range(0, len(plots)):

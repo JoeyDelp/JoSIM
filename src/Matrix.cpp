@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Matrix.hpp"
@@ -7,6 +7,7 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Function.hpp"
 #include "JoSIM/ProgressBar.hpp"
+#include "JoSIM/Noise.hpp"
 
 #include <algorithm>
 #include <string>
@@ -98,7 +99,9 @@ void Matrix::create_matrix(Input &iObj)
   // Counter for progress report
   cc = 0;
   // Loop through all the components in the netlist
-  for (const auto &i : iObj.netlist.expNetlist) {
+  for (auto it = iObj.netlist.expNetlist.begin(); 
+    it != iObj.netlist.expNetlist.end(); it++) {
+    const auto& i = *it;
     // If not minimal printing
     if(!iObj.argMin) {
       // Report progress

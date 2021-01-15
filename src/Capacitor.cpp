@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Capacitor.hpp"

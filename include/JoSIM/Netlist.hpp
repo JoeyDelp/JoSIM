@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_NETLIST_HPP
 #define JOSIM_NETLIST_HPP
@@ -57,7 +57,7 @@ class Netlist {
   std::vector<tokens_t> maindesign;
   tokens_t subckts;
   std::vector<std::pair<tokens_t, string_o>> expNetlist;
-  int jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal;
+  int jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal = 0;
   bool containsSubckt, argMin = false;
   Netlist() :
     jjCount(0),

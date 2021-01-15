@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/AnalysisType.hpp"
@@ -12,6 +12,7 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/Model.hpp"
+#include "JoSIM/Noise.hpp"
 
 using namespace JoSIM;
 
@@ -44,6 +45,8 @@ int main(int argc,
     iObj.netlist.expand_maindesign();
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
+    // Add noise (if any)
+    Noise::add_noise_sources(iObj);
     // Create matrix object
     Matrix mObj;
     // Create the matrix in csr format

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Input.hpp"
@@ -231,7 +231,8 @@ void Input::parse_input(string_o fileName) {
 
 void Input::syntax_check_controls(std::vector<tokens_t> &controls) {
   // This will simply check controls, complaining if any of them are not allowed
-  std::vector<std::string> v = {"PRINT", "TRAN", "SAVE", "PLOT", "END"};
+  std::vector<std::string> v = 
+    {"PRINT", "TRAN", "SAVE", "PLOT", "END", "TEMP", "NEB"};
   for (auto i : controls) {
     if(std::find(v.begin(), v.end(), i.at(0)) == v.end()) {
       Errors::input_errors(InputErrors::UNKNOWN_CONTROL, i.at(0));

@@ -1,7 +1,7 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_J_SIMULATION_H
-#define JOSIM_J_SIMULATION_H
+#ifndef JOSIM_SIMULATION_H
+#define JOSIM_SIMULATION_H
 
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"

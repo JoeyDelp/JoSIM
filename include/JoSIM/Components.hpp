@@ -1,7 +1,7 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_COMPONENTS_H
-#define JOSIM_COMPONENTS_H
+#ifndef JOSIM_COMPONENTS_HPP
+#define JOSIM_COMPONENTS_HPP
 
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Parameters.hpp"

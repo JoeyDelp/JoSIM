@@ -1,7 +1,7 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_J_OUTPUT_H
-#define JOSIM_J_OUTPUT_H
+#ifndef JOSIM_OUTPUT_HPP
+#define JOSIM_OUTPUT_HPP
 
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Misc.hpp"

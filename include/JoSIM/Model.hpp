@@ -1,7 +1,7 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_MODEL_H
-#define JOSIM_MODEL_H
+#ifndef JOSIM_MODEL_HPP
+#define JOSIM_MODEL_HPP
 
 #include "JoSIM/Constants.hpp"
 #include "JoSIM/Parameters.hpp"

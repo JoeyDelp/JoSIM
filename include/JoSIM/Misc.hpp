@@ -1,7 +1,7 @@
-// Copyright (c) 2020 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_J_MISC_H
-#define JOSIM_J_MISC_H
+#ifndef JOSIM_MISC_HPP
+#define JOSIM_MISC_HPP
 
 #include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/Parameters.hpp"
@@ -76,7 +76,7 @@ class Input;
     template <typename T>
     std::string precise_to_string(const T a_value) {
       std::ostringstream out;
-      out << std::fixed << std::scientific << a_value;
+      out << std::uppercase << std::fixed << std::scientific << a_value;
       return out.str();
     }
 
