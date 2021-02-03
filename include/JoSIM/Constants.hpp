@@ -7,16 +7,16 @@
 
 namespace JoSIM {
   namespace Constants {
-    static constexpr double PI = 3.141592653589793238463;
-    static constexpr double PHI_ZERO = 2.067833831170082E-15;
-    static constexpr double BOLTZMANN = 1.38064852E-23;
-    static constexpr double EV = 1.6021766208e-19;
-    static constexpr double HBAR = 1.0545718001391127e-34;
-    static constexpr double C = 299792458;
-    static constexpr double MU0 = 12.566370614E-7;
-    static constexpr double EPS0 = 8.854187817E-12;
+    static constexpr float PI = 3.141592653589793238463;
+    static constexpr float PHI_ZERO = 2.067833831170082E-15;
+    static constexpr float BOLTZMANN = 1.38064852E-23;
+    static constexpr float EV = 1.6021766208e-19;
+    static constexpr float HBAR = 1.0545718001391127e-34;
+    static constexpr float C = 299792458;
+    static constexpr float MU0 = 12.566370614E-7;
+    static constexpr float EPS0 = 8.854187817E-12;
     // HBAR / 2 * EV
-    static constexpr double SIGMA = 3.291059757e-16;
+    static constexpr float SIGMA = 3.291059757e-16;
   }
 }
 

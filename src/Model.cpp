@@ -37,7 +37,7 @@ void Model::parse_model(
   // Loop through the parameter tokens
   for (int i = 0; i < tokens.size(); i += 2) {
     // Every even odd token should be a value (otherwise complain)
-    double value = parse_param(tokens.at(i + 1), p, s.second);
+    float value = parse_param(tokens.at(i + 1), p, s.second);
     if(std::isnan(value)) {
       Errors::model_errors(
       ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));

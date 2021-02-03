@@ -11,10 +11,10 @@
 namespace JoSIM {
 class Transient {
   private:
-  double tstep;
-  double tstop;
-  double prstart;
-  double prstep;
+  float tstep;
+  float tstop;
+  float prstart;
+  float prstep;
   int simsize;
   public:
   Transient() :
@@ -25,16 +25,16 @@ class Transient {
     simsize(0)
   { };
 
-  double get_tstep() const { return tstep; }
-  double get_tstop() const { return tstop; }
-  double get_prstart() const { return prstart; }
-  double get_prstep() const { return prstep; }
+  float get_tstep() const { return tstep; }
+  float get_tstop() const { return tstop; }
+  float get_prstart() const { return prstart; }
+  float get_prstep() const { return prstep; }
   int get_simsize() const { return simsize; }
 
-  void set_tstep(double value) { tstep = value; }
-  void set_tstop(double value) { tstop = value; }
-  void set_prstart(double value) { prstart = value; }
-  void set_prstep(double value) { prstep = value; }
+  void set_tstep(float value) { tstep = value; }
+  void set_tstop(float value) { tstop = value; }
+  void set_prstart(float value) { prstart = value; }
+  void set_prstep(float value) { prstep = value; }
   void set_simsize() { simsize = (tstop / tstep); }
 
   static void identify_simulation(

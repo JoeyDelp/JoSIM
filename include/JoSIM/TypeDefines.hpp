@@ -15,7 +15,7 @@ using tokens_t = std::vector<std::string>;
 // Define types to shorthand optional types
 using string_o = std::optional<std::string>;
 using char_o = std::optional<char>;
-using double_o = std::optional<double>;
+using double_o = std::optional<float>;
 using int_o = std::optional<int>;
 
 // Define a type that is a vector of pairs of type T1 and T2

@@ -23,7 +23,7 @@ class Parameter {
     Parameter() {};
 
     void set_expression(const std::string &s) { expression_ = s; };
-    void set_value(const double &v) { value_ = v; };
+    void set_value(const float &v) { value_ = v; };
 
     std::string get_expression() const { return expression_; };
     double_o get_value() const { return value_; };
@@ -38,14 +38,14 @@ class Parameter {
   void create_parameter(
     const tokens_t &s, param_map &parameters, string_o subc = std::nullopt);
 
-  double parse_param(
+  float parse_param(
     const std::string &expr, const param_map &params, 
     string_o subc = std::nullopt);
 
   int precedence_lvl(const std::string &op);
 
-  double parse_operator(
-    const std::string &op, double val1, double val2, int &popCount);
+  float parse_operator(
+    const std::string &op, float val1, float val2, int &popCount);
 
   void parse_parameters(param_map &parameters);
 

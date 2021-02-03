@@ -30,7 +30,7 @@ using namespace JoSIM;
 Capacitor::Capacitor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+    const param_map &pm, const AnalysisType &at, const float &h, int &bi) {
   at_ = at;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
@@ -64,7 +64,7 @@ Capacitor::Capacitor(
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void Capacitor::update_timestep(const double &factor) {
+void Capacitor::update_timestep(const float &factor) {
   if (at_ == AnalysisType::Voltage) {
     matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
   } else if (at_ == AnalysisType::Phase) {

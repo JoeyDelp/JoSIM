@@ -24,7 +24,7 @@ class Matrix {
   nodeconnections nc;
   std::unordered_set<std::string> lm;
   int branchIndex;
-  std::vector<double> nz, nz_orig;
+  std::vector<float> nz, nz_orig;
   std::vector<int> ci, rp;
   std::vector<RelevantTrace> relevantTraces;
   std::vector<int> relevantIndices;

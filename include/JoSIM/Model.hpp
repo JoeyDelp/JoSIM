@@ -11,18 +11,18 @@ namespace JoSIM {
 class Model {
   private:
     std::string modelName_;
-    double voltageGap_;
-    double criticalCurrent_;
+    float voltageGap_;
+    float criticalCurrent_;
     int resistanceType_;
-    double normalResistance_;
-    double subgapResistance_;
-    double capacitance_;
-    double temperature_;
-    double criticalTemperature_;
-    double deltaV_;
-    double transparency_;
-    double criticalToNormalRatio_;
-    double phaseOffset_;
+    float normalResistance_;
+    float subgapResistance_;
+    float capacitance_;
+    float temperature_;
+    float criticalTemperature_;
+    float deltaV_;
+    float transparency_;
+    float criticalToNormalRatio_;
+    float phaseOffset_;
 
   public:
     Model() : 
@@ -41,33 +41,33 @@ class Model {
       {};
 
     std::string get_modelName() const { return modelName_; }
-    double get_voltageGap() const { return voltageGap_; }
-    double get_criticalCurrent() const { return criticalCurrent_; }
+    float get_voltageGap() const { return voltageGap_; }
+    float get_criticalCurrent() const { return criticalCurrent_; }
     int get_resistanceType() const { return resistanceType_; }
-    double get_normalResistance() const { return normalResistance_; }
-    double get_subgapResistance() const { return subgapResistance_; }
-    double get_capacitance() const { return capacitance_; }
-    double get_temperature() const { return temperature_; }
-    double get_criticalTemperature() const { return criticalTemperature_; }
-    double get_deltaV() const { return deltaV_; }
-    double get_transparency() const { return transparency_; }
-    double get_criticalToNormalRatio() const { return criticalToNormalRatio_; }
-    double get_phaseOffset() const { return phaseOffset_; }
+    float get_normalResistance() const { return normalResistance_; }
+    float get_subgapResistance() const { return subgapResistance_; }
+    float get_capacitance() const { return capacitance_; }
+    float get_temperature() const { return temperature_; }
+    float get_criticalTemperature() const { return criticalTemperature_; }
+    float get_deltaV() const { return deltaV_; }
+    float get_transparency() const { return transparency_; }
+    float get_criticalToNormalRatio() const { return criticalToNormalRatio_; }
+    float get_phaseOffset() const { return phaseOffset_; }
 
     void set_modelName(const std::string &n) { modelName_ = n; }
-    void set_voltageGap(const double &v) { voltageGap_ = v; }
-    void set_criticalCurrent(const double &i) { criticalCurrent_ = i; }
+    void set_voltageGap(const float &v) { voltageGap_ = v; }
+    void set_criticalCurrent(const float &i) { criticalCurrent_ = i; }
     void set_resistanceType(const int &r) { resistanceType_ = r; }
-    void set_normalResistance(const double &r) { normalResistance_ = r; }
-    void set_subgapResistance(const double &r) { subgapResistance_ = r; }
-    void set_capacitance(const double &c) { capacitance_ = c; }
-    void set_temperature(const double &t) { temperature_ = t; }
-    void set_criticalTemperature(const double &t) { criticalTemperature_ = t; }
-    void set_deltaV(const double &d) { deltaV_ = d; }
-    void set_transparency(const double &t) { transparency_ = t; }
-    void set_criticalToNormalRatio(const double &r) { 
+    void set_normalResistance(const float &r) { normalResistance_ = r; }
+    void set_subgapResistance(const float &r) { subgapResistance_ = r; }
+    void set_capacitance(const float &c) { capacitance_ = c; }
+    void set_temperature(const float &t) { temperature_ = t; }
+    void set_criticalTemperature(const float &t) { criticalTemperature_ = t; }
+    void set_deltaV(const float &d) { deltaV_ = d; }
+    void set_transparency(const float &t) { transparency_ = t; }
+    void set_criticalToNormalRatio(const float &r) { 
       criticalToNormalRatio_ = r; }
-    void set_phaseOffset(const double &o) { phaseOffset_ = o; }
+    void set_phaseOffset(const float &o) { phaseOffset_ = o; }
 
     static void parse_model(
       const std::pair<tokens_t, string_o> &s, 

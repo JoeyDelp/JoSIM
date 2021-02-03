@@ -52,7 +52,7 @@ TransmissionLine::TransmissionLine(
   const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
   const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
   std::unordered_set<std::string> &lm, nodeconnections &nc, 
-  const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  const param_map &pm, const AnalysisType &at, const float &h, int &bi) {
   at_ = at;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
@@ -179,7 +179,7 @@ void TransmissionLine::set_secondary_matrix_info() {
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void TransmissionLine::update_timestep(const double &factor) {
+void TransmissionLine::update_timestep(const float &factor) {
   if (at_ == AnalysisType::Phase) {
     matrixInfo.nonZeros_.at(hDepPos_) = 
       factor * matrixInfo.nonZeros_.at(hDepPos_);

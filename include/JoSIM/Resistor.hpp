@@ -35,14 +35,14 @@ class Resistor : public BasicComponent {
   private:
   JoSIM::AnalysisType at_;
   public:
-  double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
+  float pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
 
   Resistor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, const AnalysisType &at, const double &h, int &bi);
+    const param_map &pm, const AnalysisType &at, const float &h, int &bi);
 
-  void update_timestep(const double &factor) override;
+  void update_timestep(const float &factor) override;
 
   void step_back() override {
     pn2_ = pn4_;

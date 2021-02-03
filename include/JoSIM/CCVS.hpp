@@ -47,19 +47,19 @@ class CCVS : public BasicComponent {
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
   int currentIndex2_ = 0;
-  double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
+  float pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
   
   CCVS(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
     std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, int &bi, const AnalysisType &at, const double &h);
+    const param_map &pm, int &bi, const AnalysisType &at, const float &h);
 
   void set_node_indices(
     const tokens_t &t, const nodemap &nm, nodeconnections &nc);
-  void set_matrix_info(const AnalysisType &at, const double &h);
+  void set_matrix_info(const AnalysisType &at, const float &h);
 
-  void update_timestep(const double &factor) override;
+  void update_timestep(const float &factor) override;
 
   void step_back() override {
     pn2_ = pn4_;

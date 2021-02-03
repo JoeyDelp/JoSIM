@@ -13,7 +13,7 @@ class Trace {
   public:
   std::string name_;
   char type_;
-  std::vector<double> data_;
+  std::vector<float> data_;
   Trace(const std::string &name) {
     name_ = name;
   }
@@ -23,7 +23,7 @@ class Trace {
 class Output {
   public:
   std::vector<Trace> traces;
-  std::vector<double> timesteps;
+  std::vector<float> timesteps;
   Output(){};
   void write_output(const Input &iObj, 
                     Matrix &mObj, 

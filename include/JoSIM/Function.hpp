@@ -23,8 +23,8 @@ namespace JoSIM {
   class Function {
     private:
       FunctionType fType_;
-      std::vector<double> timeValues_;
-      std::vector<double> ampValues_;
+      std::vector<float> timeValues_;
+      std::vector<float> ampValues_;
       void parse_pwl(const tokens_t &t, const Input &iObj, const string_o &s);
       void parse_pulse(const tokens_t &t, const Input &iObj, const string_o &s);
       void parse_sin(const tokens_t &t, const Input &iObj, const string_o &s); 
@@ -32,19 +32,19 @@ namespace JoSIM {
       void parse_noise(const tokens_t &t, const Input &iObj, const string_o &s);
       void parse_dc(const tokens_t &t, const Input &iObj, const string_o &s);
       void parse_exp(const tokens_t &t, const Input &iObj, const string_o &s);
-      double return_pwl(double &x);
-      double return_pulse(double &x);
-      double return_sin(double &x);
-      double return_cus(double &x);
-      double return_noise(double &x);
-      double return_pws(double &x);
-      double return_dc();
-      double return_exp(double &x);
+      float return_pwl(float &x);
+      float return_pulse(float &x);
+      float return_sin(float &x);
+      float return_cus(float &x);
+      float return_noise(float &x);
+      float return_pws(float &x);
+      float return_dc();
+      float return_exp(float &x);
     public:
       Function() {};
       void parse_function(const std::string &str, const Input &iObj, 
         const string_o &subckt);
-      double value(double x);  
+      float value(float x);  
 
   }; // class Function
 

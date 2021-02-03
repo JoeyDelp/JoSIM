@@ -35,7 +35,7 @@ VCCS::VCCS(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
     std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, int &bi, const AnalysisType &at, const double &h) {
+    const param_map &pm, int &bi, const AnalysisType &at, const float &h) {
   at_ = at;
   // Set the label
   netlistInfo.label_ = s.first.at(0);
@@ -134,7 +134,7 @@ void VCCS::set_matrix_info() {
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void VCCS::update_timestep(const double &factor) {
+void VCCS::update_timestep(const float &factor) {
   if (at_ == AnalysisType::Phase) {
     matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
   }

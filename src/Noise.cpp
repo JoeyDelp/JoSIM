@@ -25,16 +25,16 @@ void JoSIM::Noise::determine_noise_effective_bandwidth(Input& iObj) {
   }
 }
 
-double JoSIM::Noise::determine_spectral_amplitude(const double& R, 
-  const double& T) {
+float JoSIM::Noise::determine_spectral_amplitude(const float& R, 
+  const float& T) {
   // spectral amplitute = sqrt(4 * kB * T * B / R)
-  double spAmp = sqrt((4 * Constants::BOLTZMANN * T ) / R);
+  float spAmp = sqrt((4 * Constants::BOLTZMANN * T ) / R);
   return spAmp;
 }
 
 std::pair<tokens_t, string_o>
-JoSIM::Noise::create_resistive_current_noise(Input& iObj, const double& R,
-  const double& T, const double& B, 
+JoSIM::Noise::create_resistive_current_noise(Input& iObj, const float& R,
+  const float& T, const float& B, 
   std::vector<std::pair<tokens_t, string_o>>::iterator& i) {
   std::pair<tokens_t, string_o> noiseSource;
   noiseSource.first.emplace_back("INOISE_" + i->first.front());
@@ -56,8 +56,8 @@ void JoSIM::Noise::add_noise_sources(Input& iObj) {
   for (auto it = iObj.netlist.expNetlist.begin(); 
     it != iObj.netlist.expNetlist.end(); ++it) {
     if (it->first.front().at(0) == 'R') {
-      std::optional<double> T;
-      double B = 0, R = 0;
+      std::optional<float> T;
+      float B = 0, R = 0;
       if (!iObj.neB) {
         B = 1E12;
       }

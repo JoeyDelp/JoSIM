@@ -489,7 +489,7 @@ void Errors::matrix_errors(MatrixErrors errorCode, string_o message) {
   switch (errorCode) {
     case MiscErrors::STOD_ERROR:
       formattedMessage += 
-        "Cannot convert string to double: " + message.value_or("");
+        "Cannot convert string to float: " + message.value_or("");
       throw std::runtime_error(formattedMessage);
     default:
       formattedMessage += "Unknown misc error: " + message.value_or("") + "\n";

@@ -41,9 +41,9 @@ void Output::write_output(
       }
       if(i.storageType == StorageType::Voltage) {
         traces.emplace_back(i.deviceLabel.value());
-        double voltN1 = 0;
+        float voltN1 = 0;
         for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-          double value;
+          float value;
           if(iObj.argAnal == AnalysisType::Voltage) {
             if(!i.index2) {
               value = sObj.results.xVector.at(i.index1.value()).value().at(j);
@@ -120,10 +120,10 @@ void Output::write_output(
         }
       } else if(i.storageType == StorageType::Phase) {
         traces.emplace_back(i.deviceLabel.value());
-        double phaseN1, phaseN2;
+        float phaseN1, phaseN2;
         phaseN1 = phaseN2 = 0.0;
         for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-          double value;
+          float value;
           if(iObj.argAnal == AnalysisType::Phase) {
             if(!i.index2) {
               value = sObj.results.xVector.at(i.index1.value()).value().at(j);
@@ -202,13 +202,13 @@ void Output::write_output(
         traces.emplace_back(i.deviceLabel.value());
         if(i.deviceLabel.value().at(3) != 'I'){ 
           for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-            double value = sObj.results.xVector.at(i.index1.value()).value().at(j);
+            float value = sObj.results.xVector.at(i.index1.value()).value().at(j);
             traces.back().data_.emplace_back(value);
             traces.back().type_ = 'I';
           }
         } else {
           for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-            double value = mObj.sourcegen.at(i.sourceIndex.value()).value(
+            float value = mObj.sourcegen.at(i.sourceIndex.value()).value(
               sObj.results.timeAxis.at(j));
             traces.back().data_.emplace_back(value);
             traces.back().type_ = 'I';
@@ -322,7 +322,7 @@ void Output::format_raw(const std::string &filename, bool argmin) {
       for (int i = 1; i < traces.size(); ++i) {
         // Make a copy of the name so we can alter it
         std::string name = traces.at(i).name_;
-        // Erase all the double quote characters
+        // Erase all the float quote characters
         name.erase(std::remove(name.begin(), name.end(), '\"'), name.end());
         // If this is a voltage variable
         if (traces.at(i).type_ == 'V') {

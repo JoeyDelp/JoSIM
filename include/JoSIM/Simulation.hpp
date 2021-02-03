@@ -22,39 +22,39 @@ namespace JoSIM{
 
 class Results {
   public:
-  std::vector<std::optional<std::vector<double>>> xVector;
-  std::vector<double> timeAxis;
+  std::vector<std::optional<std::vector<float>>> xVector;
+  std::vector<float> timeAxis;
 };
 
 class Simulation {
   private:
-  std::vector<double> x_, b_, xn2_, xn3_;
+  std::vector<float> x_, b_, xn2_, xn3_;
   int simSize_;
   JoSIM::AnalysisType atyp_;
   bool minOut_;
   bool needsLU_;
   bool needsTR_;
-  double stepSize_, prstep_, prstart_;
+  float stepSize_, prstep_, prstart_;
   int simOK_;
   klu_symbolic *Symbolic_;
   klu_common Common_;
   klu_numeric *Numeric_;
 
   void trans_sim(Matrix &mObj);
-  void setup_b(Matrix &mObj, int i, double step, double factor = 1);
-  void reduce_step(Matrix &mObj, double factor, 
-    int &stepCount, double currentStep);
+  void setup_b(Matrix &mObj, int i, float step, float factor = 1);
+  void reduce_step(Matrix &mObj, float factor, 
+    int &stepCount, float currentStep);
   
-  void handle_cs(Matrix &mObj, double &step, const int &i);
+  void handle_cs(Matrix &mObj, float &step, const int &i);
   void handle_resistors(Matrix &mObj);
-  void handle_inductors(Matrix &mObj, double factor = 1);
+  void handle_inductors(Matrix &mObj, float factor = 1);
   void handle_capacitors(Matrix &mObj);
-  void handle_jj(Matrix &mObj, int &i, double &step, double factor = 1);
-  void handle_vs(Matrix &mObj, const int &i, double &step, double factor = 1);
-  void handle_ps(Matrix &mObj, const int &i, double &step, double factor = 1);
+  void handle_jj(Matrix &mObj, int &i, float &step, float factor = 1);
+  void handle_vs(Matrix &mObj, const int &i, float &step, float factor = 1);
+  void handle_ps(Matrix &mObj, const int &i, float &step, float factor = 1);
   void handle_ccvs(Matrix &mObj);
   void handle_vccs(Matrix &mObj);
-  void handle_tx(Matrix &mObj, const int &i, double &step, double factor = 1);
+  void handle_tx(Matrix &mObj, const int &i, float &step, float factor = 1);
 
   public:
   Results results;

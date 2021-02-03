@@ -41,7 +41,7 @@ JJ::JJ(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const vector_pair_t<Model, string_o> &models,
-    const AnalysisType &at, const double &h, int &bi) {
+    const AnalysisType &at, const float &h, int &bi) {
   // Set component timestep
   h_ = h;
   at_ = at;
@@ -112,19 +112,19 @@ JJ::JJ(
   set_matrix_info();
 }
 
-double JJ::subgap_impedance() {
+float JJ::subgap_impedance() {
   // Set subgap impedance (1/R0) + (3C/2h)
   return ((1/model_.value().get_subgapResistance()) + 
     ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
 }
 
-double JJ::transient_impedance() {
+float JJ::transient_impedance() {
   // Set transitional impedance (GL) + (3C/2h)
   return (gLarge_ + 
     ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
 }
 
-double JJ::normal_impedance() {
+float JJ::normal_impedance() {
   // Set normal impedance (1/RN) + (3C/2h)
   return ((1/model_.value().get_normalResistance()) + 
     ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
@@ -220,7 +220,7 @@ void JJ::set_model(
 }
 
 // Update the value based on the matrix entry based on the current voltage value
-bool JJ::update_value(const double &v) {
+bool JJ::update_value(const float &v) {
   // Shorthand for the model
   const Model &m = model_.value();
   // If the absolute value of the voltage is less than lower bounds
@@ -279,7 +279,7 @@ bool JJ::update_value(const double &v) {
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void JJ::update_timestep(const double &factor) {
+void JJ::update_timestep(const float &factor) {
   h_ = h_ * factor;
   if (state_ == 0) {
     matrixInfo.nonZeros_.back() = -1/subgap_impedance();

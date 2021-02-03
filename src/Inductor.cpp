@@ -30,7 +30,7 @@ using namespace JoSIM;
 Inductor::Inductor(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+    const param_map &pm, const AnalysisType &at, const float &h, int &bi) {
   at_ = at;
   // Set previous current value
   In2_ = 0.0;
@@ -66,7 +66,7 @@ Inductor::Inductor(
 }
 
 void Inductor::add_mutualInductance(
-  const double &m, const AnalysisType &at, const double &h, const int &ci) {
+  const float &m, const AnalysisType &at, const float &h, const int &ci) {
   // Adds the mutual inductance to the non zero vector
   if(at == AnalysisType::Voltage) {
     // If voltage mode then add -(3/2) * (m/h)
@@ -82,7 +82,7 @@ void Inductor::add_mutualInductance(
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void Inductor::update_timestep(const double &factor) {
+void Inductor::update_timestep(const float &factor) {
   if (at_ == AnalysisType::Voltage) {
     matrixInfo.nonZeros_.back() = (1.0 / factor) * matrixInfo.nonZeros_.back();
   }

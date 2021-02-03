@@ -57,8 +57,8 @@ class TransmissionLine : public BasicComponent {
   NodeConfig nodeConfig2_;
   int_o posIndex2_, negIndex2_;
   int currentIndex2_ = 0;
-  double n1_1_ = 0.0, n1_2_ = 0.0, n2_1_ = 0.0, n2_2_ = 0.0;
-  double nk_1_ = 0.0, nk_2_ = 0.0, nk1_1_ = 0.0, nk1_2_ = 0.0, nk2_1_ = 0.0, 
+  float n1_1_ = 0.0, n1_2_ = 0.0, n2_1_ = 0.0, n2_2_ = 0.0;
+  float nk_1_ = 0.0, nk_2_ = 0.0, nk1_1_ = 0.0, nk1_2_ = 0.0, nk2_1_ = 0.0, 
     nk2_2_ = 0.0;
   int timestepDelay_ = 0.0;
 
@@ -66,13 +66,13 @@ class TransmissionLine : public BasicComponent {
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
     const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
     std::unordered_set<std::string> &lm, nodeconnections &nc, 
-    const param_map &pm, const AnalysisType &at, const double &h, int &bi);
+    const param_map &pm, const AnalysisType &at, const float &h, int &bi);
 
   void set_secondary_node_indices(
     const tokens_t &t, const nodemap &nm, nodeconnections &nc);
   void set_secondary_matrix_info();
   
-  void update_timestep(const double &factor) override;
+  void update_timestep(const float &factor) override;
 }; // class TransmissionLine
 
 } // namespace JoSIM

@@ -29,7 +29,7 @@ using namespace JoSIM;
 Resistor::Resistor(
   const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
   const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
-  const param_map &pm, const AnalysisType &at, const double &h, int &bi) {
+  const param_map &pm, const AnalysisType &at, const float &h, int &bi) {
   at_ = at;
   // Check if the label has already been defined
   if(lm.count(s.first.at(0)) != 0) {
@@ -64,7 +64,7 @@ Resistor::Resistor(
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void Resistor::update_timestep(const double &factor) {
+void Resistor::update_timestep(const float &factor) {
   if (at_ == AnalysisType::Phase) {
     matrixInfo.nonZeros_.back() = factor * factor * matrixInfo.nonZeros_.back();
   }

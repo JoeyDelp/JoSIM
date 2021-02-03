@@ -17,7 +17,7 @@
 namespace JoSIM {
 class Input;
   namespace Misc {
-    double string_constant(const std::string &s);
+    float string_constant(const std::string &s);
 
     std::string file_from_path(const std::string &path);
 
@@ -42,7 +42,7 @@ class Input;
 
     void rtrim(std::string &s);
 
-    double modifier(const std::string &value);
+    float modifier(const std::string &value);
 
     void unique_push(std::vector<std::string> &vector,
                       const std::string &string);
@@ -82,7 +82,7 @@ class Input;
 
     int numDigits(int number);
 
-    double grand();
+    float grand();
   } // namespace Misc
 } // namespace JoSIM
 #endif

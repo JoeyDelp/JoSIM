@@ -13,12 +13,12 @@ namespace JoSIM
   enum class NodeConfig { GND = 0, POSGND = 1, GNDNEG = 2, POSNEG = 3 };
 
   using nodemap = std::unordered_map<std::string, int>;
-  using nodeconnections = std::vector<std::vector<std::pair<double, int>>>;
+  using nodeconnections = std::vector<std::vector<std::pair<float, int>>>;
 
   class NetlistInfo {
     public:
     std::string label_;
-    double value_ = 0.0;
+    float value_ = 0.0;
   };
 
   class IndexInfo {
@@ -29,7 +29,7 @@ namespace JoSIM
 
   class MatrixInfo {
     public:
-    std::vector<double> nonZeros_;
+    std::vector<float> nonZeros_;
     std::vector<int> columnIndex_;
     std::vector<int> rowPointer_;
   };
@@ -93,7 +93,7 @@ namespace JoSIM
       matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
     }
 
-    virtual void update_timestep(const double &factor) {};
+    virtual void update_timestep(const float &factor) {};
 
     virtual void step_back() {};
 

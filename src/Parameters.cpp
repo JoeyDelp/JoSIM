@@ -68,7 +68,7 @@ int JoSIM::precedence_lvl(const std::string &op) {
   return 4;
 }
 
-double JoSIM::parse_param(
+float JoSIM::parse_param(
   const std::string &expr, const param_map&params, string_o subc) {
   // Initialize the expression to evaluate
   std::string expToEval = expr;
@@ -84,7 +84,7 @@ double JoSIM::parse_param(
   // Counter
   int popCount = 0;
   // Variable for the result to be returned
-  double result;
+  float result;
   // Evaluate expression piece by piece until it is empy
   while (!expToEval.empty()) {
     // First test the expression to see if it is a parameter
@@ -243,7 +243,7 @@ double JoSIM::parse_param(
     // The function is invalid or a parameter is used which is yet to be parsed
     } else {
       // Return NaN to indicate this ocurred
-      return std::numeric_limits<double>::quiet_NaN();
+      return std::numeric_limits<float>::quiet_NaN();
     }
     // Adjust the next part to be evaluated
     if (opLoc == 0) {
@@ -335,8 +335,8 @@ double JoSIM::parse_param(
 }
 
 
-double JoSIM::parse_operator(
-  const std::string &op, double val1, double val2, int &popCount) {
+float JoSIM::parse_operator(
+  const std::string &op, float val1, float val2, int &popCount) {
   if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
     popCount = 1;
     if (op == "SIN")
@@ -391,7 +391,7 @@ double JoSIM::parse_operator(
 
 void JoSIM::parse_parameters(param_map &parameters) {
   // Double parsed value that will be stored for each parameter
-  double value;
+  float value;
   // Counter to ensure that we do not get stuck in a loop
   int parsedCounter = 0;
   // Parse parameters while counter is less than total parameter count
@@ -400,14 +400,14 @@ void JoSIM::parse_parameters(param_map &parameters) {
     int previous_counter = parsedCounter;
     // Loop through the parameters parsing them if possible
     for(auto &i : parameters) {
-      // If the parameter does not yet have a value (double)
+      // If the parameter does not yet have a value (float)
       if(!i.second.get_value()) {
         // Parse this parameter if expression if possible
         value = parse_param(
           i.second.get_expression(), parameters, i.first.subcircuit());
         // If the returned value is not NaN
         if(!std::isnan(value)) {
-          // Set the parameter value (double) to the parsed value (double)
+          // Set the parameter value (float) to the parsed value (float)
           i.second.set_value(value);
           // Increase the counter
           parsedCounter++;
@@ -420,7 +420,7 @@ void JoSIM::parse_parameters(param_map &parameters) {
       std::string unknownParams;
       // Loop through the parameters
       for (auto &i : parameters) {
-        // If there are parameters with no value (double)
+        // If there are parameters with no value (float)
         if (!i.second.get_value()) {
           // Create a string with the name and subcircuit
           unknownParams += 
@@ -485,7 +485,7 @@ void JoSIM::expand_inline_parameters(
     // Insert the temporary vector at the original position
     s.first.insert(s.first.begin() + cPos.value(), temp.begin(), temp.end());
     // Parse the identified expression
-    double value = parse_param(
+    float value = parse_param(
       Misc::vector_to_string(tokens_t(s.first.begin() + oPos.value(), 
         s.first.begin() + cPos.value()), ""), parameters, s.second);
     // If the returned value is not NaN
@@ -497,7 +497,7 @@ void JoSIM::expand_inline_parameters(
     // Erase the expression part of the tokens
     s.first.erase(
       s.first.begin() + oPos.value(), s.first.begin() + cPos.value());  
-    // Insert the double value in the place of the expression
+    // Insert the float value in the place of the expression
     s.first.insert(
       s.first.begin() + oPos.value(), Misc::precise_to_string(value));
   }

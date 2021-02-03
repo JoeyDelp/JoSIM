@@ -9,11 +9,11 @@ namespace JoSIM {
   
   class Noise {
     private:
-    static double determine_spectral_amplitude(const double& R, 
-      const double& T);
+    static float determine_spectral_amplitude(const float& R, 
+      const float& T);
     static std::pair<tokens_t, string_o>
-      create_resistive_current_noise(Input& iObj, const double &R, 
-        const double &T, const double &B,
+      create_resistive_current_noise(Input& iObj, const float &R, 
+        const float &T, const float &B,
         std::vector<std::pair<tokens_t, string_o>>::iterator& i);
     static void determine_global_temperature(Input& iObj);
     static void determine_noise_effective_bandwidth(Input& iObj);

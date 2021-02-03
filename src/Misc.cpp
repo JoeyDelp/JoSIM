@@ -12,7 +12,7 @@
 
 using namespace JoSIM;
 
-double Misc::string_constant(const std::string &s) {
+float Misc::string_constant(const std::string &s) {
   if (s == "PI") return Constants::PI;
   else if (s == "PHI_ZERO") return Constants::PHI_ZERO;
   else if (s == "BOLTZMANN") return Constants::BOLTZMANN;
@@ -132,11 +132,11 @@ void Misc::rtrim(std::string &s) {
     }).base(), s.end());
 }
 
-double Misc::modifier(const std::string &value) {
+float Misc::modifier(const std::string &value) {
   std::string::size_type sz;
-  double number;
+  float number;
   try {
-    number = std::stod(value, &sz);
+    number = std::stof(value, &sz);
   } catch (const std::invalid_argument &) {
     Errors::misc_errors(MiscErrors::STOD_ERROR, value);
   } catch (std::exception &e) {
@@ -177,7 +177,7 @@ double Misc::modifier(const std::string &value) {
     return number * 1E12;
     /* auto modifier */
   case 'E':
-    return std::stod(value);
+    return std::stof(value);
   default:
     return number;
   }
@@ -252,13 +252,13 @@ int Misc::numDigits(int number) {
   return digits;
 }
 
-double Misc::grand() {
-    double r, u1, u2, lt;
-    double scale = 1.0 / 1024.0 / 1024.0 / 1024.0 / 2.0;
-    u1 = (static_cast<double>(rand()) + 1) / 
-        (static_cast<double>(RAND_MAX) + 1);
-    u2 = static_cast<double>(rand()) * 2 * Constants::PI / 
-        static_cast<double>(RAND_MAX);
+float Misc::grand() {
+    float r, u1, u2, lt;
+    float scale = 1.0 / 1024.0 / 1024.0 / 1024.0 / 2.0;
+    u1 = (static_cast<float>(rand()) + 1) / 
+        (static_cast<float>(RAND_MAX) + 1);
+    u2 = static_cast<float>(rand()) * 2 * Constants::PI / 
+        static_cast<float>(RAND_MAX);
     lt = sqrt(-2.0 * log(u1));
     r = cos(u2) * lt;
     return r;

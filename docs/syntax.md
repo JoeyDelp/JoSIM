@@ -252,7 +252,7 @@ The final control command that is of importance in JoSIM is the parameters comma
 
 Additionally, expressions can also contain other variables and parameters will be continuosly evaluated untill all variables are reduced to values. If variables are not defined the program will halt and produce an error.
 
-Expression parsing is exclusive to the *.param* control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in *std::invalid_argument: stod: no conversion* as it tries to convert a string into a double. Please be mindful when using expressions and restrict them to *.param* controls.
+Expression parsing is exclusive to the *.param* control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in *std::invalid_argument: stof: no conversion* as it tries to convert a string into a float. Please be mindful when using expressions and restrict them to *.param* controls.
 
 ### Control Block
 

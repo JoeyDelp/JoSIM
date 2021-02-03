@@ -71,8 +71,8 @@ void Function::parse_function(
 void Function::parse_pwl(
   const tokens_t &t, const Input &iObj, const string_o &s) {
   /* PWL(0 V0 T1 V1 T2 V2 ... TN VN) */
-  std::vector<double> timesteps, values;
-  if (std::stod(t.at(0)) != 0.0) {
+  std::vector<float> timesteps, values;
+  if (std::stof(t.at(0)) != 0.0) {
     Errors::function_errors(
       FunctionErrors::INITIAL_VALUES, t.at(0) + " & " + t.at(1));
     timesteps.push_back(0.0);
@@ -107,8 +107,8 @@ void Function::parse_pulse(
       FunctionErrors::PULSE_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
   }
   // Step and stop time shorthand
-  const double &tstop = iObj.transSim.get_tstop();
-  const double &tstep = iObj.transSim.get_tstep();
+  const float &tstop = iObj.transSim.get_tstop();
+  const float &tstep = iObj.transSim.get_tstep();
   // Set the 2 amplitudes
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
@@ -150,7 +150,7 @@ void Function::parse_sin(
       Errors::function_errors(
         FunctionErrors::SIN_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
   }
-  const double &tstop = iObj.transSim.get_tstop();
+  const float &tstop = iObj.transSim.get_tstop();
   // Set offset and peak amplitude
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
@@ -182,7 +182,7 @@ void Function::parse_cus(
   // First argument is required and is the wave file name                     
   std::string WFline = t.at(0);
   std::vector<std::string> WF;
-  const double &tstep = iObj.transSim.get_tstep();
+  const float &tstep = iObj.transSim.get_tstep();
   // Default values for the arguments
   timeValues_.emplace_back(tstep);
   timeValues_.emplace_back(1.0);
@@ -231,7 +231,7 @@ void Function::parse_noise(
       Errors::function_errors(
         FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
   }
-  const double &tstep = iObj.transSim.get_tstep();
+  const float &tstep = iObj.transSim.get_tstep();
   // Set amplitudes
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   // Default values for the arguments
@@ -263,7 +263,7 @@ void Function::parse_exp(
       Errors::function_errors(
         FunctionErrors::EXP_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
   }
-  const double &tstep = iObj.transSim.get_tstep();
+  const float &tstep = iObj.transSim.get_tstep();
   // Set amplitudes
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
   ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
@@ -279,7 +279,7 @@ void Function::parse_exp(
     timeValues_.at(1) = parse_param(t.at(3), iObj.parameters, s);
 }
 
-double Function::return_pwl(double &x) {
+float Function::return_pwl(float &x) {
   // If x larger than the last timestep then assume last amplitude value
   if(x >= timeValues_.back()) {
     return ampValues_.back();
@@ -287,10 +287,10 @@ double Function::return_pwl(double &x) {
   } else {
     for(int i = 0; i < timeValues_.size() - 1; ++i) {
       if(x >= timeValues_.at(i) && x < timeValues_.at(i+1)) {
-        double &y2 = ampValues_.at(i+1);
-        double &y1 = ampValues_.at(i);
-        double &x2 = timeValues_.at(i+1);
-        double &x1 = timeValues_.at(i);
+        float &y2 = ampValues_.at(i+1);
+        float &y1 = ampValues_.at(i);
+        float &x2 = timeValues_.at(i+1);
+        float &x1 = timeValues_.at(i);
         // Calculate function value and return it
         return y1 + ((y2 - y1) / (x2 - x1)) * (x - x1);
       }
@@ -299,14 +299,14 @@ double Function::return_pwl(double &x) {
   return 0.0;
 }
 
-double Function::return_pulse(double &x) {
+float Function::return_pulse(float &x) {
   // Shorthand for the relevant time values
-  double &td = timeValues_.at(0);
-  double &tr = timeValues_.at(1);
-  double &tf = timeValues_.at(2);
-  double &pw = timeValues_.at(3);
-  double &per = timeValues_.at(4);
-  double &tstop = timeValues_.at(5);
+  float &td = timeValues_.at(0);
+  float &tr = timeValues_.at(1);
+  float &tf = timeValues_.at(2);
+  float &pw = timeValues_.at(3);
+  float &per = timeValues_.at(4);
+  float &tstop = timeValues_.at(5);
   // Calculate how many times the pulse repeats
   int n = static_cast<int>(tstop / per);
   for(int i = 1; i < n; ++i){
@@ -337,7 +337,7 @@ double Function::return_pulse(double &x) {
   return 0.0;
 }
 
-double Function::return_sin(double &x) {
+float Function::return_sin(float &x) {
   if(x >= timeValues_.at(1)) {
   return ampValues_.at(0) + ampValues_.at(1) * 
     sin(2 * Constants::PI * timeValues_.at(0) * (x - timeValues_.at(1))) *
@@ -345,16 +345,16 @@ double Function::return_sin(double &x) {
   } else return ampValues_.at(0);
 }
 
-double Function::return_cus(double &x) {
+float Function::return_cus(float &x) {
   // Shorthand for the relevant time values
-  double &ts = timeValues_.at(0);
-  double &sf = timeValues_.at(1);
-  double &im = timeValues_.at(2);
-  double &td = timeValues_.at(3);
-  double &per = timeValues_.at(4);
-  double &tstop = timeValues_.at(5);
+  float &ts = timeValues_.at(0);
+  float &sf = timeValues_.at(1);
+  float &im = timeValues_.at(2);
+  float &td = timeValues_.at(3);
+  float &per = timeValues_.at(4);
+  float &tstop = timeValues_.at(5);
   int n = 1;
-  double repTime = 0;
+  float repTime = 0;
   if(static_cast<int>(per) != 1) {
     n = tstop / (ampValues_.size() * ts);
     repTime = tstop / (ampValues_.size());
@@ -378,14 +378,14 @@ double Function::return_cus(double &x) {
   return 0.0;
 }
 
-double Function::return_noise(double &x) {
+float Function::return_noise(float &x) {
   if(x < timeValues_.front()) 
     return 0.0;
   else 
     return ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back());
 }
 
-double Function::return_pws(double &x) {
+float Function::return_pws(float &x) {
   // If x larger than the last timestep then assume last amplitude value
   if(x >= timeValues_.back()) {
     return ampValues_.back();
@@ -393,12 +393,12 @@ double Function::return_pws(double &x) {
   } else {
     for(int i = 0; i < timeValues_.size() - 1; ++i) {
       if(x >= timeValues_.at(i) && x < timeValues_.at(i+1)) {
-        double &y2 = ampValues_.at(i+1);
-        double &y1 = ampValues_.at(i);
-        double &x2 = timeValues_.at(i+1);
-        double &x1 = timeValues_.at(i);
-        double period = (x2 - x1) * 2;
-        double ba;
+        float &y2 = ampValues_.at(i+1);
+        float &y1 = ampValues_.at(i);
+        float &x2 = timeValues_.at(i+1);
+        float &x1 = timeValues_.at(i);
+        float period = (x2 - x1) * 2;
+        float ba;
         if (y1 < y2) {
           ba = (y2 - y1) / 2;
           return y1 + ba * sin((2 * Constants::PI * 
@@ -416,16 +416,16 @@ double Function::return_pws(double &x) {
   return 0.0;
 }
 
-double Function::return_dc() {
+float Function::return_dc() {
   return ampValues_.back();
 }
 
-double Function::return_exp(double &x) {
+float Function::return_exp(float &x) {
   // Shorthand for time values
-  double &td1 = timeValues_.at(0);
-  double &tau1 = timeValues_.at(1);
-  double &td2 = timeValues_.at(2);
-  double &tau2 = timeValues_.at(3);
+  float &td1 = timeValues_.at(0);
+  float &tau1 = timeValues_.at(1);
+  float &td2 = timeValues_.at(2);
+  float &tau2 = timeValues_.at(3);
   if(x < td1) {
     return ampValues_.at(0);
   } else if (x >= td1 && x < td2) {
@@ -439,7 +439,7 @@ double Function::return_exp(double &x) {
   return 0.0;
 }
 
-double Function::value(double x) {
+float Function::value(float x) {
   switch(fType_){
     case FunctionType::PWL:
       return return_pwl(x);

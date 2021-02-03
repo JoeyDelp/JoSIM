@@ -31,7 +31,7 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
       results.xVector.at(i).emplace();
     }
   } else {
-    results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
+    results.xVector.resize(mObj.branchIndex, std::vector<float>(0));
   }
   // KLU setup
   simOK_ = klu_defaults(&Common_);
@@ -64,7 +64,7 @@ void Simulation::trans_sim(Matrix &mObj) {
   b_.resize(mObj.rp.size(), 0.0);
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
-    double step = i * stepSize_;
+    float step = i * stepSize_;
     // If not minimal printing report progress
     if(!minOut_) {
       bar.update(static_cast<float>(i));
@@ -110,7 +110,7 @@ void Simulation::trans_sim(Matrix &mObj) {
 }
 
 void Simulation::setup_b(
-  Matrix &mObj, int i, double step, double factor) {
+  Matrix &mObj, int i, float step, float factor) {
   // Clear b matrix and reset
   b_.clear();
   b_.resize(mObj.rp.size(), 0.0);
@@ -147,8 +147,8 @@ void Simulation::setup_b(
 }
 
 void Simulation::reduce_step(
-  Matrix &mObj, double factor, 
-  int &stepCount, double currentStep) {
+  Matrix &mObj, float factor, 
+  int &stepCount, float currentStep) {
   // Backup the current nonzeros
   mObj.nz_orig = mObj.nz;
   // Restore the previous x
@@ -180,7 +180,7 @@ void Simulation::reduce_step(
     &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
     Symbolic_, &Common_);
   for(int i = 0; i < smallSteps; ++i) {
-    double smallStep = currentStep + i * (factor * stepSize_);
+    float smallStep = currentStep + i * (factor * stepSize_);
     // Setup the b matrix
     setup_b(
       mObj, stepCount, smallStep, factor);
@@ -224,7 +224,7 @@ void Simulation::reduce_step(
 }
 
 
-void Simulation::handle_cs(Matrix &mObj, double &step, const int &i) {
+void Simulation::handle_cs(Matrix &mObj, float &step, const int &i) {
   for (const auto &j : mObj.components.currentsources) {
     if(j.indexInfo.nodeConfig_ == NodeConfig::POSGND) {
       b_.at(j.indexInfo.posIndex_.value()) -= 
@@ -264,7 +264,7 @@ void Simulation::handle_resistors(Matrix &mObj) {
   }
 }
 
-void Simulation::handle_inductors(Matrix &mObj, double factor) {
+void Simulation::handle_inductors(Matrix &mObj, float factor) {
   for (const auto &j : mObj.components.inductorIndices) {
     auto &temp = std::get<Inductor>(mObj.components.devices.at(j));
     if(atyp_ == AnalysisType::Voltage) {
@@ -321,7 +321,7 @@ void Simulation::handle_capacitors(Matrix &mObj) {
 }
 
 void Simulation::handle_jj(
-  Matrix &mObj, int &i, double &step, double factor) {
+  Matrix &mObj, int &i, float &step, float factor) {
   for (const auto &j : mObj.components.junctionIndices) {
     auto &temp = std::get<JJ>(mObj.components.devices.at(j));
     const auto &model = temp.model_;
@@ -343,14 +343,14 @@ void Simulation::handle_jj(
       }
     }
     // Guess voltage (V0)
-    double v0 = 
+    float v0 = 
       (5.0/2.0) * temp.vn1_ - 2.0 * temp.vn2_ + (1.0 / 2.0) * temp.vn3_;
     // Phase guess (P0)
     temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
       ((1.0 / Constants::SIGMA) * 
         ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
     // Ensure timestep is not too large
-    if ((double)i/(double)simSize_ > 0.01) {
+    if ((float)i/(float)simSize_ > 0.01) {
       if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
         needsTR_ = true;
         return;
@@ -399,7 +399,7 @@ void Simulation::handle_jj(
 }
 
 void Simulation::handle_vs(
-  Matrix &mObj, const int &i, double &step, double factor) {
+  Matrix &mObj, const int &i, float &step, float factor) {
   for (const auto &j : mObj.components.vsIndices) {
     auto &temp = std::get<VoltageSource>(mObj.components.devices.at(j));
     JoSIM::NodeConfig &nc = temp.indexInfo.nodeConfig_;
@@ -429,7 +429,7 @@ void Simulation::handle_vs(
 }
 
 void Simulation::handle_ps(
-  Matrix &mObj, const int &i, double &step, double factor) {
+  Matrix &mObj, const int &i, float &step, float factor) {
   for (const auto &j : mObj.components.psIndices) {
     auto &temp = std::get<PhaseSource>(mObj.components.devices.at(j));
     if (atyp_ == AnalysisType::Phase) {
@@ -504,11 +504,11 @@ void Simulation::handle_vccs(Matrix &mObj) {
 }
 
 void Simulation::handle_tx(
-  Matrix &mObj, const int &i, double &step, double factor) {
+  Matrix &mObj, const int &i, float &step, float factor) {
   for (const auto &j : mObj.components.txIndices) {
     auto &temp = std::get<TransmissionLine>(mObj.components.devices.at(j));
     // Z0
-    double &Z = temp.netlistInfo.value_;
+    float &Z = temp.netlistInfo.value_;
     // Td == k
     int &k = temp.timestepDelay_;
     // Shorthands
@@ -541,9 +541,9 @@ void Simulation::handle_tx(
             results.xVector.at(negInd2.value()).value().at(i - k);
         }
         // I1n-k
-        double &I1nk = results.xVector.at(curInd).value().at(i - k);
+        float &I1nk = results.xVector.at(curInd).value().at(i - k);
         // I2n-k
-        double &I2nk = results.xVector.at(curInd2).value().at(i - k);
+        float &I2nk = results.xVector.at(curInd2).value().at(i - k);
         // I1 = ZI2n-k + V2n-k
         b_.at(curInd) = Z * I2nk + temp.nk_2_;
         // I2 = ZI1n-k + V1n-k
@@ -590,9 +590,9 @@ void Simulation::handle_tx(
             results.xVector.at(negInd2.value()).value().at(i - k);
         }
         // I1n-k
-        double &I1nk = results.xVector.at(curInd).value().at(i - k);
+        float &I1nk = results.xVector.at(curInd).value().at(i - k);
         // I2n-k
-        double &I2nk = results.xVector.at(curInd2).value().at(i - k);
+        float &I2nk = results.xVector.at(curInd2).value().at(i - k);
         if (i == k) {
           // I1 = Z(2e/hbar)(2h/3)I2n-k + (4/3)φ1n-1 - (1/3)φ1n-2 + φ2n-k
           b_.at(curInd) = (Z / Constants::SIGMA) * 

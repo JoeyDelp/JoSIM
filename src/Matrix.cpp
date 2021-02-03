@@ -294,9 +294,9 @@ void Matrix::create_matrix(Input &iObj)
     auto &ind1 = std::get<Inductor>(components.devices.at(ind1Index.value()));
     auto &ind2 = std::get<Inductor>(components.devices.at(ind2Index.value()));
     // Calculate the coupling factor
-    double cf = parse_param(s.first.at(3), iObj.parameters, s.second);
+    float cf = parse_param(s.first.at(3), iObj.parameters, s.second);
     // Calculate the mutual inductance for this pair
-    double mutual = 
+    float mutual = 
       cf * std::sqrt(ind1.netlistInfo.value_ * ind2.netlistInfo.value_);
     if (mutual != 0) {
         // Add the mutual inductance to each inductor respectively
@@ -345,7 +345,7 @@ void Matrix::create_nz() {
   for (auto &i : components.devices) {
     // Get each device's non zero vector
     const auto& nonZeros = 
-      std::visit([](const auto& device) noexcept -> const std::vector<double>& {
+      std::visit([](const auto& device) noexcept -> const std::vector<float>& {
           return device.matrixInfo.nonZeros_;
         }, i);
     // Insert the non zero vector of the device into the greater vector

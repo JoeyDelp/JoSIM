@@ -47,29 +47,29 @@ class JJ : public BasicComponent {
   private:
     int hDepPos_ = 0;
     int state_ = 0;
-    double h_ = 0.0;
+    float h_ = 0.0;
   public:
   int variableIndex_ = 0;
-  double area_ = 0.0;
+  float area_ = 0.0;
   std::optional<Model> model_;
-  double phaseConst_ = 0.0;
-  double lowerB_ = 0.0, upperB_ = 0.0, gLarge_ = 0.0;
-  double del0_ = 0.0, del_ = 0.0, rncalc_ = 0.0;
-  double pn1_ = 0.0, pn2_ = pn1_, pn3_ = pn2_, pn4_ = pn3_, phi0_ = 0.0;
-  double vn1_ = 0.0, vn2_ = vn1_, vn3_ = vn2_, vn4_ = vn3_, vn5_ = vn4_, 
+  float phaseConst_ = 0.0;
+  float lowerB_ = 0.0, upperB_ = 0.0, gLarge_ = 0.0;
+  float del0_ = 0.0, del_ = 0.0, rncalc_ = 0.0;
+  float pn1_ = 0.0, pn2_ = pn1_, pn3_ = pn2_, pn4_ = pn3_, phi0_ = 0.0;
+  float vn1_ = 0.0, vn2_ = vn1_, vn3_ = vn2_, vn4_ = vn3_, vn5_ = vn4_, 
     vn6_ = vn5_;
-  double transitionCurrent_ = 0.0;
+  float transitionCurrent_ = 0.0;
   JoSIM::AnalysisType at_;
 
   JJ(
     const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
     const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
     const param_map &pm, const vector_pair_t<Model, string_o> &models,
-    const AnalysisType &at, const double &h, int &bi);
+    const AnalysisType &at, const float &h, int &bi);
 
-  double subgap_impedance();
-  double transient_impedance();
-  double normal_impedance();
+  float subgap_impedance();
+  float transient_impedance();
+  float normal_impedance();
 
   void set_matrix_info();
 
@@ -77,9 +77,9 @@ class JJ : public BasicComponent {
     const tokens_t &t, const vector_pair_t<Model, string_o> &models, 
     const string_o &subc);
 
-  bool update_value(const double &v);
+  bool update_value(const float &v);
 
-  void update_timestep(const double &factor) override;
+  void update_timestep(const float &factor) override;
 
   void step_back() override {
     pn2_ = pn4_;
