@@ -7,7 +7,7 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Matrix.hpp"
 
-#include "suitesparse/klu.h"
+#include <suitesparse/klu.h>
 
 #include <cassert>
 
