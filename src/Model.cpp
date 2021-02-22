@@ -9,10 +9,10 @@
 using namespace JoSIM;
 
 void Model::parse_model(
-  const std::pair<tokens_t, string_o> &s, 
-  vector_pair_t<Model, string_o> &models, const param_map &p) {
+  const std::pair<tokens_t, string_o>& s,
+  vector_pair_t<Model, string_o>& models, const param_map& p) {
   // Ensure the model conforms to correct syntax
-  if(s.first.size() < 3) {
+  if (s.first.size() < 3) {
     Errors::model_errors(
       ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
   }
@@ -21,7 +21,7 @@ void Model::parse_model(
   // The second token is the model label
   temp.set_modelName(s.first.at(1));
   // The third token needs to start with "JJ" for this to be valid
-  if(s.first.at(2).compare(0, 2, "JJ") != 0) {
+  if (s.first.at(2).compare(0, 2, "JJ") != 0) {
     Errors::model_errors(
       ModelErrors::UNKNOWN_MODEL_TYPE, Misc::vector_to_string(s.first));
   }
@@ -38,12 +38,12 @@ void Model::parse_model(
   for (int i = 0; i < tokens.size(); i += 2) {
     // Every even odd token should be a value (otherwise complain)
     double value = parse_param(tokens.at(i + 1), p, s.second);
-    if(std::isnan(value)) {
+    if (std::isnan(value)) {
       Errors::model_errors(
-      ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
+        ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
     }
     // Assign the relevant model parameters
-    if (tokens.at(i) == "VG" || tokens.at(i) == "VGAP"){
+    if (tokens.at(i) == "VG" || tokens.at(i) == "VGAP") {
       temp.set_voltageGap(value);
     } else if (tokens.at(i) == "IC" || tokens.at(i) == "ICRIT") {
       temp.set_criticalCurrent(value);

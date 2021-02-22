@@ -14,7 +14,7 @@
 
 using namespace JoSIM;
 
-tokens_t CliOptions::argv_to_tokens(const int &argc, const char **argv) {
+tokens_t CliOptions::argv_to_tokens(const int& argc, const char** argv) {
   // Tokens variable of size argc to store arguments
   tokens_t tokens(argc - 1);
   // If argument count is less or equal to one
@@ -32,19 +32,19 @@ tokens_t CliOptions::argv_to_tokens(const int &argc, const char **argv) {
 }
 
 vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
-  const tokens_t &tokens) {
+  const tokens_t& tokens) {
   // Variable to store the argument pairs
   vector_pair_t<char_o, string_o> ap;
   // Loop through the argument tokens
   for (auto t : tokens) {
     // Ensure that the argument is not e.g. "--analysis=1"
     tokens_t tempT = Misc::tokenize(t, "=", true, true);
-    if(tempT.size() > 2) {
+    if (tempT.size() > 2) {
       // If there is more than one "=" in the argument this is invalid
       Errors::cli_errors(CLIErrors::UNKNOWN_SWITCH, t);
     }
     // If the string is a switch, remove the --
-    if(tempT.at(0).at(0) == '-') {
+    if (tempT.at(0).at(0) == '-') {
       // Remove all '-' chars, indicating a switch.
       tempT.at(0).erase(std::remove(
         tempT.at(0).begin(), tempT.at(0).end(), '-'), tempT.at(0).end());
@@ -52,28 +52,28 @@ vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
       ap.emplace_back(std::make_pair(tempT.at(0).at(0), std::nullopt));
     } else {
       // Argument to the switch in first token
-      if(tempT.size() > 1) {
+      if (tempT.size() > 1) {
         ap.back().second = tempT.at(1);
       }
       // If the argument pairs aren't empty
-      if(ap.size() != 0) {
+      if (ap.size() != 0) {
         // If the previous switch was alone then this must be the argument
-        if(!ap.back().second) {
+        if (!ap.back().second) {
           ap.back().second = tempT.at(0);
-        // If the last pair has a value then this must be file name
+          // If the last pair has a value then this must be file name
         } else {
           ap.emplace_back(std::make_pair(std::nullopt, tempT.at(0)));
         }
-      // Else if they are empty then this is the input file name
+        // Else if they are empty then this is the input file name
       } else {
         ap.emplace_back(std::make_pair(std::nullopt, tempT.at(0)));
       }
     }
   }
   // Sanity check
-  if(ap.size() == 1) {
+  if (ap.size() == 1) {
     // If there is only one pair with both switch and value populated
-    if(ap.at(0).first && ap.at(0).second) {
+    if (ap.at(0).first && ap.at(0).second) {
       // We are most likely misinterpreting the input file as the value
       ap.emplace_back(std::make_pair(std::nullopt, ap.at(0).second));
       // Split the pair into 2, one the switch and one the input
@@ -83,11 +83,11 @@ vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
   return ap;
 }
 
-CliOptions CliOptions::parse(int argc, const char **argv) {
+CliOptions CliOptions::parse(int argc, const char** argv) {
   // Variable where all the CLI options will be stored
   CliOptions out;
   // Parse and generate argument pairs from tokens
-  vector_pair_t<char_o, string_o> ap = 
+  vector_pair_t<char_o, string_o> ap =
     out.argument_pairs(out.argv_to_tokens(argc, argv));
   // Loop through the argument pairs
   for (auto i : ap) {
@@ -95,103 +95,103 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
     if (!i.first) {
       // This argument is the file name
       out.cir_file_name = i.second;
-    // Else if the switch is not empty
+      // Else if the switch is not empty
     } else {
       // Use the char in a case statment
-      switch(i.first.value()) {
+      switch (i.first.value()) {
         // Set analysis type
-        case 'a':
-          if (!i.second) {
-            Errors::cli_errors(CLIErrors::NO_ANALYSIS);
-          } else if (i.second.value() == "0") {
-            out.analysis_type = AnalysisType::Voltage;
-          } else if (i.second.value() == "1") {
-            out.analysis_type = AnalysisType::Phase;
-          } else {
-            Errors::cli_errors(CLIErrors::INVALID_ANALYSIS);
-          }
-          break;
+      case 'a':
+        if (!i.second) {
+          Errors::cli_errors(CLIErrors::NO_ANALYSIS);
+        } else if (i.second.value() == "0") {
+          out.analysis_type = AnalysisType::Voltage;
+        } else if (i.second.value() == "1") {
+          out.analysis_type = AnalysisType::Phase;
+        } else {
+          Errors::cli_errors(CLIErrors::INVALID_ANALYSIS);
+        }
+        break;
         // Show help menu
-        case 'h':
-          display_help();
-          exit(0);
+      case 'h':
+        display_help();
+        exit(0);
         // Set input to standard input
-        case 'i':
-          out.cir_file_name = std::nullopt;
-          break;
+      case 'i':
+        out.cir_file_name = std::nullopt;
+        break;
         // Enable minimal reporting
-        case 'm':
-          try {
-            out.minimal = std::stoi(i.second.value_or("1"));
-          } catch(const std::invalid_argument& ia) {
-            Errors::cli_errors(
-              CLIErrors::INVALID_MINIMAL, i.second.value());
-          }
-          break;
-        // Set output file
-        case 'o':
-          // If no file name is specified but output is specified
-          if (!i.second) {
-            // Store the output in a file called output.csv at cwd
-            out.output_file_name =
-                std::filesystem::current_path().append("output.csv").string();
-          // If a file name was given
-          } else {
-            // Set the output file name
-            out.output_file_name = i.second.value();
-            // Extract the extension (if any)
-            std::string ext = 
-                std::filesystem::path(i.second.value()).extension().string();
-            // Cast the extension to uppercase
-            std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
-            // If the extension is empty
-            if (ext.empty()) {
-              // Set the file type to CSV 
-              out.output_file_type = FileOutputType::Csv;
-            // If the extension is ".CSV"
-            } else if (ext == ".CSV") {
-              // Set the file type to CSV 
-              out.output_file_type = FileOutputType::Csv;
-            // If the extension is ".DAT"
-            } else if (ext == ".DAT") {
-              // Set the file type to DAT 
-              out.output_file_type = FileOutputType::Dat;
-            // If the extension is ".RAW"
-            } else if (ext == ".RAW") {
-              // Set the file type to RAW 
-              out.output_file_type = FileOutputType::Raw; 
-            // Unknown file type
-            } else {
-              // Complain about it. Default to CSV
-              Errors::cli_errors(CLIErrors::UNKNOWN_OUTPUT_TYPE, ext);
-            }
-          }
-          break;
-        // Enable parallel processing (EXPERIMENTAL)
-        case 'p':
-          #ifdef _OPENMP
-          std::cout << "Parallelization is ENABLED" << std::endl;
-          #else
-          std::cout << "Parallelization is DISABLED" << std::endl;
-          #endif
-          break;
-        // Enable verbose mode
-        case 'V':
-          try {
-            out.verbose = std::stoi(i.second.value_or("1"));
-          } catch(const std::invalid_argument& ia) {
-            Errors::verbosity_errors(
-              VerbosityErrors::INVALID_VERBOSITY_LEVEL, i.second.value());
-          }
-          break;
-        // Show version info
-        case 'v':
-          exit(0);
-          break;
-        // Unknown switch was specified
-        default:
+      case 'm':
+        try {
+          out.minimal = std::stoi(i.second.value_or("1"));
+        } catch (const std::invalid_argument& ia) {
           Errors::cli_errors(
-            CLIErrors::UNKNOWN_SWITCH, std::string(1,i.first.value()));
+            CLIErrors::INVALID_MINIMAL, i.second.value());
+        }
+        break;
+        // Set output file
+      case 'o':
+        // If no file name is specified but output is specified
+        if (!i.second) {
+          // Store the output in a file called output.csv at cwd
+          out.output_file_name =
+            std::filesystem::current_path().append("output.csv").string();
+          // If a file name was given
+        } else {
+          // Set the output file name
+          out.output_file_name = i.second.value();
+          // Extract the extension (if any)
+          std::string ext =
+            std::filesystem::path(i.second.value()).extension().string();
+          // Cast the extension to uppercase
+          std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
+          // If the extension is empty
+          if (ext.empty()) {
+            // Set the file type to CSV 
+            out.output_file_type = FileOutputType::Csv;
+            // If the extension is ".CSV"
+          } else if (ext == ".CSV") {
+            // Set the file type to CSV 
+            out.output_file_type = FileOutputType::Csv;
+            // If the extension is ".DAT"
+          } else if (ext == ".DAT") {
+            // Set the file type to DAT 
+            out.output_file_type = FileOutputType::Dat;
+            // If the extension is ".RAW"
+          } else if (ext == ".RAW") {
+            // Set the file type to RAW 
+            out.output_file_type = FileOutputType::Raw;
+            // Unknown file type
+          } else {
+            // Complain about it. Default to CSV
+            Errors::cli_errors(CLIErrors::UNKNOWN_OUTPUT_TYPE, ext);
+          }
+        }
+        break;
+        // Enable parallel processing (EXPERIMENTAL)
+      case 'p':
+#ifdef _OPENMP
+        std::cout << "Parallelization is ENABLED" << std::endl;
+#else
+        std::cout << "Parallelization is DISABLED" << std::endl;
+#endif
+        break;
+        // Enable verbose mode
+      case 'V':
+        try {
+          out.verbose = std::stoi(i.second.value_or("1"));
+        } catch (const std::invalid_argument& ia) {
+          Errors::verbosity_errors(
+            VerbosityErrors::INVALID_VERBOSITY_LEVEL, i.second.value());
+        }
+        break;
+        // Show version info
+      case 'v':
+        exit(0);
+        break;
+        // Unknown switch was specified
+      default:
+        Errors::cli_errors(
+          CLIErrors::UNKNOWN_SWITCH, std::string(1, i.first.value()));
       }
     }
   }
@@ -204,25 +204,25 @@ CliOptions CliOptions::parse(int argc, const char **argv) {
   // If an output file name was specified
   if (out.output_file_name) {
     // But this matches the input file name
-    if(out.output_file_name.value() == out.cir_file_name.value()) {
+    if (out.output_file_name.value() == out.cir_file_name.value()) {
       // Complain and exit since continuing will overwrite input file
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
     }
   }
   // If minimal flag is not specified
-  if(!out.minimal) {
+  if (!out.minimal) {
     // Print to screen the input and output locations
-    if (out.cir_file_name){
+    if (out.cir_file_name) {
       std::cout << "Input: " << out.cir_file_name.value()
-                << std::endl;
+        << std::endl;
     } else {
       std::cout << "Input: " << "standard input"
-                << std::endl;
+        << std::endl;
     }
     std::cout << std::endl;
-    if(out.output_file_name) {
+    if (out.output_file_name) {
       std::cout << "Output: " << out.output_file_name.value()
-                << std::endl;
+        << std::endl;
       std::cout << std::endl;
     }
   }
@@ -238,101 +238,101 @@ void CliOptions::display_help() {
   // Analysis type
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-a" << std::setw(3) << std::left
-            << "|"
-            << "Specifies the analysis type." << std::endl;
+    << "|"
+    << "Specifies the analysis type." << std::endl;
   std::cout << std::setw(16) << std::left << "--analysis=" << std::setw(3)
-            << std::left << "|"
-            << "0 for Voltage analysis (Default)." << std::endl;
+    << std::left << "|"
+    << "0 for Voltage analysis (Default)." << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|"
-            << "1 for Phase analysis." << std::endl;
+    << "|"
+    << "1 for Phase analysis." << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Help menu
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-h" << std::setw(3) << std::left
-            << "|"
-            << "Displays this help menu" << std::endl;
+    << "|"
+    << "Displays this help menu" << std::endl;
   std::cout << std::setw(16) << std::left << "--help" << std::setw(3)
-            << std::left << "|"
-            << " " << std::endl;
+    << std::left << "|"
+    << " " << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Input from standard in
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-i" << std::setw(3) << std::left
-            << "|"
-            << "Input circuit netlist from standard input."
-            << std::endl;
+    << "|"
+    << "Input circuit netlist from standard input."
+    << std::endl;
   std::cout << std::setw(16) << std::left << "--input" << std::setw(3)
-            << std::left << "|"
-            << "This command ignores any additional input file specified." 
-            << std::endl;
+    << std::left << "|"
+    << "This command ignores any additional input file specified."
+    << std::endl;
   std::cout
-      << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
-      << "Reads from standard input until the " << 
-        ".end command or EOF character is specified."
-      << std::endl;
+    << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
+    << "Reads from standard input until the " <<
+    ".end command or EOF character is specified."
+    << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Minimal output
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-m" << std::setw(3) << std::left
-            << "|"
-            << "Disables most output." << std::endl;
+    << "|"
+    << "Disables most output." << std::endl;
   std::cout << std::setw(16) << std::left << "--minimal" << std::setw(3)
-            << std::left << "|"
-            << " " << std::endl;
+    << std::left << "|"
+    << " " << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Output
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-o" << std::setw(3) << std::left
-            << "|"
-            << "Specify output file for simulation results (.csv)."
-            << std::endl;
+    << "|"
+    << "Specify output file for simulation results (.csv)."
+    << std::endl;
   std::cout << std::setw(16) << std::left << "--output=" << std::setw(3)
-            << std::left << "|"
-            << "Default will be output.csv if no file is specified."
-            << std::endl;
+    << std::left << "|"
+    << "Default will be output.csv if no file is specified."
+    << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Parallel Processing
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-p" << std::setw(3) << std::left
-            << "|"
-            << "(EXPERIMENTAL) Enables parallelization of certain functions."
-            << std::endl;
+    << "|"
+    << "(EXPERIMENTAL) Enables parallelization of certain functions."
+    << std::endl;
   std::cout << std::setw(16) << std::left << "--parallel" << std::setw(3)
-            << std::left << "|"
-            << "Requires compilation with OPENMP switch enabled." << std::endl;
+    << std::left << "|"
+    << "Requires compilation with OPENMP switch enabled." << std::endl;
   std::cout
-      << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
-      << "Threshold applies, overhead on small circuits negates performance."
-      << std::endl;
+    << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
+    << "Threshold applies, overhead on small circuits negates performance."
+    << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Verbose switch
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-V" << std::setw(3) << std::left
-            << "|"
-            << "Runs JoSIM in verbose mode." << std::endl;
+    << "|"
+    << "Runs JoSIM in verbose mode." << std::endl;
   std::cout << std::setw(16) << std::left << "--Verbose=" << std::setw(3)
-            << std::left << "|"
-            << "Defaults to minimal(1), can be medium(2) or maximum(3)" 
-            << std::endl;
+    << std::left << "|"
+    << "Defaults to minimal(1), can be medium(2) or maximum(3)"
+    << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
   // Version info
   // ---------------------------------------------------------------------------
   std::cout << std::setw(16) << std::left << "-v" << std::setw(3) << std::left
-            << "|"
-            << "Displays the JoSIM version info only." << std::endl;
+    << "|"
+    << "Displays the JoSIM version info only." << std::endl;
   std::cout << std::setw(16) << std::left << "--version" << std::setw(3)
-            << std::left << "|"
-            << " " << std::endl;
+    << std::left << "|"
+    << " " << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
-            << "|" << std::endl;
+    << "|" << std::endl;
 
   // ---------------------------------------------------------------------------
   std::cout << std::endl;
@@ -344,15 +344,15 @@ void CliOptions::display_help() {
 void CliOptions::version_info() {
   std::cout << std::endl;
   std::cout
-      << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator"
-      << std::endl;
+    << "JoSIM: Josephson Junction Superconductive SPICE Circuit Simulator"
+    << std::endl;
   std::cout << "Copyright (C) 2020 by Johannes Delport (jdelport@sun.ac.za)"
-            << std::endl;
-  std::cout << "v" << VERSION << "." << GIT_COMMIT_HASH << " compiled on " 
-            << __DATE__ << " at "
-            << __TIME__ << std::endl;
-  #ifndef NDEBUG
-    std::cout << "(Debug)"  << std::endl;
-  #endif
+    << std::endl;
+  std::cout << "v" << VERSION << "." << GIT_COMMIT_HASH << " compiled on "
+    << __DATE__ << " at "
+    << __TIME__ << std::endl;
+#ifndef NDEBUG
+  std::cout << "(Debug)" << std::endl;
+#endif
   std::cout << std::endl;
 }

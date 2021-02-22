@@ -25,16 +25,16 @@ void JoSIM::Noise::determine_noise_effective_bandwidth(Input& iObj) {
   }
 }
 
-double JoSIM::Noise::determine_spectral_amplitude(const double& R, 
+double JoSIM::Noise::determine_spectral_amplitude(const double& R,
   const double& T) {
   // spectral amplitute = sqrt(4 * kB * T * B / R)
-  double spAmp = sqrt((4 * Constants::BOLTZMANN * T ) / R);
+  double spAmp = sqrt((4 * Constants::BOLTZMANN * T) / R);
   return spAmp;
 }
 
 std::pair<tokens_t, string_o>
 JoSIM::Noise::create_resistive_current_noise(Input& iObj, const double& R,
-  const double& T, const double& B, 
+  const double& T, const double& B,
   std::vector<std::pair<tokens_t, string_o>>::iterator& i) {
   std::pair<tokens_t, string_o> noiseSource;
   noiseSource.first.emplace_back("INOISE_" + i->first.front());
@@ -53,7 +53,7 @@ void JoSIM::Noise::add_noise_sources(Input& iObj) {
   determine_global_temperature(iObj);
   determine_noise_effective_bandwidth(iObj);
   std::vector<std::pair<tokens_t, string_o>> noises;
-  for (auto it = iObj.netlist.expNetlist.begin(); 
+  for (auto it = iObj.netlist.expNetlist.begin();
     it != iObj.netlist.expNetlist.end(); ++it) {
     if (it->first.front().at(0) == 'R') {
       std::optional<double> T;
@@ -70,7 +70,7 @@ void JoSIM::Noise::add_noise_sources(Input& iObj) {
         t = Misc::tokenize(temp, " =");
         for (auto i = t.begin(); i < t.end(); ++i) {
           if (*i == "TEMP") {
-            if (i + 1 == t.end() || *(i+1) == "NEB") {
+            if (i + 1 == t.end() || *(i + 1) == "NEB") {
               Errors::invalid_component_errors(ComponentErrors::RES_ERROR,
                 Misc::vector_to_string(it->first));
             } else {

@@ -10,11 +10,11 @@
 using namespace JoSIM;
 
 void Transient::identify_simulation(
-  const std::vector<tokens_t> &controls, Transient &tObj) {
+  const std::vector<tokens_t>& controls, Transient& tObj) {
   // Flag to store that a transient simulation was found
   bool transFound = false;
   // Loop through all the controls
-  for (const auto &i : controls) {
+  for (const auto& i : controls) {
     // If the first token of the line contains "TRAN"
     if (i.front().find("TRAN") != std::string::npos) {
       // Set the flag as true
@@ -23,56 +23,64 @@ void Transient::identify_simulation(
       if (i.size() < 2) {
         // Complain of invalid transient analysis specification
         Errors::control_errors(
-          ControlErrors::TRANS_ERROR, 
+          ControlErrors::TRANS_ERROR,
           "Too few parameters: " + Misc::vector_to_string(i));
         // Set the parameters to default values and continue
-        tObj.set_tstep(1E-12);
-        tObj.set_prstep(1E-12);
-        tObj.set_tstop(1E-9);
-        tObj.set_prstart(0);
-      // If there are more than 2 tokens
+        tObj.tstep(0.25E-12);
+        tObj.prstep(1E-12);
+        tObj.tstop(1E-9);
+        tObj.prstart(0);
+        // If there are more than 2 tokens
       } else {
         // Set the step size
-        tObj.set_tstep(Misc::modifier(i.at(1)));
+        tObj.tstep(Misc::modifier(i.at(1)));
         if (i.size() > 2) {
           // Set the simulation stop time
-          tObj.set_tstop(Misc::modifier(i.at(2)));
+          tObj.tstop(Misc::modifier(i.at(2)));
           if (i.size() > 3) {
             // Set the print start time
-            tObj.set_prstart(Misc::modifier(i.at(3)));
+            tObj.prstart(Misc::modifier(i.at(3)));
             if (i.size() > 4) {
               // Set the print step size
-              tObj.set_prstep(Misc::modifier(i.at(4)));
+              tObj.prstep(Misc::modifier(i.at(4)));
             } else
               // Set default
-              tObj.set_prstep(tObj.get_tstep());
+              tObj.prstep(tObj.tstep());
           } else {
             // Set default
-            tObj.set_prstart(0);
-            tObj.set_prstep(tObj.get_tstep());
+            tObj.prstart(0);
+            tObj.prstep(tObj.tstep());
           }
         } else {
           // Set default
-          tObj.set_tstop(1E-9);
-          tObj.set_prstart(0);
-          tObj.set_prstep(tObj.get_tstep());
+          tObj.tstop(1E-9);
+          tObj.prstart(0);
+          tObj.prstep(tObj.tstep());
         }
       }
       // If either the step size or stop time is 0
-      if(tObj.get_tstep() == 0 || tObj.get_tstop() == 0 ) {
+      if (tObj.tstep() == 0 || tObj.tstop() == 0) {
         // Complain
         Errors::control_errors(
           ControlErrors::TRANS_ERROR, Misc::vector_to_string(i));
         // Set defaults and continue
-        tObj.set_tstep(1E-12);
-        tObj.set_prstep(tObj.get_tstep());
-        tObj.set_tstop(1E-9);
-        tObj.set_prstart(0);
+        tObj.tstep(0.25E-12);
+        tObj.prstep(tObj.tstep());
+        tObj.tstop(1E-9);
+        tObj.prstart(0);
+      }
+      // While variable time step does not work yet
+      // If user provided time step is larger than 0.25ps
+      if (tObj.tstep() > 0.25E-12) {
+        tObj.tstep(0.25E-12);
+      }
+      // Also if PSTEP is smaller than TSTEP
+      if (tObj.tstep() > tObj.prstep()) {
+        // Reduce TSTEP to match PRSTEP
+        tObj.tstep(tObj.prstep());
       }
     }
   }
-  // Calculate the simulation size (Stop - Start / Step)
-  tObj.set_simsize();
   // If no transient was found in the controls
   if (!transFound) {
     // Complain and exit as no simulation will take place

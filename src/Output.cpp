@@ -20,13 +20,32 @@
 using namespace JoSIM;
 
 void Output::write_output(
-  const Input &iObj, Matrix &mObj, Simulation &sObj) {
+  const Input& iObj, Matrix& mObj, Simulation& sObj) {
+  // Shorhand for the results vector
+  auto& x = sObj.results.xVector;
+  // Add the time axis trace to the set of traces to print
   traces.emplace_back("time");
-  traces.back().data_ = sObj.results.timeAxis;
   traces.back().type_ = 'T';
-  if(mObj.relevantTraces.size() != 0){
+  // Only the requested time pieces
+  int printStartIndex = 0, cc = 0;
+  double prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
+  for (auto& i : sObj.results.timeAxis) {
+    if (i >= iObj.transSim.prstart()) {
+      if (Misc::isclose(i, iObj.transSim.prstart(), 1E-14)) {
+        printStartIndex = cc;
+      }
+      if (Misc::isclose(i, (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+        traces.back().data_.emplace_back(i);
+        prevPoint += iObj.transSim.prstep();
+      }
+    }
+    cc++;
+  }
+  // Check if there are any traces to print
+  if (mObj.relevantTraces.size() != 0) {
+    // Create progress bar
     ProgressBar bar;
-    if(!iObj.argMin) {
+    if (!iObj.argMin) {
       bar.create_thread();
       bar.set_bar_width(30);
       bar.fill_bar_progress_with("O");
@@ -34,196 +53,138 @@ void Output::write_output(
       bar.set_status_text("Formatting Output");
       bar.set_total((float)mObj.relevantTraces.size());
     }
-    int cc = 0;
-    for (const auto &i : mObj.relevantTraces) {
-      if(!iObj.argMin) {
+    // Reset progress counter
+    cc = 0;
+    for (const auto& i : mObj.relevantTraces) {
+      auto& st = i.storageType;
+      if (!iObj.argMin) {
         bar.update(cc);
       }
-      if(i.storageType == StorageType::Voltage) {
+      // Shorthand for the optional value
+      auto i1 = i.index1.has_value() ? i.index1.value() : -1;
+      auto i2 = i.index2.has_value() ? i.index2.value() : -1;
+      auto si = i.sourceIndex.has_value() ? i.sourceIndex.value() : -1;
+      auto vi = i.variableIndex.has_value() ? i.variableIndex.value() : -1;
+      // If this is a voltage we are storing
+      if (st == StorageType::Voltage) {
+        // Set the label for the plot
         traces.emplace_back(i.deviceLabel.value());
+        // Temporary values used for lookback
+        double valin1n1 = 0, valin1n2 = valin1n1;
+        double valin2n1 = 0, valin2n2 = valin2n1;
         double voltN1 = 0;
-        for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+        prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
+        // Add the values for each value on the time axis
+        for (int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
           double value;
-          if(iObj.argAnal == AnalysisType::Voltage) {
-            if(!i.index2) {
-              value = sObj.results.xVector.at(i.index1.value()).value().at(j);
-            } else if (!i.index1) {
-              value = -sObj.results.xVector.at(i.index2.value()).value().at(j);
-            } else {
-              value = sObj.results.xVector.at(i.index1.value()).value().at(j) 
-                      - sObj.results.xVector.at(i.index2.value()).value().at(j);
-            }
+          // Shorthand values
+          auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
+          auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
+          auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
+          // If the analysis method was voltage
+          if (iObj.argAnal == AnalysisType::Voltage) {
+            value = valin1 - valin2;
+            // Else calculate the voltage from the phase value
           } else {
-            if(i.deviceLabel.value().at(3) == 'B') {
-              value = sObj.results.xVector.at(i.variableIndex.value()).value().at(j);
+            if (i.deviceLabel.value().at(3) == 'B') {
+              value = valvi;
             } else {
-              if(!i.index2) {
-                if (j == 0) {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep()) 
-                          * sObj.results.xVector.at(i.index1.value()).value().at(j);
-                  voltN1 = 0.0;
-                } else if (j == 1) {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)) + voltN1;
-                  voltN1 = 0.0;
-                } else {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          -  2 * sObj.results.xVector.at(i.index1.value()).value().at(j - 1)
-                          + sObj.results.xVector.at(i.index1.value()).value().at(j - 2)) + voltN1;
-                  voltN1 = value;
-                }
-              } else if (!i.index1) {
-                if (j == 0) {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep()) 
-                          * (-sObj.results.xVector.at(i.index2.value()).value().at(j));
-                  voltN1 = 0.0;
-                } else if (j == 1) {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
-                  voltN1 = 0.0;
-                } else {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
-                          + (-sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
-                  voltN1 = value;
-                }
-              } else {
-                if (j == 0) {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j));
-                  voltN1 = 0.0;
-                } else if (j == 1) {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          -  2 * (-sObj.results.xVector.at(i.index2.value()).value().at(j - 1))) + voltN1;
-                  voltN1 = 0.0;
-                } else {
-                  value = ((Constants::SIGMA) / iObj.transSim.get_prstep())  
-                          * ((sObj.results.xVector.at(i.index1.value()).value().at(j) 
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          - 2 * (sObj.results.xVector.at(i.index1.value()).value().at(j - 1) 
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j - 1))
-                          + (sObj.results.xVector.at(i.index1.value()).value().at(j - 2) 
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + voltN1;
-                  voltN1 = value;
-                }
-              }
+              value = ((Constants::SIGMA) / iObj.transSim.tstep())
+                * ((valin1 - valin2) - 2 * (valin1n1 - valin2n1)
+                  + (valin1n2 - valin2n2)) + voltN1;
+              valin1n2 = valin1n1;
+              valin1n1 = valin1;
+              valin2n2 = valin2n1;
+              valin2n1 = valin2;
+              if (j > 1) voltN1 = value;
             }
           }
-          traces.back().data_.emplace_back(value);
           traces.back().type_ = 'V';
+          if (Misc::isclose(sObj.results.timeAxis.at(j),
+            (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+            traces.back().data_.emplace_back(value);
+            prevPoint += iObj.transSim.prstep();
+          }
         }
-      } else if(i.storageType == StorageType::Phase) {
+      } else if (st == StorageType::Phase) {
+        // Set the label for the plot
         traces.emplace_back(i.deviceLabel.value());
-        double phaseN1, phaseN2;
-        phaseN1 = phaseN2 = 0.0;
-        for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+        // Temporary values for lookback
+        double valin1n1 = 0, valin1n2 = valin1n1;
+        double valin2n1 = 0, valin2n2 = valin2n1;
+        double phaseN1 = 0, phaseN2 = phaseN1;
+        prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
+        // Add the values for each value on the time axis
+        for (int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
           double value;
-          if(iObj.argAnal == AnalysisType::Phase) {
-            if(!i.index2) {
-              value = sObj.results.xVector.at(i.index1.value()).value().at(j);
-            } else if (!i.index1) {
-              value = -sObj.results.xVector.at(i.index2.value()).value().at(j);
-            } else {
-              value = sObj.results.xVector.at(i.index1.value()).value().at(j) 
-                      - sObj.results.xVector.at(i.index2.value()).value().at(j);
-            }
+          // Shorthand values
+          auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
+          auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
+          auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
+          // If the analysis type is phase
+          if (iObj.argAnal == AnalysisType::Phase) {
+            value = valin1 - valin2;
+            // Else if the analysis type was voltage
           } else {
-            if(i.deviceLabel.value().at(3) == 'B') {
-              value = sObj.results.xVector.at(i.variableIndex.value()).value().at(j);
+            if (i.deviceLabel.value().at(3) == 'B') {
+              value = valvi;
             } else {
-              if(!i.index2) {
-                if (j == 0) {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) 
-                          * sObj.results.xVector.at(i.index1.value()).value().at(j);
-                  phaseN1 = value;
-                } else if (j == 1) {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA))  
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)) + 2 * phaseN1 - phaseN2;
-                  phaseN2 = phaseN1;
-                  phaseN1 = value;
-                } else {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA))  
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          - sObj.results.xVector.at(i.index1.value()).value().at(j - 2)) + 2 * phaseN1 - phaseN2;
-                  phaseN2 = phaseN1;
-                  phaseN1 = value;
-                }
-              } else if (!i.index1) {
-                if (j == 0) {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) 
-                          * (-sObj.results.xVector.at(i.index2.value()).value().at(j));
-                  phaseN1 = value;
-                } else if (j == 1) {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA))  
-                          * (-sObj.results.xVector.at(i.index2.value()).value().at(j)) + 2 * phaseN1 - phaseN2;
-                  phaseN2 = phaseN1;
-                  phaseN1 = value;
-                } else {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA))  
-                          * ((-sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          - (-sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + 2 * phaseN1 - phaseN2;
-                  phaseN2 = phaseN1;
-                  phaseN1 = value;
-                }
-              } else {
-                if (j == 0) {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA)) 
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j));
-                  phaseN1 = value;
-                } else if (j == 1) {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA))  
-                          * (sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j)) + 2 * phaseN1 - phaseN2;
-                  phaseN2 = phaseN1;
-                  phaseN1 = value;
-                } else {
-                  value = (iObj.transSim.get_prstep() / (2 * Constants::SIGMA))  
-                          * ((sObj.results.xVector.at(i.index1.value()).value().at(j)
-                          - sObj.results.xVector.at(i.index2.value()).value().at(j))
-                          - (sObj.results.xVector.at(i.index1.value()).value().at(j - 2)
-                          -sObj.results.xVector.at(i.index2.value()).value().at(j - 2))) + 2 * phaseN1 - phaseN2;
-                  phaseN2 = phaseN1;
-                  phaseN1 = value;
-                }
-              }
+              value = (iObj.transSim.tstep() / (2 * Constants::SIGMA))
+                * ((valin1 - valin2) - (valin1n2 - valin2n2)) +
+                2 * phaseN1 - phaseN2;
+              valin1n2 = valin1n1;
+              valin1n1 = valin1;
+              valin2n2 = valin2n1;
+              valin2n1 = valin2;
+              phaseN2 = phaseN1;
+              phaseN1 = value;
             }
           }
-          traces.back().data_.emplace_back(value);
           traces.back().type_ = 'P';
-        }
-      } else if(i.storageType == StorageType::Current) {
-        traces.emplace_back(i.deviceLabel.value());
-        if(i.deviceLabel.value().at(3) != 'I'){ 
-          for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-            double value = sObj.results.xVector.at(i.index1.value()).value().at(j);
+          if (Misc::isclose(sObj.results.timeAxis.at(j),
+            (prevPoint + iObj.transSim.prstep()), 1E-14)) {
             traces.back().data_.emplace_back(value);
+            prevPoint += iObj.transSim.prstep();
+          }
+        }
+      } else if (st == StorageType::Current) {
+        traces.emplace_back(i.deviceLabel.value());
+        if (i.deviceLabel.value().at(3) != 'I') {
+          prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
+          for (
+            int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
+            double value = x.at(i.index1.value()).value().at(j);
             traces.back().type_ = 'I';
+            if (Misc::isclose(sObj.results.timeAxis.at(j),
+              (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+              traces.back().data_.emplace_back(value);
+              prevPoint += iObj.transSim.prstep();
+            }
           }
         } else {
-          for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+          prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
+          for (
+            int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
             double value = mObj.sourcegen.at(i.sourceIndex.value()).value(
               sObj.results.timeAxis.at(j));
-            traces.back().data_.emplace_back(value);
             traces.back().type_ = 'I';
+            if (Misc::isclose(sObj.results.timeAxis.at(j),
+              (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+              traces.back().data_.emplace_back(value);
+              prevPoint += iObj.transSim.prstep();
+            }
           }
         }
       }
       ++cc;
     }
-    if(!iObj.argMin) {
+    if (!iObj.argMin) {
       bar.complete();
       std::cout << "\n";
-    }  
+    }
   } else {
     ProgressBar bar;
-    if(!iObj.argMin) {
+    if (!iObj.argMin) {
       bar.create_thread();
       bar.set_bar_width(30);
       bar.fill_bar_progress_with("O");
@@ -232,23 +193,23 @@ void Output::write_output(
       bar.set_total((float)mObj.nm.size());
     }
     int cc = 0;
-    for (const auto &i : mObj.nm) {
-      if(!iObj.argMin) {
+    for (const auto& i : mObj.nm) {
+      if (!iObj.argMin) {
         bar.update(cc);
       }
-      if(iObj.argAnal == AnalysisType::Voltage) {
+      if (iObj.argAnal == AnalysisType::Voltage) {
         traces.emplace_back("V(" + i.first + ")");
         traces.back().type_ = 'V';
       } else {
         traces.emplace_back("P(" + i.first + ")");
         traces.back().type_ = 'P';
       }
-      for(int j = 0; j < sObj.results.timeAxis.size(); ++j) {
-        traces.back().data_.emplace_back(sObj.results.xVector.at(i.second).value().at(j));
+      for (int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+        traces.back().data_.emplace_back(x.at(i.second).value().at(j));
       }
       ++cc;
     }
-    if(!iObj.argMin) {
+    if (!iObj.argMin) {
       bar.update(100);
       bar.complete();
       std::cout << "\n";
@@ -257,7 +218,7 @@ void Output::write_output(
 }
 
 void Output::format_csv_or_dat(
-  const std::string &filename, const char &delimiter, bool argmin) {
+  const std::string& filename, const char& delimiter, bool argmin) {
   std::ofstream outfile(filename);
   outfile << std::setprecision(15);
   if (outfile.is_open()) {
@@ -266,7 +227,7 @@ void Output::format_csv_or_dat(
     }
     outfile << traces.at(traces.size() - 1).name_ << "\n";
     ProgressBar bar;
-    if(!argmin) {
+    if (!argmin) {
       bar.create_thread();
       bar.set_bar_width(30);
       bar.fill_bar_progress_with("O");
@@ -275,17 +236,17 @@ void Output::format_csv_or_dat(
       bar.set_total((float)traces.at(0).data_.size());
     }
     for (int j = 0; j < traces.at(0).data_.size(); ++j) {
-      if(!argmin) {
+      if (!argmin) {
         bar.update(j);
       }
       for (int i = 0; i < traces.size() - 1; ++i) {
-        outfile << std::scientific << std::setprecision(6) << 
+        outfile << std::scientific << std::setprecision(6) <<
           traces.at(i).data_.at(j) << delimiter;
       }
-      outfile << std::scientific << std::setprecision(6) << 
+      outfile << std::scientific << std::setprecision(6) <<
         traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
-    if(!argmin) {
+    if (!argmin) {
       bar.complete();
       std::cout << "\n\n";
     }
@@ -295,7 +256,7 @@ void Output::format_csv_or_dat(
 }
 
 // Writes the output to a standard spice raw file
-void Output::format_raw(const std::string &filename, bool argmin) {
+void Output::format_raw(const std::string& filename, bool argmin) {
   // Variable to store the total number of points to be saved
   int loopsize = 0;
   // Opens an output stream with provided file name
@@ -327,10 +288,10 @@ void Output::format_raw(const std::string &filename, bool argmin) {
         // If this is a voltage variable
         if (traces.at(i).type_ == 'V') {
           outfile << " " << i << " " << name << " Voltage\n";
-        // If this is a phase variable
+          // If this is a phase variable
         } else if (traces.at(i).type_ == 'P') {
           outfile << " " << i << " " << name << " Phase\n";
-        // If this is a current variable
+          // If this is a current variable
         } else if (traces.at(i).type_ == 'I') {
           std::replace(name.begin(), name.end(), '|', '.');
           name = name.substr(2);
@@ -343,7 +304,7 @@ void Output::format_raw(const std::string &filename, bool argmin) {
       outfile << "Values:\n";
       int pointSizeSpacing = std::to_string(loopsize).length() + 1;
       ProgressBar bar;
-      if(!argmin) {
+      if (!argmin) {
         bar.create_thread();
         bar.set_bar_width(30);
         bar.fill_bar_progress_with("O");
@@ -352,11 +313,11 @@ void Output::format_raw(const std::string &filename, bool argmin) {
         bar.set_total((float)loopsize);
       }
       for (int i = 0; i < loopsize; ++i) {
-        if(!argmin) {
+        if (!argmin) {
           bar.update(i);
         }
         // Point and time value
-        outfile << std::left << std::setw(pointSizeSpacing) << i << 
+        outfile << std::left << std::setw(pointSizeSpacing) << i <<
           traces.at(0).data_.at(i) << "\n";
         // Fill in rest of variable values
         for (int j = 1; j < traces.size(); ++j) {
@@ -364,11 +325,11 @@ void Output::format_raw(const std::string &filename, bool argmin) {
             traces.at(j).data_.at(i) << "\n";
         }
       }
-      if(!argmin) {
+      if (!argmin) {
         bar.complete();
         std::cout << "\n\n";
       }
-    // If the traces were empty (aka nothing to plot)
+      // If the traces were empty (aka nothing to plot)
     } else if (traces.empty()) {
       // Complain about it
       Errors::output_errors(OutputErrors::NOTHING_SPECIFIED);
@@ -381,16 +342,16 @@ void Output::format_raw(const std::string &filename, bool argmin) {
   }
 }
 
-void Output::format_cout(const bool &argMin) {
-  if(!argMin) {
+void Output::format_cout(const bool& argMin) {
+  if (!argMin) {
     for (int i = 0; i < traces.size() - 1; ++i) {
       std::cout << traces.at(i).name_ << " ";
     }
     std::cout << traces.at(traces.size() - 1).name_ << "\n";
     for (int j = 0; j < traces.at(0).data_.size(); ++j) {
       for (int i = 0; i < traces.size() - 1; ++i) {
-        std::cout << std::setw(15) << std::scientific << std::setprecision(6) << 
-          traces.at(i).data_.at(j) << " ";
+        std::cout << std::setw(15) << std::scientific << std::setprecision(6)
+          << traces.at(i).data_.at(j) << " ";
       }
       std::cout << std::setw(15) << std::scientific << std::setprecision(6) <<
         traces.at(traces.size() - 1).data_.at(j) << "\n";

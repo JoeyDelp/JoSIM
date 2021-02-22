@@ -14,45 +14,53 @@
 
 namespace JoSIM {
 
-class Parameter {
-  private:
+  class Parameter {
+    private:
     std::string expression_;
     double_o value_;
 
-  public:
+    public:
     Parameter() {};
 
-    void set_expression(const std::string &s) { expression_ = s; };
-    void set_value(const double &v) { value_ = v; };
+    void set_expression(const std::string& s) {
+      expression_ = s;
+    };
+    void set_value(const double& v) {
+      value_ = v;
+    };
 
-    std::string get_expression() const { return expression_; };
-    double_o get_value() const { return value_; };
-};
+    std::string get_expression() const {
+      return expression_;
+    };
+    double_o get_value() const {
+      return value_;
+    };
+  };
 
   // Shorthand for long type
   using param_map = std::unordered_map<ParameterName, Parameter>;
 
   void expand_inline_parameters(
-    std::vector<tokens_t, string_o> &s, param_map &parameters);
+    std::vector<tokens_t, string_o>& s, param_map& parameters);
 
   void create_parameter(
-    const tokens_t &s, param_map &parameters, string_o subc = std::nullopt);
+    const tokens_t& s, param_map& parameters, string_o subc = std::nullopt);
 
   double parse_param(
-    const std::string &expr, const param_map &params, 
+    const std::string& expr, const param_map& params,
     string_o subc = std::nullopt);
 
-  int precedence_lvl(const std::string &op);
+  int precedence_lvl(const std::string& op);
 
   double parse_operator(
-    const std::string &op, double val1, double val2, int &popCount);
+    const std::string& op, double val1, double val2, int& popCount);
 
-  void parse_parameters(param_map &parameters);
+  void parse_parameters(param_map& parameters);
 
-  void update_parameters(param_map &parameters);
+  void update_parameters(param_map& parameters);
 
   void expand_inline_parameters(
-    std::pair<tokens_t, string_o> &s, param_map &parameters);
+    std::pair<tokens_t, string_o>& s, param_map& parameters);
 
 } // namespace JoSIM
 

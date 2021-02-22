@@ -16,8 +16,8 @@
 
 using namespace JoSIM;
 
-int main(int argc, 
-          const char **argv) {
+int main(int argc,
+  const char** argv) {
   try {
     // Before anything. Display versioning info.
     CliOptions::version_info();
@@ -25,8 +25,8 @@ int main(int argc,
     auto cli_options = CliOptions::parse(argc, argv);
     // Generate input object based on cli arguements
     Input iObj(cli_options.analysis_type,
-              cli_options.verbose,
-              cli_options.minimal);    
+      cli_options.verbose,
+      cli_options.minimal);
     // Parse input file as specified by the cli arguments
     iObj.parse_input(cli_options.cir_file_name);
     // Parse any identified parameter values
@@ -34,9 +34,9 @@ int main(int argc,
       parse_parameters(iObj.parameters);
     }
     // Parse any identified models
-    for (const auto &i : iObj.netlist.models) {
+    for (const auto& i : iObj.netlist.models) {
       Model::parse_model(
-        std::make_pair(i.second, i.first.second), iObj.netlist.models_new, 
+        std::make_pair(i.second, i.first.second), iObj.netlist.models_new,
         iObj.parameters);
     }
     // Expand nested subcircuits
@@ -81,10 +81,10 @@ int main(int argc,
     }
     // Finish
     return 0;
-  } catch(std::runtime_error &formattedMessage) {
+  } catch (std::runtime_error& formattedMessage) {
     // Catch any thrown error messages
     Errors::error_message(formattedMessage.what());
-  } catch(std::out_of_range &e) {
+  } catch (std::out_of_range& e) {
     // Catch any Out of Range exceptions and print something user readable
     Errors::oor();
   }

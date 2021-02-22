@@ -16,50 +16,53 @@
 
 namespace JoSIM {
 
- /*
-  Llabel V⁺ V⁻ L
+  /*
+   Llabel V⁺ V⁻ L
 
-  V - (3*L)/(2*h)Io = -(2*L)/(h)In-1 + (L)/(2*h)In-2
+   V - (3*L)/(2*h)Io = -(2*L)/(h)In-1 + (L)/(2*h)In-2
 
-  ⎡ 0  0            1⎤ ⎡V⁺⎤   ⎡                              0⎤
-  ⎜ 0  0           -1⎟ ⎜V⁻⎟ = ⎜                              0⎟
-  ⎣ 1 -1 -(3*L)/(2*h)⎦ ⎣Io⎦   ⎣ -(2*L)/(h)In-1 + (L)/(2*h)In-2⎦
+   ⎡ 0  0            1⎤ ⎡V⁺⎤   ⎡                              0⎤
+   ⎜ 0  0           -1⎟ ⎜V⁻⎟ = ⎜                              0⎟
+   ⎣ 1 -1 -(3*L)/(2*h)⎦ ⎣Io⎦   ⎣ -(2*L)/(h)In-1 + (L)/(2*h)In-2⎦
 
-  (PHASE)
-  φ - L(2e/hbar)Io = 0
-  
-  ⎡ 0  0           1⎤ ⎡φ⁺⎤   ⎡ 0⎤
-  ⎜ 0  0          -1⎟ ⎜φ⁻⎟ = ⎜ 0⎟
-  ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
- */ 
+   (PHASE)
+   φ - L(2e/hbar)Io = 0
 
-using mutualinductors = std::vector<std::pair<int, double>>;
+   ⎡ 0  0           1⎤ ⎡φ⁺⎤   ⎡ 0⎤
+   ⎜ 0  0          -1⎟ ⎜φ⁻⎟ = ⎜ 0⎟
+   ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
+  */
 
-class Inductor : public BasicComponent {
-  private:
-  JoSIM::AnalysisType at_;
-  public:
-  double In2_ = 0.0, In3_ = 0.0, In4_ = 0.0;
-  mutualinductors mutualInductances_;
+  using mutualinductors = std::vector<std::pair<int, double>>;
 
-  Inductor(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon, 
-    const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, const AnalysisType &at, const double &h, int &bi);
-    
-  void set_mutualInductance(const std::pair<int, double> &mut) { 
-    mutualInductances_.emplace_back(mut); }
-  void add_mutualInductance(
-    const double &m, const AnalysisType &at, const double &h, const int &ci);
-  const mutualinductors get_mutualInductance() const { 
-    return mutualInductances_; } 
+  class Inductor : public BasicComponent {
+    private:
+    JoSIM::AnalysisType at_;
+    public:
+    double In2_ = 0.0, In3_ = 0.0, In4_ = 0.0;
+    mutualinductors mutualInductances_;
 
-  void update_timestep(const double &factor) override;
+    Inductor(
+      const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+      const nodemap& nm, std::unordered_set<std::string>& lm, 
+      nodeconnections& nc, const param_map& pm, const AnalysisType& at,
+      const double& h, int& bi);
 
-  void step_back() override {
-    In2_ = In4_;
-  }
-}; // class Inductor
+    void set_mutualInductance(const std::pair<int, double>& mut) {
+      mutualInductances_.emplace_back(mut);
+    }
+    void add_mutualInductance(
+      const double& m, const AnalysisType& at, const double& h, const int& ci);
+    const mutualinductors get_mutualInductance() const {
+      return mutualInductances_;
+    }
+
+    void update_timestep(const double& factor) override;
+
+    void step_back() override {
+      In2_ = In4_;
+    }
+  }; // class Inductor
 
 } // namespace JoSIM
 #endif

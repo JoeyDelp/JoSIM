@@ -10,37 +10,37 @@
 
 using namespace JoSIM;
 
- /*
-  Hlabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
-  
-  Vo = GIc
-  
-  ⎡ 0  0  0  0  0 -1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
-  ⎜ 0  0  0  0  0  1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
-  ⎜ 0  0  0  0  1  0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
-  ⎜ 0  0  0  0 -1  0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
-  ⎜ 1 -1  0  0 -G  0⎟ ⎜Ic ⎟   ⎜ 0⎟  
-  ⎣ 0  0  1 -1  0  0⎦ ⎣Io ⎦   ⎣ 0⎦
+/*
+ Hlabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
 
-  (PHASE)
-  φ - (2e/hbar)(2Gh/3)Ic = (4/3)φn-1 - (1/3)φn-2
+ Vo = GIc
 
-  ⎡ 0  0  0  0                 0 -1⎤ ⎡φo⁺⎤   ⎡                     0⎤
-  ⎜ 0  0  0  0                 0  1⎟ ⎜φo⁻⎟   ⎜                     0⎟
-  ⎜ 0  0  0  0                 1  0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
-  ⎜ 0  0  0  0                -1  0⎟ ⎜φc⁻⎟   ⎜                     0⎟
-  ⎜ 1 -1  0  0 -(2e/hbar)(2Gh/3)  0⎟ ⎜Ic ⎟   ⎜ (4/3)φn-1 - (1/3)φn-2⎟  
-  ⎣ 0  0  1 -1                 0  0⎦ ⎣Io ⎦   ⎣                     0⎦ 
- */ 
+ ⎡ 0  0  0  0  0 -1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+ ⎜ 0  0  0  0  0  1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+ ⎜ 0  0  0  0  1  0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+ ⎜ 0  0  0  0 -1  0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+ ⎜ 1 -1  0  0 -G  0⎟ ⎜Ic ⎟   ⎜ 0⎟
+ ⎣ 0  0  1 -1  0  0⎦ ⎣Io ⎦   ⎣ 0⎦
+
+ (PHASE)
+ φ - (2e/hbar)(2Gh/3)Ic = (4/3)φn-1 - (1/3)φn-2
+
+ ⎡ 0  0  0  0                 0 -1⎤ ⎡φo⁺⎤   ⎡                     0⎤
+ ⎜ 0  0  0  0                 0  1⎟ ⎜φo⁻⎟   ⎜                     0⎟
+ ⎜ 0  0  0  0                 1  0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
+ ⎜ 0  0  0  0                -1  0⎟ ⎜φc⁻⎟   ⎜                     0⎟
+ ⎜ 1 -1  0  0 -(2e/hbar)(2Gh/3)  0⎟ ⎜Ic ⎟   ⎜ (4/3)φn-1 - (1/3)φn-2⎟
+ ⎣ 0  0  1 -1                 0  0⎦ ⎣Io ⎦   ⎣                     0⎦
+*/
 
 CCVS::CCVS(
-      const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-      const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
-      std::unordered_set<std::string> &lm, nodeconnections &nc,
-      const param_map &pm, int &bi, const AnalysisType &at, const double &h) {
+  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+  const std::optional<NodeConfig>& ncon2, const nodemap& nm,
+  std::unordered_set<std::string>& lm, nodeconnections& nc,
+  const param_map& pm, int& bi, const AnalysisType& at, const double& h) {
   at_ = at;
   // Check if the label has already been defined
-  if(lm.count(s.first.at(0)) != 0) {
+  if (lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
       ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
   }
@@ -59,15 +59,15 @@ CCVS::CCVS(
   // Set secondary current index and increment it
   currentIndex2_ = bi++;
   // Set te node indices, using tokens 2 to 5
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+5), nm, nc);
+  set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 5), nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info(at, h);
 }
 
 void CCVS::set_node_indices(
-  const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
+  const tokens_t& t, const nodemap& nm, nodeconnections& nc) {
   // Set the output node indices and column indices
-  switch(indexInfo.nodeConfig_) {
+  switch (indexInfo.nodeConfig_) {
   case NodeConfig::POSGND:
     indexInfo.posIndex_ = nm.at(t.at(0));
     nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(-1, currentIndex2_));
@@ -86,7 +86,7 @@ void CCVS::set_node_indices(
     break;
   }
   // Set the controlling node indices and column indices
-  switch(nodeConfig2_) {
+  switch (nodeConfig2_) {
   case NodeConfig::POSGND:
     posIndex2_ = nm.at(t.at(2));
     nc.at(nm.at(t.at(2))).emplace_back(
@@ -110,8 +110,8 @@ void CCVS::set_node_indices(
   }
 }
 
-void CCVS::set_matrix_info(const AnalysisType &at, const double &h) {
-  switch(indexInfo.nodeConfig_) {
+void CCVS::set_matrix_info(const AnalysisType& at, const double& h) {
+  switch (indexInfo.nodeConfig_) {
   case NodeConfig::POSGND:
     matrixInfo.nonZeros_.emplace_back(1);
     matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
@@ -142,7 +142,7 @@ void CCVS::set_matrix_info(const AnalysisType &at, const double &h) {
     hDepPos_ = matrixInfo.nonZeros_.size() - 1;
   }
   matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
-  switch(nodeConfig2_) {
+  switch (nodeConfig2_) {
   case NodeConfig::POSGND:
     matrixInfo.nonZeros_.emplace_back(1);
     matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
@@ -166,9 +166,9 @@ void CCVS::set_matrix_info(const AnalysisType &at, const double &h) {
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void CCVS::update_timestep(const double &factor) {
+void CCVS::update_timestep(const double& factor) {
   if (at_ == AnalysisType::Phase) {
-    matrixInfo.nonZeros_.at(hDepPos_) = 
+    matrixInfo.nonZeros_.at(hDepPos_) =
       factor * matrixInfo.nonZeros_.at(hDepPos_);
   }
 }

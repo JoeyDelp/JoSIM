@@ -12,13 +12,13 @@ using namespace JoSIM;
 
   ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
   ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
-*/ 
+*/
 
 CurrentSource::CurrentSource(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-    const nodemap &nm, std::unordered_set<std::string> &lm, const int &si) {
+  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+  const nodemap& nm, std::unordered_set<std::string>& lm, const int& si) {
   // Check if the label has already been defined
-  if(lm.count(s.first.at(0)) != 0) {
+  if (lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
       ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
   }
@@ -29,13 +29,13 @@ CurrentSource::CurrentSource(
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set te node indices, using token 2 and 3
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm);
+  set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 3), nm);
   // Set the source index
   sourceIndex_ = si;
 }
 
-void CurrentSource::set_node_indices(const tokens_t &t, const nodemap &nm) {
-  switch(indexInfo.nodeConfig_) {
+void CurrentSource::set_node_indices(const tokens_t& t, const nodemap& nm) {
+  switch (indexInfo.nodeConfig_) {
   case NodeConfig::POSGND:
     indexInfo.posIndex_ = nm.at(t.at(0));
     break;

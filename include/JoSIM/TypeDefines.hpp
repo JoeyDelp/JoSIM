@@ -9,18 +9,18 @@
 
 namespace JoSIM {
 
-// Define a type that specifies tokens
-using tokens_t = std::vector<std::string>;
+  // Define a type that specifies tokens
+  using tokens_t = std::vector<std::string>;
 
-// Define types to shorthand optional types
-using string_o = std::optional<std::string>;
-using char_o = std::optional<char>;
-using double_o = std::optional<double>;
-using int_o = std::optional<int>;
+  // Define types to shorthand optional types
+  using string_o = std::optional<std::string>;
+  using char_o = std::optional<char>;
+  using double_o = std::optional<double>;
+  using int_o = std::optional<int>;
 
-// Define a type that is a vector of pairs of type T1 and T2
-template <typename T1, typename T2>
-using vector_pair_t = std::vector<std::pair<T1, T2>>;
+  // Define a type that is a vector of pairs of type T1 and T2
+  template <typename T1, typename T2>
+  using vector_pair_t = std::vector<std::pair<T1, T2>>;
 
 } // namespace JoSIM
 

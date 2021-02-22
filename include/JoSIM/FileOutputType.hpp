@@ -5,7 +5,9 @@
 
 namespace JoSIM {
 
-enum class FileOutputType { Csv = 0, Dat = 1, Raw = 2 };
+  enum class FileOutputType {
+    Csv = 0, Dat = 1, Raw = 2
+  };
 
 } // namespace JoSIM
 

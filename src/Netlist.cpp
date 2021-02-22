@@ -13,27 +13,27 @@
 using namespace JoSIM;
 
 void Netlist::id_io_subc_label(
-  const tokens_t &lineTokens, tokens_t &io, 
-  std::string &subcktName, std::string &label,
-  const std::unordered_map<std::string, Subcircuit> &subcircuits) {
+  const tokens_t& lineTokens, tokens_t& io,
+  std::string& subcktName, std::string& label,
+  const std::unordered_map<std::string, Subcircuit>& subcircuits) {
   // Id the label 
   label = lineTokens.front();
   // Check the convention
   // At this point in the program all subcircuits should have been identified
   // Thus we can determine the convention from code
   // If the token right after the label exists in the subcircuits map
-  if(subcircuits.count(lineTokens.at(1)) != 0) {
+  if (subcircuits.count(lineTokens.at(1)) != 0) {
     // This is the subcircuit name
     subcktName = lineTokens.at(1);
     // Assign the IO
     io.assign(lineTokens.begin() + 2, lineTokens.end());
-  // Else if the last token exists in the subcircuit map
-  } else if(subcircuits.count(lineTokens.back()) != 0) {
+    // Else if the last token exists in the subcircuit map
+  } else if (subcircuits.count(lineTokens.back()) != 0) {
     // Then this is the subcircuit name
     subcktName = lineTokens.back();
     // Assign the IO
     io.assign(lineTokens.begin() + 1, lineTokens.end() - 1);
-  // Else if the neither then this subcircuit surely does not exist
+    // Else if the neither then this subcircuit surely does not exist
   } else {
     Errors::input_errors(
       InputErrors::UNKNOWN_SUBCKT, Misc::vector_to_string(lineTokens));
@@ -41,7 +41,7 @@ void Netlist::id_io_subc_label(
 }
 
 bool Netlist::rename_io_nodes(
-  std::string &node, const tokens_t &subIO, const tokens_t &parentIO) {
+  std::string& node, const tokens_t& subIO, const tokens_t& parentIO) {
   // If the subcircuit IO contains the first node 
   if (std::count(subIO.begin(), subIO.end(), node) != 0) {
     // Loop through the subcircuit IO
@@ -60,17 +60,17 @@ bool Netlist::rename_io_nodes(
 }
 
 void Netlist::expand_io(
-  Subcircuit &subc, const tokens_t &io, const std::string &label) {
+  Subcircuit& subc, const tokens_t& io, const std::string& label) {
   // Loop through the identified subcircuit
   for (int k = 0; k < subc.lines.size(); ++k) {
     // Set shorthand for long variable name
-    tokens_t &tokens = subc.lines.at(k).first;
+    tokens_t& tokens = subc.lines.at(k).first;
     // Append the label of the parent to the subcircuit label
     tokens.at(0) = tokens.at(0) + "|" + label;
     // Determine amount of nodes to process
     int nodeCount = 2;
     // If device type identifier is any of "EFGHT" check the next two nodes
-    if(std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) {
+    if (std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) {
       nodeCount = 4;
     }
     // Loop through all the nodes changing where necessary
@@ -93,8 +93,8 @@ void Netlist::expand_subcircuits() {
   // std::vector<std::pair<tokens_t, string_o>> moddedLines;
   std::string subcktName, label;
   // Loop through subcircuits, line by line
-  for (const auto &i : subcircuits) {
-    for (const auto &j : i.second.lines) {
+  for (const auto& i : subcircuits) {
+    for (const auto& j : i.second.lines) {
       // If a line is found that starts with an 'X'
       if (j.first.front().at(0) == 'X') {
         // This subcircuit contains a subcircuit
@@ -107,7 +107,7 @@ void Netlist::expand_subcircuits() {
     }
   }
   ProgressBar bar;
-  if(!argMin) {
+  if (!argMin) {
     bar.create_thread();
     bar.set_bar_width(30);
     bar.fill_bar_progress_with("O");
@@ -120,17 +120,17 @@ void Netlist::expand_subcircuits() {
   // While we are nested (depth not zero)
   while (nestedSubcktCount != 0) {
     // If not minimal printing
-    if(!argMin) {
+    if (!argMin) {
       // Report progress
       bar.update((float)cc);
     }
     // Loop through subcircuits
-    for (const auto &i : subcircuits) {
+    for (const auto& i : subcircuits) {
       for (int j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
         // Shorthand for the current subcircuit
-        Subcircuit &subcircuit = subcircuits.at(i.first);
+        Subcircuit& subcircuit = subcircuits.at(i.first);
         // Shorthand for the current subcircuit line
-        tokens_t &subcCurrentLine = subcircuit.lines.at(j).first;
+        tokens_t& subcCurrentLine = subcircuit.lines.at(j).first;
         // If the line denotes a subcircuit
         if (subcCurrentLine.front().at(0) == 'X') {
           id_io_subc_label(
@@ -152,7 +152,7 @@ void Netlist::expand_subcircuits() {
             // Reduce the total nested subcircuit count by 1
             --nestedSubcktCount;
             // If this subcircuit subcircuit counter becomes zero
-            if(subcircuit.subcktCounter == 0)
+            if (subcircuit.subcktCounter == 0)
               // This subcircuit no longer contains subcircuits
               subcircuit.containsSubckt = false;
           }
@@ -161,7 +161,7 @@ void Netlist::expand_subcircuits() {
     }
   }
   // Let the user know subcircuit expansion is complete
-  if(!argMin) {
+  if (!argMin) {
     bar.complete();
     std::cout << "\n";
   }
@@ -172,7 +172,7 @@ void Netlist::expand_maindesign() {
   tokens_t io;
   // std::vector<std::pair<std::string, std::string>> moddedLines;
   ProgressBar bar;
-  if(!argMin) {
+  if (!argMin) {
     bar.create_thread();
     bar.set_bar_width(30);
     bar.fill_bar_progress_with("O");
@@ -184,7 +184,7 @@ void Netlist::expand_maindesign() {
   for (int i = 0; i < maindesign.size(); ++i) {
     std::string subcktName, label;
     // If not minimal printing
-    if(!argMin) {
+    if (!argMin) {
       // Report progress
       bar.update((float)i);
     }
@@ -197,15 +197,15 @@ void Netlist::expand_maindesign() {
       expand_io(subc, io, label);
       // Add the expanded subcircuit lines to the expanded netlist
       expNetlist.insert(expNetlist.end(), subc.lines.begin(),
-                        subc.lines.end());
-    // If the line is not a subcircuit 
+        subc.lines.end());
+      // If the line is not a subcircuit 
     } else {
       // Add the line tokens to the expanded netlist
       expNetlist.push_back(std::make_pair(maindesign.at(i), std::nullopt));
     }
   }
   // Let the user know main design expansion is complete
-  if(!argMin) {
+  if (!argMin) {
     bar.complete();
     std::cout << "\n";
   }

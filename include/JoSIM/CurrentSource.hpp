@@ -12,23 +12,23 @@
 
 namespace JoSIM {
 
-/*
-  Ilabel V⁺ V⁻ sourcetype
+  /*
+    Ilabel V⁺ V⁻ sourcetype
 
-  ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
-  ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
-*/ 
+    ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
+    ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
+  */
 
-class CurrentSource : public BasicComponent {
-  public:
-  int sourceIndex_;
+  class CurrentSource : public BasicComponent {
+    public:
+    int sourceIndex_;
 
-  CurrentSource(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-    const nodemap &nm, std::unordered_set<std::string> &lm, const int &si);
+    CurrentSource(
+      const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+      const nodemap& nm, std::unordered_set<std::string>& lm, const int& si);
 
-  void set_node_indices(const tokens_t &t, const nodemap &nm);
-}; // class CurrentSource
+    void set_node_indices(const tokens_t& t, const nodemap& nm);
+  }; // class CurrentSource
 
 } // namespace JoSIM
 #endif

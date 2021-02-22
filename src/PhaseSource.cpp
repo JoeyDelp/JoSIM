@@ -10,20 +10,20 @@
 
 using namespace JoSIM;
 
- /*
-  Plabel φ⁺ φ⁻ sourcetype
+/*
+ Plabel φ⁺ φ⁻ sourcetype
 
-  ⎡ 0  0  1⎤ ⎡φ⁺⎤   ⎡  0⎤
-  ⎜ 0  0 -1⎟ ⎜φ⁻⎟ = ⎜  0⎟
-  ⎣ 1 -1  0⎦ ⎣Io⎦   ⎣  0⎦
- */ 
+ ⎡ 0  0  1⎤ ⎡φ⁺⎤   ⎡  0⎤
+ ⎜ 0  0 -1⎟ ⎜φ⁻⎟ = ⎜  0⎟
+ ⎣ 1 -1  0⎦ ⎣Io⎦   ⎣  0⎦
+*/
 
 PhaseSource::PhaseSource(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-    const nodemap &nm, std::unordered_set<std::string> &lm,
-    nodeconnections &nc, int &bi, const int &si) {
+  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+  const nodemap& nm, std::unordered_set<std::string>& lm,
+  nodeconnections& nc, int& bi, const int& si) {
   // Check if the label has already been defined
-  if(lm.count(s.first.at(0)) != 0) {
+  if (lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
       ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
   }
@@ -36,7 +36,7 @@ PhaseSource::PhaseSource(
   // Set current index and increment it
   indexInfo.currentIndex_ = bi++;
   // Set te node indices, using token 2 and 3
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+3), nm, nc);
+  set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 3), nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   // Since there are no current branch entries on main diagonal

@@ -24,33 +24,33 @@
 #include <variant>
 namespace JoSIM {
 
-class Components {
-  public:
-    std::vector<std::variant<Resistor, 
-                             Inductor, 
-                             Capacitor,
-                             JJ,
-                             VoltageSource,
-                             PhaseSource,
-                             TransmissionLine,
-                             VCCS,
-                             CCCS,
-                             VCVS,
-                             CCVS>> devices; 
+  class Components {
+    public:
+    std::vector<std::variant<Resistor,
+      Inductor,
+      Capacitor,
+      JJ,
+      VoltageSource,
+      PhaseSource,
+      TransmissionLine,
+      VCCS,
+      CCCS,
+      VCVS,
+      CCVS>> devices;
     std::vector<CurrentSource> currentsources;
-    std::vector<int> junctionIndices, 
-                      resistorIndices, 
-                      inductorIndices, 
-                      capacitorIndices, 
-                      vsIndices, 
-                      psIndices, 
-                      txIndices, 
-                      vccsIndices, 
-                      cccsIndices, 
-                      vcvsIndices, 
-                      ccvsIndices;
+    std::vector<int> junctionIndices,
+      resistorIndices,
+      inductorIndices,
+      capacitorIndices,
+      vsIndices,
+      psIndices,
+      txIndices,
+      vccsIndices,
+      cccsIndices,
+      vcvsIndices,
+      ccvsIndices;
     std::vector<std::pair<tokens_t, string_o>> mutualinductances;
-}; // class Components
+  }; // class Components
 
 } // namespace JoSIM
 #endif

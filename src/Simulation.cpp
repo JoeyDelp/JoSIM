@@ -16,14 +16,14 @@ using namespace JoSIM;
 
 Simulation::Simulation(Input &iObj, Matrix &mObj) {
   // Simulation setup
-  simSize_ = iObj.transSim.get_simsize();
+  simSize_ = iObj.transSim.simsize();
   atyp_ = iObj.argAnal;
   minOut_ = iObj.argMin;
   needsLU_ = false;
   needsTR_ = false;
-  stepSize_ = iObj.transSim.get_tstep();
-  prstep_ = iObj.transSim.get_prstep();
-  prstart_ = iObj.transSim.get_prstart();
+  stepSize_ = iObj.transSim.tstep();
+  prstep_ = iObj.transSim.prstep();
+  prstart_ = iObj.transSim.prstart();
   x_.resize(mObj.branchIndex, 0.0);
   if(!mObj.relevantTraces.empty()) {
     results.xVector.resize(mObj.branchIndex);
@@ -90,17 +90,16 @@ void Simulation::trans_sim(Matrix &mObj) {
       simOK_ = klu_tsolve(
         Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
       // If anything is a amiss, complain about it
-      if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+      if (!simOK_) Errors::simulation_errors(
+        SimulationErrors::MATRIX_SINGULAR);
       // Store results (only requested, to prevent massive memory usage)
       for(int j = 0; j < results.xVector.size(); ++j) {
-        if(step >= prstart_) {
-          if(results.xVector.at(j)) {
-            results.xVector.at(j).value().emplace_back(x_.at(j));
-          }
+        if(results.xVector.at(j)) {
+          results.xVector.at(j).value().emplace_back(x_.at(j));
         }
       }
       // Store the time step
-      if(step >= prstart_) results.timeAxis.emplace_back(step);
+      results.timeAxis.emplace_back(step);
     }
   }
   if(!minOut_) {
@@ -308,8 +307,8 @@ void Simulation::handle_capacitors(Matrix &mObj) {
     } else if (atyp_ == AnalysisType::Phase) {
       // (8/3)φn-1 - (22/9)φn-2 + (8/9)φn-3 - (1/9)φn-4
       b_.at(temp.indexInfo.currentIndex_.value()) = 
-        (8.0/3.0) * temp.pn1_ - (22.0/9.0) * temp.pn2_ + (8.0/9.0) * temp.pn3_ - 
-        (1.0/9.0) * temp.pn4_;
+        (8.0/3.0) * temp.pn1_ - (22.0/9.0) * temp.pn2_ + 
+        (8.0/9.0) * temp.pn3_ - (1.0/9.0) * temp.pn4_;
       temp.pn7_ = temp.pn6_;
       temp.pn6_ = temp.pn5_;
       temp.pn5_ = temp.pn4_;
@@ -352,8 +351,10 @@ void Simulation::handle_jj(
     // Ensure timestep is not too large
     if ((double)i/(double)simSize_ > 0.01) {
       if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
-        needsTR_ = true;
-        return;
+        // needsTR_ = true;
+        // return;
+        Errors::simulation_errors(
+          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
       }
     }
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
@@ -631,14 +632,14 @@ void Simulation::handle_tx(
           //      φ2n-k - (4/3)φ2n-k-1
           b_.at(curInd) = (Z / Constants::SIGMA) * 
             ((2.0 * stepSize_ * factor) / 3.0) * I2nk + 
-            (4.0 / 3.0) * temp.n1_1_ - (1.0 / 3.0) * temp.n2_1_ + temp.nk_2_ - 
-            (4.0 / 3.0) * temp.nk1_2_;
+            (4.0 / 3.0) * temp.n1_1_ - (1.0 / 3.0) * temp.n2_1_ + 
+            temp.nk_2_ - (4.0 / 3.0) * temp.nk1_2_;
           // I2 = Z(2e/hbar)(2h/3)I1n-k + (4/3)φ2n-1 - (1/3)φ2n-2 +
           //      φ1n-k - (4/3)φ1n-k-1
           b_.at(curInd2) = (Z / Constants::SIGMA) * 
-            ((2.0 * stepSize_ * factor) / 3.0) * I1nk 
-            + (4.0 / 3.0) * temp.n1_2_ - (1.0 / 3.0) * temp.n2_2_ + temp.nk_1_ - 
-            (4.0 / 3.0) * temp.nk1_1_;
+            ((2.0 * stepSize_ * factor) / 3.0) * I1nk +
+            (4.0 / 3.0) * temp.n1_2_ - (1.0 / 3.0) * temp.n2_2_ + 
+            temp.nk_1_ - (4.0 / 3.0) * temp.nk1_1_;
         } else if (i > k + 1) {
           // φ1n-k-1
           if(nc == NodeConfig::POSGND) {
@@ -697,8 +698,8 @@ void Simulation::handle_tx(
           // I2 = Z(2e/hbar)(2h/3)I1n-k + (4/3)φ2n-1 - (1/3)φ2n-2 +
           //      φ1n-k - (4/3)φ1n-k-1 + (1/3)φ1n-k-2
           b_.at(curInd2) = (Z / Constants::SIGMA) * 
-            ((2.0 * stepSize_ * factor) / 3.0) * I1nk 
-            + (4.0 / 3.0) * temp.n1_2_ - (1.0 / 3.0) * temp.n2_2_ + temp.nk_1_ - 
+            ((2.0 * stepSize_ * factor) / 3.0) * I1nk + 
+            (4.0 / 3.0) * temp.n1_2_ - (1.0 / 3.0) * temp.n2_2_ + temp.nk_1_ - 
             (4.0 / 3.0) * temp.nk1_1_ + (1.0 / 3.0) * temp.nk2_1_;
         } 
       } else {

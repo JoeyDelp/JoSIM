@@ -18,33 +18,32 @@
 #include <algorithm>
 
 namespace JoSIM {
-class Input {
-  public:
-  Netlist netlist;
-  Transient transSim;
-  std::optional<double> globalTemp, neB;
-  std::vector<tokens_t> fileLines, controls;
-  std::vector<std::string> relevantX;
-  std::unordered_map<ParameterName, Parameter> parameters;
+  class Input {
+    public:
+    Netlist netlist;
+    Transient transSim;
+    std::optional<double> globalTemp, neB;
+    std::vector<tokens_t> fileLines, controls;
+    std::vector<std::string> relevantX;
+    std::unordered_map<ParameterName, Parameter> parameters;
 
-  Input(AnalysisType analysis_type = AnalysisType::Voltage,
-        int verbose = 0,
-        bool minimal = false) : 
-    argAnal(analysis_type), 
-    argVerb(verbose),
-    argMin(minimal) 
-    {};
+    Input(AnalysisType analysis_type = AnalysisType::Voltage,
+      int verbose = 0,
+      bool minimal = false) :
+      argAnal(analysis_type),
+      argVerb(verbose),
+      argMin(minimal) {};
 
-  AnalysisType argAnal;
-  int argVerb = 0;
-  bool argMin = false;
+    AnalysisType argAnal;
+    int argVerb = 0;
+    bool argMin = false;
 
-  std::vector<tokens_t> read_input(
-    LineInput &input, string_o fileName = std::nullopt);
-  void parse_input(string_o fileName = std::nullopt);
-  void syntax_check_controls(std::vector<tokens_t> &controls);
+    std::vector<tokens_t> read_input(
+      LineInput& input, string_o fileName = std::nullopt);
+    void parse_input(string_o fileName = std::nullopt);
+    void syntax_check_controls(std::vector<tokens_t>& controls);
 
-};
+  };
 } // namespace JoSIM
 
 #endif

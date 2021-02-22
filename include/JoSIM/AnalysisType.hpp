@@ -7,18 +7,20 @@
 
 namespace JoSIM {
 
-enum class AnalysisType : int { Voltage = 0, Phase = 1 };
+  enum class AnalysisType : int {
+    Voltage = 0, Phase = 1
+  };
 
-constexpr AnalysisType analysis_type_from_int(AnalysisType type) {
-  switch (type) {
-  case AnalysisType::Voltage:
-    return AnalysisType::Voltage;
-  case AnalysisType::Phase:
-    return AnalysisType::Phase;
-  default:
-    throw std::runtime_error("Invalid analysis type");
+  constexpr AnalysisType analysis_type_from_int(AnalysisType type) {
+    switch (type) {
+    case AnalysisType::Voltage:
+      return AnalysisType::Voltage;
+    case AnalysisType::Phase:
+      return AnalysisType::Phase;
+    default:
+      throw std::runtime_error("Invalid analysis type");
+    }
   }
-}
 
 } // namespace JoSIM
 

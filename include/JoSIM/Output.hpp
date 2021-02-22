@@ -9,34 +9,34 @@
 #include "JoSIM/Input.hpp"
 
 namespace JoSIM {
-class Trace {
-  public:
-  std::string name_;
-  char type_;
-  std::vector<double> data_;
-  Trace(const std::string &name) {
-    name_ = name;
-  }
-  ~Trace(){};
-};
+  class Trace {
+    public:
+    std::string name_;
+    char type_;
+    std::vector<double> data_;
+    Trace(const std::string& name) {
+      name_ = name;
+    }
+    ~Trace() {};
+  };
 
-class Output {
-  public:
-  std::vector<Trace> traces;
-  std::vector<double> timesteps;
-  Output(){};
-  void write_output(const Input &iObj, 
-                    Matrix &mObj, 
-                    Simulation &sObj);
+  class Output {
+    public:
+    std::vector<Trace> traces;
+    std::vector<double> timesteps;
+    Output() {};
+    void write_output(const Input& iObj,
+      Matrix& mObj,
+      Simulation& sObj);
 
-  void format_csv_or_dat(const std::string &filename, 
-                          const char &delimiter,
-                          bool argmin = true);
+    void format_csv_or_dat(const std::string& filename,
+      const char& delimiter,
+      bool argmin = true);
 
-  void format_raw(const std::string &filename, bool argmin = true);
+    void format_raw(const std::string& filename, bool argmin = true);
 
-  void format_cout(const bool &argMin);
-};
+    void format_cout(const bool& argMin);
+  };
 } // namespace JoSIM
 
 #endif

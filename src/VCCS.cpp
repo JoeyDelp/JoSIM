@@ -10,32 +10,32 @@
 
 using namespace JoSIM;
 
- /*
-  Glabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
-  
-  Io = GVc
-  
-  ⎡ 0  0  0  0    1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
-  ⎜ 0  0  0  0   -1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
-  ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
-  ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
-  ⎣ 0  0  1 -1 -1/G⎦ ⎣Io ⎦   ⎣ 0⎦
+/*
+ Glabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
 
-  (PHASE)
-  φ - (2e/hbar)(2h/3G)Io = (4/3)φn-1 - (1/3)φn-2
+ Io = GVc
 
-  ⎡ 0  0  0  0                 1⎤ ⎡φo⁺⎤   ⎡                     0⎤
-  ⎜ 0  0  0  0                -1⎟ ⎜φo⁻⎟   ⎜                     0⎟
-  ⎜ 0  0  0  0                 0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
-  ⎜ 0  0  0  0                 0⎟ ⎜φc⁻⎟   ⎜                     0⎟
-  ⎣ 0  0  1 -1 -(2e/hbar)(2h/3G)⎦ ⎣Io ⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦  
- */ 
+ ⎡ 0  0  0  0    1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+ ⎜ 0  0  0  0   -1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+ ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+ ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+ ⎣ 0  0  1 -1 -1/G⎦ ⎣Io ⎦   ⎣ 0⎦
+
+ (PHASE)
+ φ - (2e/hbar)(2h/3G)Io = (4/3)φn-1 - (1/3)φn-2
+
+ ⎡ 0  0  0  0                 1⎤ ⎡φo⁺⎤   ⎡                     0⎤
+ ⎜ 0  0  0  0                -1⎟ ⎜φo⁻⎟   ⎜                     0⎟
+ ⎜ 0  0  0  0                 0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
+ ⎜ 0  0  0  0                 0⎟ ⎜φc⁻⎟   ⎜                     0⎟
+ ⎣ 0  0  1 -1 -(2e/hbar)(2h/3G)⎦ ⎣Io ⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦
+*/
 
 VCCS::VCCS(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-    const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
-    std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, int &bi, const AnalysisType &at, const double &h) {
+  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+  const std::optional<NodeConfig>& ncon2, const nodemap& nm,
+  std::unordered_set<std::string>& lm, nodeconnections& nc,
+  const param_map& pm, int& bi, const AnalysisType& at, const double& h) {
   at_ = at;
   // Set the label
   netlistInfo.label_ = s.first.at(0);
@@ -50,25 +50,25 @@ VCCS::VCCS(
   // Set current index and increment it
   indexInfo.currentIndex_ = bi++;
   // Set te node indices, using tokens 2 to 5
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+5), nm, nc);
+  set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 5), nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
-  if(at == AnalysisType::Voltage) {
+  if (at == AnalysisType::Voltage) {
     // Append the value to the non zero vector
     matrixInfo.nonZeros_.emplace_back(-(1.0 / netlistInfo.value_));
-  } else if(at == AnalysisType::Phase) {
+  } else if (at == AnalysisType::Phase) {
     // Set initial value of phase node at n-2
     pn2_ = 0;
     // Append the value to the non zero vector
     matrixInfo.nonZeros_.emplace_back(
-      -(1.0 / Constants::SIGMA) * ((2.0 * h)/ (3 * netlistInfo.value_)));
+      -(1.0 / Constants::SIGMA) * ((2.0 * h) / (3 * netlistInfo.value_)));
   }
 }
 
 void VCCS::set_node_indices(
-  const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
+  const tokens_t& t, const nodemap& nm, nodeconnections& nc) {
   // Set the node indices for the controlled nodes and add column index info  
-  switch(indexInfo.nodeConfig_) {
+  switch (indexInfo.nodeConfig_) {
   case NodeConfig::POSGND:
     indexInfo.posIndex_ = nm.at(t.at(0));
     nc.at(nm.at(t.at(0))).emplace_back(
@@ -91,7 +91,7 @@ void VCCS::set_node_indices(
     break;
   }
   // Set the node indices for the controlling nodes
-  switch(nodeConfig2_) {
+  switch (nodeConfig2_) {
   case NodeConfig::POSGND:
     posIndex2_ = nm.at(t.at(2));
     break;
@@ -108,7 +108,7 @@ void VCCS::set_node_indices(
 }
 
 void VCCS::set_matrix_info() {
-  switch(nodeConfig2_) {
+  switch (nodeConfig2_) {
   case NodeConfig::POSGND:
     matrixInfo.nonZeros_.emplace_back(1);
     matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
@@ -134,7 +134,7 @@ void VCCS::set_matrix_info() {
 }
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void VCCS::update_timestep(const double &factor) {
+void VCCS::update_timestep(const double& factor) {
   if (at_ == AnalysisType::Phase) {
     matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
   }

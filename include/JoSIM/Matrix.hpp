@@ -14,28 +14,28 @@
 
 namespace JoSIM {
 
-class Matrix {
-  public:
-  AnalysisType analysisType;
-  std::vector<Function> sourcegen;
+  class Matrix {
+    public:
+    AnalysisType analysisType = AnalysisType::Phase;
+    std::vector<Function> sourcegen;
 
-  Components components;
-  std::unordered_map<std::string, int> nm;
-  nodeconnections nc;
-  std::unordered_set<std::string> lm;
-  int branchIndex;
-  std::vector<double> nz, nz_orig;
-  std::vector<int> ci, rp;
-  std::vector<RelevantTrace> relevantTraces;
-  std::vector<int> relevantIndices;
-  
-  Matrix(){};
-  void create_matrix(Input &iObj);
-  void create_csr();
-  void create_nz();
-  void create_ci();
-  void create_rp();
-  void mod_timestep(const int factor);
-};
+    Components components;
+    std::unordered_map<std::string, int> nm;
+    nodeconnections nc;
+    std::unordered_set<std::string> lm;
+    int branchIndex;
+    std::vector<double> nz, nz_orig;
+    std::vector<int> ci, rp;
+    std::vector<RelevantTrace> relevantTraces;
+    std::vector<int> relevantIndices;
+
+    Matrix() {};
+    void create_matrix(Input& iObj);
+    void create_csr();
+    void create_nz();
+    void create_ci();
+    void create_rp();
+    void mod_timestep(const int factor);
+  };
 } // namespace JoSIM
 #endif

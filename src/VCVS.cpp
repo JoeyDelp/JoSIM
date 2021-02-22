@@ -10,22 +10,22 @@
 
 using namespace JoSIM;
 
- /*
-  Elabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
+/*
+ Elabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
 
-  Vo = GVc
-  ⎡ 0  0  0  0   -1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
-  ⎜ 0  0  0  0    1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
-  ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
-  ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
-  ⎣-1  1  G -G    0⎦ ⎣Io ⎦   ⎣ 0⎦
- */ 
+ Vo = GVc
+ ⎡ 0  0  0  0   -1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+ ⎜ 0  0  0  0    1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+ ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+ ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+ ⎣-1  1  G -G    0⎦ ⎣Io ⎦   ⎣ 0⎦
+*/
 
 VCVS::VCVS(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-    const std::optional<NodeConfig> &ncon2, const nodemap &nm, 
-    std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, int &bi) {
+  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+  const std::optional<NodeConfig>& ncon2, const nodemap& nm,
+  std::unordered_set<std::string>& lm, nodeconnections& nc,
+  const param_map& pm, int& bi) {
   // Set the label
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list
@@ -39,15 +39,15 @@ VCVS::VCVS(
   // Set current index and increment it
   indexInfo.currentIndex_ = bi++;
   // Set te node indices, using tokens 2 to 5
-  set_node_indices(tokens_t(s.first.begin()+1, s.first.begin()+5), nm, nc);
+  set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 5), nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
 }
 
 void VCVS::set_node_indices(
-  const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
+  const tokens_t& t, const nodemap& nm, nodeconnections& nc) {
   // Set the node indices for the controlling nodes and add column index info
-  switch(indexInfo.nodeConfig_) {
+  switch (indexInfo.nodeConfig_) {
   case NodeConfig::POSGND:
     indexInfo.posIndex_ = nm.at(t.at(0));
     nc.at(nm.at(t.at(0))).emplace_back(
@@ -70,7 +70,7 @@ void VCVS::set_node_indices(
     break;
   }
   // Set the node indices for the controlled nodes
-  switch(nodeConfig2_) {
+  switch (nodeConfig2_) {
   case NodeConfig::POSGND:
     posIndex2_ = nm.at(t.at(2));
     break;
@@ -87,46 +87,46 @@ void VCVS::set_node_indices(
 }
 
 void VCVS::set_matrix_info() {
-    switch(indexInfo.nodeConfig_) {
-    case NodeConfig::POSGND:
-      matrixInfo.nonZeros_.emplace_back(-1);
-      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
-      matrixInfo.rowPointer_.emplace_back(1);
-      break;
-    case NodeConfig::GNDNEG:
-      matrixInfo.nonZeros_.emplace_back(1);
-      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-      matrixInfo.rowPointer_.emplace_back(1);
-      break;
-    case NodeConfig::POSNEG:
-      matrixInfo.nonZeros_.emplace_back(-1);
-      matrixInfo.nonZeros_.emplace_back(1);
-      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
-      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-      matrixInfo.rowPointer_.emplace_back(2);
-      break;
-    case NodeConfig::GND:
+  switch (indexInfo.nodeConfig_) {
+  case NodeConfig::POSGND:
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(1);
     break;
-    }
-    switch(nodeConfig2_) {
-    case NodeConfig::POSGND:
-      matrixInfo.nonZeros_.emplace_back(netlistInfo.value_);
-      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
-      matrixInfo.rowPointer_.back()++;
-      break;
-    case NodeConfig::GNDNEG:
-      matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
-      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
-      matrixInfo.rowPointer_.back()++;
-      break;
-    case NodeConfig::POSNEG:
-      matrixInfo.nonZeros_.emplace_back(netlistInfo.value_);
-      matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
-      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
-      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
-      matrixInfo.rowPointer_.back() += 2;
-      break;
-    case NodeConfig::GND:
+  case NodeConfig::GNDNEG:
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(1);
     break;
-    }
+  case NodeConfig::POSNEG:
+    matrixInfo.nonZeros_.emplace_back(-1);
+    matrixInfo.nonZeros_.emplace_back(1);
+    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+    matrixInfo.rowPointer_.emplace_back(2);
+    break;
+  case NodeConfig::GND:
+    break;
   }
+  switch (nodeConfig2_) {
+  case NodeConfig::POSGND:
+    matrixInfo.nonZeros_.emplace_back(netlistInfo.value_);
+    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+    matrixInfo.rowPointer_.back()++;
+    break;
+  case NodeConfig::GNDNEG:
+    matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
+    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+    matrixInfo.rowPointer_.back()++;
+    break;
+  case NodeConfig::POSNEG:
+    matrixInfo.nonZeros_.emplace_back(netlistInfo.value_);
+    matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
+    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+    matrixInfo.rowPointer_.back() += 2;
+    break;
+  case NodeConfig::GND:
+    break;
+  }
+}

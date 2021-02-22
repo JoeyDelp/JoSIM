@@ -4,13 +4,15 @@
 #define JOSIM_BASICCOMPONENT_H
 
 #include "JoSIM/TypeDefines.hpp"
+#include "JoSIM/Errors.hpp"
 
 #include <vector>
 #include <unordered_map>
 
-namespace JoSIM
-{
-  enum class NodeConfig { GND = 0, POSGND = 1, GNDNEG = 2, POSNEG = 3 };
+namespace JoSIM {
+  enum class NodeConfig {
+    GND = 0, POSGND = 1, GNDNEG = 2, POSNEG = 3
+  };
 
   using nodemap = std::unordered_map<std::string, int>;
   using nodeconnections = std::vector<std::vector<std::pair<double, int>>>;
@@ -39,11 +41,11 @@ namespace JoSIM
     NetlistInfo netlistInfo;
     IndexInfo indexInfo;
     MatrixInfo matrixInfo;
-    
+
 
     void set_node_indices(
-      const tokens_t &t, const nodemap &nm, nodeconnections &nc) {
-      switch(indexInfo.nodeConfig_) {
+      const tokens_t& t, const nodemap& nm, nodeconnections& nc) {
+      switch (indexInfo.nodeConfig_) {
       case NodeConfig::POSGND:
         indexInfo.posIndex_ = nm.at(t.at(0));
         nc.at(nm.at(t.at(0))).emplace_back(
@@ -68,7 +70,7 @@ namespace JoSIM
     }
 
     void set_matrix_info() {
-      switch(indexInfo.nodeConfig_) {
+      switch (indexInfo.nodeConfig_) {
       case NodeConfig::POSGND:
         matrixInfo.nonZeros_.emplace_back(1);
         matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
@@ -91,9 +93,19 @@ namespace JoSIM
         break;
       }
       matrixInfo.columnIndex_.emplace_back(indexInfo.currentIndex_.value());
+      sanity_check();
     }
 
-    virtual void update_timestep(const double &factor) {};
+    void sanity_check() {
+      for (auto& i : matrixInfo.nonZeros_) {
+        if (i == 0 || std::isinf(i) || std::isnan(i)) {
+          Errors::matrix_errors(
+            MatrixErrors::SANITY_ERROR, netlistInfo.label_);
+        }
+      }
+    }
+
+    virtual void update_timestep(const double& factor) {};
 
     virtual void step_back() {};
 

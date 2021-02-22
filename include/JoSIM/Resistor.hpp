@@ -15,39 +15,40 @@
 
 namespace JoSIM {
 
- /*
-  Rlabel V⁺ V⁻ R
+  /*
+   Rlabel V⁺ V⁻ R
 
-  V = RIo
-  ⎡ 0  0  1⎤ ⎡V⁺⎤   ⎡ 0⎤
-  ⎜ 0  0 -1⎟ ⎜V⁻⎟ = ⎜ 0⎟
-  ⎣ 1 -1 -R⎦ ⎣Io⎦   ⎣ 0⎦
+   V = RIo
+   ⎡ 0  0  1⎤ ⎡V⁺⎤   ⎡ 0⎤
+   ⎜ 0  0 -1⎟ ⎜V⁻⎟ = ⎜ 0⎟
+   ⎣ 1 -1 -R⎦ ⎣Io⎦   ⎣ 0⎦
 
-  (PHASE)
-  φ - R(2e/hbar)(2h/3)Io = (4/3)φn-1 - (1/3)φn-2
-  
-  ⎡ 0  0                 1⎤ ⎡φ⁺⎤   ⎡                     0⎤
-  ⎜ 0  0                -1⎟ ⎜φ⁻⎟ = ⎜                     0⎟
-  ⎣ 1 -1 -R(2e/hbar)(2h/3)⎦ ⎣Io⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦
- */ 
+   (PHASE)
+   φ - R(2e/hbar)(2h/3)Io = (4/3)φn-1 - (1/3)φn-2
 
-class Resistor : public BasicComponent {
-  private:
-  JoSIM::AnalysisType at_;
-  public:
-  double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
+   ⎡ 0  0                 1⎤ ⎡φ⁺⎤   ⎡                     0⎤
+   ⎜ 0  0                -1⎟ ⎜φ⁻⎟ = ⎜                     0⎟
+   ⎣ 1 -1 -R(2e/hbar)(2h/3)⎦ ⎣Io⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦
+  */
 
-  Resistor(
-    const std::pair<tokens_t, string_o> &s, const NodeConfig &ncon,
-    const nodemap &nm, std::unordered_set<std::string> &lm, nodeconnections &nc,
-    const param_map &pm, const AnalysisType &at, const double &h, int &bi);
+  class Resistor : public BasicComponent {
+    private:
+    JoSIM::AnalysisType at_;
+    public:
+    double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
 
-  void update_timestep(const double &factor) override;
+    Resistor(
+      const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+      const nodemap& nm, std::unordered_set<std::string>& lm, 
+      nodeconnections& nc, const param_map& pm, const AnalysisType& at, 
+      const double& h, int& bi);
 
-  void step_back() override {
-    pn2_ = pn4_;
-  }
-}; // class Resistor
+    void update_timestep(const double& factor) override;
+
+    void step_back() override {
+      pn2_ = pn4_;
+    }
+  }; // class Resistor
 
 } // namespace JoSIM
 #endif

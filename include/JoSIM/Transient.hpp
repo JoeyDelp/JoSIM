@@ -9,37 +9,51 @@
 #include <vector>
 
 namespace JoSIM {
-class Transient {
-  private:
-  double tstep;
-  double tstop;
-  double prstart;
-  double prstep;
-  int simsize;
-  public:
-  Transient() :
-    tstep(1E-12),
-    tstop(0.0),
-    prstart(0.0),
-    prstep(1E-12),
-    simsize(0)
-  { };
+  class Transient {
+    private:
+    double tstep_;
+    double tstop_;
+    double prstart_;
+    double prstep_;
+    public:
+    Transient() :
+      tstep_(0.25E-12),
+      tstop_(0.0),
+      prstart_(0.0),
+      prstep_(1E-12) {};
 
-  double get_tstep() const { return tstep; }
-  double get_tstop() const { return tstop; }
-  double get_prstart() const { return prstart; }
-  double get_prstep() const { return prstep; }
-  int get_simsize() const { return simsize; }
+    double tstep() const {
+      return tstep_;
+    }
+    double tstop() const {
+      return tstop_;
+    }
+    double prstart() const {
+      return prstart_;
+    }
+    double prstep() const {
+      return prstep_;
+    }
+    int simsize() const {
+      return static_cast<int>(tstop_ / tstep_);
+    }
 
-  void set_tstep(double value) { tstep = value; }
-  void set_tstop(double value) { tstop = value; }
-  void set_prstart(double value) { prstart = value; }
-  void set_prstep(double value) { prstep = value; }
-  void set_simsize() { simsize = (tstop / tstep); }
+    void tstep(double value) {
+      tstep_ = value;
+    }
+    void tstop(double value) {
+      tstop_ = value;
+    }
+    void prstart(double value) {
+      prstart_ = value;
+    }
+    void prstep(double value) {
+      prstep_ = value;
+    }
 
-  static void identify_simulation(
-    const std::vector<tokens_t> &controls, Transient &tObj);
-};
+    static void identify_simulation(
+      const std::vector<tokens_t>& controls, Transient& tObj);
+  };
 }
 
 #endif

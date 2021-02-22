@@ -7,18 +7,20 @@
 
 namespace JoSIM {
 
-enum class InputType { Jsim = 0, WrSpice = 1 };
+  enum class InputType {
+    Jsim = 0, WrSpice = 1
+  };
 
-constexpr InputType input_type_from_int(InputType type) {
-  switch (type) {
-  case InputType::Jsim:
-    return InputType::Jsim;
-  case InputType::WrSpice:
-    return InputType::WrSpice;
-  default:
-    throw std::runtime_error("Invalid input type");
+  constexpr InputType input_type_from_int(InputType type) {
+    switch (type) {
+    case InputType::Jsim:
+      return InputType::Jsim;
+    case InputType::WrSpice:
+      return InputType::WrSpice;
+    default:
+      throw std::runtime_error("Invalid input type");
+    }
   }
-}
 
 } // namespace JoSIM
 

@@ -14,29 +14,29 @@
 
 namespace JoSIM {
 
-struct CliOptions {
-  private:
+  struct CliOptions {
+    private:
 
-  tokens_t argv_to_tokens(const int &argc, const char **argv);
-  vector_pair_t<char_o, string_o> argument_pairs(const tokens_t &tokens);
+    tokens_t argv_to_tokens(const int& argc, const char** argv);
+    vector_pair_t<char_o, string_o> argument_pairs(const tokens_t& tokens);
 
-  public:
+    public:
 
-  string_o cir_file_name;
-  string_o output_file_name;
+    string_o cir_file_name;
+    string_o output_file_name;
 
-  AnalysisType analysis_type = AnalysisType::Voltage;
-  FileOutputType output_file_type = FileOutputType::Csv;
+    AnalysisType analysis_type = AnalysisType::Phase;
+    FileOutputType output_file_type = FileOutputType::Csv;
 
-  int verbose = 0;
-  bool minimal = false;
-  bool parallel = false;
+    int verbose = 0;
+    bool minimal = false;
+    bool parallel = false;
 
-  // helper functions
-  static CliOptions parse(int argc, const char **argv);
-  static void display_help();
-  static void version_info();
-};
+    // helper functions
+    static CliOptions parse(int argc, const char** argv);
+    static void display_help();
+    static void version_info();
+  };
 
 } // namespace JoSIM
 
