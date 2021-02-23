@@ -27,7 +27,10 @@ double Misc::string_constant(const std::string& s) {
 
 bool Misc::isclose(double a, double b, double rtol, double atol,
   bool equal_nan) {
-  return (abs(a - b) <= (rtol + atol * abs(b)));
+  double diff = std::abs(a - b);
+  double comp = (rtol + atol * abs(b));
+  bool result = diff <= comp;
+  return result;
 }
 
 std::string Misc::file_from_path(const std::string& path) {
