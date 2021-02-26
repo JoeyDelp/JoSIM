@@ -18,7 +18,7 @@ def main():
   parser.add_argument("input", help="the CSV input file")
   parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, webp, svg, eps, pdf")
   parser.add_argument("-x", "--html", help="save the output as an html file for later viewing")
-  parser.add_argument("-t", "--type", help="type of plot: grid, stacked, combined. Default: grid", default="grid")
+  parser.add_argument("-t", "--type", help="type of plot: grid, stacked, combined, square. Default: grid", default="grid")
   parser.add_argument("-s", "--subset", nargs='+', help="subset of traces to plot. specify list of column names (as shown in csv file header), ie. \"V(1)\" \"V(2)\". Default: None")
   parser.add_argument("-c", "--color", help="set the output plot color scheme to one of the following: light, dark, presentation. Default: dark", default='dark')
   parser.add_argument("-w", "--title", help="set plot title to the provided string")
@@ -44,6 +44,8 @@ def main():
     fig = stacked_layout(df, args.subset)
   elif(args.type == "combined"):
     fig = combined_layout(df, args.subset)
+  elif(args.type == "square"):
+    fig = square_layout(df, args.subset)
   else:
     print("Invalid plot type specified: " + args.type)
     print("Please provide either gird, stacked or combined as type")
@@ -122,6 +124,46 @@ def grid_layout(df, subset):
       fig['layout']['yaxis']['title']=y_axis_title(plots[i])
     else:
       fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i])
+  return fig
+
+# Return a square of plots
+def square_layout(df, subset):
+  plots = df.columns[1:].tolist() if subset == None else subset
+  square = math.sqrt(len(plots))
+  row = int(round(square))
+  col = int(math.ceil(square))
+  fig = make_subplots(
+    rows=row, 
+    cols=col,
+    subplot_titles=plots,
+    horizontal_spacing=(0.25/row),
+    vertical_spacing=(0.25/col),
+    x_title='Time (seconds)')
+  row_counter = 1
+  col_counter = 1
+  # Add the traces
+  for i in range(0, len(plots)):
+    if(i >= row_counter * math.ceil(square)):
+      row_counter += 1
+      col_counter = 1
+    col = col_counter
+    row = row_counter
+    fig.add_trace(go.Scatter(
+      x=df.iloc[:,0], y=df.loc[:,plots[i]],
+      mode='lines',
+      name=plots[i]),
+      row=row,
+      col=col
+    )
+    an_pos = 1 / math.ceil(square)
+    fig.layout.annotations[i].x = an_pos * col_counter - 0.5 * an_pos
+    fig.update_yaxes(row=row_counter, col=col_counter, title_standoff=0, ticks="")
+    fig.update_layout()
+    if i == 0:
+      fig['layout']['yaxis']['title']=y_axis_title(plots[i])
+    else:
+      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i])
+    col_counter += 1
   return fig
 
 # Return a stack of plots

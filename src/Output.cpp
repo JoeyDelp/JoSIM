@@ -86,7 +86,7 @@ void Output::write_output(
             value = valin1 - valin2;
             // Else calculate the voltage from the phase value
           } else {
-            if (i.deviceLabel.value().at(3) == 'B') {
+            if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
               value = valvi;
             } else {
               value = ((Constants::SIGMA) / iObj.transSim.tstep())
@@ -126,7 +126,7 @@ void Output::write_output(
             value = valin1 - valin2;
             // Else if the analysis type was voltage
           } else {
-            if (i.deviceLabel.value().at(3) == 'B') {
+            if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
               value = valvi;
             } else {
               value = (iObj.transSim.tstep() / (2 * Constants::SIGMA))
