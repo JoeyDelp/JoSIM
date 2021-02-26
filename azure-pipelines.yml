@@ -47,7 +47,7 @@ steps:
 - script: |
     sudo pip install --upgrade pip
     sudo pip install --force-reinstall cmake
-  displayName: 'Install CMake 3.18'
+  displayName: 'Install CMake 3.14'
 
 - script: cmake ..
   workingDirectory: build

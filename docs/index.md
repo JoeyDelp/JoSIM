@@ -1,27 +1,23 @@
 # JoSIM - Superconducting Circuit Simulator
 
-Developers Manual v2.4
+Developers Manual for v2.5
 
 ## Project Status
 
 ### Testing: v2.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-### Stable: v2.4.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+### Stable: v2.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ## Introduction
 
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.
 
-JoSIM is meant to function as a replacement to the aging simulators such as JSIM[@jsim] and WRspice[@wrspice]. JoSIM is written in modern C++ and is fully customizable and extendable to offer support for improved superconducting elements as well better approximations to the Josephson effect in superconducting materials.
+JoSIM is meant to function as a replacement to the aging simulators such as JSIM[^1] and WRspice[^2]. JoSIM is written in modern C++ and is fully customizable and extendable to offer support for improved superconducting elements as well better approximations to the Josephson effect in superconducting materials.
 
 A *.cir* file containing a SPICE syntax circuit netlist is provided as input. The circuit netlist, given appropriate input excitations can then be simulated through transient analysis. Results of this simulation can be dumped to standard output or saved in various formats such as a comma separated value (*.csv*) file.
 
-Fig. 1 shows an overview of how JoSIM operates internally. This is much like any other SPICE deck simulator with the exception that it incorporates native handling of the Josephson junction. We will discuss each of these blocks in further detail in the [Technical Discussion](tech_disc.md) section.
+<img src=".\img\josim_macro.svg" alt="JoSIM Macro Overview" style="zoom: 150%;" />
 
-<figure>
-	<img src="img/josim_macro.pdf" alt="JoSIM macro overview" class="center">
-	<figcaption align="center"> Fig. 1 - JoSIM Macro Overview.</figcaption>
-</figure>
 
 ## Project layout
 
@@ -46,11 +42,9 @@ The JoSIM repository has the following layout. A quick description shows the pur
     ...					# Other configuration files and scripts.
 
 ## Initial setup
-Release versions of JoSIM can be found on the [release page](https://www.github.com/JoeyDelp/JoSIM/releases) of the open source github repository repository. At the time of writing this version is 2.4.
+With each major version of JoSIM a release for all major platforms is generated and places under the [Releases][https://github.com/JoeyDelp/JoSIM/releases] section of the GitHub repository. At the time of writing, this is version 2.5.
 
-The source can also be cloned and compiled for either macOS, Linux or Windows. Within this repository there will be a **CMakeLists.txt** which is a recipe used to compile JoSIM using CMake.
-
-To compile the source a working C++ compiler with support for C++17 is required. Additionally SuiteSparse linear algebra libraries are required but are provided in the repository. Git version control software is recommended, but is not required to compile JoSIM. A single executable binary is generated using the CMake recipe and can be placed anywhere on the system as well as freely redistributed.
+To compile JoSIM from source
 
 ### License
 JoSIM is governed by the MIT license, which is a very permissive license that allows anyone to redistribute the source as well as commercialize it without repercussions. The MIT license allows use of this software within proprietary software as long as all copies of the licensed software includes a copy of the MIT license as well as the copyright notice.
@@ -165,6 +159,9 @@ $ cmake --build . --config Release
 ```
 
 This will produce the JoSIM executable and library in the **build/Release** folder.
+
+[^1]: E. S. Fang and T. Van Duzer, "A Josephson integrated circuit simulator (JSIM) for superconductive electronics application," in *Extended Abstracts of 1989 Intl. Superconductivity Electronics Conf. (ISEC '89)*, Tokyo, Japan: JSAP, 1989, pp. 407-410.
+[^2]: *WRspice* Circuit Simulator. Whiteley Research Incorporated. http://www.wrcad.com/wrspice.html
 
 <style>
 .center {
