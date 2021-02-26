@@ -69,13 +69,13 @@ find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
 
 # Properties
-set_property(TARGET josim PROPERTY CXX_STANDARD 17)
+set_property(TARGET josim PROPERTY CXX_STANDARD 20)
 set_target_properties(josim
                       PROPERTIES POSITION_INDEPENDENT_CODE
                                  ON)
 make_target_static(josim)
 target_add_warnings(josim)
-target_compile_features(josim PUBLIC cxx_std_17)
+target_compile_features(josim PUBLIC cxx_std_20)
 
 # OpenMP usage
 if(USING_OPENMP)
