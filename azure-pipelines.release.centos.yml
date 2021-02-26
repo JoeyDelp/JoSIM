@@ -16,7 +16,7 @@ steps:
 
 - script: |
     pip3 install cmake --user
-  displayName: 'Install CMake 3.14'
+  displayName: 'Install CMake 3.18'
 
 - script: source scl_source enable devtoolset-8 && cmake ..
     -DCMAKE_BUILD_TYPE=Release
