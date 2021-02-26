@@ -69,6 +69,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
 
 # Properties
+set_property(TARGET josim PROPERTY CXX_STANDARD 17)
 set_target_properties(josim
                       PROPERTIES POSITION_INDEPENDENT_CODE
                                  ON)

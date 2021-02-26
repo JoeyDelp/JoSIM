@@ -175,11 +175,15 @@ double JoSIM::parse_param(
       qType.push_back('V');
       // If it is not a digit, check that it is not a parameter
     } else if ([&]() {
-      // Check if the parameter exists
-      if (params.count(ParameterName(partToEval, subc)) != 0)
-        if (params.at(ParameterName(partToEval, subc)).get_value())
-          return true;
-        return false; }()) {
+        // Check if the parameter exists
+        if (params.count(ParameterName(partToEval, subc)) != 0) {
+          if (params.at(ParameterName(partToEval, subc)).get_value()) {
+            return true;
+          }
+          return false;
+        }
+        return false; 
+      }()) {
       // If the parameter exists then add to the queue
       rpnQueue.push_back(Misc::precise_to_string(
         params.at(ParameterName(partToEval, subc)).get_value().value()));
