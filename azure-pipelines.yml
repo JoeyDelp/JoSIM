@@ -28,7 +28,7 @@ strategy:
       CXXFLAGS: -fsanitize=address
 
 trigger:
-  batch: true
+  batch: 'true'
   branches:
     include:
     - '*'

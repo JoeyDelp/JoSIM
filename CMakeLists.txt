@@ -5,6 +5,7 @@ project(JoSIM VERSION 2.5)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
@@ -70,6 +71,9 @@ target_link_libraries(josim PRIVATE suitesparse::klu)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
+if(NOT MSVC)
+  target_link_libraries(josim PRIVATE stdc++fs)
+endif()
 
 # Properties
 set_target_properties(josim
