@@ -1,9 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.4.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-##### Stable: v2.4.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+##### Stable: v2.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ---
 
@@ -35,6 +35,21 @@ Referencing:
 ---
 
 ## Changelog
+### v2.5 - 26/02/2021
+- Phase mode is now the standard analysis mode. Produces the exact same results as voltage.
+- Trapezoidal method has been replaced by superior 2nd order Gear method.
+- JoSIM now internally determines the convention. (-c option removed)
+- New progress indicators added. Spawns a seperate non blocking thread.
+- New verbose modes. 1: Circuit statistics. 2: 1 + Parameters and evaluated values. 3: 2 + Complete expanded netlist.
+- New DC source type. I.e. V01 1 0 DC 5V
+- Fixed NOISE source type to have syntax NOISE(AMP TD TSTEP)
+- New '.temp' and '.neb' commands for noise thermal noise analysis
+- Transient simulation command now allows PRSTART and PRSTEP commands. .tran TSTEP TSTOP PRSTART PSTEP
+- Various memory improvements and overall speed-up
+- Reduced output file size.
+- Rewrote documentation: [JoSIM Documentation](https://joeydelp.github.io/JoSIM)
+- Various bug fixes
+
 ### v2.4.1 - 09/03/2020
 - Fixed an issue where "GND" was not recognized as ground, creating a new node causing matrix singularity.
 - Fixed an issue with multiport devices (TX, CCCS, CCVS, VCCS, VCVS) not adding the 3rd and 4th node to the node map.
