@@ -17,9 +17,6 @@ strategy:
     clang7-libstdc++:
       Container: clang7
       CXXFLAGS: -stdlib=libstdc++
-    clang7-libc++:
-      Container: clang7
-      CXXFLAGS: -stdlib=libc++
     clang7-sanitize-undefined:
       Container: clang7
       CXXFLAGS: -fsanitize=undefined
