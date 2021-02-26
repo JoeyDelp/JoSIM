@@ -303,7 +303,7 @@ void Simulation::handle_capacitors(Matrix &mObj) {
     if(atyp_ == AnalysisType::Voltage) {
       // 4/3 Vp1 - 1/3 Vp2
       b_.at(temp.indexInfo.currentIndex_.value()) = 
-        (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn1_;
+        (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_;
     } else if (atyp_ == AnalysisType::Phase) {
       // (8/3)φn-1 - (22/9)φn-2 + (8/9)φn-3 - (1/9)φn-4
       b_.at(temp.indexInfo.currentIndex_.value()) = 
