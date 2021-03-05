@@ -71,7 +71,7 @@ target_link_libraries(josim PRIVATE suitesparse::klu)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
-if(NOT MSVC)
+if(NOT MSVC AND NOT APPLE)
   target_link_libraries(josim PRIVATE stdc++fs)
 endif()
 
