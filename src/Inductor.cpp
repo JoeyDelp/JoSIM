@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Inductor.hpp"
@@ -10,120 +10,80 @@
 
 using namespace JoSIM;
 
-Inductor Inductor::create_inductor(
-    const std::pair<std::string, std::string> &s,
-    const std::unordered_map<std::string, int> &nm, 
-    std::unordered_set<std::string> &lm,
-    std::vector<std::vector<std::pair<double, int>>> &nc,
-    const std::unordered_map<ParameterName, Parameter> &p,
-    const AnalysisType &antyp,
-    const double &timestep,
-    int &branchIndex) {
-  std::vector<std::string> tokens = Misc::tokenize_space(s.first);
+/*
+ Llabel V⁺ V⁻ L
 
-  Inductor temp;
-  temp.set_label(tokens.at(0), lm);
-  if(s.first.find("{") != std::string::npos) {
-    if(s.first.find("}") != std::string::npos) {
-      tokens.at(3) = s.first.substr(s.first.find("{")+1, s.first.find("}") - s.first.find("{"));
-    } else {
-      Errors::invalid_component_errors(ComponentErrors::INVALID_EXPR, s.first);
-    }
-  }
+ V - (3*L)/(2*h)Io = -(2*L)/(h)In-1 + (L)/(2*h)In-2
 
-  temp.set_value(std::make_pair(tokens.at(3), s.second), p, antyp, timestep);
-  temp.set_nonZeros_and_columnIndex(std::make_pair(tokens.at(1), tokens.at(2)), nm, s.first, branchIndex);
-  temp.set_indices(std::make_pair(tokens.at(1), tokens.at(2)), nm, nc, branchIndex);
-  temp.set_currentIndex(branchIndex - 1);
-  return temp;
-}
+ ⎡ 0  0            1⎤ ⎡V⁺⎤   ⎡                              0⎤
+ ⎜ 0  0           -1⎟ ⎜V⁻⎟ = ⎜                              0⎟
+ ⎣ 1 -1 -(3*L)/(2*h)⎦ ⎣Io⎦   ⎣ -(2*L)/(h)In-1 + (L)/(2*h)In-2⎦
 
-void Inductor::set_label(const std::string &s, std::unordered_set<std::string> &lm) {
-  if(lm.count(s) != 0) {
-    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL, s);
-  } else {
-    label_ = s;
-    lm.emplace(s);
-  }
-}
+ (PHASE)
+ φ - L(2e/hbar)Io = 0
 
-void Inductor::set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex) {
-  nonZeros_.clear();
-  columnIndex_.clear();
-  if(n.first != "0" && n.first.find("GND") == std::string::npos) {
-    if(nm.count(n.first) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.first);
+ ⎡ 0  0           1⎤ ⎡φ⁺⎤   ⎡ 0⎤
+ ⎜ 0  0          -1⎟ ⎜φ⁻⎟ = ⎜ 0⎟
+ ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
+*/
+
+Inductor::Inductor(
+  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+  const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
+  const param_map& pm, const AnalysisType& at, const double& h, int& bi) {
+  at_ = at;
+  // Set previous current value
+  In2_ = 0.0;
+  // Check if the label has already been defined
+  if (lm.count(s.first.at(0)) != 0) {
+    Errors::invalid_component_errors(
+      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
   }
-  if(n.second != "0" && n.second.find("GND") == std::string::npos) {
-    if(nm.count(n.second) == 0) Errors::netlist_errors(NetlistErrors::NO_SUCH_NODE, n.second);
-  }
-  if(n.second.find("GND") != std::string::npos || n.second == "0") {
-    // 0 0
-    if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      Errors::invalid_component_errors(ComponentErrors::BOTH_GROUND, s);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(1);
-      branchIndex++;
-      columnIndex_.emplace_back(2);
-      columnIndex_.emplace_back(branchIndex - 1);
-    // 1 0
-    } else {
-      nonZeros_.emplace_back(1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n.first));
-      columnIndex_.emplace_back(branchIndex - 1);
-    }
-  // 0 1
-  } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
-      nonZeros_.emplace_back(-1);
-      nonZeros_.emplace_back(-value_);
-      rowPointer_.emplace_back(2);
-      branchIndex++;
-      columnIndex_.emplace_back(nm.at(n.second));
-      columnIndex_.emplace_back(branchIndex - 1);
-  // 1 1
-  } else {
-    nonZeros_.emplace_back(1);
-    nonZeros_.emplace_back(-1);
-    nonZeros_.emplace_back(-value_);
-    rowPointer_.emplace_back(3);
-    branchIndex++;
-    columnIndex_.emplace_back(nm.at(n.first));
-    columnIndex_.emplace_back(nm.at(n.second));
-    columnIndex_.emplace_back(branchIndex - 1);
+  // Set the label
+  netlistInfo.label_ = s.first.at(0);
+  // Add the label to the known labels list
+  lm.emplace(s.first.at(0));
+  // Set the value (Inductance), this should be the 4th token
+  netlistInfo.value_ = parse_param(s.first.at(3), pm, s.second);
+  // Set the node configuration type
+  indexInfo.nodeConfig_ = ncon;
+  // Set current index and increment it
+  indexInfo.currentIndex_ = bi++;
+  // Set te node indices, using token 2 and 3
+  set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 3), nm, nc);
+  // Set the non zero, column index and row pointer vectors
+  set_matrix_info();
+  // Append the value to the non zero vector
+  if (at == AnalysisType::Voltage) {
+    // If voltage mode analysis then append -(3/2) * (L/h)
+    matrixInfo.nonZeros_.emplace_back(
+      -(3.0 / 2.0) * (netlistInfo.value_ / h));
+  } else if (at == AnalysisType::Phase) {
+    // If phase mdoe analysis then append -(L/σ)
+    matrixInfo.nonZeros_.emplace_back(
+      -netlistInfo.value_ / Constants::SIGMA);
   }
 }
 
-void Inductor::set_indices(const std::pair<std::string, std::string> &n, const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex) {
-  if(n.second.find("GND") != std::string::npos || n.second == "0") {
-    posIndex_ = nm.at(n.first);
-    nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-  } else if(n.first.find("GND") != std::string::npos || n.first == "0") {
-    negIndex_ = nm.at(n.second);
-    nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
-  } else {
-    posIndex_ = nm.at(n.first);
-    negIndex_ = nm.at(n.second);
-    nc.at(nm.at(n.first)).emplace_back(std::make_pair(1, branchIndex - 1));
-    nc.at(nm.at(n.second)).emplace_back(std::make_pair(-1, branchIndex - 1));
+void Inductor::add_mutualInductance(
+  const double& m, const AnalysisType& at, const double& h, const int& ci) {
+  // Adds the mutual inductance to the non zero vector
+  if (at == AnalysisType::Voltage) {
+    // If voltage mode then add -(3/2) * (m/h)
+    matrixInfo.nonZeros_.emplace_back(-(3.0 / 2.0) * (m / h));
+  } else if (at == AnalysisType::Phase) {
+    // If phase mode then add -(m/σ)
+    matrixInfo.nonZeros_.emplace_back(-m / Constants::SIGMA);
   }
+  // Append the column index of the current branch of the second inductor
+  matrixInfo.columnIndex_.emplace_back(ci);
+  // Increase the row pointer vector by 1
+  matrixInfo.rowPointer_.back()++;
 }
 
-void Inductor::set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p,
-        const AnalysisType &antyp, const double &timestep) {
-          inductance_ = parse_param(s.first, p, s.second);
-          if (antyp == AnalysisType::Voltage) value_ = (2 / timestep) * inductance_;
-          else if (antyp == AnalysisType::Phase) value_ = inductance_ / Constants::SIGMA;
-}
-
-void Inductor::add_mutualInductance(const double &m, const AnalysisType &antyp, const double &timestep, const int &columnIndex) {
-  if(antyp == AnalysisType::Voltage) {
-    nonZeros_.emplace_back(-(2*m) / timestep);
-  } else if(antyp == AnalysisType::Phase) {
-    nonZeros_.emplace_back(-m/Constants::SIGMA);
+// Update timestep based on a scalar factor i.e 0.5 for half the timestep
+void Inductor::update_timestep(const double& factor) {
+  if (at_ == AnalysisType::Voltage) {
+    matrixInfo.nonZeros_.back() = (1.0 / factor) * matrixInfo.nonZeros_.back();
   }
-  columnIndex_.emplace_back(columnIndex);
-  rowPointer_.back()++;
 }

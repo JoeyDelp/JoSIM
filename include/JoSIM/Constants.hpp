@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_CONSTANTS_HPP
 #define JOSIM_CONSTANTS_HPP
@@ -15,6 +15,7 @@ namespace JoSIM {
     static constexpr double C = 299792458;
     static constexpr double MU0 = 12.566370614E-7;
     static constexpr double EPS0 = 8.854187817E-12;
+    // HBAR / 2 * EV
     static constexpr double SIGMA = 3.291059757e-16;
   }
 }

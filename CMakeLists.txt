@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(JoSIM VERSION 2.4)
+project(JoSIM VERSION 2.5)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
@@ -26,32 +30,33 @@ endif()
 # -------------
 
 add_library(josim
-            src/CliOptions.cpp
-            src/Simulation.cpp
-            src/Output.cpp
-            src/Misc.cpp
-            src/Matrix.cpp
-            src/Input.cpp
-            src/Errors.cpp
-            src/Verbose.cpp
-            src/Netlist.cpp
-            src/Model.cpp
-            src/Parameters.cpp
-            src/Transient.cpp
-            src/Resistor.cpp
-            src/Inductor.cpp
             src/Capacitor.cpp
-            src/JJ.cpp
-            src/VoltageSource.cpp
-            src/PhaseSource.cpp
+            src/CCCS.cpp
+            src/CCVS.cpp
+            src/CliOptions.cpp
             src/CurrentSource.cpp
+            src/Errors.cpp
+            src/Function.cpp
+            src/Inductor.cpp
+            src/Input.cpp
+            src/JJ.cpp
+            src/Matrix.cpp
+            src/Misc.cpp
+            src/Model.cpp
+            src/Netlist.cpp
+            src/Output.cpp
+            src/Parameters.cpp
+            src/PhaseSource.cpp
+            src/RelevantTrace.cpp
+            src/Resistor.cpp
+            src/Simulation.cpp
+            src/Transient.cpp
             src/TransmissionLine.cpp
             src/VCCS.cpp
-            src/CCCS.cpp
             src/VCVS.cpp
-            src/CCVS.cpp
-            src/RelevantTrace.cpp
-            src/Function.cpp)
+            src/Verbose.cpp
+            src/VoltageSource.cpp 
+            src/Noise.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)
@@ -63,6 +68,12 @@ target_include_directories(josim PUBLIC
 
 # Dependencies
 target_link_libraries(josim PRIVATE suitesparse::klu)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(josim PRIVATE Threads::Threads)
+if(NOT MSVC)
+  target_link_libraries(josim PRIVATE stdc++fs)
+endif()
 
 # Properties
 set_target_properties(josim
@@ -70,7 +81,7 @@ set_target_properties(josim
                                  ON)
 make_target_static(josim)
 target_add_warnings(josim)
-target_compile_features(josim PUBLIC cxx_std_17)
+# target_compile_features(josim PUBLIC cxx_std_20)
 
 # OpenMP usage
 if(USING_OPENMP)
@@ -85,6 +96,7 @@ add_executable(josim-cli src/josim.cpp)
 
 # Dependencies
 target_link_libraries(josim-cli PRIVATE josim)
+target_link_libraries(josim-cli PRIVATE suitesparse::klu)
 
 # Properties
 make_target_static(josim-cli)

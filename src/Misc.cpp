@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Misc.hpp"
@@ -8,10 +8,11 @@
 #include <fstream>
 #include <cmath>
 #include <cctype>
+#include <random>
 
 using namespace JoSIM;
 
-double Misc::string_constant(const std::string &s) {
+double Misc::string_constant(const std::string& s) {
   if (s == "PI") return Constants::PI;
   else if (s == "PHI_ZERO") return Constants::PHI_ZERO;
   else if (s == "BOLTZMANN") return Constants::BOLTZMANN;
@@ -24,7 +25,15 @@ double Misc::string_constant(const std::string &s) {
   return 0.0;
 }
 
-std::string Misc::file_from_path(const std::string &path) {
+bool Misc::isclose(double a, double b, double rtol, double atol,
+  bool equal_nan) {
+  double diff = std::abs(a - b);
+  double comp = (rtol + atol * abs(b));
+  bool result = diff <= comp;
+  return result;
+}
+
+std::string Misc::file_from_path(const std::string& path) {
   auto posLastSlash = path.find_last_of("/\\");
   if (posLastSlash == std::string::npos) {
     posLastSlash = 0;
@@ -33,12 +42,13 @@ std::string Misc::file_from_path(const std::string &path) {
     return path.substr(posLastSlash + 1);
 }
 
-bool Misc::has_suffix(const std::string &str, const std::string &suffix) {
+bool Misc::has_suffix(const std::string& str,
+  const std::string& suffix) {
   return str.size() >= suffix.size() &&
-         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+    str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-bool Misc::starts_with(const std::string &input, char test) {
+bool Misc::starts_with(const std::string& input, char test) {
   for (const auto i : input) {
     if (i != ' ') {
       return i == test;
@@ -47,80 +57,97 @@ bool Misc::starts_with(const std::string &input, char test) {
   return false;
 }
 
-std::vector<std::string> Misc::tokenize_space(const std::string &c) {
-  std::string::size_type pos, lastPos = 0, length = c.length();
-  std::string delimiters = " \t";
-  std::vector<std::string> tokens;
-  bool trimEmpty = true;
+std::string Misc::vector_to_string(const tokens_t& s, std::string d) {
+  std::stringstream ss;
+  for (const auto& i : s) {
+    ss << i << d;
+  }
+  return ss.str();
+}
 
-  using value_type = typename std::vector<std::string>::value_type;
-  using size_type = typename std::vector<std::string>::size_type;
-
-  while (lastPos < length + 1) {
-    pos = c.find_first_of(delimiters, lastPos);
-    if (pos == std::string::npos) {
-      pos = length;
+tokens_t Misc::tokenize(
+  const std::string& c, std::string d, bool trimEmpty, bool trimSpaces,
+  int count) {
+  // Create a position token to point to the found delimiter
+  size_t pos = 0, lastPos = 0;
+  // Tokens to return
+  tokens_t tokens;
+  // Counter to count times delimiter was found
+  int counter = 0;
+  // If times to delimit is 0 then delimit as much as we can
+  if (count == 0) {
+    count = c.length();
+  }
+  // While the delimiter can be found in the string
+  while ((pos = c.find_first_of(d, lastPos)) != std::string::npos) {
+    // If we reach the number of times to delimit
+    if (counter == count) {
+      // Break from the while loop
+      break;
     }
-
-    if (pos != lastPos || !trimEmpty)
-      tokens.push_back(
-          value_type(c.data() + lastPos, (size_type)pos - lastPos));
-
+    // If trim empty tokens is enabled
+    if (trimEmpty) {
+      // Check if the substring represents an empty string
+      if (!c.substr(lastPos, pos - lastPos).empty()) {
+        // Store the string between the identified positions
+        tokens.emplace_back(c.substr(lastPos, pos - lastPos));
+      }
+      // If we want to keep empty tokens
+    } else {
+      // Store the string between the identified positions
+      tokens.emplace_back(c.substr(lastPos, pos - lastPos));
+    }
+    // If trim spaces is enabled
+    if (trimSpaces) {
+      // Remove trailing, leading and duplicate spaces between tokens
+      tokens.back() =
+        std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+    }
     lastPos = pos + 1;
+    ++counter;
   }
-  return tokens;
-}
-
-std::vector<std::string> Misc::tokenize_space_once(const std::string &c) {
-  std::vector<std::string> tokens (2, "");
-  std::string::size_type pos = c.find_first_of(" \t");
-  std::string::size_type length = c.length();
-  if (pos == std::string::npos) {
-      pos = length;
-  }
-  tokens.at(0) = c.substr(0, pos);
-  if(pos != length) tokens.at(1) = c.substr(pos + 1, length);
-  return tokens;
-}
-
-std::vector<std::string> Misc::tokenize_delimiter(const std::string &c,
-                                                  const std::string &d) {
-  std::vector<std::string> tokens;
-  std::stringstream stringStream(c);
-  std::string line;
-  while (std::getline(stringStream, line)) {
-    std::size_t prev = 0, pos;
-    while ((pos = line.find_first_of(d, prev)) != std::string::npos) {
-      if (pos > prev)
-        tokens.push_back(line.substr(prev, pos - prev));
-      prev = pos + 1;
+  // If trim empty tokens is enabled
+  if (trimEmpty) {
+    // Check if the substring represents an empty string
+    if (!c.substr(lastPos).empty()) {
+      // Store the string between the identified positions
+      tokens.emplace_back(c.substr(lastPos));
     }
-    if (prev < line.length())
-      tokens.push_back(line.substr(prev, std::string::npos));
+    // If we want to keep empty tokens
+  } else {
+    // Store the string between the identified positions
+    tokens.emplace_back(c.substr(lastPos));
   }
+  // If trim spaces is enabled
+  if (trimSpaces) {
+    // Remove trailing, leading and duplicate spaces between tokens
+    tokens.back() =
+      std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+  }
+  // Return the tokens
   return tokens;
 }
 
-void Misc::ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
-    }));
+void Misc::ltrim(std::string& s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+    return !std::isspace(ch);
+  }));
 }
 
-void Misc::rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
+void Misc::rtrim(std::string& s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+    return !std::isspace(ch);
+  }).base(), s.end());
 }
 
-double Misc::modifier(const std::string &value) {
+double Misc::modifier(const std::string& value) {
   std::string::size_type sz;
   double number;
   try {
     number = std::stod(value, &sz);
-  } catch (const std::invalid_argument &) {
+  } catch (const std::invalid_argument&) {
     Errors::misc_errors(MiscErrors::STOD_ERROR, value);
-  } catch (std::exception &e) {
+  } catch (std::exception& e) {
     Errors::misc_errors(MiscErrors::STOD_ERROR, value);
   }
   switch (value.substr(sz)[0]) {
@@ -164,17 +191,17 @@ double Misc::modifier(const std::string &value) {
   }
 }
 
-void Misc::unique_push(std::vector<std::string> &vector,
-                       const std::string &string) {
+void Misc::unique_push(std::vector<std::string>& vector,
+  const std::string& string) {
   if (std::find(vector.begin(), vector.end(), string) == vector.end()) {
     vector.push_back(string);
   }
 }
 
-int Misc::index_of(const std::vector<std::string> &vector,
-                   const std::string &value) {
+int Misc::index_of(const std::vector<std::string>& vector,
+  const std::string& value) {
   int counter = 0;
-  for (const auto &i : vector) {
+  for (const auto& i : vector) {
     /* Value found, return counter */
     if (value == vector.at(counter))
       return counter;
@@ -185,8 +212,8 @@ int Misc::index_of(const std::vector<std::string> &vector,
   return counter;
 }
 
-std::string Misc::substring_after(const std::string &str,
-                                  const std::string &whatpart) {
+std::string Misc::substring_after(const std::string& str,
+  const std::string& whatpart) {
   std::size_t pos = 0;
   std::string substring;
   if (str.find(whatpart) != std::string::npos)
@@ -195,8 +222,8 @@ std::string Misc::substring_after(const std::string &str,
   return substring;
 }
 
-std::string Misc::substring_before(const std::string &str,
-                                   const std::string &whatpart) {
+std::string Misc::substring_before(const std::string& str,
+  const std::string& whatpart) {
   std::string substring;
   if (str.find(whatpart) != std::string::npos) {
     std::size_t pos = str.find(whatpart);
@@ -206,8 +233,9 @@ std::string Misc::substring_before(const std::string &str,
     return str;
 }
 
-bool Misc::findX(const std::vector<std::string> &segment, std::string &theLine,
-                 int &linePos) {
+bool Misc::findX(const std::vector<std::string>& segment,
+  std::string& theLine,
+  int& linePos) {
   for (int i = linePos; i < segment.size(); ++i) {
     if (segment.at(i).at(0) == 'X') {
       theLine = segment.at(i);
@@ -233,13 +261,13 @@ int Misc::numDigits(int number) {
 }
 
 double Misc::grand() {
-  double r, v2, fac;
-  r = 2;
-  while (r >= 1) {
-    double v1 = (2*((double)rand()/(double)RAND_MAX)-1);
-    v2 = (2*((double)rand()/(double)RAND_MAX)-1);
-    r = v1*v1+v2*v2;
-  }
-  fac = sqrt(-2*log(r)/r);
-  return (v2*fac);
+  double r, u1, u2, lt;
+  double scale = 1.0 / 1024.0 / 1024.0 / 1024.0 / 2.0;
+  u1 = (static_cast<double>(rand()) + 1) /
+    (static_cast<double>(RAND_MAX) + 1);
+  u2 = static_cast<double>(rand()) * 2 * Constants::PI /
+    static_cast<double>(RAND_MAX);
+  lt = sqrt(-2.0 * log(u1));
+  r = cos(u2) * lt;
+  return r;
 }

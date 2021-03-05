@@ -1,13 +1,17 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_J_SIMULATION_H
-#define JOSIM_J_SIMULATION_H
+#ifndef JOSIM_SIMULATION_H
+#define JOSIM_SIMULATION_H
 
-#include "./Errors.hpp"
-#include "./Misc.hpp"
-#include "./Matrix.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Matrix.hpp"
 
-namespace JoSIM{
+#include <suitesparse/klu.h>
+
+#include <cassert>
+
+namespace JoSIM {
 
 #define TRANSIENT 0
 #define DC 1
@@ -16,22 +20,49 @@ namespace JoSIM{
 #define NONE_SPECIFIED 4
 
 
-class Results {
-  public:
-  std::vector<std::optional<std::vector<double>>> xVector;
-  std::vector<double> timeAxis;
-};
-class Simulation {
-  private:
-  void trans_sim_new(Input &iObj, Matrix &mObj);
+  class Results {
+    public:
+    std::vector<std::optional<std::vector<double>>> xVector;
+    std::vector<double> timeAxis;
+  };
 
-  public:
-  Results results;
-  bool sOutput = true;
+  class Simulation {
+    private:
+    std::vector<double> x_, b_, xn2_, xn3_;
+    int simSize_;
+    JoSIM::AnalysisType atyp_;
+    bool minOut_;
+    bool needsLU_;
+    bool needsTR_;
+    double stepSize_, prstep_, prstart_;
+    int simOK_;
+    klu_symbolic* Symbolic_;
+    klu_common Common_;
+    klu_numeric* Numeric_;
 
-  Simulation(Input &iObj, Matrix &mObj) {
-    trans_sim_new(iObj, mObj);
-  }
-};
+    void trans_sim(Matrix& mObj);
+    void setup_b(Matrix& mObj, int i, double step, double factor = 1);
+    void reduce_step(Matrix& mObj, double factor,
+      int& stepCount, double currentStep);
+
+    void handle_cs(Matrix& mObj, double& step, const int& i);
+    void handle_resistors(Matrix& mObj);
+    void handle_inductors(Matrix& mObj, double factor = 1);
+    void handle_capacitors(Matrix& mObj);
+    void handle_jj(Matrix& mObj, int& i, double& step, double factor = 1);
+    void handle_vs(
+      Matrix& mObj, const int& i, double& step, double factor = 1);
+    void handle_ps(
+      Matrix& mObj, const int& i, double& step, double factor = 1);
+    void handle_ccvs(Matrix& mObj);
+    void handle_vccs(Matrix& mObj);
+    void handle_tx(
+      Matrix& mObj, const int& i, double& step, double factor = 1);
+
+    public:
+    Results results;
+
+    Simulation(Input& iObj, Matrix& mObj);
+  };
 } // namespace JoSIM
 #endif

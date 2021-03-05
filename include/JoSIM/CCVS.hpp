@@ -1,12 +1,13 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_CCVS_HPP
 #define JOSIM_CCVS_HPP
 
-#include "./ParameterName.hpp"
-#include "./Parameters.hpp"
-#include "./AnalysisType.hpp"
-#include "./Input.hpp"
+#include "JoSIM/BasicComponent.hpp"
+#include "JoSIM/ParameterName.hpp"
+#include "JoSIM/Parameters.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Input.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -14,52 +15,57 @@
 #include <optional>
 
 namespace JoSIM {
-class CCVS {
-  private:
-    std::string label_;
-    std::vector<double> nonZeros_;
-    std::vector<int> columnIndex_;
-    std::vector<int> rowPointer_;
-    std::optional<int> posIndex1_, negIndex1_;
-    std::optional<int> posIndex2_, negIndex2_;
-    int currentIndex_, currentIndex2_;
-    double value_;
-  public:
-    CCVS() :
-      currentIndex_(-1),
-      value_(1)
-      {};
-    
-    static CCVS create_CCVS(
-        const std::pair<std::string, std::string> &s,
-        const std::unordered_map<std::string, int> &nm, 
-        std::unordered_set<std::string> &lm,
-        std::vector<std::vector<std::pair<double, int>>> &nc,
-        const std::unordered_map<ParameterName, Parameter> &p,
-        int &branchIndex, const Input &iObj);
-    void set_label(const std::string &s, std::unordered_set<std::string> &lm);
-    void set_nonZeros_and_columnIndex(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-      const std::unordered_map<std::string, int> &nm, const std::string &s, int &branchIndex);
-    void set_indices(const std::pair<std::string, std::string> &n1, const std::pair<std::string, std::string> &n2, 
-      const std::unordered_map<std::string, int> &nm, std::vector<std::vector<std::pair<double, int>>> &nc, const int &branchIndex);
-    void set_currentIndex(const int &cc) { currentIndex_ = cc; }
-    void set_currentIndex2(const int &cc) { currentIndex2_ = cc; }
-    void set_value(const std::pair<std::string, std::string> &s, 
-        const std::unordered_map<ParameterName, Parameter> &p, const Input &iObj);
 
-    const std::string& get_label() const { return label_; }
-    const std::vector<double>& get_nonZeros() const { return nonZeros_; }
-    const std::vector<int>& get_columnIndex() const { return columnIndex_; }
-    const std::vector<int>& get_rowPointer() const { return rowPointer_;}
-    const std::optional<int>& get_posIndex() const { return posIndex1_; }
-    const std::optional<int>& get_negIndex() const { return negIndex1_; }
-    const std::optional<int>& get_posIndex2() const { return posIndex2_; }
-    const std::optional<int>& get_negIndex2() const { return negIndex2_; }
-    const int& get_currentIndex() const { return currentIndex_; }
-    const int& get_currentIndex2() const { return currentIndex2_; }
-    const double& get_value() const { return value_; }
+  /*
+   Hlabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
 
-};
+   Vo = GIc
+
+   ⎡ 0  0  0  0  0  1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
+   ⎜ 0  0  0  0  0 -1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
+   ⎜ 0  0  0  0  1  0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
+   ⎜ 0  0  0  0 -1  0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
+   ⎜ 1 -1  0  0 -G  0⎟ ⎜Ic ⎟   ⎜ 0⎟
+   ⎣ 0  0  1 -1  0  0⎦ ⎣Io ⎦   ⎣ 0⎦
+
+   (PHASE)
+   φ - (2e/hbar)(2h/3G)Ic = (4/3)φn-1 - (1/3)φn-2
+
+   ⎡ 0  0  0  0                 0  1⎤ ⎡φo⁺⎤   ⎡                     0⎤
+   ⎜ 0  0  0  0                 0 -1⎟ ⎜φo⁻⎟   ⎜                     0⎟
+   ⎜ 0  0  0  0                 1  0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
+   ⎜ 0  0  0  0                -1  0⎟ ⎜φc⁻⎟   ⎜                     0⎟
+   ⎜ 1 -1  0  0 -(2e/hbar)(2h/3G)  0⎟ ⎜Ic ⎟   ⎜ (4/3)φn-1 - (1/3)φn-2⎟
+   ⎣ 0  0  1 -1                 0  0⎦ ⎣Io ⎦   ⎣                     0⎦
+  */
+
+  class CCVS : public BasicComponent {
+    private:
+    int hDepPos_ = 0;
+    JoSIM::AnalysisType at_;
+    public:
+    NodeConfig nodeConfig2_;
+    int_o posIndex2_, negIndex2_;
+    int currentIndex2_ = 0;
+    double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
+
+    CCVS(
+      const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+      const std::optional<NodeConfig>& ncon2, const nodemap& nm,
+      std::unordered_set<std::string>& lm, nodeconnections& nc,
+      const param_map& pm, int& bi, const AnalysisType& at, const double& h);
+
+    void set_node_indices(
+      const tokens_t& t, const nodemap& nm, nodeconnections& nc);
+    void set_matrix_info(const AnalysisType& at, const double& h);
+
+    void update_timestep(const double& factor) override;
+
+    void step_back() override {
+      pn2_ = pn4_;
+    }
+
+  }; // class CCVS
 
 } // namespace JoSIM
 #endif

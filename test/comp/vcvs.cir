@@ -5,6 +5,7 @@ RA  11  0   1
 EA  1   0   11   0    2
 RB  1   0   1
 .tran 0.25p 1000p
+.print devv RA
 .print devv RB
 .print devi RB
 .print devp RB

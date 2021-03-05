@@ -1,11 +1,12 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_CLIOPTIONS_HPP
 #define JOSIM_CLIOPTIONS_HPP
 
-#include "./AnalysisType.hpp"
-#include "./FileOutputType.hpp"
-#include "./InputType.hpp"
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/FileOutputType.hpp"
+#include "JoSIM/InputType.hpp"
+#include "JoSIM/TypeDefines.hpp"
 
 #include <optional>
 #include <string>
@@ -13,22 +14,29 @@
 
 namespace JoSIM {
 
-struct CliOptions {
-  std::string cir_file_name;
-  InputType input_type = InputType::Jsim;
-  AnalysisType analysis_type = AnalysisType::Voltage;
-  bool verbose = false;
-  bool parallel = false;
-  bool standardin = false;
+  struct CliOptions {
+    private:
 
-  std::optional<std::string> output_file_name;
-  FileOutputType output_file_type;
+    tokens_t argv_to_tokens(const int& argc, const char** argv);
+    vector_pair_t<char_o, string_o> argument_pairs(const tokens_t& tokens);
 
-  // helper functions
-  static CliOptions parse(int argc, const char **argv);
-  static void display_help();
-  static void version_info();
-};
+    public:
+
+    string_o cir_file_name;
+    string_o output_file_name;
+
+    AnalysisType analysis_type = AnalysisType::Phase;
+    FileOutputType output_file_type = FileOutputType::Csv;
+
+    int verbose = 0;
+    bool minimal = false;
+    bool parallel = false;
+
+    // helper functions
+    static CliOptions parse(int argc, const char** argv);
+    static void display_help();
+    static void version_info();
+  };
 
 } // namespace JoSIM
 

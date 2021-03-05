@@ -1,39 +1,42 @@
-// Copyright (c) 2019 Johannes Delport
+// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_J_OUTPUT_H
-#define JOSIM_J_OUTPUT_H
+#ifndef JOSIM_OUTPUT_HPP
+#define JOSIM_OUTPUT_HPP
 
-#include "./Matrix.hpp"
-#include "./Misc.hpp"
-#include "./Simulation.hpp"
-#include "./Input.hpp"
+#include "JoSIM/Matrix.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Simulation.hpp"
+#include "JoSIM/Input.hpp"
 
 namespace JoSIM {
-class Trace {
-  public:
-  std::string name_;
-  char type_;
-  std::vector<double> data_;
-  Trace(const std::string &name) {
-    name_ = name;
-  }
-  ~Trace(){};
-};
+  class Trace {
+    public:
+    std::string name_;
+    char type_;
+    std::vector<double> data_;
+    Trace(const std::string& name) {
+      name_ = name;
+    }
+    ~Trace() {};
+  };
 
-class Output {
-  public:
-  std::vector<Trace> traces;
-  std::vector<double> timesteps;
-  Output(){};
-  void write_output(const Input &iObj, 
-    const Matrix &mObj, const Simulation &sObj);
+  class Output {
+    public:
+    std::vector<Trace> traces;
+    std::vector<double> timesteps;
+    Output() {};
+    void write_output(const Input& iObj,
+      Matrix& mObj,
+      Simulation& sObj);
 
-  void format_csv_or_dat(const std::string &filename, const char &delimiter);
+    void format_csv_or_dat(const std::string& filename,
+      const char& delimiter,
+      bool argmin = true);
 
-  void format_raw(const std::string &filename);
+    void format_raw(const std::string& filename, bool argmin = true);
 
-  void format_cout();
-};
+    void format_cout(const bool& argMin);
+  };
 } // namespace JoSIM
 
 #endif

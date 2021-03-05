@@ -1,0 +1,10 @@
+* Circuit testing mutual inductance component
+Vin 1 0 sin(0 5 159.15 0 0)
+Rs 1 3 100
+Rl 4 0 500
+L1 3 0 10M
+L2 4 0 2M
+K L1 L2 0.693
+.TRAN 0.1M 10M
+.PLOT I(L1) I(L2)
+.END

@@ -20,6 +20,8 @@ function(add_integration_test)
     set(JOSIM_COMMAND ${JOSIM_COMMAND} "-c" "1")
   endif()
 
+  set(JOSIM_COMMAND ${JOSIM_COMMAND} "-m" "1")
+
   if(DEFINED TEST_CIR)
     configure_file("${PROJECT_SOURCE_DIR}/test/${TEST_CIR}"
                    "${TEST_BUILD_DIR}/${TEST_CIR}")

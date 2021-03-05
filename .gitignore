@@ -312,8 +312,12 @@ doc/*
 .clang-tidy
 .clangd
 
+# Clangd files
+.clangd
+
 # direnv file
 .envrc
 
 # site folder
 site/
+Screenshot 2020-09-18 at 15.17.27.png
