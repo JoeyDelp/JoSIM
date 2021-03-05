@@ -1,6 +1,4 @@
 
-
-
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
@@ -12,25 +10,34 @@
       
         <meta name="author" content="Johannes Delport">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      
+      <link rel="shortcut icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.3">
     
     
       
-        <title>Example Usage - JoSIM v2.4 Documentation</title>
+        <title>Example Usage - JoSIM v2.5 Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.1655a90d.min.css">
       
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#000000">
+        
       
     
     
     
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
       
     
     
@@ -42,7 +49,15 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="black" data-md-color-accent="">
+      
+        <script>matchMedia("(prefers-color-scheme: dark)").matches&&document.body.setAttribute("data-md-color-scheme","slate")</script>
+      
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -60,46 +75,52 @@
       
     </div>
     
-      <header class="md-header" data-md-component="header">
-  <nav class="md-header-nav md-grid" aria-label="Header">
-    <a href=".." title="JoSIM v2.4 Documentation" class="md-header-nav__button md-logo" aria-label="JoSIM v2.4 Documentation">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="JoSIM v2.5 Documentation" class="md-header__button md-logo" aria-label="JoSIM v2.5 Documentation">
+      
+  <img src="../img/favicon.ico" alt="logo">
 
     </a>
-    <label class="md-header-nav__button md-icon" for="__drawer">
+    <label class="md-header__button md-icon" for="__drawer">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
     </label>
-    <div class="md-header-nav__title" data-md-component="header-title">
-      
-        <div class="md-header-nav__ellipsis">
-          <span class="md-header-nav__topic md-ellipsis">
-            JoSIM v2.4 Documentation
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JoSIM v2.5 Documentation
           </span>
-          <span class="md-header-nav__topic md-ellipsis">
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
             
               Example Usage
             
           </span>
         </div>
+      </div>
+    </div>
+    <div class="md-header__options">
       
     </div>
     
-      <label class="md-header-nav__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
       </label>
       
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
       </button>
     </form>
@@ -117,15 +138,15 @@
 </div>
     
     
-      <div class="md-header-nav__source">
+      <div class="md-header__source">
         
-<a href="https://github.com/JoeyDelp/JoSIM/" title="Go to repository" class="md-source">
+<a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
   </div>
   <div class="md-source__repository">
-    GitHub
+    JoeyDelp/JoSIM
   </div>
 </a>
       </div>
@@ -135,8 +156,6 @@
     
     <div class="md-container" data-md-component="container">
       
-        
-      
       
         
       
@@ -144,29 +163,36 @@
         <div class="md-main__inner md-grid">
           
             
-              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
-                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href=".." title="JoSIM v2.4 Documentation" class="md-nav__button md-logo" aria-label="JoSIM v2.4 Documentation">
-      
+                    
+
+
+
+
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="JoSIM v2.5 Documentation" class="md-nav__button md-logo" aria-label="JoSIM v2.5 Documentation">
+      
+  <img src="../img/favicon.ico" alt="logo">
 
     </a>
-    JoSIM v2.4 Documentation
+    JoSIM v2.5 Documentation
   </label>
   
     <div class="md-nav__source">
       
-<a href="https://github.com/JoeyDelp/JoSIM/" title="Go to repository" class="md-source">
+<a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
   </div>
   <div class="md-source__repository">
-    GitHub
+    JoeyDelp/JoSIM
   </div>
 </a>
     </div>
@@ -177,24 +203,15 @@
       
       
 
-
-  <li class="md-nav__item">
-    <a href=".." title="Home" class="md-nav__link">
-      Home
-    </a>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../tech_disc/" title="Technical Discussion" class="md-nav__link">
-      Technical Discussion
-    </a>
-  </li>
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
 
     
       
@@ -202,27 +219,42 @@
       
 
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../tech_disc/" class="md-nav__link">
+        Technical Discussion
+      </a>
+    </li>
+  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
       
+      
+      
+
+  
+  
     
-    
-      <label class="md-nav__link md-nav__link--active" for="__toc">
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Example Usage
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Example Usage
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h14V7H3v2m0 4h14v-2H3v2m0 4h14v-2H3v2m16 0h2v-2h-2v2m0-10v2h2V7h-2m0 6h2v-2h-2v2z"/></svg>
-        </span>
-      </label>
-    
-    <a href="./" title="Example Usage" class="md-nav__link md-nav__link--active">
-      Example Usage
-    </a>
-    
+      </a>
       
+        
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
@@ -230,12 +262,10 @@
   
   
     <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
+      <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
-    <ul class="md-nav__list" data-md-scrollfix>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
   <a href="#basic-jtl-example" class="md-nav__link">
@@ -244,54 +274,57 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#commandline-switches" class="md-nav__link">
-    Commandline Switches
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
-    
-  </li>
+      
+    </li>
+  
 
     
       
       
       
 
-
-  <li class="md-nav__item">
-    <a href="../comp_stamps/" title="Component Stamps" class="md-nav__link">
-      Component Stamps
-    </a>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item">
-    <a href="../syntax/" title="Syntax Guide" class="md-nav__link">
-      Syntax Guide
-    </a>
-  </li>
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comp_stamps/" class="md-nav__link">
+        Component Stamps
+      </a>
+    </li>
+  
 
     
       
       
       
 
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../syntax/" class="md-nav__link">
+        Syntax Guide
+      </a>
+    </li>
+  
 
-  <li class="md-nav__item">
-    <a href="../bugs/" title="Development Schedule and Bugs" class="md-nav__link">
-      Development Schedule and Bugs
-    </a>
-  </li>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bugs/" class="md-nav__link">
+        Development Schedule and Bugs
+      </a>
+    </li>
+  
 
     
   </ul>
@@ -301,63 +334,17 @@
               </div>
             
             
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#basic-jtl-example" class="md-nav__link">
-    Basic JTL Example
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#commandline-switches" class="md-nav__link">
-    Commandline Switches
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
-          <div class="md-content">
+          <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
-                
-                  <a href="https://github.com/JoeyDelp/JoSIM/edit/master/docs/ex_usage.md" title="Edit this page" class="md-content__button md-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
-                  </a>
-                
-                
-                  
                 
                 
                 <h1 id="example-usage">Example Usage</h1>
 <h2 id="basic-jtl-example">Basic JTL Example</h2>
-<p>In this section we provide example usage of the simulator. In the <em>test</em> subfolder of the repository the user wil find multiple example files that can be used with the simulator.</p>
-<p>In this example we will make use of the <em>ex_jtl_basic.cir</em> file. This is a basic Josephson transmission line (JTL) that simply carries the single flux quantum pulse from input to output.</p>
-<pre><code>* Example JTL Basic
+<p>In this section we provide example usage for JoSIM. In the <a href="https://github.com/JoeyDelp/JoSIM/tree/master/test"><em>test</em></a> subfolder of the repository the user will find multiple example files that can be used to test JoSIM with.</p>
+<p>In this example we will make use of the<a href="https://github.com/JoeyDelp/JoSIM/tree/master/test/ex_jtl_basic.cir"> <em>ex_jtl_basic.cir</em></a> file. This is a basic Josephson transmission line (JTL) that transmits a single flux quantum pulse from input to output.</p>
+<div class="highlight"><pre><span></span><code>* Example JTL Basic
 B01        3          7          jmod     area=2.16
 B02        6          8          jmod     area=2.16
 IB01       0          1          pwl(0      0 5p 280u)
@@ -381,189 +368,56 @@ VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602
 .print PHASE B01
 .print PHASE B02
 .end
-</code></pre>
-
-<table>
-  <th>Label</th><th>+ Node</th><th>- Node</th><th>Value</th>
-  <tr>R</tr>
-  <tr>L</tr>
-  <tr>C</tr>
-  <tr>B</tr>
-  <tr>M</tr>
-  <tr></tr>
-</table>
-
-<p>Only the device voltage (DEVV) of the input source (VIN), the device current (DEVI) of the output resistor (ROUT) and the phase of both junctions are requested to be store.</p>
+</code></pre></div>
+<p>Only the device voltage (DEVV) of the input source (VIN), the device current (DEVI) of the output resistor (ROUT) and the phase of both junctions are requested to be output.</p>
 <p>The simulation executes for a total of 1000ps and produces a result every 0.25ps which results in 4000 points of data for each requested variable.</p>
 <p>We simulate this circuit (on a CentOS 7 machine) using the command:</p>
-<p><strong>./josim-cli -o ex_jtl_basic.csv ex_jtl_basic.cir</strong></p>
+<div class="highlight"><pre><span></span><code>josim-cli -o ex_jtl_basic.csv ex_jtl_basic.cir -V <span class="m">1</span>
+</code></pre></div>
 <p>This simulation is almost instant, given the size of the problem and should take no longer than 10ms to complete.</p>
-<figure>
-    <img src="../img/josim_jtl_ex.png" alt="JoSIM JTL example" class="center">
-    <figcaption align="center"> Fig. 1 - JoSIM JTL example commandline output.</figcaption>
-</figure>
-
+<p><center><img src="../img/josim_jtl_ex.png" alt="Simulation Output"/></center></p>
 <p>The results of this simulation are stored in the <em>ex_jtl_basic.csv</em> file of which an excerpt of the two events is shown below.</p>
-<pre><code class="bash">time,CURRENT_ROUT,DEVV_VIN,PHASE_B01,PHASE_B02
-0.0000000000000000e+00,0.0000000000000000e+00,0.0000000000000000e+00,0.0000000000000000e+00,0.0000000000000000e+00
-2.4999999999999999e-13,5.2618741532587213e-07,0.0000000000000000e+00,1.7590417807527424e-03,1.7625663594260056e-03
-        .                       .                       .                       .                       .
-        .                       .                       .                       .                       .
-        .                       .                       .                       .                       .
-2.9950000000000000e-10,1.2602334650362215e-22,0.0000000000000000e+00,4.0463239580396271e-01,6.1557778681614406e-01
-2.9974999999999997e-10,-8.3663517212216735e-22,0.0000000000000000e+00,4.0463239580396271e-01,6.1557778681614406e-01
-3.0000000000000000e-10,-1.5966746163438487e-21,0.0000000000000000e+00,4.0463239580396271e-01,6.1557778681614406e-01
-3.0024999999999997e-10,1.2138210460568509e-08,8.2712999999999992e-05,4.0588849169065189e-01,6.1561844609608551e-01
-3.0050000000000000e-10,8.3269106098336399e-08,1.6542599999999998e-04,4.1373721572716365e-01,6.1593850563537267e-01
-3.0074999999999997e-10,3.1874311596945211e-07,2.4813899999999998e-04,4.3783030030526732e-01,6.1722434414431326e-01
-3.0099999999999999e-10,8.8716300244636592e-07,3.3085199999999997e-04,4.8814712164259011e-01,6.2078477555864586e-01
-3.0125000000000002e-10,1.9855061368009524e-06,4.1356499999999996e-04,5.7113817950274370e-01,6.2846436865880417e-01
-3.0149999999999999e-10,3.7775100494815062e-06,4.9627799999999995e-04,6.8883988431911958e-01,6.4225058535926782e-01
-3.0175000000000002e-10,6.3359283607783743e-06,5.7899099999999995e-04,8.4054979432033217e-01,6.6376618522513120e-01
-3.0199999999999999e-10,9.6268557444681243e-06,6.6170399999999994e-04,1.0258326634823722e+00,6.9395688283705226e-01
-3.0225000000000002e-10,1.3552874679952160e-05,7.4441699999999993e-04,1.2475669537636640e+00,7.3318675289877544e-01
-3.0249999999999999e-10,1.8042425566922425e-05,8.2712999999999992e-04,1.5144772973301901e+00,7.8175014313659197e-01
-3.0275000000000001e-10,2.3132972521939297e-05,7.4441699999999993e-04,1.8411678233070754e+00,8.4057341009994713e-01
-3.0299999999999999e-10,2.9026125783186692e-05,6.6170399999999994e-04,2.2453378998772728e+00,9.1179088131163233e-01
-3.0325000000000001e-10,3.6115317782987027e-05,5.7899099999999995e-04,2.7485987257643534e+00,9.9913706309331773e-01
-3.0349999999999999e-10,4.5004018307525714e-05,4.9627799999999995e-04,3.3796783185915840e+00,1.1083683692206756e+00
-3.0375000000000001e-10,5.6484467501108440e-05,4.1356499999999996e-04,4.1592025708753528e+00,1.2477159562171136e+00
-3.0399999999999998e-10,7.1294936682528957e-05,3.3085199999999997e-04,5.0434512532682056e+00,1.4274416884444263e+00
-3.0425000000000001e-10,8.9601267490561153e-05,2.4813899999999998e-04,5.8716978821424979e+00,1.6569226427300268e+00
-3.0449999999999998e-10,1.1064201526112140e-04,1.6542599999999998e-04,6.4323756562633472e+00,1.9399189619742534e+00
-3.0475000000000001e-10,1.3305044637426826e-04,8.2712999999999992e-05,6.6189208102948909e+00,2.2725986145252426e+00
-3.0499999999999998e-10,1.5575130808877477e-04,0.0000000000000000e+00,6.4943549761561137e+00,2.6479927374623258e+00
-3.0525000000000001e-10,1.7885172860297336e-04,0.0000000000000000e+00,6.2272567013493418e+00,3.0641714808700860e+00
-3.0549999999999998e-10,2.0379715833211554e-04,0.0000000000000000e+00,5.9948045018496323e+00,3.5290571354520934e+00
-        .                       .                       .                       .                       .
-        .                       .                       .                       .                       .
-        .                       .                       .                       .                       .
-5.9949999999999995e-10,4.3212858202495744e-21,0.0000000000000000e+00,6.6878072510727549e+00,6.8987600821376667e+00
-5.9975000000000002e-10,4.3137521994626109e-21,0.0000000000000000e+00,6.6878072510727549e+00,6.8987600821376667e+00
-6.0000000000000000e-10,4.3078931225786343e-21,0.0000000000000000e+00,6.6878072510727549e+00,6.8987600821376667e+00
-6.0024999999999997e-10,1.2138210460577924e-08,8.2712999999999992e-05,6.6890633469594443e+00,6.8988007414176078e+00
-6.0049999999999994e-10,8.3269096666537856e-08,1.6542599999999998e-04,6.6969120695472864e+00,6.8991208009145337e+00
-6.0075000000000002e-10,3.1874302598962546e-07,2.4813899999999998e-04,6.7210051436437208e+00,6.9004066390118268e+00
-6.0099999999999999e-10,8.8716255780263208e-07,3.3085199999999997e-04,6.7713219264319413e+00,6.9039670683967049e+00
-6.0124999999999997e-10,1.9855046057915069e-06,4.1356499999999996e-04,6.8543128850350286e+00,6.9116466546674440e+00
-6.0149999999999994e-10,3.7775059001042050e-06,4.9627799999999995e-04,6.9720143838434145e+00,6.9254328535762175e+00
-6.0175000000000002e-10,6.3359188963277667e-06,5.7899099999999995e-04,7.1237239212106864e+00,6.9469484148633018e+00
-6.0199999999999999e-10,9.6268367676180748e-06,6.6170399999999994e-04,7.3090061730293270e+00,6.9771390393488719e+00
-6.0224999999999996e-10,1.3552840137866662e-05,7.4441699999999993e-04,7.5307394915059733e+00,7.0163687836318234e+00
-6.0250000000000004e-10,1.8042366960989605e-05,8.2712999999999992e-04,7.7976483370788721e+00,7.0649319712733414e+00
-6.0275000000000001e-10,2.3132877643123393e-05,7.4441699999999993e-04,8.1243365485310051e+00,7.1237549237784270e+00
-6.0299999999999999e-10,2.9025976163591970e-05,6.6170399999999994e-04,8.5285030132858992e+00,7.1949719126817717e+00
-6.0324999999999996e-10,3.6115084492683834e-05,5.7899099999999995e-04,9.0317582599489015e+00,7.2823173512317032e+00
-6.0350000000000004e-10,4.5003657487430368e-05,4.9627799999999995e-04,9.6628298406009119e+00,7.3915475072422705e+00
-6.0375000000000001e-10,5.6483922613042281e-05,4.1356499999999996e-04,1.0442344928918883e+01,7.5308933521128347e+00
-6.0399999999999998e-10,7.1294158923435432e-05,3.3085199999999997e-04,1.1326588459213040e+01,7.7106166231913225e+00
-6.0424999999999996e-10,8.9600246674970675e-05,2.4813899999999998e-04,1.2154840250727050e+01,7.9400944882309208e+00
-6.0450000000000003e-10,1.1064078717562771e-04,1.6542599999999998e-04,1.2715533169224782e+01,8.2230874188094543e+00
-6.0475000000000001e-10,1.3304905904021097e-04,8.2712999999999992e-05,1.2902095586396108e+01,8.5557636754469328e+00
-6.0499999999999998e-10,1.5574976667867628e-04,0.0000000000000000e+00,1.2777541168233270e+01,8.9311543029884017e+00
-6.0524999999999995e-10,1.7884995879749259e-04,0.0000000000000000e+00,1.2510445228968999e+01,9.3473289350035067e+00
-6.0550000000000003e-10,2.0379503512670802e-04,0.0000000000000000e+00,1.2277987682825806e+01,9.8122093480792216e+00
-        .                       .                       .                       .                       .
-        .                       .                       .                       .                       .
-        .                       .                       .                       .                       .
-9.9925000000000004e-10,9.9776412773980053e-20,0.0000000000000000e+00,1.2970982106365490e+01,1.3181942377470081e+01
-9.9949999999999991e-10,9.8740906314363196e-20,0.0000000000000000e+00,1.2970982106365490e+01,1.3181942377470081e+01
-9.9974999999999999e-10,9.7932385381164065e-20,0.0000000000000000e+00,1.2970982106365490e+01,1.3181942377470081e+01
-
-</code></pre>
-
-<p>When this output result is plotted using the Python script mentioned in <a href="../tech_disc/">Technical Discussion</a> the user will be presented with a visual representation of the result.</p>
-<figure>
-    <img src="../img/ex_jtl_result.pdf" alt="JoSIM JTL results" class="center">
-    <figcaption align="center"> Fig. 2 - JoSIM JTL example result output.</figcaption>
-</figure>
-
-<p>Through the reperesentation of the results visually, the user can see the two SFQ pulses at the input and through the output resistor, as well as, the phases of the two junctions.</p>
+<div class="highlight"><pre><span></span><code>time,&quot;V(VIN)&quot;,&quot;I(ROUT)&quot;,&quot;P(B01)&quot;,&quot;P(B02)&quot;
+0.000000e+00,0.000000e+00,0.000000e+00,-0.000000e+00,0.000000e+00
+2.500000e-13,0.000000e+00,6.636509e-07,2.899951e-03,2.923977e-03
+5.000000e-13,0.000000e+00,1.963239e-06,1.130820e-02,1.150191e-02
+7.500000e-13,0.000000e+00,3.931372e-06,2.615879e-02,2.691635e-02
+1.000000e-12,0.000000e+00,6.352259e-06,4.650288e-02,4.856039e-02
+1.250000e-12,0.000000e+00,8.883856e-06,7.016312e-02,7.460258e-02
+1.500000e-12,0.000000e+00,1.119620e-05,9.467237e-02,1.028169e-01
+1.750000e-12,0.000000e+00,1.306925e-05,1.180767e-01,1.313045e-01
+2.000000e-12,0.000000e+00,1.442942e-05,1.393699e-01,1.589077e-01
+2.250000e-12,0.000000e+00,1.533178e-05,1.585212e-01,1.852864e-01
+2.500000e-12,0.000000e+00,1.590988e-05,1.762000e-01,2.107379e-01
+2.750000e-12,0.000000e+00,1.631792e-05,1.933666e-01,2.358942e-01
+3.000000e-12,0.000000e+00,1.668458e-05,2.108929e-01,2.614215e-01
+3.250000e-12,0.000000e+00,1.708811e-05,2.293210e-01,2.878081e-01
+3.500000e-12,0.000000e+00,1.755325e-05,2.487930e-01,3.152722e-01
+3.750000e-12,0.000000e+00,1.806395e-05,2.691245e-01,3.437779e-01
+4.000000e-12,0.000000e+00,1.858336e-05,2.899579e-01,3.731206e-01
+    .               .           .           .           .
+    .               .           .           .           .
+    .               .           .           .           .
+9.970000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.972500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.975000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.977500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.980000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.982500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.985000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.987500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.990000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.992500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.995000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+9.997500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
+</code></pre></div>
+<p>We then plot this result with the <a href="https://github.com/JoeyDelp/JoSIM/tree/master/scripts/josim-plot"><em>josim-plot</em></a> script found in the <a href="https://github.com/JoeyDelp/JoSIM/tree/master/scripts">scripts</a> using the following command:</p>
+<div class="highlight"><pre><span></span><code>josim-plot ex_jtl_basic.csv -t stacked
+</code></pre></div>
+<p>This produces the following visualized result:</p>
+<p><center><img alt="JoSIM JTL Example Results" src="../img/josim_jtl_ex_results.png"/></center></p>
+<p>Through the representation of the results visually, the user can see the two SFQ pulses at the input and through the output resistor, including the phases of the two junctions.</p>
 <p>The same process can be done for every example found in the <em>test</em> folder on the repository.</p>
-<h2 id="commandline-switches">Commandline Switches</h2>
-<p>The command line interface has various switches which can be shown using the <strong>-h</strong> switch. Each of these switches will also be shown and discussed below.</p>
-<table>
-  <tr>
-    <th>Switch</th><th>Options</th><th>Explanation</th>
-  </tr>
-  <tr>
-    <td>-a</td><td>0 or 1</td><td rowspan="2">Sets the analysis type between Voltage and Phase mode</td>
-  </tr>
-  <tr>
-    <td>--analysis=</td><td>0 is default</td>
-  </tr>
-  <tr>
-    <td>-c</td><td>0 or 1</td><td rowspan="2">Sets the subcircuit convention used internally. 0 being JSIM. 1 being WRspice (standard SPICE)</td>
-  </tr>
-  <tr>
-    <td>--convention=</td><td>0 is default</td>
-  </tr>
-  <tr>
-    <td>-d</td><td>0 or 1</td><td>Sets the differential method to either trapezoidal or Gear.<strong>*</strong></td>
-  </tr>
-  <tr>
-    <td>--differential=</td><td>0 is default</td>
-  </tr>
-  <tr>
-    <td>-h</td><td></td><td rowspan="2">Displays the help menu that contains explanations for each of these switches.</td>
-  </tr>
-  <tr>
-    <td>--help</td><td></td>
-  </tr>
-  <tr>
-    <td>-i</td><td></td><td rowspan="2">Input circuit netlist from standard input.</td>
-  </tr>
-  <tr>
-    <td>--input</td><td></td>
-  </tr>
-  <tr>
-    <td>-m</td><td></td><td>Disables most output.<strong>*</strong></td>
-  </tr>
-  <tr>
-    <td>--minimal</td>
-  </tr>
-  <tr>
-    <td>-o</td><td>output filename</td><td rowspan="2">Save the output to file as either .csv, .dat or raw</td>
-  </tr>
-  <tr>
-    <td>--output=</td><td>output.csv</td>
-  </tr>
-  <tr>
-    <td>-p</td><td></td><td rowspan="2">Enables an experimental parallel processing feature. This is still under construction and results might not be as intendend</td>
-  </tr>
-  <tr>
-    <td>--parallel</td><td></td>
-  </tr>
-  <tr>
-    <td>-V</td><td></td><td rowspan="2">Enables verbose mode, displaying extra information with regards to the simulation</td>
-  </tr>
-  <tr>
-    <td>--verbose</td><td></td>
-  </tr>
-  <tr>
-    <td>-v</td><td></td><td rowspan="2">Displays the version information for this version of the executable</td>
-  </tr>
-  <tr>
-    <td>--version</td><td></td>
-  </tr>
-</table>
-
-<p><strong>*</strong> Only available in v2.5 (testing) at time of writing.</p>
-<p>These switches can be fed to the executable in any order as long as it makes sense. With this being said, the simulator will treat the first non switch related string line as the input file. It would make perfect sense to then have a command line as follows:</p>
-<p><strong>./josim-cli -a 1 inputfile —output=outputfile.csv -c 1</strong></p>
-<p>As this will see analysis as <em>1</em>, convention as <em>1</em> and the output file as <em>outputfile.csv</em>. This leaves the only non switch related string being <em>inputfile</em>. </p>
-<p>It would, however, not make sense to have convention or analysis set to a value that is not a valid option or omitting the option for the switch completely. An example would be if the command is given as:</p>
-<p><strong>./josim-cli -a inputfile -c</strong></p>
-<p>This would not work and would tell the user that command switches are invalid.</p>
-<p>Additionally, when the version command is sent through the program only prints the version and then exits. This is similar to the help command, which also only prints the menu and exits.</p>
-<style>
-.center {
-    display: block;
-    margin: 0 auto;
-}
-</style>
-
-<div class="references"></div>
                 
               
               
@@ -579,44 +433,46 @@ VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602
         
 <footer class="md-footer">
   
-    <div class="md-footer-nav">
-      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
-        
-          <a href="../tech_disc/" title="Technical Discussion" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
-            <div class="md-footer-nav__button md-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../tech_disc/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Technical Discussion
             </div>
-            <div class="md-footer-nav__title">
-              <div class="md-ellipsis">
-                <span class="md-footer-nav__direction">
-                  Previous
-                </span>
-                Technical Discussion
-              </div>
+          </div>
+        </a>
+      
+      
+        <a href="../comp_stamps/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Component Stamps
             </div>
-          </a>
-        
-        
-          <a href="../comp_stamps/" title="Component Stamps" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
-            <div class="md-footer-nav__title">
-              <div class="md-ellipsis">
-                <span class="md-footer-nav__direction">
-                  Next
-                </span>
-                Component Stamps
-              </div>
-            </div>
-            <div class="md-footer-nav__button md-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
-    </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2021 Johannes Delport
+          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -624,26 +480,36 @@ VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602
         </a>
       </div>
       
+  <div class="md-footer-social">
+    
+      
+      
+      <a href="https://github.com/JoeyDelp" target="_blank" rel="noopener" title="JoeyDelp on GitHub" class="md-footer-social__link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      </a>
+    
+  </div>
+
     </div>
   </div>
 </footer>
       
     </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["toc.integrate", "header.autohide"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
-      
-      <script>
-        app = initialize({
-          base: "..",
-          features: [],
-          search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
-          }, typeof search !== "undefined" && search)
-        })
-      </script>
+    
+      <script src="../assets/javascripts/bundle.ca5457b8.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="../javascripts/config.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>
