@@ -34,6 +34,15 @@ Referencing:
 
 ---
 
+## Known Issues / Bugs
+### v2.4.1
+- If the simulation stop time is smaller than a time at which a source has a specified value (ie. PWL), JoSIM will segfault.
+- If an expression is loosely implemented anywhere in the netlist (ie. L01    1    2    1/2), JoSIM will exit with `std::invalid_argument: std::stod`.
+- Precision of output files are too high, results in massive file sizes when small time steps are used.
+- Specifying a component indicator such as `J` instead of `B` to indicate a junction will result in Matrix Singular error.
+
+---
+
 ## Changelog
 ### v2.5 - 05/03/2021
 - Phase mode is now the standard analysis mode. Produces the exact same results as voltage.

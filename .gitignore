@@ -310,6 +310,7 @@ doc/*
 # Clang files
 .clang-format
 .clang-tidy
+.clangd
 
 # Clangd files
 .clangd
