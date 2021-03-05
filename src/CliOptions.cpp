@@ -242,10 +242,10 @@ void CliOptions::display_help() {
     << "Specifies the analysis type." << std::endl;
   std::cout << std::setw(16) << std::left << "--analysis=" << std::setw(3)
     << std::left << "|"
-    << "0 for Voltage analysis (Default)." << std::endl;
+    << "0 for Voltage analysis." << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
     << "|"
-    << "1 for Phase analysis." << std::endl;
+    << "1 for Phase analysis (Default)." << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
     << "|" << std::endl;
   // Help menu

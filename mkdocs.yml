@@ -1,6 +1,8 @@
-site_name: JoSIM v2.4 Documentation
+site_name: JoSIM v2.5 Documentation
 repo_url: https://github.com/JoeyDelp/JoSIM
+repo_name: JoeyDelp/JoSIM
 site_author: Johannes Delport
+edit_uri: ""
 nav:
   - Home: 'index.md'
   - Technical Discussion: 'tech_disc.md'
@@ -10,16 +12,38 @@ nav:
   - Development Schedule and Bugs: 'bugs.md'
 theme: 
   name: material
+  palette:
+    scheme: preference
+    primary: black
   highlightjs: true
   hljs_languages:
     - bash
     - c++
+    - python
+  favicon: img/favicon.ico
+  logo: img/favicon.ico
+  features:
+    - toc.integrate
+    - header.autohide
+  icon:
+    repo: fontawesome/brands/github-alt
 markdown_extensions:
-  - mdx_bib:
-      bibtex_file: "docs/refer.bib"
-      order: sorted
-  - markdown_figcap
   - attr_list
-  - mdx_math
+  - footnotes
+  - pymdownx.arithmatex:
+        generic: true
+  - pymdownx.highlight:
+        linenums: false
+  - pymdownx.superfences
 extra_javascript: 
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+extra:
+    social:
+        - icon: fontawesome/brands/github
+          link: https://github.com/JoeyDelp
+          name: JoeyDelp on GitHub
+
+copyright: Copyright &copy; 2021 Johannes Delport

@@ -35,13 +35,14 @@ Referencing:
 ---
 
 ## Changelog
-### v2.5 - 26/02/2021
+### v2.5 - 05/03/2021
 - Phase mode is now the standard analysis mode. Produces the exact same results as voltage.
 - Trapezoidal method has been replaced by superior 2nd order Gear method.
 - JoSIM now internally determines the convention. (-c option removed)
 - New progress indicators added. Spawns a seperate non blocking thread.
 - New verbose modes. 1: Circuit statistics. 2: 1 + Parameters and evaluated values. 3: 2 + Complete expanded netlist.
 - New DC source type. I.e. V01 1 0 DC 5V
+- JJ has new IC= parameters that supersedes AREA= but ultimately performs similar model parameter scaling.
 - Fixed NOISE source type to have syntax NOISE(AMP TD TSTEP)
 - New '.temp' and '.neb' commands for noise thermal noise analysis
 - Transient simulation command now allows PRSTART and PRSTEP commands. .tran TSTEP TSTOP PRSTART PSTEP
