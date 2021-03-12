@@ -309,9 +309,9 @@ double Function::return_pulse(double& x) {
   double& tstop = timeValues_.at(5);
   // Calculate how many times the pulse repeats
   int n = static_cast<int>(tstop / per);
-  for (int i = 1; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     // Within a multiple of the pulse
-    if (x >= (i * per) && x < ((i + 1) * per)) {
+    if (x >= (i * per) && x < ((i + 1) * per) && x >= td) {
       // Within the rise time
       if (x >= (i * per) && x < (i * per + tr)) {
         // Calculate function value and return it
