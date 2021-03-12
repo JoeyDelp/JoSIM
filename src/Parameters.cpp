@@ -89,7 +89,7 @@ double JoSIM::parse_param(
   while (!expToEval.empty()) {
     // First test the expression to see if it is a parameter
     if (params.count(ParameterName(expToEval, subc)) != 0) {
-      if (params.at(ParameterName(expToEval, subc)).get_value()) {
+      if (!params.at(ParameterName(expToEval, subc)).get_value()) {
         expToEval =
           params.at(ParameterName(expToEval, subc)).get_expression();
       }
