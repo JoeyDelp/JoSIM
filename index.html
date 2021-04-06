@@ -534,8 +534,12 @@ cmake --build . --config Release
 <span class="n">cmake</span> <span class="p">..</span>
 <span class="n">cmake</span> <span class="p">-</span><span class="n">-build</span> <span class="p">.</span> <span class="p">-</span><span class="n">-config</span> <span class="n">Release</span>
 </code></pre></div>
-<p>This will produce the JoSIM executable and library in the <strong>build/Release</strong> folder.</p>
-<p>Unlike Unix systems, Windows does not complete the <em>CMake</em> <em>GNUInstallDirs</em> macro correctly and if used would potentially install <em>josim-cli</em> in a strange location such as <strong>C:/usr/local/bin/josim-cli</strong>. It is therefore not recommended to use the install command on Windows systems but to rather copy or move the executable <em>josim-cli</em> to a location that is PATH obtainable under Windows.</p>
+<p>This will produce the JoSIM executable (<em>josim-cli</em>) and library (<em>josim.lib</em>) in the <strong>build/Release</strong> folder.</p>
+<p>Unlike Unix systems, Windows does not complete the <em>CMake</em> <em>GNUInstallDirs</em> macro correctly and if used would potentially install <em>josim-cli</em> in a strange location such as <strong>C:\usr\local\josim\bin\josim-cli</strong>. It is therefore not recommended to use the install command on Windows systems but to rather copy or move the executable <em>josim-cli</em> to a location that is PATH obtainable under Windows.</p>
+<p>One way to do this is to create a folder under <strong>C:\</strong>  called <strong>JoSIM</strong>, placing the <em>josim-cli</em> and <em>josim.lib</em> files from the <strong>build/Release</strong> directory inside and adding it to PATH environment by opening an elevated command prompt through <strong>Win+x</strong> key combination and choosing <strong>Command Pronpt (Admin)</strong>. Type in the following command and hit enter:</p>
+<div class="highlight"><pre><span></span><code>SETX PATH %PATH%<span class="p">;</span>C:<span class="se">\J</span>oSIM
+</code></pre></div>
+<p>This will add the <strong>C:\JoSIM</strong>  folder to the PATH and allow <em>josim-cli</em> to be located through non-elevated command prompt. </p>
 <h4 id="timeex-and-other-tools">TimeEx and other tools</h4>
 <p>Some tools, such as TimEx, require <em>josim-cli</em> to be named <em>josim</em>. Since the josim command line executable (<em>josim-cli</em>) is a singular executable, this means that there are no files that rely on its specific naming for JoSIM to function correctly. It can thus safely be renamed or copies made thereof with varying names as required by external tools (such as TimEx).</p>
 <p>Under Unix systems a symbolic link can be established through:</p>
