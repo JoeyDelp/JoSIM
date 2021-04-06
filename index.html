@@ -315,6 +315,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#timeex-and-other-tools" class="md-nav__link">
+    TimeEx and other tools
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -458,7 +465,7 @@ CMakeLists.txt      # Configuration to compile code.
 ...                 # Other configuration files and scripts.
 </code></pre></div>
 <h2 id="initial-setup">Initial setup</h2>
-<p>With each major version of JoSIM a release for all major platforms is generated and places under the <a href="https://github.com/JoeyDelp/JoSIM/releases">Releases</a> section of the GitHub repository. At the time of writing, this is version 2.5.</p>
+<p>With each major version of JoSIM a release for all major platforms is generated and placed under the <a href="https://github.com/JoeyDelp/JoSIM/releases">Releases</a> section of the GitHub repository. At the time of writing, this is version 2.5.</p>
 <p>To compile JoSIM from source, the following packages are required:</p>
 <ul>
 <li>CMake 3.14</li>
@@ -508,6 +515,7 @@ cmake --build . --config Release
 <p>Additionally, the <em>libjosim</em> library will also be generated. To use the library (and josim-cli) it needs to be PATH obtainable. The best way to do this is to do: </p>
 <div class="highlight"><pre><span></span><code>sudo make install
 </code></pre></div>
+<p>This option will install <em>josim-cli</em> and <em>libjosim</em>, as well as the header files needed to use it, in the relevant installation directories detected by the CMake <em>GNUInstallDirs</em> macro.</p>
 <h4 id="apple-macos">Apple macOS</h4>
 <p>Apple macOS is very similar to most Unix systems and therefore follows mostly the same procedure. The user would clone the repository and install CMake and Git. These requirements can be installed using either Homebrew, Macports or compiled from source using the standard macOS compilers (installed through Xcode).</p>
 <p>Python 3 is available through Homebrew and CMake can almost always be installed using pip (PyPI). </p>
@@ -527,6 +535,14 @@ cmake --build . --config Release
 <span class="n">cmake</span> <span class="p">-</span><span class="n">-build</span> <span class="p">.</span> <span class="p">-</span><span class="n">-config</span> <span class="n">Release</span>
 </code></pre></div>
 <p>This will produce the JoSIM executable and library in the <strong>build/Release</strong> folder.</p>
+<p>Unlike Unix systems, Windows does not complete the <em>CMake</em> <em>GNUInstallDirs</em> macro correctly and if used would potentially install <em>josim-cli</em> in a strange location such as <strong>C:/usr/local/bin/josim-cli</strong>. It is therefore not recommended to use the install command on Windows systems but to rather copy or move the executable <em>josim-cli</em> to a location that is PATH obtainable under Windows.</p>
+<h4 id="timeex-and-other-tools">TimeEx and other tools</h4>
+<p>Some tools, such as TimEx, require <em>josim-cli</em> to be named <em>josim</em>. Since the josim command line executable (<em>josim-cli</em>) is a singular executable, this means that there are no files that rely on its specific naming for JoSIM to function correctly. It can thus safely be renamed or copies made thereof with varying names as required by external tools (such as TimEx).</p>
+<p>Under Unix systems a symbolic link can be established through:</p>
+<div class="highlight"><pre><span></span><code>sudo ln -s /usr/local/bin/josim-cli /usr/local/bin/josim
+</code></pre></div>
+<p>Where the first path is the source and the second is the destination. If <em>josim-cli</em> is updated <em>josim</em> will reflect this since the symbolic link simply makes <em>josim-cli</em> obtainable through another name.</p>
+<p>On Windows it is best to simply rename <em>josim-cli</em> or to make a copy thereof with a new name.</p>
 <h3 id="license">License</h3>
 <p>JoSIM is governed by the MIT license, which is a very permissive license that allows anyone to redistribute the source as well as commercialize it without repercussions. The MIT license allows use of this software within proprietary software as long as all copies of the licensed software includes a copy of the MIT license as well as the copyright notice.</p>
 <div class="footnote">

@@ -647,9 +647,9 @@
 <div style="text-align:center;"><img src="../img/josim_macro.svg" alt="JoSIM Macro Overview" style="width:600px;" /></div>
 
 <h2 id="input-circuit-file">Input circuit file</h2>
-<p>JoSIM requires an input file that follows the syntax as stipulated in the <a href="../syntax/">Syntax Guideline</a>. This input file further requires a single <a href="../syntax/#transient-analysis">transient analysis</a> command which instructs the simulation engine what to do with the nest of the input file.</p>
+<p>JoSIM requires an input file that follows the syntax as stipulated in the <a href="../syntax/">Syntax Guideline</a>. This input file further requires a single <a href="../syntax/#transient-analysis">transient analysis</a> command which instructs the simulation engine what to do with the rest of the input file.</p>
 <p>This input file does not require a specific extension, but a <code>.cir</code> extension is recommended to fit with universal circuit simulation standards. </p>
-<p>Additionally, JoSIM allows the user the capability to feed input from standard input using the <code>-i</code> switch when running <strong>josim-cli</strong>. This command instructs JoSIM to read input from the command line line by line until the <code>.end</code> control card is received. This is ideal in a case where the output from another program is piped to <strong>josim-cli</strong>.</p>
+<p>Additionally, JoSIM allows the user the capability to feed input from standard input using the <code>-i</code> switch when running <strong>josim-cli</strong>. This command instructs JoSIM to read input from the command line, line by line, until the <code>.end</code> control card is received. This is ideal in a case where the output from another program is piped to <strong>josim-cli</strong>.</p>
 <h2 id="cli-options">CLI Options</h2>
 <p>When <strong>josim-cli</strong> is used, JoSIM needs to check and handle any command line options that the user provided before continuing to <a href="#parse-input">parse the input</a>. </p>
 <p>A CLI Options object is created from the handled command line options and fed to the input parser along with the input data.</p>
