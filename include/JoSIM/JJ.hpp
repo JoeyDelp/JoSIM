@@ -8,6 +8,8 @@
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/Model.hpp"
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Input.hpp"
+#include "JoSIM/Spread.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -66,8 +68,7 @@ namespace JoSIM {
     JJ(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const nodemap& nm, std::unordered_set<std::string>& lm, 
-      nodeconnections& nc, const param_map& pm, const vector_pair_t<Model, 
-      string_o>& models, const AnalysisType& at, const double& h, int& bi);
+      nodeconnections& nc, Input& iObj, Spread& spread, int& bi);
 
     double subgap_impedance();
     double transient_impedance();

@@ -31,6 +31,13 @@ Inductor::Inductor(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
   Input& iObj, Spread spread, int& bi) {
+  double spr = 1.0;
+  for (auto i : s.first) {
+    if (i.find("SPREAD=") != std::string::npos) {
+      spr = 
+        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+    }
+  }
   at_ = iObj.argAnal;
   // Set previous current value
   In2_ = 0.0;
@@ -46,7 +53,7 @@ Inductor::Inductor(
   // Set the value (Inductance), this should be the 4th token
   netlistInfo.value_ = 
     spread.spread_value(
-      parse_param(s.first.at(3), iObj.parameters, s.second), Spread::IND);
+      parse_param(s.first.at(3), iObj.parameters, s.second), Spread::IND, spr);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set current index and increment it

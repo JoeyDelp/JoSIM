@@ -40,11 +40,17 @@ using namespace JoSIM;
 JJ::JJ(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, const vector_pair_t<Model, string_o>& models,
-  const AnalysisType& at, const double& h, int& bi) {
+  Input& iObj, Spread& spread, int& bi) {
+  double spr = 1.0;
+  for (auto i : s.first) {
+    if (i.find("SPREAD=") != std::string::npos) {
+      spr = 
+        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+    }
+  }
   // Set component timestep
-  h_ = h;
-  at_ = at;
+  h_ = iObj.transSim.tstep();
+  at_ = iObj.argAnal;
   // Set state to 0 (subgap)
   state_ = 0;
   // Check if the label has already been defined
@@ -60,15 +66,20 @@ JJ::JJ(
   // Identify the named parameters of the junction, leaving model as last token
   for (auto i : s.first) {
     if (i.find("AREA=") != std::string::npos) {
-      area_ = parse_param(i.substr(i.find("AREA=") + 5), pm, s.second);
+      area_ = spread.spread_value(
+        parse_param(i.substr(i.find("AREA=") + 5), iObj.parameters, s.second),
+        Spread::JJ, spr);
     } else if (i.find("IC=") != std::string::npos) {
-      Ic_ = parse_param(i.substr(i.find("IC=") + 3), pm, s.second);
+      Ic_ = spread.spread_value(
+        parse_param(i.substr(i.find("IC=") + 3), iObj.parameters, s.second),
+        Spread::JJ, spr);
+    } else if (i.find("SPREAD=") != std::string::npos) {
     } else {
       t.emplace_back(i);
     }
   }
   // Set the model for this JJ instance
-  set_model(t, models, s.second);
+  set_model(t, iObj.netlist.models_new, s.second);
   // Get and set the phase offset from the model
   pn1_ = model_.value().get_phaseOffset();
   // Set the transitional conductance value
@@ -76,10 +87,10 @@ JJ::JJ(
     (model_.value().get_criticalToNormalRatio() *
       model_.value().get_deltaV());
   // Set the phase constant
-  if (at == AnalysisType::Voltage) {
+  if (at_ == AnalysisType::Voltage) {
     // If voltage mode set this to (3 * hbar) / (4 * h * eV)
     phaseConst_ = (3 * Constants::HBAR) / (4 * h_ * Constants::EV);
-  } else if (at == AnalysisType::Phase) {
+  } else if (at_ == AnalysisType::Phase) {
     // If phase mode set this to (4 * h * eV) / (3 * hbar)
     phaseConst_ = (4 * h_ * Constants::EV) / (3 * Constants::HBAR);
   }

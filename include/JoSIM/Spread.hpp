@@ -15,7 +15,7 @@ namespace JoSIM {
     public:
     Spread() {}
     void get_spreads(Input& iObj);
-    double spread_value(double value, int type = GLB);
+    double spread_value(double value, int type = GLB, double spread = 1.0);
     enum {
       GLB, RES, IND, CAP, JJ
     };

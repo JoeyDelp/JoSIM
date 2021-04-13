@@ -43,24 +43,25 @@ void Spread::get_spreads(Input& iObj) {
   }
 }
 
-double Spread::spread_value(double value, int type) {
-  double spread = 1.0;
-  switch (type) {
-    case GLB:
-      spread = gspread_;
-      break;
-    case RES:
-      spread = rspread_;
-      break;
-    case CAP:
-      spread = cspread_;
-      break;
-    case IND:
-      spread = lspread_;
-      break;
-    case JJ:
-      spread = bspread_;
-      break;
+double Spread::spread_value(double value, int type, double spread) {
+  if (spread == 1.0) {
+    switch (type) {
+      case GLB:
+        spread = gspread_;
+        break;
+      case RES:
+        spread = rspread_;
+        break;
+      case CAP:
+        spread = cspread_;
+        break;
+      case IND:
+        spread = lspread_;
+        break;
+      case JJ:
+        spread = bspread_;
+        break;
+    }
   }
   if (spread == 1.0 && gspread_ != 1.0) {
     spread = gspread_;
@@ -70,7 +71,9 @@ double Spread::spread_value(double value, int type) {
   } else {
     std::random_device rd{};
     std::mt19937 gen{ rd() };
-    std::normal_distribution<> d(value, (value * spread)/6);
+    auto min = value * (1 - spread);
+    auto max = value * (1 + spread);
+    std::normal_distribution<> d(value, (max - min)/6);
     return d(gen);
   }
   return value;
