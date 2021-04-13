@@ -10,7 +10,7 @@
 using namespace JoSIM;
 
 void JoSIM::Noise::determine_global_temperature(Input& iObj) {
-  for (auto i : iObj.controls) {
+  for (auto& i : iObj.controls) {
     if (i.front() == "TEMP") {
       iObj.globalTemp = parse_param(i.back(), iObj.parameters);
     }
@@ -18,7 +18,7 @@ void JoSIM::Noise::determine_global_temperature(Input& iObj) {
 }
 
 void JoSIM::Noise::determine_noise_effective_bandwidth(Input& iObj) {
-  for (auto i : iObj.controls) {
+  for (auto& i : iObj.controls) {
     if (i.front() == "NEB") {
       iObj.neB = parse_param(i.back(), iObj.parameters);
     }

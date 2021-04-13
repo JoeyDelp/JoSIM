@@ -8,11 +8,11 @@ As mentioned, this section will follow the sections of the macro overview, provi
 
 ## Input circuit file
 
-JoSIM requires an input file that follows the syntax as stipulated in the [Syntax Guideline](syntax.md). This input file further requires a single [transient analysis](syntax.md#transient-analysis) command which instructs the simulation engine what to do with the nest of the input file.
+JoSIM requires an input file that follows the syntax as stipulated in the [Syntax Guideline](syntax.md). This input file further requires a single [transient analysis](syntax.md#transient-analysis) command which instructs the simulation engine what to do with the rest of the input file.
 
 This input file does not require a specific extension, but a `.cir` extension is recommended to fit with universal circuit simulation standards. 
 
-Additionally, JoSIM allows the user the capability to feed input from standard input using the `-i` switch when running **josim-cli**. This command instructs JoSIM to read input from the command line line by line until the `.end` control card is received. This is ideal in a case where the output from another program is piped to **josim-cli**.
+Additionally, JoSIM allows the user the capability to feed input from standard input using the `-i` switch when running **josim-cli**. This command instructs JoSIM to read input from the command line, line by line, until the `.end` control card is received. This is ideal in a case where the output from another program is piped to **josim-cli**.
 
 ## CLI Options
 

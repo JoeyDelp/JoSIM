@@ -30,8 +30,8 @@ using namespace JoSIM;
 Inductor::Inductor(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, const AnalysisType& at, const double& h, int& bi) {
-  at_ = at;
+  Input& iObj, Spread spread, int& bi) {
+  at_ = iObj.argAnal;
   // Set previous current value
   In2_ = 0.0;
   // Check if the label has already been defined
@@ -44,7 +44,9 @@ Inductor::Inductor(
   // Add the label to the known labels list
   lm.emplace(s.first.at(0));
   // Set the value (Inductance), this should be the 4th token
-  netlistInfo.value_ = parse_param(s.first.at(3), pm, s.second);
+  netlistInfo.value_ = 
+    spread.spread_value(
+      parse_param(s.first.at(3), iObj.parameters, s.second), Spread::IND);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set current index and increment it
@@ -54,11 +56,11 @@ Inductor::Inductor(
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   // Append the value to the non zero vector
-  if (at == AnalysisType::Voltage) {
+  if (at_ == AnalysisType::Voltage) {
     // If voltage mode analysis then append -(3/2) * (L/h)
     matrixInfo.nonZeros_.emplace_back(
-      -(3.0 / 2.0) * (netlistInfo.value_ / h));
-  } else if (at == AnalysisType::Phase) {
+      -(3.0 / 2.0) * (netlistInfo.value_ / iObj.transSim.tstep()));
+  } else if (at_ == AnalysisType::Phase) {
     // If phase mdoe analysis then append -(L/σ)
     matrixInfo.nonZeros_.emplace_back(
       -netlistInfo.value_ / Constants::SIGMA);

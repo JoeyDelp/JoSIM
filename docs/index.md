@@ -42,7 +42,7 @@ The JoSIM repository has the following layout. A quick description shows the pur
     ...					# Other configuration files and scripts.
 
 ## Initial setup
-With each major version of JoSIM a release for all major platforms is generated and places under the [Releases](https://github.com/JoeyDelp/JoSIM/releases) section of the GitHub repository. At the time of writing, this is version 2.5.
+With each major version of JoSIM a release for all major platforms is generated and placed under the [Releases](https://github.com/JoeyDelp/JoSIM/releases) section of the GitHub repository. At the time of writing, this is version 2.5.
 
 To compile JoSIM from source, the following packages are required:
 
@@ -128,6 +128,8 @@ Additionally, the *libjosim* library will also be generated. To use the library 
 sudo make install
 ```
 
+This option will install *josim-cli* and *libjosim*, as well as the header files needed to use it, in the relevant installation directories detected by the CMake *GNUInstallDirs* macro.
+
 #### Apple macOS
 
 Apple macOS is very similar to most Unix systems and therefore follows mostly the same procedure. The user would clone the repository and install CMake and Git. These requirements can be installed using either Homebrew, Macports or compiled from source using the standard macOS compilers (installed through Xcode).
@@ -161,7 +163,31 @@ cmake ..
 cmake --build . --config Release
 ```
 
-This will produce the JoSIM executable and library in the **build/Release** folder.
+This will produce the JoSIM executable (*josim-cli*) and library (*josim.lib*) in the **build/Release** folder.
+
+Unlike Unix systems, Windows does not complete the *CMake* *GNUInstallDirs* macro correctly and if used would potentially install *josim-cli* in a strange location such as **C:\usr\local\josim\bin\josim-cli**. It is therefore not recommended to use the install command on Windows systems but to rather copy or move the executable *josim-cli* to a location that is PATH obtainable under Windows.
+
+One way to do this is to create a folder under **C:\\**  called **JoSIM**, placing the *josim-cli* and *josim.lib* files from the **build/Release** directory inside and adding it to PATH environment by opening an elevated command prompt through **Win+x** key combination and choosing **Command Prompt (Admin)**. Type in the following command and hit enter:
+
+```bash
+SETX PATH %PATH%;C:\JoSIM
+```
+
+This will add the **C:\JoSIM**  folder to the PATH and allow *josim-cli* to be located through non-elevated command prompt. 
+
+#### TimeEx and other tools
+
+Some tools, such as TimEx, require *josim-cli* to be named *josim*. Since the josim command line executable (*josim-cli*) is a singular executable, this means that there are no files that rely on its specific naming for JoSIM to function correctly. It can thus safely be renamed or copies made thereof with varying names as required by external tools (such as TimEx).
+
+Under Unix systems a symbolic link can be established through:
+
+```bash
+sudo ln -s /usr/local/bin/josim-cli /usr/local/bin/josim
+```
+
+Where the first path is the source and the second is the destination. If *josim-cli* is updated *josim* will reflect this since the symbolic link simply makes *josim-cli* obtainable through another name.
+
+On Windows it is best to simply rename *josim-cli* or to make a copy thereof with a new name.
 
 ### License
 
