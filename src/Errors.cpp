@@ -433,6 +433,12 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
     formattedMessage += "Ignoring request and continuing.";
     warning_message(formattedMessage);
     break;
+  case ControlErrors::INVALID_FILE_COMMAND:
+    formattedMessage += "Invalid request for file output found.\n";
+    formattedMessage += message.value_or("") + "\n";
+    formattedMessage += "Ignoring request and continuing.";
+    warning_message(formattedMessage);
+    break;
   default:
     formattedMessage +=
       "Unknown control error: " + message.value_or("") + "\n";

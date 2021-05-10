@@ -23,10 +23,9 @@ namespace JoSIM {
     public:
 
     string_o cir_file_name;
-    string_o output_file_name;
+    std::optional<OutputFile> output_file;
 
     AnalysisType analysis_type = AnalysisType::Phase;
-    FileOutputType output_file_type = FileOutputType::Csv;
 
     int verbose = 0;
     bool minimal = false;

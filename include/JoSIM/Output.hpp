@@ -13,6 +13,7 @@ namespace JoSIM {
     public:
     std::string name_;
     char type_;
+    int fileIndex = -1;
     std::vector<double> data_;
     Trace(const std::string& name) {
       name_ = name;
@@ -25,15 +26,16 @@ namespace JoSIM {
     std::vector<Trace> traces;
     std::vector<double> timesteps;
     Output() {};
-    void write_output(const Input& iObj,
-      Matrix& mObj,
-      Simulation& sObj);
+    Output(Input& iObj, Matrix& mObj, Simulation& sObj);
+    void write_output(const Input& iObj, Matrix& mObj, Simulation& sObj);
 
     void format_csv_or_dat(const std::string& filename,
       const char& delimiter,
-      bool argmin = true);
+      bool argmin = true,
+      int fIndex = -1);
 
-    void format_raw(const std::string& filename, bool argmin = true);
+    void format_raw(const std::string& filename, bool argmin = true, 
+      int fIndex = -1);
 
     void format_cout(const bool& argMin);
   };

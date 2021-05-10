@@ -60,6 +60,8 @@ void JoSIM::Noise::add_noise_sources(Input& iObj) {
       double B = 0, R = 0;
       if (!iObj.neB) {
         B = 1E12;
+      } else {
+        B = iObj.neB.value();
       }
       if (iObj.globalTemp) {
         T = iObj.globalTemp.value();

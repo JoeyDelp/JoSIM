@@ -32,13 +32,13 @@ std::vector<tokens_t> Input::read_input(
     if (!line.empty() && line.at(0) != '*' && line.at(0) != '#') {
       // Tokenize the line
       tokens = Misc::tokenize(line);
-      // Uppercase just the first token for ".INCLUDE" check
+      // Uppercase just the first token for ".INCLUDE" and ".FILE" check
       std::transform(tokens.begin(), tokens.begin() + 1, tokens.begin(),
         [](std::string& c) -> std::string {
         std::transform(c.begin(), c.end(), c.begin(), toupper);
         return c; });
-      // If the line contains a ".INCLUDE" statement
-      if (::strcmp(tokens.at(0).c_str(), ".INCLUDE") == 0) {
+      // If the line contains a "INCLUDE" statement
+      if (tokens.at(0) == ".INCLUDE" || tokens.at(0) == "INCLUDE") {
         // Variable to store path to file to include
         std::string includeFile;
         // If reading from a file
@@ -63,7 +63,16 @@ std::vector<tokens_t> Input::read_input(
         // Insert the lines from the included file in place
         fileLines.insert(
           fileLines.end(), tempInclude.begin(), tempInclude.end());
-        // If the line does not contain an ".INCLUDE" statement
+        // If the line contains a "FILE" statement
+      } else if (tokens.at(0) == ".FILE" || tokens.at(0) == "FILE") {
+        // Ensure there is a second token
+        if (tokens.size() < 2) {
+          Errors::control_errors(ControlErrors::INVALID_FILE_COMMAND, line);
+        } else {
+          output_files.emplace_back(OutputFile(tokens.at(1)));
+        }
+        fileLines.emplace_back(tokens);
+        // If the line does not contain an "INCLUDE" or "FILE" statement
       } else {
         // Transform the entire line to upper case
         std::transform(tokens.begin() + 1, tokens.end(), tokens.begin() + 1,
@@ -232,7 +241,7 @@ void Input::parse_input(string_o fileName) {
 void Input::syntax_check_controls(std::vector<tokens_t>& controls) {
   // This will simply check controls, complaining if any are not allowed
   std::vector<std::string> v =
-  { "PRINT", "TRAN", "SAVE", "PLOT", "END", "TEMP", "NEB", "SPREAD" };
+  { "PRINT", "TRAN", "SAVE", "PLOT", "END", "TEMP", "NEB", "SPREAD", "FILE" };
   for (auto i : controls) {
     if (std::find(v.begin(), v.end(), i.at(0)) == v.end()) {
       Errors::input_errors(InputErrors::UNKNOWN_CONTROL, i.at(0));

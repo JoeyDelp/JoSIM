@@ -5,6 +5,7 @@
 
 #include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/FileOutputType.hpp"
 #include "JoSIM/InputType.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Errors.hpp"
@@ -12,6 +13,7 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/LineInput.hpp"
+#include "JoSIM/CliOptions.hpp"
 
 #include <string>
 #include <vector>
@@ -26,13 +28,16 @@ namespace JoSIM {
     std::vector<tokens_t> fileLines, controls;
     std::vector<std::string> relevantX;
     std::unordered_map<ParameterName, Parameter> parameters;
+    std::optional<OutputFile> cli_output_file;
+    std::vector<OutputFile> output_files;
 
-    Input(AnalysisType analysis_type = AnalysisType::Voltage,
-      int verbose = 0,
-      bool minimal = false) :
-      argAnal(analysis_type),
-      argVerb(verbose),
-      argMin(minimal) {};
+    Input() {};
+    Input(CliOptions& cli_options) {
+      argAnal = cli_options.analysis_type;
+      argVerb = cli_options.verbose;
+      argMin = cli_options.minimal;
+      cli_output_file = cli_options.output_file;
+    }
 
     AnalysisType argAnal;
     int argVerb = 0;
