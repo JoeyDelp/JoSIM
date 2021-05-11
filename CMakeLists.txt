@@ -57,7 +57,8 @@ add_library(josim
             src/Verbose.cpp
             src/VoltageSource.cpp 
             src/Noise.cpp
-            src/Spread.cpp)
+            src/Spread.cpp
+            src/IV.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

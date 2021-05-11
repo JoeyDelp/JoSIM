@@ -13,6 +13,7 @@
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/Model.hpp"
 #include "JoSIM/Noise.hpp"
+#include "JoSIM/IV.hpp"
 
 using namespace JoSIM;
 
@@ -41,6 +42,8 @@ int main(int argc,
     iObj.netlist.expand_subcircuits();
     // Expand main design using expanded subcircuits
     iObj.netlist.expand_maindesign();
+    // Simulate IV curves if need be
+    IV::IV(iObj);
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
     // Add noise (if any)

@@ -462,3 +462,6 @@ double Function::value(double x) {
     return 0.0;
   }
 }
+void Function::ampValues(std::vector<double> values) {
+  ampValues_ = values;
+}
