@@ -42,14 +42,14 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   // Create an input object for this simulation
   Input ivInp = iObj;
   tokens_t jj = { "B01", "1", "0", model, "AREA=1" };
-  tokens_t ib = { "IB01", "0", "1", "PWL(0", "0", "5P", "0", "50P", "0.25U)" };
+  tokens_t ib = { "IB01", "0", "1", "PWL(0", "0", "10P", "0", "50P", "2.5U)" };
   ivInp.netlist.expNetlist = {
     std::make_pair(jj, subc),
     std::make_pair(ib, std::nullopt)
   };
-  ivInp.transSim.tstep(0.1E-12);
-  ivInp.transSim.tstop(100E-12);
-  ivInp.argAnal = JoSIM::AnalysisType::Phase;
+  ivInp.transSim.tstep(0.05E-12);
+  ivInp.transSim.tstop(500E-12);
+  ivInp.argAnal = JoSIM::AnalysisType::Voltage;
   ivInp.argMin = true;
   std::vector<std::pair<double, double>> iv_data;
   iv_data = generate_iv(maxC, ivInp);
@@ -59,7 +59,7 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
 std::vector<std::pair<double, double>> IV::generate_iv(double maxC, 
   Input ivInp) {
   std::vector<std::pair<double, double>> iv_data;
-  double currentIncrement = 0.25E-6;
+  double currentIncrement = 25E-7;
   double currentCurr = 0.0;
   Matrix ivMat;
   ivMat.create_matrix(ivInp);
@@ -69,10 +69,16 @@ std::vector<std::pair<double, double>> IV::generate_iv(double maxC,
     ivMat.sourcegen.back().ampValues({ 0, 0, currentCurr });
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
   }
-  while (currentCurr >= -maxC) {
+  while (currentCurr >= 0) {
     // Create a matrix object using the input object
     currentCurr -= currentIncrement;
     ivMat.sourcegen.back().ampValues({ 0, maxC, currentCurr });
+    iv_data.emplace_back(do_simulate(ivInp, ivMat));
+  }
+  while (currentCurr >= -maxC) {
+    // Create a matrix object using the input object
+    currentCurr -= currentIncrement;
+    ivMat.sourcegen.back().ampValues({ 0, 0, currentCurr });
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
   }
   while (currentCurr <= 0) {
@@ -89,13 +95,12 @@ std::pair<double, double> IV::do_simulate(Input& ivInp, Matrix& ivMat) {
   Simulation ivSim(ivInp, ivMat);
   // Add the results to the stack
   double& current = ivSim.results.xVector.back().value().back();
-  auto& voltVect =
-    ivSim.results.xVector.at(ivSim.results.xVector.size() - 2).value();
+  auto& voltVect = ivSim.results.xVector.front().value();
   double voltage = 0;
-  for (int i = 100; i > 0; --i) {
-    voltage += voltVect.at(voltVect.size() - i);
+  for (int i = voltVect.size() / 2; i < voltVect.size(); ++i) {
+    voltage += voltVect.at(i);
   }
-  voltage = voltage / 100;
+  voltage = voltage / (voltVect.size() / 2);
   return std::make_pair(voltage, current);
 }
 
