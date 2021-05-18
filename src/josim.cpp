@@ -43,7 +43,7 @@ int main(int argc,
     // Expand main design using expanded subcircuits
     iObj.netlist.expand_maindesign();
     // Simulate IV curves if need be
-    IV::IV(iObj);
+    IV ivObj(iObj);
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
     // Add noise (if any)
