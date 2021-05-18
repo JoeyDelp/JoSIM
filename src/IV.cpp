@@ -111,7 +111,7 @@ void IV::write_iv(std::vector<std::pair<double, double>>& iv_data,
   outfile << std::setprecision(6);
   outfile << std::scientific;
   if (outfile.is_open()) {
-    outfile << "I,V\n";
+    outfile << "V,I\n";
     for (auto i : iv_data) {
       outfile << i.first << "," << i.second << "\n";
     }
