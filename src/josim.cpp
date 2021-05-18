@@ -13,6 +13,7 @@
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/Model.hpp"
 #include "JoSIM/Noise.hpp"
+#include "JoSIM/IV.hpp"
 
 using namespace JoSIM;
 
@@ -24,9 +25,7 @@ int main(int argc,
     // Parse input arguments for command line interface
     auto cli_options = CliOptions::parse(argc, argv);
     // Generate input object based on cli arguements
-    Input iObj(cli_options.analysis_type,
-      cli_options.verbose,
-      cli_options.minimal);
+    Input iObj(cli_options);
     // Parse input file as specified by the cli arguments
     iObj.parse_input(cli_options.cir_file_name);
     // Parse any identified parameter values
@@ -43,6 +42,8 @@ int main(int argc,
     iObj.netlist.expand_subcircuits();
     // Expand main design using expanded subcircuits
     iObj.netlist.expand_maindesign();
+    // Simulate IV curves if need be
+    IV::IV(iObj);
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
     // Add noise (if any)
@@ -57,28 +58,11 @@ int main(int argc,
     iObj.netlist.expNetlist.clear();
     iObj.netlist.expNetlist.shrink_to_fit();
     // Find the relevant traces to store
-    find_relevant_traces(iObj.controls, mObj);
+    find_relevant_traces(iObj, mObj);
     // Create a simulation object
     Simulation sObj(iObj, mObj);
     // Create an output object
-    Output oObj;
-    // Write the output in type agnostic format
-    oObj.write_output(iObj, mObj, sObj);
-    // Format the output into the relevant type
-    if (cli_options.output_file_name) {
-      if (cli_options.output_file_type == FileOutputType::Csv) {
-        oObj.Output::format_csv_or_dat(
-          cli_options.output_file_name.value(), ',', iObj.argMin);
-      } else if (cli_options.output_file_type == FileOutputType::Dat) {
-        oObj.Output::format_csv_or_dat(
-          cli_options.output_file_name.value(), ' ', iObj.argMin);
-      } else if (cli_options.output_file_type == FileOutputType::Raw) {
-        oObj.Output::format_raw(
-          cli_options.output_file_name.value(), iObj.argMin);
-      }
-    } else {
-      oObj.Output::format_cout(iObj.argMin);
-    }
+    Output oObj(iObj, mObj, sObj);
     // Finish
     return 0;
   } catch (std::runtime_error& formattedMessage) {

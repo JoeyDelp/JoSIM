@@ -308,7 +308,7 @@ double Function::return_pulse(double& x) {
   double& per = timeValues_.at(4);
   double& tstop = timeValues_.at(5);
   // Calculate how many times the pulse repeats
-  int n = static_cast<int>(tstop / per);
+  int n = static_cast<int>((tstop - td) / per) + 1;
   for (int i = 0; i < n; ++i) {
     // Within a multiple of the pulse
     if (x >= (i * per) && x < ((i + 1) * per) && x >= td) {
@@ -361,17 +361,32 @@ double Function::return_cus(double& x) {
     repTime = tstop / (ampValues_.size());
   }
   for (int i = 1; i < n; ++i) {
-    if (x >= (i * repTime) && x < (i * repTime + td)) {
-      return 0;
-    } else if (x >= (i * repTime + td) && x < (i * repTime + td + ts)) {
-      return ((ampValues_.at(0) * sf) / ts) * (x - (i * repTime + td));
-    } else {
-      for (int j = 1; j < ampValues_.size(); ++j) {
-        if (x >= (i * repTime + td + j * ts) &&
-          x < (i * repTime + td + (j + 1) * ts)) {
-          return ((ampValues_.at(j - 1) * sf) +
-            ((ampValues_.at(j) * sf) - (ampValues_.at(j - 1) * sf)) / ts) *
-            (x - (i * repTime + td + j * ts));
+    if (sf == 1.0) {
+      if (x >= (i * repTime) && x < (i * repTime + td)) {
+        return 0;
+      } else if (x >= (i * repTime + td) && x < (i * repTime + td + ts)) {
+        return ((ampValues_.at(0) * sf) / ts) * (x - (i * repTime + td));
+      } else {
+        for (int j = 1; j < ampValues_.size(); ++j) {
+          if (x >= (i * repTime + td + j * ts) &&
+            x < (i * repTime + td + (j + 1) * ts)) {
+            return ((ampValues_.at(j - 1) * sf) +
+              ((ampValues_.at(j) * sf) - (ampValues_.at(j - 1) * sf)) / ts) *
+              (x - (i * repTime + td + j * ts));
+          }
+        }
+      }
+    } else if (sf == 2.0) {
+      if (x >= (i * repTime) && x < (i * repTime + td)) {
+        return 0;
+      } else if (x >= (i * repTime + td) && x < (i * repTime + td + ts)) {
+        return (ampValues_.at(0));
+      } else {
+        for (int j = 1; j < ampValues_.size(); ++j) {
+          if (x >= (i * repTime + td + j * ts) &&
+            x < (i * repTime + td + (j + 1) * ts)) {
+            return (ampValues_.at(j));
+          }
         }
       }
     }
@@ -461,4 +476,7 @@ double Function::value(double x) {
   default:
     return 0.0;
   }
+}
+void Function::ampValues(std::vector<double> values) {
+  ampValues_ = values;
 }

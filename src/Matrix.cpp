@@ -16,6 +16,7 @@
 using namespace JoSIM;
 
 void Matrix::create_matrix(Input& iObj) {
+  spread.get_spreads(iObj);
   // Create a seperate thread that will be used for printing creation progress
   std::thread printingThread;
   // Create a node counter variable
@@ -116,8 +117,7 @@ void Matrix::create_matrix(Input& iObj) {
       // Create an inductor and add it to the component list
       components.devices.emplace_back(
         Inductor(
-          i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, iObj.argAnal,
-          iObj.transSim.tstep(), branchIndex));
+          i, nodeConfig.at(cc), nm, lm, nc, iObj, spread, branchIndex));
       // Store this inductor's component list index for reference
       components.inductorIndices.emplace_back(components.devices.size() - 1);
       break;
@@ -125,9 +125,7 @@ void Matrix::create_matrix(Input& iObj) {
     case 'B':
       // Create a JJ and add it to the component list
       components.devices.emplace_back(
-        JJ(i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters,
-          iObj.netlist.models_new, iObj.argAnal,
-          iObj.transSim.tstep(), branchIndex));
+        JJ(i, nodeConfig.at(cc), nm, lm, nc, iObj, spread, branchIndex));
       // Store this JJ's component list index for reference    
       components.junctionIndices.emplace_back(components.devices.size() - 1);
       break;
@@ -136,8 +134,7 @@ void Matrix::create_matrix(Input& iObj) {
       // Create a resistor and add it to the component list
       components.devices.emplace_back(
         Resistor(
-          i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, iObj.argAnal,
-          iObj.transSim.tstep(), branchIndex));
+          i, nodeConfig.at(cc), nm, lm, nc, iObj, spread, branchIndex));
       // Store this resistor's component list index for reference
       components.resistorIndices.emplace_back(components.devices.size() - 1);
       break;
@@ -156,8 +153,7 @@ void Matrix::create_matrix(Input& iObj) {
       // Create a capacitor and add it to the component list
       components.devices.emplace_back(
         Capacitor(
-          i, nodeConfig.at(cc), nm, lm, nc, iObj.parameters, iObj.argAnal,
-          iObj.transSim.tstep(), branchIndex));
+          i, nodeConfig.at(cc), nm, lm, nc, iObj, spread, branchIndex));
       // Store this capacitor's component list index for reference
       components.capacitorIndices.emplace_back(components.devices.size() - 1);
       break;

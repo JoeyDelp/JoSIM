@@ -11,6 +11,7 @@
 namespace JoSIM {
 
   class Matrix;
+  class Input;
   enum class StorageType : int {
     Voltage = 0, Phase = 1, Current = 2
   };
@@ -58,15 +59,16 @@ namespace JoSIM {
     int_o index2;
     int_o sourceIndex;
     int_o variableIndex;
+    int fIndex = -1;
 
     RelevantTrace() :
       device(false) {};
   }; // class RelevantTrace
 
-  void find_relevant_traces(const std::vector<tokens_t>& c, Matrix& mObj);
-  void handle_current(const std::string& s, Matrix& mObj);
-  void handle_voltage_or_phase(const std::string& s, bool voltage, 
-    Matrix& mObj);
+  void find_relevant_traces(Input& iObj, Matrix& mObj);
+  void handle_current(const std::string& s, Matrix& mObj, int fIndex);
+  void handle_voltage_or_phase(
+    const std::string& s, bool voltage, Matrix& mObj, int fIndex);
 
 } // namespace JoSIM
 

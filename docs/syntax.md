@@ -4,6 +4,8 @@ In this section we will attempt to provide the user with a comprehensive guide o
 
 JoSIM is ***CaSe InSeNsItIvE*** as each line is cast to uppercase upon read-in.
 
+Additionally, it is **discouraged** to add units to values since in some specific cases this creates confusion in interpretation of the values. An example of this is specifying Farad when assigning a capacitor its value since a value followed by F would be interpreted as Femto. This will lead to wanting a 5 Farad capacitor but receiving a 5 *Femto* Farad capacitor. Units are not interpreted by the simulator in any way since the component type implies the unit. 
+
 ## Basic Syntax
 
 Each line follows similar syntax which uses the first non-blank space character as identifier. Each identifier tells JoSIM how to handle that specific line. 
@@ -47,7 +49,7 @@ We will now run through all the available physical components and their limitati
 
 The value of a resistor is in Ohms.
 
-Temperature used for noise analysis in  Kelvin.
+Temperature used for noise analysis in  Kelvin. Units need to be excluded since **K** for Kelvin will be interpreted as Kilo by JoSIM, e.g. 4K will become 4000.
 
 Optional frequency parameter sets the noise effective bandwidth during noise analysis. Default is 1GHz.
 
@@ -70,6 +72,8 @@ The value of a capacitor is in Farad.
 A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.
 
 The Josephson junction requires specification of a model name which can be defined anywhere in the program using the control **.MODEL**.
+
+When **AREA** or **IC** is not specified then an area=1 is used as default.
 
 #### Model
 
@@ -132,19 +136,19 @@ The value is the coupling factor *k*.
 
 #### Current controlled current source
 
-**F**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**GAIN**
+**F**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**CURRENT GAIN**
 
 #### Current controlled voltage source
 
-**H**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**GAIN**
+**H**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**TRANSRESISTANCE IN OHMS**
 
 #### Voltage controlled current source
 
-**G**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**GAIN**
+**G**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**TRANSCONDUCTANCE IN MHOS**
 
 #### Voltage controlled voltage source
 
-**E**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**GAIN**
+**E**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**VOLTAGE GAIN**
 
 ### Source Types
 
@@ -184,7 +188,7 @@ $f(t)=A_{O}+A\sin(2\pi f(t-T_{D}))e^{-\theta(t-T_{D})}$
 
 This source allows the generates a function based on the points inside the plain text wave file. This file should contain a single line of space separated numbers. E.g 0 2 3 6 2 1 0
 
-Each number in this line represents an amplitude separated by time step $T_{S}$ and scaled using scale factor *SF*. The values between the points are interpolated using either no interpolation (0), linear (1), cubic (2) or spline (3). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.
+Each number in this line represents an amplitude separated by time step $T_{S}$ and scaled using scale factor *SF*. The values between the points are interpolated using either no interpolation (0), linear (1) or cubic (2). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.
 
 The waveform only starts of $T_{D}$.
 
@@ -269,6 +273,42 @@ A subcircuit can be used in the main netlist or another subcircuit (nesting) usi
 
 **X**Label&emsp;*IO Nodes*&emsp;*SubcktName*&emsp;(WRspice (normal SPICE) mode)
 
+### Noise
+
+As mentioned in the technical discussion, noise can be automatically inserted as current sources in parallel to each resistor. This thermal noise temperature and bandwidth can be specified globally using the following commands:
+
+**.temp**&emsp;*Temperature in Kelvin*
+
+**.neb**&emsp;*Bandwidth in Hertz*
+
+### Spread
+
+JoSIM allows each value of inductors, resistors, capacitors and JJ (area/Ic) to be spread uniformly within a specified percentage range from the nominal value. Each time the value is used (in matrix creation), a new random value from the uniform distribution is chosen.
+
+This allows for process variation to be simulated.
+
+To set the spread globally, the following control needs to be set:
+
+**.spread**&emsp;*Normalized percentage*&emsp;*[L=Inductor spread]*&emsp;*[B=JJ spread]*&emsp;*[C=Capacitor spread]*&emsp;*[R=Resistor spread]*
+
+Each individual component can also be spread by adding the **spread=** named parameter to the component declaration line.
+
+The order of precedence is taken as local, specific global and then global. This means that if a global spread exists but  a global inductor specific spread also exists and the inductor being added has a local spread then the local spread will take precedence.
+
+An example:
+
+If an inductor has a value of *2pH*, this is its nominal value. If a local spread of *0.2* is specified this means a random value can be chosen anywhere between *1.6pH* and *2.4pH*. If global inductor specific spread is specified as *0.3* and the local spread is not defined, the value can be anything within the range *1.4pH -  2.6pH*. Similarly if the global spread is defined as *0.5* then the value each time the simulation is run can be anywhere between *1pH* and *3pH*.
+
+### IV Curve
+
+JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:
+
+**.iv**&emsp;*modelname*&emsp;*max_current*&emsp;*filepath*
+
+This command outputs a comma seperated value (CSV) at the *filepath* specified which contains the IV curve data for the *modelname* from negative *max_current* to positive *max_current*.
+
+Subcircuit models can be output using the `.`(period) or `|`(vertical bar) as separator between the *modelname* and the subcircuit NAME.
+
 ### Output
 
 A simulation is meaningless unless the results are post processed. In order to know which of these results are relevant for storage the simulator needs output control commands.
@@ -305,6 +345,29 @@ Subcircuits as mentioned before can also be nested almost indefinitely as they a
 
 If the label is not immediately apparent and required for output, the simulation can be run using the `-V 3` cli option to show the expanded main design, allowing the exact label name to be identified. 
 
+### File
+
+Multi-file output can be achieved by separating output commands with the following command:
+
+**.file**&emsp;*filepath*
+
+This indicates that every output request that follows this command needs to be stored in the file specified by *filepath*. 
+
+I.e. 
+
+```
+.file output1.csv
+.print p(B1) p(B2) p(B3)
+.file output2.dat
+.plot i(L01) i(L02) i(L03)
+.file output3
+.save v(1) v(2) v(3)
+```
+
+This will create 3 output files. The first will be a CSV file containing only the phase outputs. The second file will be a space separated file containing only the currents. Lastly, the third file will be in a SPICE RAW format and contain only the voltages.
+
+The use of this command does not affect the command line option request to output a file. The command line output option, if requested, will output an additional file which contains all of the output requests (phase, current and voltage).
+
 ### Parameters
 
 The final control command that is of importance in JoSIM is the parameters command with the following syntax
@@ -329,6 +392,8 @@ Any of the above controls can be wrapped inside a control block with the followi
 
 Wherein all controls can be specified by omitting the usual prepending `.`(period) to the command.
 
+This block, though seemingly useless at present, will be used for more advanced functionality in the future.
+
 ### Include
 
 JoSIM allows the use of a *.include* control card that uses the following syntax
@@ -344,4 +409,20 @@ This can also be used to house all the models used in simulation allowing a cent
 JoSIM now allows input from standard input allowing a line-by-line read in of a netlist until the *.end* card is found or alternatively the EOF character is returned.
 
 
+
+## Constants
+
+JoSIM has a set of built in constants that when used expand to the corresponding values. Below is a list of these constants and their values. The constants names are case insensitive:
+
+| Constant  | Symbol                                       | Value                   |
+| --------- | -------------------------------------------- | ----------------------- |
+| PI        | $\pi$                                        | 3.141592653589793238463 |
+| PHI_ZERO  | $\Phi_{0}$                                   | 2.067833831170082E-15   |
+| BOLTZMANN | $k_{B}$                                      | 1.38064852E-23          |
+| EV        | $e$                                          | 1.6021766208E-19        |
+| HBAR      | $\bar{h}$                                    | 1.0545718001391127E-34  |
+| C         | $c$                                          | 299792458               |
+| MU0       | $\mu_{0}$                                    | 12.566370614E-7         |
+| EPS0      | $\epsilon_{0}$                               | 8.854187817E-12         |
+| SIGMA     | $\sigma$ (short for $\frac{\Phi_{0}}{2\pi}$) | 3.291059757E-16         |
 

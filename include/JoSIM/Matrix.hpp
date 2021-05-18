@@ -8,6 +8,7 @@
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/RelevantTrace.hpp"
+#include "JoSIM/Spread.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -20,6 +21,7 @@ namespace JoSIM {
     std::vector<Function> sourcegen;
 
     Components components;
+    Spread spread;
     std::unordered_map<std::string, int> nm;
     nodeconnections nc;
     std::unordered_set<std::string> lm;

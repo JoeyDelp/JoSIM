@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(JoSIM VERSION 2.5)
+project(JoSIM VERSION 2.5.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -56,7 +56,9 @@ add_library(josim
             src/VCVS.cpp
             src/Verbose.cpp
             src/VoltageSource.cpp 
-            src/Noise.cpp)
+            src/Noise.cpp
+            src/Spread.cpp
+            src/IV.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)

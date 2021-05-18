@@ -29,8 +29,15 @@ using namespace JoSIM;
 Resistor::Resistor(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, const AnalysisType& at, const double& h, int& bi) {
-  at_ = at;
+  Input& iObj, Spread& spread, int& bi) {
+  double spr = 1.0;
+  for (auto i : s.first) {
+    if (i.find("SPREAD=") != std::string::npos) {
+      spr = 
+        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+    }
+  }
+  at_ = iObj.argAnal;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
@@ -41,7 +48,8 @@ Resistor::Resistor(
   // Add the label to the known labels list
   lm.emplace(s.first.at(0));
   // Set the value (Resistance), this should be the 4th token
-  netlistInfo.value_ = parse_param(s.first.at(3), pm, s.second);
+  netlistInfo.value_ = spread.spread_value(
+    parse_param(s.first.at(3), iObj.parameters, s.second), Spread::RES, spr);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set current index and increment it
@@ -51,15 +59,16 @@ Resistor::Resistor(
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   // Append the value to the non zero vector
-  if (at == AnalysisType::Voltage) {
+  if (at_ == AnalysisType::Voltage) {
     // If voltage mode analysis then append -R
     matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
-  } else if (at == AnalysisType::Phase) {
+  } else if (at_ == AnalysisType::Phase) {
     // Set the value of node n-2 to 0
     pn2_ = 0;
     // If phase mdoe analysis then append -((2*h)/3) * (R/σ)
     matrixInfo.nonZeros_.emplace_back(
-      -((2.0 * h) / 3.0) * (netlistInfo.value_ / Constants::SIGMA));
+      -((2.0 * iObj.transSim.tstep()) / 3.0) * 
+      (netlistInfo.value_ / Constants::SIGMA));
   }
 }
 

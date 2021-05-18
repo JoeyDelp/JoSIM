@@ -3,6 +3,7 @@
 
 #include "JoSIM/Output.hpp"
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/FileOutputType.hpp"
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/Constants.hpp"
@@ -18,6 +19,41 @@
 #include <filesystem>
 
 using namespace JoSIM;
+
+Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
+  // Write the output in type agnostic format
+  write_output(iObj, mObj, sObj);
+  // Format the output into the relevant type
+  if (iObj.cli_output_file) {
+    if (iObj.cli_output_file.value().type() == FileOutputType::Csv) {
+      format_csv_or_dat(
+        iObj.cli_output_file.value().name(), ',', iObj.argMin);
+    } else if (iObj.cli_output_file.value().type() == FileOutputType::Dat) {
+      format_csv_or_dat(
+        iObj.cli_output_file.value().name(), ' ', iObj.argMin);
+    } else if (iObj.cli_output_file.value().type() == FileOutputType::Raw) {
+      format_raw(
+        iObj.cli_output_file.value().name(), iObj.argMin);
+    }
+  }
+  if (!iObj.output_files.empty()) {
+    for (int i = 0; i < iObj.output_files.size(); ++i) {
+      if (iObj.output_files.at(i).type() == FileOutputType::Csv) {
+        format_csv_or_dat(
+          iObj.output_files.at(i).name(), ',', iObj.argMin, i);
+      } else if (iObj.output_files.at(i).type() == FileOutputType::Dat) {
+        format_csv_or_dat(
+          iObj.output_files.at(i).name(), ' ', iObj.argMin, i);
+      } else if (iObj.output_files.at(i).type() == FileOutputType::Raw) {
+        format_raw(
+          iObj.output_files.at(i).name(), iObj.argMin, i);
+      }
+    }
+  }
+  if (!iObj.cli_output_file && iObj.output_files.empty()) {
+    format_cout(iObj.argMin);
+  }
+}
 
 void Output::write_output(
   const Input& iObj, Matrix& mObj, Simulation& sObj) {
@@ -69,6 +105,7 @@ void Output::write_output(
       if (st == StorageType::Voltage) {
         // Set the label for the plot
         traces.emplace_back(i.deviceLabel.value());
+        traces.back().fileIndex = i.fIndex;
         // Temporary values used for lookback
         double valin1n1 = 0, valin1n2 = valin1n1;
         double valin2n1 = 0, valin2n2 = valin2n1;
@@ -109,6 +146,7 @@ void Output::write_output(
       } else if (st == StorageType::Phase) {
         // Set the label for the plot
         traces.emplace_back(i.deviceLabel.value());
+        traces.back().fileIndex = i.fIndex;
         // Temporary values for lookback
         double valin1n1 = 0, valin1n2 = valin1n1;
         double valin2n1 = 0, valin2n2 = valin2n1;
@@ -149,6 +187,7 @@ void Output::write_output(
         }
       } else if (st == StorageType::Current) {
         traces.emplace_back(i.deviceLabel.value());
+        traces.back().fileIndex = i.fIndex;
         if (i.deviceLabel.value().at(3) != 'I') {
           prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
           for (
@@ -218,14 +257,21 @@ void Output::write_output(
 }
 
 void Output::format_csv_or_dat(
-  const std::string& filename, const char& delimiter, bool argmin) {
+  const std::string& filename, const char& delimiter, bool argmin, 
+  int fIndex) {
+  std::vector<int> tIndices = { 0 };
+  for (int i = 1; i < traces.size(); ++i) {
+    if (traces.at(i).fileIndex == fIndex || fIndex == -1) {
+      tIndices.emplace_back(i);
+    }
+  }
   std::ofstream outfile(filename);
   outfile << std::setprecision(15);
   if (outfile.is_open()) {
-    for (int i = 0; i < traces.size() - 1; ++i) {
-      outfile << traces.at(i).name_ << delimiter;
+    for (int i = 0; i < tIndices.size() - 1; ++i) {
+        outfile << traces.at(tIndices.at(i)).name_ << delimiter;
     }
-    outfile << traces.at(traces.size() - 1).name_ << "\n";
+    outfile << traces.at(tIndices.at(tIndices.size() - 1)).name_ << "\n";
     ProgressBar bar;
     if (!argmin) {
       bar.create_thread();
@@ -239,12 +285,12 @@ void Output::format_csv_or_dat(
       if (!argmin) {
         bar.update(j);
       }
-      for (int i = 0; i < traces.size() - 1; ++i) {
+      for (int i = 0; i < tIndices.size() - 1; ++i) {
         outfile << std::scientific << std::setprecision(6) <<
-          traces.at(i).data_.at(j) << delimiter;
+          traces.at(tIndices.at(i)).data_.at(j) << delimiter;
       }
       outfile << std::scientific << std::setprecision(6) <<
-        traces.at(traces.size() - 1).data_.at(j) << "\n";
+        traces.at(tIndices.at(tIndices.size() - 1)).data_.at(j) << "\n";
     }
     if (!argmin) {
       bar.complete();
@@ -256,7 +302,13 @@ void Output::format_csv_or_dat(
 }
 
 // Writes the output to a standard spice raw file
-void Output::format_raw(const std::string& filename, bool argmin) {
+void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
+  std::vector<int> tIndices = { 0 };
+  for (int i = 1; i < traces.size(); ++i) {
+    if (traces.at(i).fileIndex == fIndex || fIndex == -1) {
+      tIndices.emplace_back(i);
+    }
+  }
   // Variable to store the total number of points to be saved
   int loopsize = 0;
   // Opens an output stream with provided file name
@@ -273,26 +325,26 @@ void Output::format_raw(const std::string& filename, bool argmin) {
       outfile << "Date: " << std::asctime(std::localtime(&result));
       outfile << "Plotname: Transient Analysis\n";
       outfile << "Flags: real\n";
-      outfile << "No. Variables: " << traces.size() << "\n";
+      outfile << "No. Variables: " << tIndices.size() << "\n";
       loopsize = traces.at(0).data_.size();
       outfile << "No. Points: " << loopsize << "\n";
       outfile << "Command: JoSIM v" << VERSION << "\n";
       outfile << "Variables:\n";
       outfile << " 0 time Seconds\n";
       // Determine the variable name and type in a format acceptable for raw
-      for (int i = 1; i < traces.size(); ++i) {
+      for (int i = 1; i < tIndices.size(); ++i) {
         // Make a copy of the name so we can alter it
-        std::string name = traces.at(i).name_;
+        std::string name = traces.at(tIndices.at(i)).name_;
         // Erase all the double quote characters
         name.erase(std::remove(name.begin(), name.end(), '\"'), name.end());
         // If this is a voltage variable
-        if (traces.at(i).type_ == 'V') {
+        if (traces.at(tIndices.at(i)).type_ == 'V') {
           outfile << " " << i << " " << name << " Voltage\n";
           // If this is a phase variable
-        } else if (traces.at(i).type_ == 'P') {
+        } else if (traces.at(tIndices.at(i)).type_ == 'P') {
           outfile << " " << i << " " << name << " Phase\n";
           // If this is a current variable
-        } else if (traces.at(i).type_ == 'I') {
+        } else if (traces.at(tIndices.at(i)).type_ == 'I') {
           std::replace(name.begin(), name.end(), '|', '.');
           name = name.substr(2);
           name = name.substr(0, name.size() - 1);
@@ -320,9 +372,9 @@ void Output::format_raw(const std::string& filename, bool argmin) {
         outfile << std::left << std::setw(pointSizeSpacing) << i <<
           traces.at(0).data_.at(i) << "\n";
         // Fill in rest of variable values
-        for (int j = 1; j < traces.size(); ++j) {
+        for (int j = 1; j < tIndices.size(); ++j) {
           outfile << std::left << std::setw(pointSizeSpacing) << "" <<
-            traces.at(j).data_.at(i) << "\n";
+            traces.at(tIndices.at(j)).data_.at(i) << "\n";
         }
       }
       if (!argmin) {

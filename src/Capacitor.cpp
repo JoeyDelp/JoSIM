@@ -31,8 +31,15 @@ using namespace JoSIM;
 Capacitor::Capacitor(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, const AnalysisType& at, const double& h, int& bi) {
-  at_ = at;
+  Input& iObj, Spread& spread, int& bi) {
+  double spr = 1.0;
+  for (auto i : s.first) {
+    if (i.find("SPREAD=") != std::string::npos) {
+      spr = 
+        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+    }
+  }
+  at_ = iObj.argAnal;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(
@@ -43,7 +50,8 @@ Capacitor::Capacitor(
   // Add the label to the known labels list
   lm.emplace(s.first.at(0));
   // Set the value (Capacitance), this should be the 4th token
-  netlistInfo.value_ = parse_param(s.first.at(3), pm, s.second);
+  netlistInfo.value_ = spread.spread_value(
+  parse_param(s.first.at(3), iObj.parameters, s.second), Spread::CAP, spr);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set current index and increment it
@@ -53,14 +61,15 @@ Capacitor::Capacitor(
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   // Append the value to the non zero vector
-  if (at == AnalysisType::Voltage) {
+  if (at_ == AnalysisType::Voltage) {
     // If voltage mode analysis then append -(2/3) * (h/C)
     matrixInfo.nonZeros_.emplace_back(
-      -(2.0 / 3.0) * (h / netlistInfo.value_));
-  } else if (at == AnalysisType::Phase) {
+      -(2.0 / 3.0) * (iObj.transSim.tstep() / netlistInfo.value_));
+  } else if (at_ == AnalysisType::Phase) {
     // If phase mdoe analysis then append -(4/9) * ((h*h)/C) * (1/σ)
     matrixInfo.nonZeros_.emplace_back(
-      -(4.0 / 9.0) * ((h * h) / netlistInfo.value_) * (1 / Constants::SIGMA));
+      -(4.0 / 9.0) * ((iObj.transSim.tstep() * iObj.transSim.tstep()) / 
+      netlistInfo.value_) * (1 / Constants::SIGMA));
   }
 }
 

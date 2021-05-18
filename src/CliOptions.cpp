@@ -95,6 +95,8 @@ CliOptions CliOptions::parse(int argc, const char** argv) {
     if (!i.first) {
       // This argument is the file name
       out.cir_file_name = i.second;
+      auto path = std::filesystem::path(i.second.value());
+      std::filesystem::current_path(path.parent_path());
       // Else if the switch is not empty
     } else {
       // Use the char in a case statment
@@ -133,38 +135,11 @@ CliOptions CliOptions::parse(int argc, const char** argv) {
         // If no file name is specified but output is specified
         if (!i.second) {
           // Store the output in a file called output.csv at cwd
-          out.output_file_name =
-            std::filesystem::current_path().append("output.csv").string();
+          out.output_file = OutputFile(
+            std::filesystem::current_path().append("output.csv").string());
           // If a file name was given
         } else {
-          // Set the output file name
-          out.output_file_name = i.second.value();
-          // Extract the extension (if any)
-          std::string ext =
-            std::filesystem::path(i.second.value()).extension().string();
-          // Cast the extension to uppercase
-          std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
-          // If the extension is empty
-          if (ext.empty()) {
-            // Set the file type to CSV 
-            out.output_file_type = FileOutputType::Csv;
-            // If the extension is ".CSV"
-          } else if (ext == ".CSV") {
-            // Set the file type to CSV 
-            out.output_file_type = FileOutputType::Csv;
-            // If the extension is ".DAT"
-          } else if (ext == ".DAT") {
-            // Set the file type to DAT 
-            out.output_file_type = FileOutputType::Dat;
-            // If the extension is ".RAW"
-          } else if (ext == ".RAW") {
-            // Set the file type to RAW 
-            out.output_file_type = FileOutputType::Raw;
-            // Unknown file type
-          } else {
-            // Complain about it. Default to CSV
-            Errors::cli_errors(CLIErrors::UNKNOWN_OUTPUT_TYPE, ext);
-          }
+          out.output_file = OutputFile(i.second.value());
         }
         break;
         // Enable parallel processing (EXPERIMENTAL)
@@ -202,9 +177,9 @@ CliOptions CliOptions::parse(int argc, const char** argv) {
     Errors::cli_errors(CLIErrors::NO_INPUT);
   }
   // If an output file name was specified
-  if (out.output_file_name) {
+  if (out.output_file) {
     // But this matches the input file name
-    if (out.output_file_name.value() == out.cir_file_name.value()) {
+    if (out.output_file.value().name() == out.cir_file_name.value()) {
       // Complain and exit since continuing will overwrite input file
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
     }
@@ -220,8 +195,8 @@ CliOptions CliOptions::parse(int argc, const char** argv) {
         << std::endl;
     }
     std::cout << std::endl;
-    if (out.output_file_name) {
-      std::cout << "Output: " << out.output_file_name.value()
+    if (out.output_file) {
+      std::cout << "Output: " << out.output_file.value().name()
         << std::endl;
       std::cout << std::endl;
     }

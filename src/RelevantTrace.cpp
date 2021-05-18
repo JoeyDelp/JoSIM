@@ -3,13 +3,17 @@
 
 #include "JoSIM/RelevantTrace.hpp"
 #include "JoSIM/Matrix.hpp"
+#include "JoSIM/Input.hpp"
+
+#include <filesystem>
 
 using namespace JoSIM;
 
-void JoSIM::find_relevant_traces(
-  const std::vector<tokens_t>& c, Matrix& mObj) {
+void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
   // Temporary trace to store in known traces
   RelevantTrace temp;
+  int fIndex = -1;
+  std::vector<tokens_t>& c = iObj.controls;
   // Loop through and handle plot, print and save commands
   for (int i = 0; i < c.size(); ++i) {
     if ((c.at(i).front() == "PRINT") ||
@@ -40,50 +44,50 @@ void JoSIM::find_relevant_traces(
           case 'I':
             t.at(j).erase(0, 2);
             t.at(j).erase(t.at(j).size() - 1, t.at(j).size());
-            handle_current(t.at(j), mObj);
+            handle_current(t.at(j), mObj, fIndex);
             break;
           case 'V':
             t.at(j).erase(0, 2);
             t.at(j).erase(t.at(j).size() - 1, t.at(j).size());
-            handle_voltage_or_phase(t.at(j), true, mObj);
+            handle_voltage_or_phase(t.at(j), true, mObj, fIndex);
             break;
           case 'P':
             t.at(j).erase(0, 2);
             t.at(j).erase(t.at(j).size() - 1, t.at(j).size());
-            handle_voltage_or_phase(t.at(j), false, mObj);
+            handle_voltage_or_phase(t.at(j), false, mObj, fIndex);
             break;
           }
           break;
         case 'V':
           if (t.size() < 4) {
-            handle_voltage_or_phase(t.at(j + 1), true, mObj);
+            handle_voltage_or_phase(t.at(j + 1), true, mObj, fIndex);
           } else {
             handle_voltage_or_phase(
-              t.at(j + 1) + " " + t.at(j + 2), true, mObj);
+              t.at(j + 1) + " " + t.at(j + 2), true, mObj, fIndex);
           }
           j = t.size();
           break;
         case 'E':
-          handle_voltage_or_phase(t.at(j + 1), false, mObj);
+          handle_voltage_or_phase(t.at(j + 1), false, mObj, fIndex);
           j = t.size();
           break;
         case 'P':
           if (t.size() < 4) {
-            handle_voltage_or_phase(t.at(j + 1), false, mObj);
+            handle_voltage_or_phase(t.at(j + 1), false, mObj, fIndex);
           } else {
             handle_voltage_or_phase(
-              t.at(j + 1) + " " + t.at(j + 2), false, mObj);
+              t.at(j + 1) + " " + t.at(j + 2), false, mObj, fIndex);
           }
           j = t.size();
           break;
         case 'I':
-          handle_current(t.at(j + 1), mObj);
+          handle_current(t.at(j + 1), mObj, fIndex);
           j = t.size();
           break;
         case 'H':
           if (t.at(j).find("#BRANCH") != std::string::npos) {
             t.at(j) = t.at(j).substr(0, t.at(j).find("#BRANCH"));
-            handle_current(t.at(j), mObj);
+            handle_current(t.at(j), mObj, fIndex);
             break;
           } else {
             Errors::control_errors(
@@ -97,17 +101,17 @@ void JoSIM::find_relevant_traces(
             case 'C':
               t.at(j).erase(0, 1);
               t.at(j).erase(t.at(j).size() - 3, t.at(j).size());
-              handle_current(t.at(j), mObj);
+              handle_current(t.at(j), mObj, fIndex);
               break;
             case 'V':
               t.at(j).erase(0, 1);
               t.at(j).erase(t.at(j).size() - 3, t.at(j).size());
-              handle_voltage_or_phase(t.at(j), true, mObj);
+              handle_voltage_or_phase(t.at(j), true, mObj, fIndex);
               break;
             case 'P':
               t.at(j).erase(0, 1);
               t.at(j).erase(t.at(j).size() - 3, t.at(j).size());
-              handle_voltage_or_phase(t.at(j), false, mObj);
+              handle_voltage_or_phase(t.at(j), false, mObj, fIndex);
               break;
             }
             break;
@@ -127,6 +131,8 @@ void JoSIM::find_relevant_traces(
           break;
         }
       }
+    } else if (c.at(i).front() == "FILE") {
+        fIndex++;
     }
   }
   // Store the indices of the identified traces
@@ -167,8 +173,9 @@ void JoSIM::find_relevant_traces(
     mObj.relevantIndices.end());
 }
 
-void JoSIM::handle_current(const std::string& s, Matrix& mObj) {
+void JoSIM::handle_current(const std::string& s, Matrix& mObj, int fIndex) {
   RelevantTrace temp;
+  temp.fIndex = fIndex;
   temp.storageType = StorageType::Current;
   if (s.at(0) != 'I') {
     for (int j = 0; j < mObj.components.devices.size(); ++j) {
@@ -205,9 +212,10 @@ void JoSIM::handle_current(const std::string& s, Matrix& mObj) {
 }
 
 void JoSIM::handle_voltage_or_phase(
-  const std::string& s, bool voltage, Matrix& mObj) {
+  const std::string& s, bool voltage, Matrix& mObj, int fIndex) {
   std::vector<std::string> tokens = Misc::tokenize(s, " ,");
   RelevantTrace temp;
+  temp.fIndex = fIndex;
   if (voltage) {
     temp.storageType = StorageType::Voltage;
   } else {

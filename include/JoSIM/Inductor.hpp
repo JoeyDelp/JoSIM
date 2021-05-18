@@ -7,6 +7,8 @@
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Input.hpp"
+#include "JoSIM/Spread.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -45,8 +47,7 @@ namespace JoSIM {
     Inductor(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const nodemap& nm, std::unordered_set<std::string>& lm, 
-      nodeconnections& nc, const param_map& pm, const AnalysisType& at,
-      const double& h, int& bi);
+      nodeconnections& nc, Input& iObj, Spread spread, int& bi);
 
     void set_mutualInductance(const std::pair<int, double>& mut) {
       mutualInductances_.emplace_back(mut);

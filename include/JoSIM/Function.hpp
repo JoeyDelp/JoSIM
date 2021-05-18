@@ -45,6 +45,7 @@ namespace JoSIM {
     void parse_function(const std::string& str, const Input& iObj,
       const string_o& subckt);
     double value(double x);
+    void ampValues(std::vector<double> values);
 
   }; // class Function
 

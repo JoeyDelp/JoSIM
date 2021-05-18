@@ -433,6 +433,24 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
     formattedMessage += "Ignoring request and continuing.";
     warning_message(formattedMessage);
     break;
+  case ControlErrors::INVALID_FILE_COMMAND:
+    formattedMessage += "Invalid request for file output found.\n";
+    formattedMessage += message.value_or("") + "\n";
+    formattedMessage += "Ignoring request and continuing.";
+    warning_message(formattedMessage);
+    break;
+  case ControlErrors::INVALID_IV_COMMAND:
+    formattedMessage += "Invalid request for IV curve generation found.\n";
+    formattedMessage += message.value_or("") + "\n";
+    formattedMessage += "Please refer to the manual for proper syntax.\n";
+    formattedMessage += "Ignoring request and continuing.";
+    warning_message(formattedMessage);
+    break;
+  case ControlErrors::IV_MODEL_NOT_FOUND:
+    formattedMessage += "The requested model was not found.\n";
+    formattedMessage += message.value_or("") + "\n";
+    formattedMessage += "Please ensure the model exists in the netlist.\n";
+    error_message(formattedMessage);
   default:
     formattedMessage +=
       "Unknown control error: " + message.value_or("") + "\n";
