@@ -98,14 +98,12 @@ add_integration_test(
   NAME ex_mitll_dff_wr
   CIR ex_mitll_dff_wr.cir
   OUT ex_mitll_dff_wr.csv
-  WRSPICE
 )
 
 add_integration_test(
   NAME ex_mitll_xor
   CIR ex_mitll_xor_wr.cir
   OUT ex_mitll_xor_wr.csv
-  WRSPICE
 )
 
 add_integration_test(
