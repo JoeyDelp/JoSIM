@@ -1,9 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.5.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-##### Stable: v2.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+##### Stable: v2.5.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ---
 
@@ -35,6 +35,15 @@ Referencing:
 ---
 
 ## Changelog
+### v2.5.1 - 18/05/2021
+- Added .spread command. See documentation for more details.
+- Added .file command. See documentation for more detauls.
+- Added .iv command. See documentation for more details.
+- Fixed a bug where .neb value was not being read properly
+- Fixed a bug where pulse source type was outputting incorrect number of pulses.
+- Fixed a bug where custom waveform was not allowing cubic interpolation method.
+- Code cleanup.
+
 ### v2.5 - 05/03/2021
 - Phase mode is now the standard analysis mode. Produces the exact same results as voltage.
 - Trapezoidal method has been replaced by superior 2nd order Gear method.
