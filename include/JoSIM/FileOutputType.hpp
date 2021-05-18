@@ -6,6 +6,7 @@
 #include "JoSIM/Errors.hpp"
 
 #include <filesystem>
+#include <algorithm>
 
 namespace JoSIM {
 
