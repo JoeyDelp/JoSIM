@@ -974,7 +974,7 @@
 <p>Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of <strong>0</strong> and <strong>GND</strong> which indicate a grounded node. Additionally, the use of period (<strong>.</strong>) or vertical bars (<strong>|</strong>) in label or node names are prohibited as these are reserved characters within JoSIM.</p>
 <p>Lines that start with a period (<strong>.</strong>) indicate that the line relates in some way to simulation control. In this case the command that follows the period identifies the control, e.g. .tran, .print, .end.</p>
 <p>Comments are lines that start with an asterisk (<strong>*</strong>) or a hash (<strong>#</strong>). Comments are meant to be in a line of their own and will not work if placed at the end of a line.</p>
-<p>Lines that end with a plus sign (<strong>+</strong>) indicate that the line that follows is a continuation of this line. Internally the two lines will be combined.</p>
+<p>Lines that start with a plus sign (<strong>+</strong>) indicate that the line is a continuation of the previous line. Internally the two lines will be combined.</p>
 <p>In most cases the <strong>VALUE</strong> of a component can be replaced by a variable name or an expression. Variables can be defined using the <strong>.PARAM</strong> control. These will be discussed in detail further.</p>
 <p>Values in JoSIM can be modified with engineering notation or through suffixes. A list of the available suffixes is found below:</p>
 <p><center></p>
@@ -994,7 +994,7 @@
 </tr>
 <tr>
 <td>P</td>
-<td>Pic</td>
+<td>Pico</td>
 <td>1E-12</td>
 </tr>
 <tr>
