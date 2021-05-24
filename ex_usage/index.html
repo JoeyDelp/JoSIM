@@ -367,7 +367,7 @@ VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602
 <p>Only the device voltage (DEVV) of the input source (VIN), the device current (DEVI) of the output resistor (ROUT) and the phase of both junctions are requested to be output.</p>
 <p>The simulation executes for a total of 1000ps and produces a result every 0.25ps which results in 4000 points of data for each requested variable.</p>
 <p>We simulate this circuit (on a CentOS 7 machine) using the command:</p>
-<div class="highlight"><pre><span></span><code>josim-cli -o ex_jtl_basic.csv ex_jtl_basic.cir -V <span class="m">1</span>
+<div class="highlight"><pre><span></span><code>josim-cli -o ./ex_jtl_basic.csv ./ex_jtl_basic.cir -V <span class="m">1</span>
 </code></pre></div>
 <p>This simulation is almost instant, given the size of the problem and should take no longer than 10ms to complete.</p>
 <p><center><img src="../img/josim_jtl_ex.png" alt="Simulation Output"/></center></p>
@@ -407,7 +407,7 @@ VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602
 9.997500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
 </code></pre></div>
 <p>We then plot this result with the <a href="https://github.com/JoeyDelp/JoSIM/tree/master/scripts/josim-plot"><em>josim-plot</em></a> script found in the <a href="https://github.com/JoeyDelp/JoSIM/tree/master/scripts">scripts</a> using the following command:</p>
-<div class="highlight"><pre><span></span><code>josim-plot ex_jtl_basic.csv -t stacked
+<div class="highlight"><pre><span></span><code>josim-plot ./ex_jtl_basic.csv -t stacked
 </code></pre></div>
 <p>This produces the following visualized result:</p>
 <p><center><img alt="JoSIM JTL Example Results" src="../img/josim_jtl_ex_results.png"/></center></p>
