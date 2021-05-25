@@ -16,7 +16,7 @@ Lines that start with a period (**.**) indicate that the line relates in some wa
 
 Comments are lines that start with an asterisk (**\***) or a hash (**\#**). Comments are meant to be in a line of their own and will not work if placed at the end of a line.
 
-Lines that end with a plus sign (**+**) indicate that the line that follows is a continuation of this line. Internally the two lines will be combined.
+Lines that start with a plus sign (**+**) indicate that the line is a continuation of the previous line. Internally the two lines will be combined.
 
 In most cases the **VALUE** of a component can be replaced by a variable name or an expression. Variables can be defined using the **.PARAM** control. These will be discussed in detail further.
 
@@ -27,7 +27,7 @@ Values in JoSIM can be modified with engineering notation or through suffixes. A
 | Suffix | Meaning | Engineering Notation Equivalent |
 | ------ | ------- | ------------------------------- |
 | F      | Femto   | 1E-15                           |
-| P      | Pic     | 1E-12                           |
+| P      | Pico    | 1E-12                           |
 | N      | Nano    | 1E-9                            |
 | U      | Micro   | 1E-6                            |
 | M      | Milli   | 1E-3                            |

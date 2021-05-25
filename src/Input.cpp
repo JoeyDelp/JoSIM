@@ -15,6 +15,10 @@ using namespace JoSIM;
 
 std::vector<tokens_t> Input::read_input(
   LineInput& input, string_o fileName) {
+  if (std::filesystem::path(fileName.value()).has_parent_path()) {
+    fileParentPath =
+      std::filesystem::path(fileName.value()).parent_path().string();
+  }
   // Variable to store the read line
   std::string line;
   // Variable to store all the read lines
@@ -69,7 +73,16 @@ std::vector<tokens_t> Input::read_input(
         if (tokens.size() < 2) {
           Errors::control_errors(ControlErrors::INVALID_FILE_COMMAND, line);
         } else {
-          output_files.emplace_back(OutputFile(tokens.at(1)));
+          // Sanity check, if parent path of output file is empty then 
+          // change path to input file path, otherwise file is written 
+          // in executable location
+          auto path = std::filesystem::path(tokens.at(1));
+          if (!path.has_parent_path() && fileParentPath) {
+            path = 
+              std::filesystem::path(
+                fileParentPath.value()).append(tokens.at(1));
+          }
+          output_files.emplace_back(OutputFile(path.string()));
         }
         fileLines.emplace_back(tokens);
         // If the line does not contain an "INCLUDE" or "FILE" statement

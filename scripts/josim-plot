@@ -107,7 +107,7 @@ def grid_layout(df, subset):
     subplot_titles=plots,
     horizontal_spacing=0.075,
     vertical_spacing=0.2/math.ceil(len(plots)/2),
-    x_title= 'Time (seconds)' if (df.columns.values[0] == 'time') else df.columns.values[0])
+    x_title= 'Time (seconds)')
   # Add the traces
   for i in range(0, len(plots)):
     col = 1 if (i%2 == 0) else 2
@@ -138,7 +138,7 @@ def square_layout(df, subset):
     subplot_titles=plots,
     horizontal_spacing=(0.25/row),
     vertical_spacing=(0.25/col),
-    x_title= 'Time (seconds)' if (df.columns.values[0] == 'time') else df.columns.values[0])
+    x_title= 'Time (seconds)')
   row_counter = 1
   col_counter = 1
   # Add the traces
@@ -174,7 +174,7 @@ def stacked_layout(df, subset):
     cols=1,
     subplot_titles=plots,
     vertical_spacing=0.2/math.ceil(len(plots)/2),
-    x_title= 'Time (seconds)' if (df.columns.values[0] == 'time') else df.columns.values[0])
+    x_title= 'Time (seconds)')
   # Add the traces
   for i in range(0, len(plots)):
     fig.add_trace(go.Scatter(

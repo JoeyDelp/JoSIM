@@ -30,6 +30,7 @@ namespace JoSIM {
     std::unordered_map<ParameterName, Parameter> parameters;
     std::optional<OutputFile> cli_output_file;
     std::vector<OutputFile> output_files;
+    std::optional<std::string> fileParentPath;
 
     Input() {};
     Input(CliOptions& cli_options) {
