@@ -53,7 +53,13 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   ivInp.argMin = true;
   std::vector<std::pair<double, double>> iv_data;
   iv_data = generate_iv(maxC, ivInp);
-  write_iv(iv_data, i.at(3));
+  // Sanity check, if parent path of output file is empty then change path to
+  // input file path, otherwise file is written in executable location
+  auto path = std::filesystem::path(i.at(3));
+  if (!path.has_parent_path() && iObj.fileParentPath) {
+    path = std::filesystem::path(iObj.fileParentPath.value()).append(i.at(3));
+  }
+  write_iv(iv_data, path.string());
 }
 
 std::vector<std::pair<double, double>> IV::generate_iv(double maxC, 

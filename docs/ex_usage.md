@@ -41,7 +41,7 @@ The simulation executes for a total of 1000ps and produces a result every 0.25ps
 We simulate this circuit (on a CentOS 7 machine) using the command:
 
 ````bash
-josim-cli -o ex_jtl_basic.csv ex_jtl_basic.cir -V 1
+josim-cli -o ./ex_jtl_basic.csv ./ex_jtl_basic.cir -V 1
 ````
 
 This simulation is almost instant, given the size of the problem and should take no longer than 10ms to complete.
@@ -91,7 +91,7 @@ time,"V(VIN)","I(ROUT)","P(B01)","P(B02)"
 We then plot this result with the [*josim-plot*](https://github.com/JoeyDelp/JoSIM/tree/master/scripts/josim-plot) script found in the [scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts) using the following command:
 
 ```
-josim-plot ex_jtl_basic.csv -t stacked
+josim-plot ./ex_jtl_basic.csv -t stacked
 ```
 
 This produces the following visualized result:

@@ -1,9 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.5.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.5.2 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-##### Stable: v2.5.1 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+##### Stable: v2.5.2 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ---
 
@@ -35,6 +35,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.5.2
+- Fixed a major issue with relative paths not being correctly evaluated causing files to not be found even though the correct path was specified.
+
 ### v2.5.1 - 18/05/2021
 - Added .spread command. See documentation for more details.
 - Added .file command. See documentation for more detauls.

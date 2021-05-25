@@ -96,7 +96,6 @@ CliOptions CliOptions::parse(int argc, const char** argv) {
       // This argument is the file name
       out.cir_file_name = i.second;
       auto path = std::filesystem::path(i.second.value());
-      std::filesystem::current_path(path.parent_path());
       // Else if the switch is not empty
     } else {
       // Use the char in a case statment
