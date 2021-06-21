@@ -48,7 +48,8 @@ namespace JoSIM {
 
   double parse_param(
     const std::string& expr, const param_map& params,
-    string_o subc = std::nullopt);
+    string_o subc = std::nullopt,
+    bool single = true);
 
   int precedence_lvl(const std::string& op);
 

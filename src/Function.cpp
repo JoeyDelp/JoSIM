@@ -309,30 +309,22 @@ double Function::return_pulse(double& x) {
   double& tstop = timeValues_.at(5);
   // Calculate how many times the pulse repeats
   int n = static_cast<int>((tstop - td) / per) + 1;
-  for (int i = 0; i < n; ++i) {
-    // Within a multiple of the pulse
-    if (x >= (i * per) && x < ((i + 1) * per) && x >= td) {
-      // Within the rise time
-      if (x >= (i * per + td) && x < (i * per + tr + td)) {
-        // Calculate function value and return it
-        return ampValues_.at(0) +
-          ((ampValues_.at(1) - ampValues_.at(0)) /
-            ((i * per + tr + td) - (i * per + td))) * (x - (i * per + td));
-        // Within pulse width
-      } else if (x >= (i * per + tr + td) && x < (i * per + tr + pw + td)) {
-        return ampValues_.at(1);
-        // Within fall time
-      } else if (x >= (i * per + tr + pw + td) && 
-        x < (i * per + tr + pw + tf + td)) {
-        // Calculate function value and return it
-        return ampValues_.at(1) +
-          ((ampValues_.at(0) - ampValues_.at(1)) /
-            ((i * per + tr + pw + tf + td) - (i * per + tr + pw + td))) *
-          (x - (i * per + tr + pw + td));
-        // Between two pulses
-      } else {
-        return ampValues_.at(0);
-      }
+  int i = 0;
+  for (; i < n; i++) {
+    if ((x >= i * per) && (x < (i + 1) * per)) break;
+  }
+  if (x > td) {
+    if ((x >= i * per) && (x < i * per + tr)) {
+      return (ampValues_.at(1) /
+          ((i * per + tr) - (i * per))) * (x - (i * per));
+    } else if ((x >= i * per + tr) && (x < i * per + tr + pw)) {
+      return ampValues_.at(1);
+    } else if ((x >= i * per + tr + pw) && (x < i * per + tr + pw + tf)) {
+      return ((ampValues_.at(0)) /
+          ((i * per + tr + pw + tf) - (i * per + tr + pw))) *
+        (x - (i * per + tr + pw));
+    } else {
+      return ampValues_.at(0);
     }
   }
   return 0.0;
