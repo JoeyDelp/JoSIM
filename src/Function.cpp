@@ -311,18 +311,19 @@ double Function::return_pulse(double& x) {
   int n = static_cast<int>((tstop - td) / per) + 1;
   int i = 0;
   for (; i < n; i++) {
-    if ((x >= i * per) && (x < (i + 1) * per)) break;
+    if ((x >= (i * per + td)) && (x < ((i + 1) * per + td))) break;
   }
   if (x > td) {
-    if ((x >= i * per) && (x < i * per + tr)) {
+    if ((x >= (i * per + td)) && (x < (i * per + tr + td))) {
       return (ampValues_.at(1) /
-          ((i * per + tr) - (i * per))) * (x - (i * per));
-    } else if ((x >= i * per + tr) && (x < i * per + tr + pw)) {
+          ((i * per + tr + td) - (i * per + td))) * (x - (i * per + td));
+    } else if ((x >= (i * per + tr + td)) && (x < (i * per + tr + pw + td))) {
       return ampValues_.at(1);
-    } else if ((x >= i * per + tr + pw) && (x < i * per + tr + pw + tf)) {
+    } else if ((x >= (i * per + tr + pw + td)) && 
+      (x < (i * per + tr + pw + tf + td))) {
       return ((ampValues_.at(0)) /
-          ((i * per + tr + pw + tf) - (i * per + tr + pw))) *
-        (x - (i * per + tr + pw));
+          ((i * per + tr + pw + tf + td) - (i * per + tr + pw + td))) *
+        (x - (i * per + tr + pw + td));
     } else {
       return ampValues_.at(0);
     }
