@@ -69,7 +69,8 @@ int JoSIM::precedence_lvl(const std::string& op) {
 }
 
 double JoSIM::parse_param(
-  const std::string& expr, const param_map& params, string_o subc) {
+  const std::string& expr, const param_map& params, string_o subc, 
+  bool single) {
   // Initialize the expression to evaluate
   std::string expToEval = expr;
   // Remove any and all whitespace characters
@@ -247,8 +248,12 @@ double JoSIM::parse_param(
           }
           // Function is invalid or a parameter is used which is unparsed
         } else {
-          // Return NaN to indicate this ocurred
-          return std::numeric_limits<double>::quiet_NaN();
+          if (!single) {
+            // Return NaN to indicate this ocurred
+            return std::numeric_limits<double>::quiet_NaN();
+          } else {
+            Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
+          }
         }
         // Adjust the next part to be evaluated
         if (opLoc == 0) {
@@ -410,7 +415,7 @@ void JoSIM::parse_parameters(param_map& parameters) {
       if (!i.second.get_value()) {
         // Parse this parameter if expression if possible
         value = parse_param(
-          i.second.get_expression(), parameters, i.first.subcircuit());
+          i.second.get_expression(), parameters, i.first.subcircuit(), false);
         // If the returned value is not NaN
         if (!std::isnan(value)) {
           // Set the parameter value (double) to the parsed value (double)
@@ -493,7 +498,7 @@ void JoSIM::expand_inline_parameters(
     // Parse the identified expression
     double value = parse_param(
       Misc::vector_to_string(tokens_t(s.first.begin() + oPos.value(),
-        s.first.begin() + cPos.value()), ""), parameters, s.second);
+        s.first.begin() + cPos.value()), ""), parameters, s.second, false);
     // If the returned value is not NaN
     if (!std::isnan(value)) {
       // Complain of invalid parameter expression

@@ -67,10 +67,10 @@ void Output::write_output(
   double prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
   for (auto& i : sObj.results.timeAxis) {
     if (i >= iObj.transSim.prstart()) {
-      if (Misc::isclose(i, iObj.transSim.prstart(), 1E-14)) {
+      if (Misc::isclose(i, iObj.transSim.prstart())) {
         printStartIndex = cc;
       }
-      if (Misc::isclose(i, (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+      if (Misc::isclose(i, (prevPoint + iObj.transSim.prstep()))) {
         traces.back().data_.emplace_back(i);
         prevPoint += iObj.transSim.prstep();
       }
@@ -107,8 +107,8 @@ void Output::write_output(
         traces.emplace_back(i.deviceLabel.value());
         traces.back().fileIndex = i.fIndex;
         // Temporary values used for lookback
-        double valin1n1 = 0, valin1n2 = valin1n1;
-        double valin2n1 = 0, valin2n2 = valin2n1;
+        double valin1n1, valin1n2;
+        double valin2n1, valin2n2;
         double voltN1 = 0;
         prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
         // Add the values for each value on the time axis
@@ -118,6 +118,12 @@ void Output::write_output(
           auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
           auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
           auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
+          if (j == printStartIndex) {
+            valin1n1 = valin1;
+            valin1n2 = valin1n1;
+            valin2n1 = valin2;
+            valin2n2 = valin2n1;
+          }
           // If the analysis method was voltage
           if (iObj.argAnal == AnalysisType::Voltage) {
             value = valin1 - valin2;
@@ -138,7 +144,7 @@ void Output::write_output(
           }
           traces.back().type_ = 'V';
           if (Misc::isclose(sObj.results.timeAxis.at(j),
-            (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+            (prevPoint + iObj.transSim.prstep()))) {
             traces.back().data_.emplace_back(value);
             prevPoint += iObj.transSim.prstep();
           }
@@ -159,6 +165,12 @@ void Output::write_output(
           auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
           auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
           auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
+          if (j == printStartIndex) {
+            valin1n1 = valin1;
+            valin1n2 = valin1n1;
+            valin2n1 = valin2;
+            valin2n2 = valin2n1;
+          }
           // If the analysis type is phase
           if (iObj.argAnal == AnalysisType::Phase) {
             value = valin1 - valin2;
@@ -180,7 +192,7 @@ void Output::write_output(
           }
           traces.back().type_ = 'P';
           if (Misc::isclose(sObj.results.timeAxis.at(j),
-            (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+            (prevPoint + iObj.transSim.prstep()))) {
             traces.back().data_.emplace_back(value);
             prevPoint += iObj.transSim.prstep();
           }
@@ -195,7 +207,7 @@ void Output::write_output(
             double value = x.at(i.index1.value()).value().at(j);
             traces.back().type_ = 'I';
             if (Misc::isclose(sObj.results.timeAxis.at(j),
-              (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+              (prevPoint + iObj.transSim.prstep()))) {
               traces.back().data_.emplace_back(value);
               prevPoint += iObj.transSim.prstep();
             }
@@ -208,7 +220,7 @@ void Output::write_output(
               sObj.results.timeAxis.at(j));
             traces.back().type_ = 'I';
             if (Misc::isclose(sObj.results.timeAxis.at(j),
-              (prevPoint + iObj.transSim.prstep()), 1E-14)) {
+              (prevPoint + iObj.transSim.prstep()))) {
               traces.back().data_.emplace_back(value);
               prevPoint += iObj.transSim.prstep();
             }

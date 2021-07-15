@@ -76,7 +76,7 @@ void JoSIM::Noise::add_noise_sources(Input& iObj) {
               Errors::invalid_component_errors(ComponentErrors::RES_ERROR,
                 Misc::vector_to_string(it->first));
             } else {
-              T = parse_param(*(i + 1), iObj.parameters);
+              T = parse_param(*(i + 1), iObj.parameters, it->second);
             }
           }
           if (*i == "NEB") {
@@ -84,13 +84,13 @@ void JoSIM::Noise::add_noise_sources(Input& iObj) {
               Errors::invalid_component_errors(ComponentErrors::RES_ERROR,
                 Misc::vector_to_string(it->first));
             } else {
-              B = parse_param(*(i + 1), iObj.parameters);
+              B = parse_param(*(i + 1), iObj.parameters, it->second);
             }
           }
         }
-        R = parse_param(*(it->first.begin() + 3), iObj.parameters);
+        R = parse_param(*(it->first.begin() + 3), iObj.parameters, it->second);
       } else {
-        R = parse_param(it->first.back(), iObj.parameters);
+        R = parse_param(it->first.back(), iObj.parameters, it->second);
       }
       if (T) {
         noises.emplace_back(
