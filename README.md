@@ -35,6 +35,11 @@ Referencing:
 ---
 
 ## Changelog
+### v2.5.3
+- Fixed an issue with the pulse command producing incorrect pulses
+- Fixed an issue where timesteps smaller than 10fs were causing out-of-range issues
+- Various other bug fixes
+
 ### v2.5.2
 - Fixed a major issue with relative paths not being correctly evaluated causing files to not be found even though the correct path was specified.
 
