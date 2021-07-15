@@ -14,7 +14,7 @@ using namespace JoSIM;
 void Spread::get_spreads(Input& iObj) {
   for (auto& i : iObj.controls) {
     if (i.front() == "SPREAD") {
-      for (auto& j : i) {
+      for (auto& j : tokens_t(i.begin()+1,i.end())) {
         if (j.at(0) == 'R') {
           auto t = Misc::tokenize(j, "=");
           if (t.size() == 2) {

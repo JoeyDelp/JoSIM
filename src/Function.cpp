@@ -315,20 +315,20 @@ double Function::return_pulse(double& x) {
   }
   if (x > td) {
     if ((x >= (i * per + td)) && (x < (i * per + tr + td))) {
-      return (ampValues_.at(1) /
+      return ampValues_.at(0) + ((ampValues_.at(1) - ampValues_.at(0)) /
           ((i * per + tr + td) - (i * per + td))) * (x - (i * per + td));
     } else if ((x >= (i * per + tr + td)) && (x < (i * per + tr + pw + td))) {
       return ampValues_.at(1);
     } else if ((x >= (i * per + tr + pw + td)) && 
       (x < (i * per + tr + pw + tf + td))) {
-      return ((ampValues_.at(0)) /
+      return ampValues_.at(1) + ((ampValues_.at(0) - ampValues_.at(1)) /
           ((i * per + tr + pw + tf + td) - (i * per + tr + pw + td))) *
         (x - (i * per + tr + pw + td));
     } else {
       return ampValues_.at(0);
     }
   }
-  return 0.0;
+  return ampValues_.at(0);
 }
 
 double Function::return_sin(double& x) {

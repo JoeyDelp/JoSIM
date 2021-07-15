@@ -415,7 +415,7 @@ void JoSIM::parse_parameters(param_map& parameters) {
       if (!i.second.get_value()) {
         // Parse this parameter if expression if possible
         value = parse_param(
-          i.second.get_expression(), parameters, i.first.subcircuit());
+          i.second.get_expression(), parameters, i.first.subcircuit(), false);
         // If the returned value is not NaN
         if (!std::isnan(value)) {
           // Set the parameter value (double) to the parsed value (double)
