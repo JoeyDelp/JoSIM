@@ -28,7 +28,7 @@ double Misc::string_constant(const std::string& s) {
 bool Misc::isclose(double a, double b, double rtol, double atol,
   bool equal_nan) {
   double diff = std::abs(a - b);
-  double comp = ((rtol + atol) * abs(a + b));
+  double comp = (rtol + atol * abs(b));
   bool result = diff <= comp;
   return result;
 }
