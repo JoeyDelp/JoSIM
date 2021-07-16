@@ -1,9 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.5.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.5.4 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-##### Stable: v2.5.3 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+##### Stable: v2.5.4 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ---
 
@@ -35,6 +35,9 @@ Referencing:
 ---
 
 ## Changelog
+###
+- Fixed comparison function for GCC interpretation of double values
+
 ### v2.5.3
 - Fixed an issue with the pulse command producing incorrect pulses
 - Fixed an issue where timesteps smaller than 10fs were causing out-of-range issues

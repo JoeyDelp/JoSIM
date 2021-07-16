@@ -67,10 +67,10 @@ void Output::write_output(
   double prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
   for (auto& i : sObj.results.timeAxis) {
     if (i >= iObj.transSim.prstart()) {
-      if (Misc::isclose(i, iObj.transSim.prstart())) {
+      if (Misc::isclose(i, iObj.transSim.prstart(), 1E-20)) {
         printStartIndex = cc;
       }
-      if (Misc::isclose(i, (prevPoint + iObj.transSim.prstep()))) {
+      if (Misc::isclose(i, (prevPoint + iObj.transSim.prstep()), 1E-20)) {
         traces.back().data_.emplace_back(i);
         prevPoint += iObj.transSim.prstep();
       }
@@ -144,7 +144,7 @@ void Output::write_output(
           }
           traces.back().type_ = 'V';
           if (Misc::isclose(sObj.results.timeAxis.at(j),
-            (prevPoint + iObj.transSim.prstep()))) {
+            (prevPoint + iObj.transSim.prstep()), 1E-20)) {
             traces.back().data_.emplace_back(value);
             prevPoint += iObj.transSim.prstep();
           }
@@ -192,7 +192,7 @@ void Output::write_output(
           }
           traces.back().type_ = 'P';
           if (Misc::isclose(sObj.results.timeAxis.at(j),
-            (prevPoint + iObj.transSim.prstep()))) {
+            (prevPoint + iObj.transSim.prstep()), 1E-20)) {
             traces.back().data_.emplace_back(value);
             prevPoint += iObj.transSim.prstep();
           }
@@ -207,7 +207,7 @@ void Output::write_output(
             double value = x.at(i.index1.value()).value().at(j);
             traces.back().type_ = 'I';
             if (Misc::isclose(sObj.results.timeAxis.at(j),
-              (prevPoint + iObj.transSim.prstep()))) {
+              (prevPoint + iObj.transSim.prstep()), 1E-20)) {
               traces.back().data_.emplace_back(value);
               prevPoint += iObj.transSim.prstep();
             }
@@ -220,7 +220,7 @@ void Output::write_output(
               sObj.results.timeAxis.at(j));
             traces.back().type_ = 'I';
             if (Misc::isclose(sObj.results.timeAxis.at(j),
-              (prevPoint + iObj.transSim.prstep()))) {
+              (prevPoint + iObj.transSim.prstep()), 1E-20)) {
               traces.back().data_.emplace_back(value);
               prevPoint += iObj.transSim.prstep();
             }
