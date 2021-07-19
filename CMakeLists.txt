@@ -40,6 +40,7 @@ add_library(josim
             src/Inductor.cpp
             src/Input.cpp
             src/JJ.cpp
+            src/PJJ.cpp
             src/Matrix.cpp
             src/Misc.cpp
             src/Model.cpp
