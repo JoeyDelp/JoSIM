@@ -397,13 +397,13 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
 void Output::format_cout(const bool& argMin) {
   if (!argMin) {
     for (int i = 0; i < traces.size() - 1; ++i) {
-      std::cout << traces.at(i).name_ << " ";
+      std::cout << traces.at(i).name_ << ",";
     }
     std::cout << traces.at(traces.size() - 1).name_ << "\n";
     for (int j = 0; j < traces.at(0).data_.size(); ++j) {
       for (int i = 0; i < traces.size() - 1; ++i) {
         std::cout << std::setw(15) << std::scientific << std::setprecision(6)
-          << traces.at(i).data_.at(j) << " ";
+          << traces.at(i).data_.at(j) << ",";
       }
       std::cout << std::setw(15) << std::scientific << std::setprecision(6) <<
         traces.at(traces.size() - 1).data_.at(j) << "\n";
