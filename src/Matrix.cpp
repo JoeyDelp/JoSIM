@@ -102,8 +102,7 @@ void Matrix::create_matrix(Input& iObj) {
   // Counter for progress report
   cc = 0;
   // Loop through all the components in the netlist
-  for (auto it = iObj.netlist.expNetlist.begin();
-    it != iObj.netlist.expNetlist.end(); it++) {
+  for (auto it = iObj.netlist.expNetlist.begin() ; it != iObj.netlist.expNetlist.end() ; it++) {
     const auto& i = *it;
     // If not minimal printing
     if (!iObj.argMin) {
@@ -132,11 +131,11 @@ void Matrix::create_matrix(Input& iObj) {
       // Resistors
 
 
-// pi-josephson junction
+    // pi-josephson junction
     case 'Q':
       // Create a JJ and add it to the component list
       components.devices.emplace_back(
-        PJJ::PJJ(i, nodeConfig.at(cc), nm, lm, nc, iObj, spread, branchIndex));
+        PJJ(i, nodeConfig.at(cc), nm, lm, nc, iObj, spread, branchIndex));
       // Store this JJ's component list index for reference    
       components.pjunctionIndices.emplace_back(components.devices.size() - 1);
       break;
