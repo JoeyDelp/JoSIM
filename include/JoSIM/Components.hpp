@@ -12,6 +12,7 @@
 #include "JoSIM/Inductor.hpp"
 #include "JoSIM/Capacitor.hpp"
 #include "JoSIM/JJ.hpp"
+#include "JoSIM/PJJ.hpp"
 #include "JoSIM/VoltageSource.hpp"
 #include "JoSIM/PhaseSource.hpp"
 #include "JoSIM/CurrentSource.hpp"
@@ -30,6 +31,7 @@ namespace JoSIM {
       Inductor,
       Capacitor,
       JJ,
+      PJJ,
       VoltageSource,
       PhaseSource,
       TransmissionLine,
@@ -38,7 +40,7 @@ namespace JoSIM {
       VCVS,
       CCVS>> devices;
     std::vector<CurrentSource> currentsources;
-    std::vector<int> junctionIndices,
+    std::vector<int> junctionIndices,pjunctionIndices,
       resistorIndices,
       inductorIndices,
       capacitorIndices,

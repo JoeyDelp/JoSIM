@@ -16,14 +16,14 @@ using namespace JoSIM;
 
 Simulation::Simulation(Input &iObj, Matrix &mObj) {
   // Simulation setup
-  simSize_ = iObj.transSim.simsize();
-  atyp_ = iObj.argAnal;
-  minOut_ = iObj.argMin;
-  needsLU_ = false;
-  needsTR_ = false;
+  simSize_  = iObj.transSim.simsize();
+  atyp_     = iObj.argAnal;
+  minOut_   = iObj.argMin;
+  needsLU_  = false;
+  needsTR_  = false;
   stepSize_ = iObj.transSim.tstep();
-  prstep_ = iObj.transSim.prstep();
-  prstart_ = iObj.transSim.prstart();
+  prstep_   = iObj.transSim.prstep();
+  prstart_  = iObj.transSim.prstart();
   x_.resize(mObj.branchIndex, 0.0);
   if(!mObj.relevantTraces.empty()) {
     results.xVector.resize(mObj.branchIndex);
@@ -108,13 +108,14 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
 }
 
-void Simulation::setup_b(
-  Matrix &mObj, int i, double step, double factor) {
+void Simulation::setup_b(Matrix &mObj, int i, double step, double factor) {
   // Clear b matrix and reset
   b_.clear();
   b_.resize(mObj.rp.size(), 0.0);
+
   // Handle jj
   handle_jj(mObj, i, step, factor);
+  
   if(needsTR_) return;
   // Re-factorize the LU if any jj transitions
   if (needsLU_) {
@@ -125,6 +126,8 @@ void Simulation::setup_b(
       Symbolic_, &Common_);
     needsLU_ = false;
   }
+ 
+
   // Handle current sources
   handle_cs(mObj, step, i);
   // Handle resistors

@@ -1,7 +1,7 @@
 // Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-#ifndef JOSIM_JJ_HPP
-#define JOSIM_JJ_HPP
+#ifndef JOSIM_PJJ_HPP
+#define JOSIM_PJJ_HPP
 
 #include "JoSIM/BasicComponent.hpp"
 #include "JoSIM/ParameterName.hpp"
