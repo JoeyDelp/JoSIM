@@ -113,6 +113,8 @@ void Simulation::setup_b(Matrix &mObj, int i, double step, double factor) {
   b_.clear();
   b_.resize(mObj.rp.size(), 0.0);
 
+  // Handle pi-jj
+  handle_pjj(mObj, i, step, factor);
   // Handle jj
   handle_jj(mObj, i, step, factor);
   
@@ -466,8 +468,8 @@ void Simulation::handle_pjj(
     }
     // -(hR / h + 2RC) * (Ic sin φ0 - 2C / h Vp1 + C/2h Vp2 + It) 
     b_.at(temp.indexInfo.currentIndex_.value()) = 
-      (-1) * (temp.matrixInfo.nonZeros_.back()) * ((((Constants::PI * temp.del_) / 
-        (2 * Constants::EV * temp.rncalc_)) * (sin(temp.phi0_) / 
+      (temp.matrixInfo.nonZeros_.back()) * ((((Constants::PI * temp.del_) / 
+        (2 * Constants::EV * temp.rncalc_)) * (((-1)*sin(temp.phi0_)) / 
           sqrt(1 - model.value().get_transparency() * (sin(temp.phi0_ / 2) * 
           sin(temp.phi0_ / 2)))) * tanh((temp.del_) / 
         (2 * Constants::BOLTZMANN * model.value().get_temperature()) *
