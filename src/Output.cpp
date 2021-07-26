@@ -132,14 +132,13 @@ void Output::write_output(
             if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
               value = valvi;
             } else {
-              value = ((Constants::SIGMA) / iObj.transSim.tstep())
-                * ((valin1 - valin2) - 2 * (valin1n1 - valin2n1)
-                  + (valin1n2 - valin2n2)) + voltN1;
+              value = ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep()))
+                * ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1)
+                  + (1.0 / 3.0) * (valin1n2 - valin2n2));
               valin1n2 = valin1n1;
               valin1n1 = valin1;
               valin2n2 = valin2n1;
               valin2n1 = valin2;
-              if (j > 1) voltN1 = value;
             }
           }
           traces.back().type_ = 'V';
@@ -179,13 +178,10 @@ void Output::write_output(
             if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
               value = valvi;
             } else {
-              value = (iObj.transSim.tstep() / (2 * Constants::SIGMA))
-                * ((valin1 - valin2) - (valin1n2 - valin2n2)) +
-                2 * phaseN1 - phaseN2;
-              valin1n2 = valin1n1;
-              valin1n1 = valin1;
-              valin2n2 = valin2n1;
-              valin2n1 = valin2;
+              value = ((2.0 * iObj.transSim.tstep()) / 
+                (3.0 * Constants::SIGMA)) * (valin1 - valin2) 
+                + (4.0 / 3.0) * (phaseN1)
+                - (1.0 / 3.0) * (phaseN2);
               phaseN2 = phaseN1;
               phaseN1 = value;
             }
