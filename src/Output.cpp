@@ -119,10 +119,18 @@ void Output::write_output(
           auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
           auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
           if (j == printStartIndex) {
-            valin1n1 = valin1;
-            valin1n2 = valin1n1;
-            valin2n1 = valin2;
-            valin2n2 = valin2n1;
+            if (j == 1) {
+              valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
+              valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
+            } else if (j >= 2) {
+              valin1n2 = i1 != -1 ? x.at(i1).value().at(j - 2) : 0;
+              valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
+              valin2n2 = i2 != -1 ? x.at(i2).value().at(j - 2) : 0;
+              valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
+            } else {
+              valin1n2 = valin1n1 = valin1;
+              valin2n2 = valin2n1 = valin2;
+            } 
           }
           // If the analysis method was voltage
           if (iObj.argAnal == AnalysisType::Voltage) {
@@ -165,10 +173,18 @@ void Output::write_output(
           auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
           auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
           if (j == printStartIndex) {
-            valin1n1 = valin1;
-            valin1n2 = valin1n1;
-            valin2n1 = valin2;
-            valin2n2 = valin2n1;
+            if (j == 1) {
+              valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
+              valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
+            } else if (j >= 2) {
+              valin1n2 = i1 != -1 ? x.at(i1).value().at(j - 2) : 0;
+              valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
+              valin2n2 = i2 != -1 ? x.at(i2).value().at(j - 2) : 0;
+              valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
+            } else {
+              valin1n2 = valin1n1 = valin1;
+              valin2n2 = valin2n1 = valin2;
+            }
           }
           // If the analysis type is phase
           if (iObj.argAnal == AnalysisType::Phase) {

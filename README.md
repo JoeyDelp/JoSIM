@@ -35,6 +35,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.5.6
+- Fixed a initial values when converting between phase and voltage when simulation output does not start at 0.
+
 ### v2.5.5
 - Fixed a bug in output conversion when plotting voltage in a phase simulation and vice versa.
 
