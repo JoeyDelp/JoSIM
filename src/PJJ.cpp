@@ -10,6 +10,8 @@
 
 using namespace JoSIM;
 
+//Fork the jj class to create the PJJ class
+//All features are almost the same
 /*
   Blabel V⁺ V⁻ jjmodel area=value
 

@@ -128,10 +128,7 @@ void Matrix::create_matrix(Input& iObj) {
       // Store this JJ's component list index for reference    
       components.junctionIndices.emplace_back(components.devices.size() - 1);
       break;
-      // Resistors
-
-
-    // pi-josephson junction
+      // pi-josephson junction
     case 'Q':
       // Create a JJ and add it to the component list
       components.devices.emplace_back(
@@ -140,7 +137,6 @@ void Matrix::create_matrix(Input& iObj) {
       components.pjunctionIndices.emplace_back(components.devices.size() - 1);
       break;
       // Resistors
-
     case 'R':
       // Create a resistor and add it to the component list
       components.devices.emplace_back(
