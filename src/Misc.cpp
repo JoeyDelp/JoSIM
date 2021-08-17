@@ -25,12 +25,16 @@ double Misc::string_constant(const std::string& s) {
   return 0.0;
 }
 
-bool Misc::isclose(double a, double b, double rtol, double atol,
-  bool equal_nan) {
-  double diff = std::abs(a - b);
-  double comp = (rtol + atol * abs(b));
-  bool result = diff <= comp;
-  return result;
+// bool Misc::isclose(double a, double b, double rtol, double atol,
+//   bool equal_nan) {
+//   double diff = std::abs(a - b);
+//   double comp = (rtol + atol * abs(b));
+//   bool result = diff <= comp;
+//   return result;
+// }
+
+bool Misc::isclose(const double &a, const double &b) {
+  return fabs(a - b) < __DBL_EPSILON__;
 }
 
 std::string Misc::file_from_path(const std::string& path) {
