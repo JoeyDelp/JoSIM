@@ -58,7 +58,8 @@ add_library(josim
             src/VoltageSource.cpp 
             src/Noise.cpp
             src/Spread.cpp
-            src/IV.cpp)
+            src/IV.cpp
+            src/LUSolve.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)
@@ -70,6 +71,8 @@ target_include_directories(josim PUBLIC
 
 # Dependencies
 target_link_libraries(josim PRIVATE suitesparse::klu)
+target_link_libraries(josim PRIVATE superlu)
+target_link_libraries(josim PRIVATE cblas)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
@@ -99,6 +102,8 @@ add_executable(josim-cli src/josim.cpp)
 # Dependencies
 target_link_libraries(josim-cli PRIVATE josim)
 target_link_libraries(josim-cli PRIVATE suitesparse::klu)
+target_link_libraries(josim-cli PRIVATE superlu)
+target_link_libraries(josim-cli PRIVATE cblas)
 
 # Properties
 make_target_static(josim-cli)

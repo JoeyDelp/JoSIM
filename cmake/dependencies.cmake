@@ -8,6 +8,20 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+  NAME CMakeSuperLU
+  GITHUB_REPOSITORY JoeyDelp/CMakeSuperLU
+  VERSION 0.1.0
+  GIT_TAG cddb3e33689ad2afe73d59c3ab97007f9d8f2f1e
+)
+
+CPMAddPackage(
+  NAME CMakeCBLAS
+  GITHUB_REPOSITORY JoeyDelp/CMakeCBLAS
+  VERSION 0.1.0
+  GIT_TAG 8ee64086a8ab012595744c4a97a49cdfc73b81ab
+)
+
+CPMAddPackage(
   NAME Catch2
   GITHUB_REPOSITORY catchorg/Catch2
   VERSION 2.5.0

@@ -28,6 +28,7 @@ namespace JoSIM {
     AnalysisType analysis_type = AnalysisType::Phase;
 
     int verbose = 0;
+    bool SLU = false;
     bool minimal = false;
     bool parallel = false;
 

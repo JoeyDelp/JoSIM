@@ -38,11 +38,13 @@ namespace JoSIM {
       argVerb = cli_options.verbose;
       argMin = cli_options.minimal;
       cli_output_file = cli_options.output_file;
+      SLU = cli_options.SLU;
     }
 
     AnalysisType argAnal;
     int argVerb = 0;
     bool argMin = false;
+    bool SLU = false;
 
     std::vector<tokens_t> read_input(
       LineInput& input, string_o fileName = std::nullopt);
