@@ -11,7 +11,7 @@ CPMAddPackage(
   NAME CMakeSuperLU
   GITHUB_REPOSITORY JoeyDelp/CMakeSuperLU
   VERSION 0.1.0
-  GIT_TAG cddb3e33689ad2afe73d59c3ab97007f9d8f2f1e
+  GIT_TAG 440c3fe9073bc34dcb3fafac93d0528ecc70d5f5
 )
 
 CPMAddPackage(
