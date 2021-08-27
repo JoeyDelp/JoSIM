@@ -19,8 +19,7 @@ namespace JoSIM {
   namespace Misc {
     double string_constant(const std::string& s);
 
-    bool isclose(double a, double b, double rtol = 1E-5,
-      double atol = 1E-8, bool equal_nan = false);
+    bool isclose(const double &a, const double& b);
 
     std::string file_from_path(const std::string& path);
 
