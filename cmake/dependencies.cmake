@@ -4,7 +4,7 @@ CPMAddPackage(
   NAME CMakeSuiteSparse
   GITHUB_REPOSITORY JoeyDelp/CMakeSuiteSparse
   VERSION 0.1.0
-  GIT_TAG 487fbd9f9159efb85e30ec3b7f3fef93b45968f0
+  GIT_TAG e7767c891fc15063475255060fa55031e456c720
 )
 
 CPMAddPackage(

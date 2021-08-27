@@ -17,7 +17,7 @@ LUSolve::LUSolve() {
 }
 
 void LUSolve::create_matrix(int shape, std::vector<double>& nz,
-  std::vector<int>& ci, std::vector<int>& rp) {
+  std::vector<int64_t>& ci, std::vector<int64_t>& rp) {
   bool do_allocation = (allocated == false || m != shape ||
     n != shape || nnz != nz.size());
   m = n = shape;

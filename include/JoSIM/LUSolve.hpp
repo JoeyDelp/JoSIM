@@ -17,11 +17,11 @@ namespace JoSIM {
     SuperMatrix A, L, U, B, X;
     GlobalLU_t Glu;
 
-    std::vector<int> perm_r, perm_c;
-    std::vector<int> etree;
+    std::vector<int64_t> perm_r, perm_c;
+    std::vector<int64_t> etree;
     void* work = nullptr;
-    int info, lwork, nrhs, ldx;
-    int i, m, n, nnz;
+    int64_t info, lwork, nrhs, ldx;
+    int64_t i, m, n, nnz;
     std::vector<double> rhsb, rhsx, xact;
     std::vector<double> R, C;
     std::vector<double> ferr, berr;
@@ -35,7 +35,7 @@ namespace JoSIM {
     public:
     LUSolve();
     void create_matrix(int shape, std::vector<double>& nz,
-      std::vector<int>& ci, std::vector<int>& rp);
+      std::vector<int64_t>& ci, std::vector<int64_t>& rp);
     void factorize(bool symbolic = false);
     bool is_stable();
     void solve(std::vector<double>& x);
