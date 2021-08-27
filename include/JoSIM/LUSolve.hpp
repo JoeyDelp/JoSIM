@@ -17,16 +17,14 @@ namespace JoSIM {
     SuperMatrix A, L, U, B, X;
     GlobalLU_t Glu;
 
-    double* a;
-    int* asub, * xa;
-    int* perm_r, * perm_c;
-    int* etree;
+    std::vector<int> perm_r, perm_c;
+    std::vector<int> etree;
     void* work = nullptr;
     int info, lwork, nrhs, ldx;
     int i, m, n, nnz;
-    double* rhsb, * rhsx, * xact;
-    double* R, * C;
-    double* ferr, * berr;
+    std::vector<double> rhsb, rhsx, xact;
+    std::vector<double> R, C;
+    std::vector<double> ferr, berr;
     double u, rpg, rcond;
     mem_usage_t mem_usage;
     superlu_options_t options;
