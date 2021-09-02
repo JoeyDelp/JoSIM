@@ -4,14 +4,14 @@ CPMAddPackage(
   NAME CMakeSuiteSparse
   GITHUB_REPOSITORY JoeyDelp/CMakeSuiteSparse
   VERSION 0.1.0
-  GIT_TAG d41596ceb5b0e63ffb363ff39c1c1f8959a636fa
+  GIT_TAG 96c16fab251376f1496fedf0a05274e7d058fe3c
 )
 
 CPMAddPackage(
   NAME CMakeSuperLU
   GITHUB_REPOSITORY JoeyDelp/CMakeSuperLU
   VERSION 0.1.0
-  GIT_TAG 948c05f485ccfc90af192b44fa4da40016446c04
+  GIT_TAG 30b8ef4db1e8d8729f4a1cd53029da69653f7bd6
 )
 
 CPMAddPackage(
