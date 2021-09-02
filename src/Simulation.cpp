@@ -44,18 +44,18 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
     lu.free();
   } else {
     // KLU setup
-    simOK_ = klu_defaults(&Common_);
+    simOK_ = klu_l_defaults(&Common_);
     assert(simOK_);
-    Symbolic_ = klu_analyze(
+    Symbolic_ = klu_l_analyze(
       mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
-    Numeric_ = klu_factor(
+    Numeric_ = klu_l_factor(
       &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(),
       Symbolic_, &Common_);
     // Run transient simulation
     trans_sim(mObj);
     // KLU cleanup
-    klu_free_symbolic(&Symbolic_, &Common_);
-    klu_free_numeric(&Numeric_, &Common_);
+    klu_l_free_symbolic(&Symbolic_, &Common_);
+    klu_l_free_numeric(&Numeric_, &Common_);
   }
 }
 
@@ -88,7 +88,7 @@ void Simulation::trans_sim(Matrix &mObj) {
     if (SLU) {
       lu.solve(x_);
     } else {
-      simOK_ = klu_tsolve(
+      simOK_ = klu_l_tsolve(
         Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
       // If anything is a amiss, complain about it
       if (!simOK_) Errors::simulation_errors(
@@ -123,8 +123,8 @@ void Simulation::setup_b(
     if (SLU) {
       lu.factorize(true);
     } else {
-      klu_free_numeric(&Numeric_, &Common_);
-      Numeric_ = klu_factor(
+      klu_l_free_numeric(&Numeric_, &Common_);
+      Numeric_ = klu_l_factor(
         &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
         Symbolic_, &Common_);
     }
@@ -179,8 +179,8 @@ void Simulation::reduce_step(
   // Recreate the non-zero matrix for the simulation
   mObj.create_nz();
   // Do a new LU decomposition
-  klu_free_numeric(&Numeric_, &Common_);
-  Numeric_ = klu_factor(
+  klu_l_free_numeric(&Numeric_, &Common_);
+  Numeric_ = klu_l_factor(
     &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
     Symbolic_, &Common_);
   for(int i = 0; i < smallSteps; ++i) {
@@ -191,7 +191,7 @@ void Simulation::reduce_step(
     // Assign x_prev the new b
     x_ = b_;
     // Solve Ax=b, storing the results in x_
-    simOK_ = klu_tsolve(
+    simOK_ = klu_l_tsolve(
       Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
     // If anything is a amiss, complain about it
     if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
@@ -221,8 +221,8 @@ void Simulation::reduce_step(
   // Recreate the non-zero matrix for the simulation
   mObj.create_nz();
   // Do a new LU decomposition
-  klu_free_numeric(&Numeric_, &Common_);
-  Numeric_ = klu_factor(
+  klu_l_free_numeric(&Numeric_, &Common_);
+  Numeric_ = klu_l_factor(
     &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
     Symbolic_, &Common_);
 }

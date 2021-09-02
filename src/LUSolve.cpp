@@ -8,8 +8,6 @@ using namespace JoSIM;
 LUSolve::LUSolve() {
   lwork = 0;
   nrhs = 1;
-  //equil = YES;
-  //u = 1.0;
   trans = TRANS;
   set_default_options(&options);
   options.Equil = NO;
@@ -17,7 +15,7 @@ LUSolve::LUSolve() {
 }
 
 void LUSolve::create_matrix(int shape, std::vector<double>& nz,
-  std::vector<int64_t>& ci, std::vector<int64_t>& rp) {
+  std::vector<long long>& ci, std::vector<long long>& rp) {
   bool do_allocation = (allocated == false || m != shape ||
     n != shape || nnz != nz.size());
   m = n = shape;
@@ -25,22 +23,26 @@ void LUSolve::create_matrix(int shape, std::vector<double>& nz,
   if (do_allocation) {
     dCreate_CompCol_Matrix(&A, m, n, nnz, &nz.front(), &ci.front(), 
       &rp.front(), SLU_NC, SLU_D, SLU_GE);
-    rhsb.resize(m * nrhs);
-    rhsx.resize(m * nrhs);
-    dCreate_Dense_Matrix(&B, m, nrhs, &rhsb.front(), m, SLU_DN, SLU_D, SLU_GE);
-    dCreate_Dense_Matrix(&X, m, nrhs, &rhsx.front(), m, SLU_DN, SLU_D, SLU_GE);
+    if (!(rhsb = doubleMalloc(m * nrhs))) ABORT("Malloc fails for rhsb[].");
+    if (!(rhsx = doubleMalloc(m * nrhs))) ABORT("Malloc fails for rhsx[].");
+    dCreate_Dense_Matrix(&B, m, nrhs, rhsb, m, SLU_DN, SLU_D, SLU_GE);
+    dCreate_Dense_Matrix(&X, m, nrhs, rhsx, m, SLU_DN, SLU_D, SLU_GE);
   }
-  xact.resize(n * nrhs);
+  xact = doubleMalloc(n * nrhs);
   ldx = n;
-  dGenXtrue(n, nrhs, &xact.front(), ldx);
-  dFillRHS(trans, nrhs, &xact.front(), ldx, &A, &B);
-  etree.resize(n);
-  perm_r.resize(m);
-  perm_c.resize(n);
-  R.resize(A.nrow);
-  C.resize(A.ncol);
-  ferr.resize(nrhs);
-  berr.resize(nrhs);
+  dGenXtrue(n, nrhs, xact, ldx);
+  dFillRHS(trans, nrhs, xact, ldx, &A, &B);
+  if (!(etree = intMalloc(n))) ABORT("Malloc fails for etree[].");
+  if (!(perm_r = intMalloc(m))) ABORT("Malloc fails for perm_r[].");
+  if (!(perm_c = intMalloc(n))) ABORT("Malloc fails for perm_c[].");
+  if (!(R = (double*)SUPERLU_MALLOC(A.nrow * sizeof(double))))
+    ABORT("SUPERLU_MALLOC fails for R[].");
+  if (!(C = (double*)SUPERLU_MALLOC(A.ncol * sizeof(double))))
+    ABORT("SUPERLU_MALLOC fails for C[].");
+  if (!(ferr = (double*)SUPERLU_MALLOC(nrhs * sizeof(double))))
+    ABORT("SUPERLU_MALLOC fails for ferr[].");
+  if (!(berr = (double*)SUPERLU_MALLOC(nrhs * sizeof(double))))
+    ABORT("SUPERLU_MALLOC fails for berr[].");
   StatInit(&stat);
   allocated = true;
 }
@@ -51,9 +53,8 @@ bool LUSolve::is_stable() {
 
 void LUSolve::factorize(bool symbolic) {
   options.Fact = symbolic ? SamePattern_SameRowPerm : DOFACT;
-  dgssvx(&options, &A, &perm_c.front(), &perm_r.front(), &etree.front(), equed, 
-    &R.front(), &C.front(), &L, &U, work, lwork, &B, &X, &rpg, &rcond, 
-    &ferr.front(), &berr.front(), &Glu, &mem_usage, &stat, &info);
+  dgssvx(&options, &A, perm_c, perm_r, etree, equed, R, C, &L, &U, work, lwork, 
+    &B, &X, &rpg, &rcond, ferr, berr, &Glu, &mem_usage, &stat, &info);
   options.Fact = FACTORED;
   constructed = true;
 }
@@ -64,25 +65,24 @@ void LUSolve::solve(std::vector<double>& x) {
   }
   DNformat LHSstore = { x.size(), &x.front() };
   SuperMatrix LHSmat = { SLU_DN, SLU_D, SLU_GE, x.size(), 1, &LHSstore };
-  dgstrs(trans, &L, &U, &perm_c.front(), &perm_r.front(), &LHSmat, &stat, 
-    &info);
+  dgstrs(trans, &L, &U, perm_c, perm_r, &LHSmat, &stat, &info);
 }
 
 void LUSolve::free() {
   if (allocated) {
-    //SUPERLU_FREE(rhsb);
-    //SUPERLU_FREE(rhsx);
-    //SUPERLU_FREE(xact);
-    //SUPERLU_FREE(etree);
-    //SUPERLU_FREE(R);
-    //SUPERLU_FREE(C);
-    //SUPERLU_FREE(perm_c);
-    //SUPERLU_FREE(perm_r);
+    SUPERLU_FREE(rhsb);
+    SUPERLU_FREE(rhsx);
+    SUPERLU_FREE(xact);
+    SUPERLU_FREE(etree);
+    SUPERLU_FREE(R);
+    SUPERLU_FREE(C);
+    SUPERLU_FREE(perm_c);
+    SUPERLU_FREE(perm_r);
     Destroy_SuperMatrix_Store(&A);
     Destroy_SuperMatrix_Store(&B);
     Destroy_SuperMatrix_Store(&X);
-    //SUPERLU_FREE(ferr);
-    //SUPERLU_FREE(berr);
+    SUPERLU_FREE(ferr);
+    SUPERLU_FREE(berr);
   }
   if (constructed) {
     constructed = false;
