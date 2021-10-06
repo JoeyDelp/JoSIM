@@ -1,9 +1,9 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.5.7 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
+##### Testing: v2.5.8 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
-##### Stable: v2.5.7 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+##### Stable: v2.5.8 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
 ---
 
@@ -35,6 +35,11 @@ Referencing:
 ---
 
 ## Changelog
+### v2.5.8
+- Updated KLU to a 64-bit version capable of handling non-zero count larger than the maximum value of a 32-bit integer.
+- Included SuperLU 64-bit that can be activated using the *-x 1* switch (default 0 for KLU).
+- Bug fixes to pulse command.
+
 ### v2.5.7
 - Fixed an issue with comparison of double values for small numbers between various compilers.
 

@@ -309,28 +309,6 @@ double Function::return_pulse(double& x) {
   double& tstop = timeValues_.at(5);
   double& alow = ampValues_.at(0);
   double& ahigh = ampValues_.at(1);
-  // // Calculate how many times the pulse repeats
-  // int n = static_cast<int>((tstop - td) / per) + 1;
-  // int i = 0;
-  // for (; i < n; i++) {
-  //   if ((x >= (i * per + td)) && (x < ((i + 1) * per + td))) break;
-  // }
-  // if (x > td) {
-  //   if ((x >= (i * per + td)) && (x < (i * per + tr + td))) {
-  //     return ampValues_.at(0) + ((ampValues_.at(1) - ampValues_.at(0)) /
-  //         ((i * per + tr + td) - (i * per + td))) * (x - (i * per + td));
-  //   } else if ((x >= (i * per + tr + td)) && (x < (i * per + tr + pw + td))) {
-  //     return ampValues_.at(1);
-  //   } else if ((x >= (i * per + tr + pw + td)) && 
-  //     (x < (i * per + tr + pw + tf + td))) {
-  //     return ampValues_.at(1) + ((ampValues_.at(0) - ampValues_.at(1)) /
-  //         ((i * per + tr + pw + tf + td) - (i * per + tr + pw + td))) *
-  //       (x - (i * per + tr + pw + td));
-  //   } else {
-  //     return ampValues_.at(0);
-  //   }
-  // }
-  // return ampValues_.at(0);
   auto val = alow;
   if (x < td) return(val);
   int index = (x - td) / per;
