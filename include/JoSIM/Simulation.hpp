@@ -6,6 +6,7 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Matrix.hpp"
+#include "JoSIM/LUSolve.hpp"
 
 #include <suitesparse/klu.h>
 
@@ -28,6 +29,7 @@ namespace JoSIM {
 
   class Simulation {
     private:
+    bool SLU = false;
     std::vector<double> x_, b_, xn2_, xn3_;
     int simSize_;
     JoSIM::AnalysisType atyp_;
@@ -36,9 +38,10 @@ namespace JoSIM {
     bool needsTR_;
     double stepSize_, prstep_, prstart_;
     int simOK_;
-    klu_symbolic* Symbolic_;
-    klu_common Common_;
-    klu_numeric* Numeric_;
+    klu_l_symbolic* Symbolic_;
+    klu_l_common Common_;
+    klu_l_numeric* Numeric_;
+    LUSolve lu;
 
     void trans_sim(Matrix& mObj);
     void setup_b(Matrix& mObj, int i, double step, double factor = 1);

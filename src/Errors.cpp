@@ -43,6 +43,12 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
     formattedMessage += "Usage: josim [options] input_netlist\n\n";
     formattedMessage += "For further help use the -h switch";
     throw std::runtime_error(formattedMessage);
+  case CLIErrors::INVALID_SOLVER:
+    formattedMessage +=
+      "Invalid solver type specified. 0 - KLU, 1 - SLU.\n";
+    formattedMessage += "Usage: josim [options] input_netlist\n\n";
+    formattedMessage += "For further help use the -h switch";
+    throw std::runtime_error(formattedMessage);
   case CLIErrors::INVALID_INTEGRATION:
     formattedMessage +=
       "Invalid integration method specified. 0 - Trapezoidal, 1 - Gear.\n";
@@ -52,6 +58,13 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
   case CLIErrors::NO_ANALYSIS:
     formattedMessage +=
       "No analysis was specified. Reverting to default (0 - Voltage).\n";
+    formattedMessage +=
+      "Please refer to the help menu (-h) or manual for further information.";
+    warning_message(formattedMessage);
+    break;
+  case CLIErrors::NO_SOLVER:
+    formattedMessage +=
+      "No solver was specified. Reverting to default (0 - KLU).\n";
     formattedMessage +=
       "Please refer to the help menu (-h) or manual for further information.";
     warning_message(formattedMessage);

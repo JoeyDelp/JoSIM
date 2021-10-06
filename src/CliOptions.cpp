@@ -162,6 +162,18 @@ CliOptions CliOptions::parse(int argc, const char** argv) {
       case 'v':
         exit(0);
         break;
+      // Set the solver type between KLU and SLU
+      case 'x':
+        if (!i.second) {
+          Errors::cli_errors(CLIErrors::NO_SOLVER);
+        } else if (i.second.value() == "0") {
+          out.SLU = false;
+        } else if (i.second.value() == "1") {
+          out.SLU = true;
+        } else {
+          Errors::cli_errors(CLIErrors::INVALID_SOLVER);
+        }
+        break;
         // Unknown switch was specified
       default:
         Errors::cli_errors(
@@ -305,6 +317,19 @@ void CliOptions::display_help() {
   std::cout << std::setw(16) << std::left << "--version" << std::setw(3)
     << std::left << "|"
     << " " << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+    << "|" << std::endl;
+  // Solver type
+  // ---------------------------------------------------------------------------
+  std::cout << std::setw(16) << std::left << "-x" << std::setw(3) << std::left
+    << "|"
+    << "Specifies the analysis type." << std::endl;
+  std::cout << std::setw(16) << std::left << "--xsolver=" << std::setw(3)
+    << std::left << "|"
+    << "0 for KLU analysis. (Default)" << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+    << "|"
+    << "1 for SuperLU analysis." << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
     << "|" << std::endl;
 
