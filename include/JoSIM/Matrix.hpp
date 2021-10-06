@@ -27,7 +27,7 @@ namespace JoSIM {
     std::unordered_set<std::string> lm;
     int branchIndex;
     std::vector<double> nz, nz_orig;
-    std::vector<int> ci, rp;
+    std::vector<long long> ci, rp;
     std::vector<RelevantTrace> relevantTraces;
     std::vector<int> relevantIndices;
 
