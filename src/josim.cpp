@@ -54,9 +54,9 @@ int main(int argc,
     mObj.create_matrix(iObj);
     // Do verbosity
     Verbose::handle_verbosity(iObj.argVerb, iObj, mObj);
-    // Dump expanded Netlist since it is no longer needed
-    iObj.netlist.expNetlist.clear();
-    iObj.netlist.expNetlist.shrink_to_fit();
+    //// Dump expanded Netlist since it is no longer needed
+    //iObj.netlist.expNetlist.clear();
+    //iObj.netlist.expNetlist.shrink_to_fit();
     // Find the relevant traces to store
     find_relevant_traces(iObj, mObj);
     // Create a simulation object

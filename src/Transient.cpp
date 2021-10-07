@@ -69,8 +69,7 @@ void Transient::identify_simulation(
         tObj.tstop(1E-9);
         tObj.prstart(0);
       }
-      // While variable time step does not work yet
-      // If user provided time step is larger than 0.25ps
+      // If user provided time step is larger than 0.25ps junction will fail
       if (tObj.tstep() > 0.25E-12) {
         tObj.tstep(0.25E-12);
       }

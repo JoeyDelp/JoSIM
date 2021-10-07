@@ -30,7 +30,7 @@ namespace JoSIM {
   class Simulation {
     private:
     bool SLU = false;
-    std::vector<double> x_, b_, xn2_, xn3_;
+    std::vector<double> x_, b_;
     int simSize_;
     JoSIM::AnalysisType atyp_;
     bool minOut_;
@@ -43,10 +43,10 @@ namespace JoSIM {
     klu_l_numeric* Numeric_;
     LUSolve lu;
 
+    void setup(Input& iObj, Matrix& mObj);
     void trans_sim(Matrix& mObj);
     void setup_b(Matrix& mObj, int i, double step, double factor = 1);
-    void reduce_step(Matrix& mObj, double factor,
-      int& stepCount, double currentStep);
+    void reduce_step(Input& iObj, Matrix& mObj);
 
     void handle_cs(Matrix& mObj, double& step, const int& i);
     void handle_resistors(Matrix& mObj);

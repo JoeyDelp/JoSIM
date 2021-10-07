@@ -15,6 +15,45 @@
 using namespace JoSIM;
 
 Simulation::Simulation(Input &iObj, Matrix &mObj) {
+  while (needsTR_) {
+    // Do generic simulation setup for given step size
+    setup(iObj, mObj);
+    // Do solver setup
+    if (SLU) {
+      // SLU setup
+      lu.create_matrix(mObj.rp.size() - 1, mObj.nz, mObj.ci, mObj.rp);
+      lu.factorize();
+    } else {
+      // KLU setup
+      simOK_ = klu_l_defaults(&Common_);
+      assert(simOK_);
+      Symbolic_ = klu_l_analyze(
+        mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
+      Numeric_ = klu_l_factor(
+        &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(),
+        Symbolic_, &Common_);
+    }
+
+    // Run transient simulation
+    trans_sim(mObj);
+    // If step size is too large, reduce and try again
+    if (needsTR_) {
+      reduce_step(iObj, mObj);
+    }
+
+    // Do solver cleanup
+    if (SLU) {
+      // SLU cleanup
+      lu.free();
+    } else {
+      // KLU cleanup
+      klu_l_free_symbolic(&Symbolic_, &Common_);
+      klu_l_free_numeric(&Numeric_, &Common_);
+    }
+  }
+}
+
+void Simulation::setup(Input& iObj, Matrix& mObj) {
   // Simulation setup
   SLU = iObj.SLU;
   simSize_ = iObj.transSim.simsize();
@@ -25,37 +64,15 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
   stepSize_ = iObj.transSim.tstep();
   prstep_ = iObj.transSim.prstep();
   prstart_ = iObj.transSim.prstart();
+  x_.clear();
   x_.resize(mObj.branchIndex, 0.0);
-  if(!mObj.relevantTraces.empty()) {
+  if (!mObj.relevantTraces.empty()) {
     results.xVector.resize(mObj.branchIndex);
-    for (const auto &i : mObj.relevantIndices) {
+    for (const auto& i : mObj.relevantIndices) {
       results.xVector.at(i).emplace();
     }
   } else {
     results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
-  }
-  if (SLU) {
-    // SLU setup
-    lu.create_matrix(mObj.rp.size() - 1, mObj.nz, mObj.ci, mObj.rp);
-    lu.factorize();
-    // Run transient simulation
-    trans_sim(mObj);
-    // SLU cleanup
-    lu.free();
-  } else {
-    // KLU setup
-    simOK_ = klu_l_defaults(&Common_);
-    assert(simOK_);
-    Symbolic_ = klu_l_analyze(
-      mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
-    Numeric_ = klu_l_factor(
-      &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(),
-      Symbolic_, &Common_);
-    // Run transient simulation
-    trans_sim(mObj);
-    // KLU cleanup
-    klu_l_free_symbolic(&Symbolic_, &Common_);
-    klu_l_free_numeric(&Numeric_, &Common_);
   }
 }
 
@@ -82,6 +99,7 @@ void Simulation::trans_sim(Matrix &mObj) {
     }
     // Setup the b matrix
     setup_b(mObj, i, i * stepSize_);
+    if (needsTR_) return;
     // Assign x_prev the new b
     x_ = b_;
     // Solve Ax=b, storing the results in x_
@@ -107,6 +125,23 @@ void Simulation::trans_sim(Matrix &mObj) {
     bar.complete();
     std::cout << "\n";
   }
+}
+
+void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
+  iObj.transSim.tstep(iObj.transSim.tstep() / 5);
+  bool tempMinOut = iObj.argMin;
+  if (!iObj.argMin) iObj.argMin = true;
+  Matrix newmObj;
+  mObj = newmObj;
+  // Create the matrix in csr format
+  mObj.create_matrix(iObj);
+  find_relevant_traces(iObj, mObj);
+  //// Dump expanded Netlist since it is no longer needed
+  //iObj.netlist.expNetlist.clear();
+  //iObj.netlist.expNetlist.shrink_to_fit();
+  if (!tempMinOut) iObj.argMin = tempMinOut;
+  results.xVector.clear();
+  results.timeAxis.clear();
 }
 
 void Simulation::setup_b(
@@ -148,83 +183,6 @@ void Simulation::setup_b(
   handle_vccs(mObj);
   // Handle transmission lines
   handle_tx(mObj, i, step);
-}
-
-void Simulation::reduce_step(
-  Matrix &mObj, double factor, 
-  int &stepCount, double currentStep) {
-  // Backup the current nonzeros
-  mObj.nz_orig = mObj.nz;
-  // Restore the previous x
-  x_ = xn3_;
-  // Remove the stored results for the larger timesteps
-  for(auto &i : results.xVector){
-    if(i) {
-      i.value().pop_back();
-      i.value().pop_back();
-    }
-  }
-  results.timeAxis.pop_back();
-  results.timeAxis.pop_back();
-  // Determine how many steps to take using the reduced time step
-  int smallSteps = static_cast<int>(20E-12 / (factor * stepSize_));
-  // Update the non-zeros of each component to reflect the smaller timestep
-  for (auto &j : mObj.components.devices) {
-    BasicComponent &x = std::visit(
-          [](auto& x) -> BasicComponent &{ return x; },
-          j);
-      x.update_timestep(factor);
-      x.step_back();
-  }
-  // Recreate the non-zero matrix for the simulation
-  mObj.create_nz();
-  // Do a new LU decomposition
-  klu_l_free_numeric(&Numeric_, &Common_);
-  Numeric_ = klu_l_factor(
-    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
-    Symbolic_, &Common_);
-  for(int i = 0; i < smallSteps; ++i) {
-    double smallStep = currentStep + i * (factor * stepSize_);
-    // Setup the b matrix
-    setup_b(
-      mObj, stepCount, smallStep, factor);
-    // Assign x_prev the new b
-    x_ = b_;
-    // Solve Ax=b, storing the results in x_
-    simOK_ = klu_l_tsolve(
-      Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
-    // If anything is a amiss, complain about it
-    if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
-    float test = smallStep / stepSize_;
-    // if(test == stepCount) {
-      // Store results (only requested, to prevent massive memory usage)
-      for(int j = 0; j < results.xVector.size(); ++j) {
-        if(smallStep >= prstart_) {
-          if(results.xVector.at(j)) {
-            results.xVector.at(j).value().emplace_back(x_.at(j));
-          }
-        }
-      }
-      // Store the time step
-      if(smallStep >= prstart_) results.timeAxis.emplace_back(smallStep);
-    if(test == stepCount) {
-      stepCount++;
-    }
-  }
-  // Restore the timestep of all components to the correct values
-  for (auto &j : mObj.components.devices) {
-    BasicComponent &x = std::visit(
-          [](auto& x) -> BasicComponent &{ return x; },
-          j);
-      x.update_timestep(1/factor);
-  }
-  // Recreate the non-zero matrix for the simulation
-  mObj.create_nz();
-  // Do a new LU decomposition
-  klu_l_free_numeric(&Numeric_, &Common_);
-  Numeric_ = klu_l_factor(
-    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
-    Symbolic_, &Common_);
 }
 
 
@@ -355,11 +313,11 @@ void Simulation::handle_jj(
         ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
     // Ensure timestep is not too large
     if ((double)i/(double)simSize_ > 0.01) {
-      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
-        // needsTR_ = true;
-        // return;
-        Errors::simulation_errors(
-          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
+      if (abs(temp.phi0_ - temp.pn1_) > (0.20 * 2 * Constants::PI)) {
+        needsTR_ = true;
+        return;
+        /*Errors::simulation_errors(
+          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);*/
       }
     }
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )

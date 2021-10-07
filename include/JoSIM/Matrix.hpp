@@ -16,6 +16,9 @@
 namespace JoSIM {
 
   class Matrix {
+    private:
+    std::vector<NodeConfig> nodeConfig, nodeConfig2;
+    bool needsTR_;
     public:
     AnalysisType analysisType = AnalysisType::Phase;
     std::vector<Function> sourcegen;
@@ -26,18 +29,21 @@ namespace JoSIM {
     nodeconnections nc;
     std::unordered_set<std::string> lm;
     int branchIndex;
-    std::vector<double> nz, nz_orig;
+    std::vector<double> nz;
     std::vector<long long> ci, rp;
     std::vector<RelevantTrace> relevantTraces;
     std::vector<int> relevantIndices;
 
     Matrix() {};
     void create_matrix(Input& iObj);
+    void setup(Input& iObj);
+    void create_components(Input& iObj);
+    void handle_mutual_inductance(Input& iObj);
+    void reduce_step(Input& iObj);
     void create_csr();
     void create_nz();
     void create_ci();
     void create_rp();
-    void mod_timestep(const int factor);
   };
 } // namespace JoSIM
 #endif
