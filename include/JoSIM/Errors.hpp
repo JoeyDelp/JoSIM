@@ -35,6 +35,7 @@ namespace JoSIM {
     MISSING_MAIN,
     UNKNOWN_SUBCKT,
     EMPTY_FILE,
+    IO_MISMATCH,
     UNKNOWN_CONTROL
   };
 

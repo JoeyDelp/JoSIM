@@ -32,8 +32,8 @@ namespace JoSIM {
     std::vector<OutputFile> output_files;
     std::optional<std::string> fileParentPath;
 
-    Input() {};
-    Input(CliOptions& cli_options) {
+    Input() : netlist(*this) {};
+    Input(CliOptions& cli_options) : netlist(*this) {
       argAnal = cli_options.analysis_type;
       argVerb = cli_options.verbose;
       argMin = cli_options.minimal;

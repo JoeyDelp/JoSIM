@@ -157,6 +157,14 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
     formattedMessage +=
       "Please check the input file and ensure that the file is not empty.";
     throw std::runtime_error(formattedMessage);
+  case InputErrors::IO_MISMATCH:
+    formattedMessage +=
+      "The IO of line \"" + message.value_or("") + "\" does not "
+      "match the subcircuit IO.\n";
+    formattedMessage +=
+      "Please check the line and ensure correct IO and "
+      "that parameters do not contain spaces.";
+    throw std::runtime_error(formattedMessage);
   case InputErrors::UNKNOWN_CONTROL:
     formattedMessage +=
       "The control \"" + message.value_or("") + "\" is not known.\n";
