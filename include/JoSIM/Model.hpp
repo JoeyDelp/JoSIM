@@ -23,6 +23,7 @@ namespace JoSIM {
     double transparency_;
     double criticalToNormalRatio_;
     double phaseOffset_;
+    double phiZero_;
 
     public:
     Model() :
@@ -37,7 +38,8 @@ namespace JoSIM {
       deltaV_(0.1E-3),
       transparency_(0),
       criticalToNormalRatio_(Constants::PI / 4),
-      phaseOffset_(0) {};
+      phaseOffset_(0),
+      phiZero_(0) {};
 
     std::string get_modelName() const {
       return modelName_;
@@ -78,6 +80,9 @@ namespace JoSIM {
     double get_phaseOffset() const {
       return phaseOffset_;
     }
+    double get_phiZero() const {
+      return phiZero_;
+    }
 
     void set_modelName(const std::string& n) {
       modelName_ = n;
@@ -117,6 +122,9 @@ namespace JoSIM {
     }
     void set_phaseOffset(const double& o) {
       phaseOffset_ = o;
+    }
+    void set_phiZero(const double& o) {
+      phiZero_ = o;
     }
 
     static void parse_model(

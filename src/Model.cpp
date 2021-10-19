@@ -67,6 +67,8 @@ void Model::parse_model(
       temp.set_criticalToNormalRatio(value);
     } else if (tokens.at(i) == "PHI") {
       temp.set_phaseOffset(value);
+    } else if (tokens.at(i) == "PHI0") {
+      temp.set_phiZero(value);
     }
   }
 

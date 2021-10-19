@@ -344,15 +344,20 @@ void Simulation::handle_jj(
         needsLU_ = true;
       }
     }
-    // -(hR / h + 2RC) * (Ic sin φ0 - 2C / h Vp1 + C/2h Vp2 + It) 
+    // -(hR / h + 2RC) * (Ic sin (φ0 - 2C / h Vp1 + C/2h Vp2 + It) 
     b_.at(temp.indexInfo.currentIndex_.value()) = 
       (temp.matrixInfo.nonZeros_.back()) * ((((Constants::PI * temp.del_) / 
-        (2 * Constants::EV * temp.rncalc_)) * (sin(temp.phi0_) / 
-          sqrt(1 - model.value().get_transparency() * (sin(temp.phi0_ / 2) * 
-          sin(temp.phi0_ / 2)))) * tanh((temp.del_) / 
+        (2 * Constants::EV * temp.rncalc_)) * (sin((temp.phi0_ +
+          temp.model_.value().get_phiZero())) /
+          sqrt(1 - model.value().get_transparency() * (sin((temp.phi0_ +
+            temp.model_.value().get_phiZero()) / 2) *
+          sin((temp.phi0_ +
+            temp.model_.value().get_phiZero()) / 2)))) * tanh((temp.del_) /
         (2 * Constants::BOLTZMANN * model.value().get_temperature()) *
         sqrt(1 - model.value().get_transparency() * 
-          (sin(temp.phi0_ / 2) * sin(temp.phi0_ / 2))))) -
+          (sin((temp.phi0_ +
+            temp.model_.value().get_phiZero()) / 2) * sin((temp.phi0_ +
+            temp.model_.value().get_phiZero()) / 2))))) -
         (((2 * model.value().get_capacitance()) / 
           (stepSize_ * factor)) * temp.vn1_) + 
         ((model.value().get_capacitance() / 
