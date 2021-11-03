@@ -63,8 +63,9 @@ void LUSolve::solve(std::vector<double>& x) {
   if (!constructed) {
     ABORT("Preconditioner not constructed.");
   }
-  DNformat LHSstore = { x.size(), &x.front() };
-  SuperMatrix LHSmat = { SLU_DN, SLU_D, SLU_GE, x.size(), 1, &LHSstore };
+  int x_size = x.size();
+  DNformat LHSstore = { x_size, &x.front() };
+  SuperMatrix LHSmat = { SLU_DN, SLU_D, SLU_GE, x_size, 1, &LHSstore };
   dgstrs(trans, &L, &U, perm_c, perm_r, &LHSmat, &stat, &info);
 }
 
