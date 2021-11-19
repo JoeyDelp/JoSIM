@@ -322,11 +322,9 @@ void CliOptions::version_info() {
     << std::endl;
   std::cout << "Copyright (C) 2020 by Johannes Delport (jdelport@sun.ac.za)"
     << std::endl;
-  /*
   std::cout << "v" << VERSION << "." << GIT_COMMIT_HASH << " compiled on "
     << __DATE__ << " at "
     << __TIME__ << std::endl;
-    */
 #ifndef NDEBUG
   std::cout << "(Debug)" << std::endl;
 #endif

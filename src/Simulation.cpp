@@ -22,8 +22,8 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
   needsLU_  = false;
   needsTR_  = false;
   stepSize_ = iObj.transSim.tstep();
-  prstep_   = iObj.transSim.prstep();
-  prstart_  = iObj.transSim.prstart();
+  prstep_ = iObj.transSim.prstep();
+  prstart_ = iObj.transSim.prstart();
   x_.resize(mObj.branchIndex, 0.0);
   if(!mObj.relevantTraces.empty()) {
     results.xVector.resize(mObj.branchIndex);
@@ -108,16 +108,15 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
 }
 
-void Simulation::setup_b(Matrix &mObj, int i, double step, double factor) {
+void Simulation::setup_b(
+  Matrix &mObj, int i, double step, double factor) {
   // Clear b matrix and reset
   b_.clear();
   b_.resize(mObj.rp.size(), 0.0);
-
   // Handle pi-jj
   handle_pjj(mObj, i, step, factor);
   // Handle jj
   handle_jj(mObj, i, step, factor);
-  
   if(needsTR_) return;
   // Re-factorize the LU if any jj transitions
   if (needsLU_) {
@@ -128,8 +127,6 @@ void Simulation::setup_b(Matrix &mObj, int i, double step, double factor) {
       Symbolic_, &Common_);
     needsLU_ = false;
   }
- 
-
   // Handle current sources
   handle_cs(mObj, step, i);
   // Handle resistors

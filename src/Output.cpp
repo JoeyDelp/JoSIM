@@ -336,7 +336,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
       outfile << "No. Variables: " << tIndices.size() << "\n";
       loopsize = traces.at(0).data_.size();
       outfile << "No. Points: " << loopsize << "\n";
-      //outfile << "Command: JoSIM v" << VERSION << "\n";
+      outfile << "Command: JoSIM v" << VERSION << "\n";
       outfile << "Variables:\n";
       outfile << " 0 time Seconds\n";
       // Determine the variable name and type in a format acceptable for raw

@@ -102,7 +102,8 @@ void Matrix::create_matrix(Input& iObj) {
   // Counter for progress report
   cc = 0;
   // Loop through all the components in the netlist
-  for (auto it = iObj.netlist.expNetlist.begin() ; it != iObj.netlist.expNetlist.end() ; it++) {
+  for (auto it = iObj.netlist.expNetlist.begin();
+    it != iObj.netlist.expNetlist.end(); it++) {
     const auto& i = *it;
     // If not minimal printing
     if (!iObj.argMin) {

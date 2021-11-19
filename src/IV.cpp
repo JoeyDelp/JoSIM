@@ -5,6 +5,7 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Parameters.hpp"
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
