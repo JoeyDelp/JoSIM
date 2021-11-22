@@ -417,3 +417,4 @@ void Output::format_cout(const bool& argMin) {
         traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
   }
+}
