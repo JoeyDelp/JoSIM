@@ -36,6 +36,7 @@ namespace JoSIM {
     bool minOut_;
     bool needsLU_;
     bool needsTR_;
+    bool startup_;
     double stepSize_, prstep_, prstart_;
     int simOK_;
     klu_l_symbolic* Symbolic_;

@@ -65,6 +65,8 @@ void Function::parse_function(
     Misc::tokenize(str).back(), iObj.parameters, subckt))) {
     fType_ = FunctionType::DC;
     parse_dc(t, iObj, subckt);
+  } else {
+    // Assume DC
   }
 }
 

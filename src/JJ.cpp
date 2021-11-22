@@ -80,12 +80,6 @@ JJ::JJ(
   }
   // Set the model for this JJ instance
   set_model(t, iObj.netlist.models_new, s.second);
-  // Get and set the phase offset from the model
-  pn1_ = model_.value().get_phaseOffset();
-  // Set the transitional conductance value
-  gLarge_ = model_.value().get_criticalCurrent() /
-    (model_.value().get_criticalToNormalRatio() *
-      model_.value().get_deltaV());
   // Set the phase constant
   if (at_ == AnalysisType::Voltage) {
     // If voltage mode set this to (3 * hbar) / (4 * h * eV)
@@ -94,19 +88,6 @@ JJ::JJ(
     // If phase mode set this to (4 * h * eV) / (3 * hbar)
     phaseConst_ = (4 * h_ * Constants::EV) / (3 * Constants::HBAR);
   }
-  // Set the Del0 parameter
-  del0_ = 1.76 * Constants::BOLTZMANN *
-    model_.value().get_criticalTemperature();
-  // Set the del parameter
-  del_ = del0_ * sqrt(cos((Constants::PI / 2) *
-    (model_.value().get_temperature() /
-      model_.value().get_criticalTemperature()) *
-    (model_.value().get_temperature() /
-      model_.value().get_criticalTemperature())));
-  // Set the calculated Rn value
-  rncalc_ = ((Constants::PI * del_) /
-    (2 * Constants::EV * model_.value().get_criticalCurrent())) *
-    tanh(del_ / (2 * Constants::BOLTZMANN * model_.value().get_temperature()));
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set variable index and increment it
@@ -121,20 +102,17 @@ JJ::JJ(
 
 double JJ::subgap_impedance() {
   // Set subgap impedance (1/R0) + (3C/2h)
-  return ((1 / model_.value().get_subgapResistance()) +
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
+  return ((1 / model_.r0()) + ((3.0 * model_.c()) / (2.0 * h_)));
 }
 
 double JJ::transient_impedance() {
   // Set transitional impedance (GL) + (3C/2h)
-  return (gLarge_ +
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
+  return (gLarge_ + ((3.0 * model_.c()) / (2.0 * h_)));
 }
 
 double JJ::normal_impedance() {
   // Set normal impedance (1/RN) + (3C/2h)
-  return ((1 / model_.value().get_normalResistance()) +
-    ((3.0 * model_.value().get_capacitance()) / (2.0 * h_)));
+  return ((1 / model_.rn()) + ((3.0 * model_.c()) / (2.0 * h_)));
 }
 
 void JJ::set_matrix_info() {
@@ -185,61 +163,74 @@ void JJ::set_matrix_info() {
 void JJ::set_model(
   const tokens_t& t, const vector_pair_t<Model, string_o>& models,
   const string_o& subc) {
+  bool found = false;
   // Loop through all models
   for (auto& i : models) {
     // If the model name matches that of an identified model
-    if (i.first.get_modelName() == t.back()) {
+    if (i.first.modelName() == t.back()) {
       // If both models belong to a subcircuit and the subcircuit names match
       if ((i.second && subc) && (subc.value() == i.second.value())) {
         // Set the model to the exact identified model
         model_ = i.first;
+        found = true;
         break;
-        // JJ might be in a subcircuit but model in global scope
+        // JJ might be in a subcircuit but model in global scope6
       } else if (!i.second) {
         // Set the model to the globally identified model
         model_ = i.first;
+        found = true;
         break;
       }
     }
   }
   // If no model was found
-  if (!model_) {
+  if (!found) {
     // Complain about it
     Errors::invalid_component_errors(
       ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
   }
+  // Set the model critical current for this JJ instance  
+  model_.ic(model_.ic() * area_);
+  if (model_.tDep()) {
+    // Set the Del0 parameter
+    del0_ = 1.76 * Constants::BOLTZMANN * model_.tc();
+    // Set the del parameter
+    del_ = del0_ * sqrt(cos((Constants::PI / 2) *
+      (model_.t() / model_.tc()) * (model_.t() / model_.tc())));
+    // Set the temperature dependent normal resistance
+    model_.rn(((Constants::PI * del_) / (2 * Constants::EV * model_.ic())) *
+      tanh(del_ / (2 * Constants::BOLTZMANN * model_.t())));
+  } else {
+    // Set the model normal resistance for this JJ instance  
+    model_.rn(model_.rn() / area_);
+  }
   // Change the area if ic was defined
   if (Ic_) {
-    area_ = Ic_.value() / model_.value().get_criticalCurrent();
+    area_ = Ic_.value() / model_.ic();
   }
   // Set the model capacitance for this JJ instance
-  model_.value().set_capacitance(
-    model_.value().get_capacitance() * area_);
-  // Set the model normal resistance for this JJ instance  
-  model_.value().set_normalResistance(
-    model_.value().get_normalResistance() / area_);
+  model_.c(model_.c() * area_);
   // Set the model subgap resistance for this JJ instance  
-  model_.value().set_subgapResistance(
-    model_.value().get_subgapResistance() / area_);
-  // Set the model critical current for this JJ instance  
-  model_.value().set_criticalCurrent(
-    model_.value().get_criticalCurrent() * area_);
+  model_.r0(model_.r0() / area_);
   // Set the lower boundary for the transition region
-  lowerB_ =
-    model_.value().get_voltageGap() - 0.5 * model_.value().get_deltaV();
+  lowerB_ = model_.vg() - 0.5 * model_.deltaV();
   // Set the upper boundary for the transition region
-  upperB_ =
-    model_.value().get_voltageGap() + 0.5 * model_.value().get_deltaV();
+  upperB_ = model_.vg() + 0.5 * model_.deltaV();
+  // Set the transitional conductance value
+  gLarge_ = model_.ic() / (model_.icFct() * model_.deltaV());
+  if (model_.rtype() == 0) {
+    model_.r0(model_.rn());
+  }
 }
 
 // Update the value based on the matrix entry based on voltage value
 bool JJ::update_value(const double& v) {
   // Shorthand for the model
-  const Model& m = model_.value();
+  const Model& m = model_;
   // If the absolute value of the voltage is less than lower bounds
   if (fabs(v) < lowerB_) {
     // Set the transition current to 0
-    transitionCurrent_ = 0.0;
+    it_ = 0.0;
     // If the non zero vector does not end with the subgap conductance
     if (matrixInfo.nonZeros_.back() != -1 / subgap_impedance()) {
       // Make it end with the subgap conductance
@@ -255,9 +246,11 @@ bool JJ::update_value(const double& v) {
     // If the absolute value of the voltage is less than the upperbounds
   } else if (fabs(v) < upperB_) {
     // Set the transition current
-    transitionCurrent_ = lowerB_ * ((1 / m.get_subgapResistance()) - gLarge_);
+    it_ = lowerB_ * ((1 / m.r0()) - gLarge_);
     // If the voltage is negative, current must be negative
-    if (v < 0) transitionCurrent_ = -transitionCurrent_;
+    if (v < 0) {
+      it_ = -it_;
+    }
     // If the back of the non zero vector is not the transition conductance
     if (matrixInfo.nonZeros_.back() != -1 / transient_impedance()) {
       // Set it to the transition conductance
@@ -273,7 +266,7 @@ bool JJ::update_value(const double& v) {
     // If neither of the above then it must be in normal operating region
   } else {
     // Reset the transition current, transition has passed.
-    transitionCurrent_ = 0.0;
+    it_ = 0.0;
     // If the back of the non zero vector is not the normal conductance
     if (matrixInfo.nonZeros_.back() != -1 / normal_impedance()) {
       // Set it to the normal conductance
@@ -289,23 +282,4 @@ bool JJ::update_value(const double& v) {
   }
   // This should never happen, only here to appease the return type
   return false;
-}
-
-// Update timestep based on a scalar factor i.e 0.5 for half the timestep
-void JJ::update_timestep(const double& factor) {
-  h_ = h_ * factor;
-  if (state_ == 0) {
-    matrixInfo.nonZeros_.back() = -1 / subgap_impedance();
-  } else if (state_ == 1) {
-    matrixInfo.nonZeros_.back() = -1 / transient_impedance();
-  } else if (state_ == 2) {
-    matrixInfo.nonZeros_.back() = -1 / normal_impedance();
-  }
-  if (at_ == AnalysisType::Voltage) {
-    matrixInfo.nonZeros_.at(hDepPos_) =
-      (1 / factor) * matrixInfo.nonZeros_.at(hDepPos_);
-  } else if (at_ == AnalysisType::Phase) {
-    matrixInfo.nonZeros_.at(hDepPos_) =
-      factor * matrixInfo.nonZeros_.at(hDepPos_);
-  }
 }

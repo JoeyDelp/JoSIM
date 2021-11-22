@@ -55,14 +55,14 @@ namespace JoSIM {
     int variableIndex_ = 0;
     double area_ = 1.0;
     std::optional<double> Ic_;
-    std::optional<Model> model_;
+    Model model_;
     double phaseConst_ = 0.0;
     double lowerB_ = 0.0, upperB_ = 0.0, gLarge_ = 0.0;
-    double del0_ = 0.0, del_ = 0.0, rncalc_ = 0.0;
+    double del0_ = 0.0, del_ = 0.0;
     double pn1_ = 0.0, pn2_ = pn1_, pn3_ = pn2_, pn4_ = pn3_, phi0_ = 0.0;
     double vn1_ = 0.0, vn2_ = vn1_, vn3_ = vn2_, vn4_ = vn3_, vn5_ = vn4_,
       vn6_ = vn5_;
-    double transitionCurrent_ = 0.0;
+    double it_ = 0.0;
     JoSIM::AnalysisType at_;
 
     JJ(
@@ -81,8 +81,6 @@ namespace JoSIM {
       const string_o& subc);
 
     bool update_value(const double& v);
-
-    void update_timestep(const double& factor) override;
 
     void step_back() override {
       pn2_ = pn4_;

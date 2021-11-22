@@ -11,122 +11,120 @@ namespace JoSIM {
   class Model {
     private:
     std::string modelName_;
-    double voltageGap_;
-    double criticalCurrent_;
-    int resistanceType_;
-    double normalResistance_;
-    double subgapResistance_;
-    double capacitance_;
-    double temperature_;
-    double criticalTemperature_;
+    double vg_;
+    double ic_;
+    int rtype_;
+    double rn_;
+    double r0_;
+    double c_;
+    double t_;
+    double tc_;
     double deltaV_;
-    double transparency_;
-    double criticalToNormalRatio_;
-    double phaseOffset_;
-    double phiZero_;
+    double d_;
+    double icFct_;
+    double phiOff_;
+    bool tDep_;
 
     public:
     Model() :
-      voltageGap_(2.8E-3),
-      criticalCurrent_(1E-3),
-      resistanceType_(1),
-      normalResistance_(5),
-      subgapResistance_(30),
-      capacitance_(2.5E-12),
-      temperature_(4.2),
-      criticalTemperature_(9.1),
+      vg_(2.8E-3),
+      ic_(1E-3),
+      rtype_(1),
+      rn_(5),
+      r0_(30),
+      c_(2.5E-12),
+      t_(4.2),
+      tc_(9.1),
       deltaV_(0.1E-3),
-      transparency_(0),
-      criticalToNormalRatio_(Constants::PI / 4),
-      phaseOffset_(0),
-      phiZero_(0) {};
+      d_(0),
+      icFct_(Constants::PI / 4),
+      phiOff_(0),
+      tDep_(false) {};
 
-    std::string get_modelName() const {
+    std::string modelName() const {
       return modelName_;
     }
-    double get_voltageGap() const {
-      return voltageGap_;
-    }
-    double get_criticalCurrent() const {
-      return criticalCurrent_;
-    }
-    int get_resistanceType() const {
-      return resistanceType_;
-    }
-    double get_normalResistance() const {
-      return normalResistance_;
-    }
-    double get_subgapResistance() const {
-      return subgapResistance_;
-    }
-    double get_capacitance() const {
-      return capacitance_;
-    }
-    double get_temperature() const {
-      return temperature_;
-    }
-    double get_criticalTemperature() const {
-      return criticalTemperature_;
-    }
-    double get_deltaV() const {
-      return deltaV_;
-    }
-    double get_transparency() const {
-      return transparency_;
-    }
-    double get_criticalToNormalRatio() const {
-      return criticalToNormalRatio_;
-    }
-    double get_phaseOffset() const {
-      return phaseOffset_;
-    }
-    double get_phiZero() const {
-      return phiZero_;
-    }
-
-    void set_modelName(const std::string& n) {
+    void modelName(const std::string& n) {
       modelName_ = n;
     }
-    void set_voltageGap(const double& v) {
-      voltageGap_ = v;
+    double vg() const {
+      return vg_;
     }
-    void set_criticalCurrent(const double& i) {
-      criticalCurrent_ = i;
+    void vg(const double& v) {
+      vg_ = v;
     }
-    void set_resistanceType(const int& r) {
-      resistanceType_ = r;
+    double ic() const {
+      return ic_;
     }
-    void set_normalResistance(const double& r) {
-      normalResistance_ = r;
+    void ic(const double& i) {
+      ic_ = i;
     }
-    void set_subgapResistance(const double& r) {
-      subgapResistance_ = r;
+    int rtype() const {
+      return rtype_;
     }
-    void set_capacitance(const double& c) {
-      capacitance_ = c;
+    void rtype(const int& r) {
+      rtype_ = r;
     }
-    void set_temperature(const double& t) {
-      temperature_ = t;
+    double rn() const {
+      return rn_;
     }
-    void set_criticalTemperature(const double& t) {
-      criticalTemperature_ = t;
+    void rn(const double& r) {
+      rn_ = r;
     }
-    void set_deltaV(const double& d) {
+    double r0() const {
+      return r0_;
+    }
+    void r0(const double& r) {
+      r0_ = r;
+    }
+    double c() const {
+      return c_;
+    }
+    void c(const double& c) {
+      c_ = c;
+    }
+    double t() const {
+      return t_;
+    }
+    void t(const double& t) {
+      t_ = t;
+    }
+    double tc() const {
+      return tc_;
+    }
+    void tc(const double& t) {
+      tc_ = t;
+    }
+    double deltaV() const {
+      return deltaV_;
+    }
+    void deltaV(const double& d) {
       deltaV_ = d;
     }
-    void set_transparency(const double& t) {
-      transparency_ = t;
+    double d() const {
+      return d_;
     }
-    void set_criticalToNormalRatio(const double& r) {
-      criticalToNormalRatio_ = r;
+    void d(const double& t) {
+      d_ = t;
     }
-    void set_phaseOffset(const double& o) {
-      phaseOffset_ = o;
+    double icFct() const {
+      return icFct_;
     }
-    void set_phiZero(const double& o) {
-      phiZero_ = o;
+    void icFct(const double& r) {
+      icFct_ = r;
     }
-
+    double phiOff() const {
+      return phiOff_;
+    }
+    void phiOff(const double& o) {
+      phiOff_ = o;
+    }
+    bool tDep() {
+      return tDep_;
+    }
+    void tDep(bool b) {
+      tDep_ = b;
+    }
     static void parse_model(
       const std::pair<tokens_t, string_o>& s,
       vector_pair_t<Model, string_o>& models, const param_map& p);

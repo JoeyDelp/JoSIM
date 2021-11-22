@@ -78,7 +78,9 @@ namespace JoSIM {
     template <typename T>
     std::string precise_to_string(const T a_value) {
       std::ostringstream out;
-      out << std::uppercase << std::fixed << std::scientific << a_value;
+      out << std::uppercase << 
+        std::setprecision(std::numeric_limits<long double>::digits10 + 1) << 
+        a_value;
       return out.str();
     }
 

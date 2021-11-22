@@ -73,6 +73,10 @@ double JoSIM::parse_param(
   bool single) {
   // Initialize the expression to evaluate
   std::string expToEval = expr;
+  // Sanity check, prepend 0 to a string where the value is eg. .5 to vorm 0.5
+  if (expToEval.front() == '.') {
+    expToEval = "0" + expToEval;
+  }
   // Remove any and all whitespace characters
   expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace),
     expToEval.end());

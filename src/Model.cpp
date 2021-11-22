@@ -19,7 +19,7 @@ void Model::parse_model(
   // Create a model that will be stored
   Model temp;
   // The second token is the model label
-  temp.set_modelName(s.first.at(1));
+  temp.modelName(s.first.at(1));
   // The third token needs to start with "JJ" for this to be valid
   if (s.first.at(2).compare(0, 2, "JJ") != 0) {
     Errors::model_errors(
@@ -44,31 +44,36 @@ void Model::parse_model(
     }
     // Assign the relevant model parameters
     if (tokens.at(i) == "VG" || tokens.at(i) == "VGAP") {
-      temp.set_voltageGap(value);
+      temp.vg(value);
     } else if (tokens.at(i) == "IC" || tokens.at(i) == "ICRIT") {
-      temp.set_criticalCurrent(value);
+      temp.ic(value);
     } else if (tokens.at(i) == "RTYPE") {
-      temp.set_resistanceType((int)value);
+      temp.rtype((int)value);
     } else if (tokens.at(i) == "RN") {
-      temp.set_normalResistance(value);
+      temp.rn(value);
     } else if (tokens.at(i) == "R0") {
-      temp.set_subgapResistance(value);
+      temp.r0(value);
     } else if (tokens.at(i) == "CAP" || tokens.at(i) == "C") {
-      temp.set_capacitance(value);
+      temp.c(value);
     } else if (tokens.at(i) == "T") {
-      temp.set_temperature(value);
+      temp.t(value);
+      temp.tDep(true);
     } else if (tokens.at(i) == "TC") {
-      temp.set_criticalTemperature(value);
+      temp.tc(value);
+      temp.tDep(true);
     } else if (tokens.at(i) == "DELV") {
-      temp.set_deltaV(value);
+      temp.deltaV(value);
     } else if (tokens.at(i) == "D") {
-      temp.set_transparency(value);
+      temp.d(value);
+      temp.tDep(true);
     } else if (tokens.at(i) == "ICFACT" || tokens.at(i) == "ICFCT") {
-      temp.set_criticalToNormalRatio(value);
+      temp.icFct(value);
     } else if (tokens.at(i) == "PHI") {
-      temp.set_phaseOffset(value);
-    } else if (tokens.at(i) == "PHI0") {
-      temp.set_phiZero(value);
+      temp.phiOff(value);
+    } else {
+      // Incompatible parameter
+      Errors::model_errors(ModelErrors::PARAM_TYPE_ERROR,
+        Misc::vector_to_string(s.first));
     }
   }
 

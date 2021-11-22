@@ -488,8 +488,10 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
     formattedMessage += "Unknown model parameter specified.\n";
     formattedMessage += "Model line: " + message.value_or("") + "\n";
     formattedMessage +=
-      "Please refer to the model definition in the documentation";
-    throw std::runtime_error(formattedMessage);
+      "Continuing with default model parameters.\n"
+      "Please consult the syntax guide for more information.";
+    warning_message(formattedMessage);
+    break;
   case ModelErrors::UNKNOWN_MODEL_TYPE:
     formattedMessage += "Unknown model type specified.\n";
     formattedMessage += "Model line: " + message.value_or("");

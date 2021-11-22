@@ -64,6 +64,7 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
   stepSize_ = iObj.transSim.tstep();
   prstep_ = iObj.transSim.prstep();
   prstart_ = iObj.transSim.prstart();
+  startup_ = iObj.transSim.startup();
   x_.clear();
   x_.resize(mObj.branchIndex, 0.0);
   if (!mObj.relevantTraces.empty()) {
@@ -90,6 +91,28 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
   // Initialize the b matrix
   b_.resize(mObj.rp.size(), 0.0);
+  if (startup_) {
+    // Stabilize the simulation before starting at t=0
+    int startup = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
+    for (int i = -startup; i < 0; ++i) {
+      double step = i * stepSize_;
+      // Setup the b matrix
+      setup_b(mObj, i, i * stepSize_);
+      if (needsTR_) return;
+      // Assign x_prev the new b
+      x_ = b_;
+      // Solve Ax=b, storing the results in x_
+      if (SLU) {
+        lu.solve(x_);
+      } else {
+        simOK_ = klu_l_tsolve(
+          Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
+        // If anything is a amiss, complain about it
+        if (!simOK_) Errors::simulation_errors(
+          SimulationErrors::MATRIX_SINGULAR);
+      }
+    }
+  }
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
     double step = i * stepSize_;
@@ -310,7 +333,7 @@ void Simulation::handle_jj(
     // Phase guess (P0)
     temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
       ((1.0 / Constants::SIGMA) * 
-        ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
+        ((2.0 * (stepSize_)) / 3.0)) * v0;
     // Ensure timestep is not too large
     if ((double)i/(double)simSize_ > 0.01) {
       if (abs(temp.phi0_ - temp.pn1_) > (0.20 * 2 * Constants::PI)) {
@@ -323,8 +346,8 @@ void Simulation::handle_jj(
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
     if(atyp_ == AnalysisType::Voltage) {
       b_.at(temp.variableIndex_) = 
-        (Constants::SIGMA) * (-(2.0 / (stepSize_ * factor)) * 
-          temp.pn1_ + (1.0 / (2.0 * (stepSize_ * factor))) * temp.pn2_);
+        (Constants::SIGMA) * (-(2.0 / (stepSize_)) * 
+          temp.pn1_ + (1.0 / (2.0 * (stepSize_))) * temp.pn2_);
     // (4 / 3) φp1 - (1/3) φp2 
     } else if (atyp_ == AnalysisType::Phase) {
       b_.at(temp.variableIndex_) = 
@@ -338,31 +361,43 @@ void Simulation::handle_jj(
     temp.vn4_ = temp.vn3_;
     temp.vn3_ = temp.vn2_;
     // Update junction transition
-    if(model.value().get_resistanceType() == 1) {
+    if(model.rtype() == 1) {
       auto testLU = temp.update_value(v0);
       if(testLU && !needsLU_) {
         needsLU_ = true;
       }
     }
-    // -(hR / h + 2RC) * (Ic sin (φ0 - 2C / h Vp1 + C/2h Vp2 + It) 
-    b_.at(temp.indexInfo.currentIndex_.value()) = 
-      (temp.matrixInfo.nonZeros_.back()) * ((((Constants::PI * temp.del_) / 
-        (2 * Constants::EV * temp.rncalc_)) * (sin((temp.phi0_ +
-          temp.model_.value().get_phiZero())) /
-          sqrt(1 - model.value().get_transparency() * (sin((temp.phi0_ +
-            temp.model_.value().get_phiZero()) / 2) *
-          sin((temp.phi0_ +
-            temp.model_.value().get_phiZero()) / 2)))) * tanh((temp.del_) /
-        (2 * Constants::BOLTZMANN * model.value().get_temperature()) *
-        sqrt(1 - model.value().get_transparency() * 
-          (sin((temp.phi0_ +
-            temp.model_.value().get_phiZero()) / 2) * sin((temp.phi0_ +
-            temp.model_.value().get_phiZero()) / 2))))) -
-        (((2 * model.value().get_capacitance()) / 
-          (stepSize_ * factor)) * temp.vn1_) + 
-        ((model.value().get_capacitance() / 
-          (2.0 * (stepSize_ * factor))) * temp.vn2_) + 
-        temp.transitionCurrent_);
+    // sin (φ0 - φ)
+    double sin_phi = sin(temp.phi0_ - temp.model_.phiOff());
+    if (!temp.model_.tDep()) {
+      // -(hR / h + 2RC) * (Ic sin (φ0) - 2C / h Vp1 + C/2h Vp2 + It) 
+      b_.at(temp.indexInfo.currentIndex_.value()) =
+        (temp.matrixInfo.nonZeros_.back()) * (temp.model_.ic() * sin_phi -
+          (((2 * model.c()) / (stepSize_)) * temp.vn1_) + 
+          ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + 
+          temp.it_);
+    } else {
+      double sin2_half_phi = sin((temp.phi0_ - temp.model_.phiOff()) / 2);
+      sin2_half_phi = sin2_half_phi * sin2_half_phi;
+      double sqrt_part = sqrt(1 - model.d() * sin2_half_phi);
+      b_.at(temp.indexInfo.currentIndex_.value()) =
+        // -(hR / h + 2RC) *(
+        (temp.matrixInfo.nonZeros_.back()) * ((
+          // (π * Δ / 2 * e * Rn)
+          ((Constants::PI * temp.del_) 
+            / (2 * Constants::EV * temp.model_.rn()))
+          // * (sin(φ0 - φ) / √(1 - D * sin²((φ0 - φ) / 2))
+          * (sin_phi / sqrt_part)
+          // * tanh(Δ / (2 * kB * T) * √(1 - D * sin²((φ0 - φ) / 2)))
+          * tanh(temp.del_ / (2 * Constants::BOLTZMANN * model.t()) 
+            * sqrt_part))
+          // - 2C / h Vp1
+          - (((2 * model.c()) / stepSize_) * temp.vn1_)
+          // + C/2h Vp2
+          + ((model.c() / (2.0 * stepSize_)) * temp.vn2_)
+          // + It)
+          + temp.it_);
+    }
     temp.vn2_ = temp.vn1_;
   }
 }
