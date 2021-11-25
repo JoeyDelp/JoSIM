@@ -116,6 +116,8 @@ void Simulation::setup_b(
   b_.resize(mObj.rp.size(), 0.0);
   // Handle jj
   handle_jj(mObj, i, step, factor);
+  // Handle pjj
+  handle_pijj(mObj, i, step, factor);
   if(needsTR_) return;
   // Re-factorize the LU if any jj transitions
   if (needsLU_) {
@@ -403,6 +405,87 @@ void Simulation::handle_jj(
     temp.vn2_ = temp.vn1_;
   }
 }
+
+void Simulation::handle_pijj(
+  Matrix &mObj, int &i, double &step, double factor) {
+  for (const auto &j : mObj.components.pjunctionIndices) {
+    auto &temp = std::get<JJ>(mObj.components.devices.at(j));
+    const auto &model = temp.model_;
+    if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
+      temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
+    } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
+      temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
+    } else {
+      temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value())
+              - x_.at(temp.indexInfo.negIndex_.value()));
+    }
+    if(i > 0) {
+      if(atyp_ == AnalysisType::Voltage) {
+        temp.vn1_ = temp.pn1_;
+        temp.pn1_ = x_.at(temp.variableIndex_);
+      } else if (atyp_ == AnalysisType::Phase) {
+        temp.vn1_ = x_.at(temp.variableIndex_);
+        temp.pn1_ = temp.pn1_;
+      }
+    }
+    // Guess voltage (V0)
+    double v0 = 
+      (5.0/2.0) * temp.vn1_ - 2.0 * temp.vn2_ + (1.0 / 2.0) * temp.vn3_;
+    // Phase guess (P0)
+    temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
+      ((1.0 / Constants::SIGMA) * 
+        ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
+    // Ensure timestep is not too large
+    if ((double)i/(double)simSize_ > 0.01) {
+      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
+        // needsTR_ = true;
+        // return;
+        Errors::simulation_errors(
+          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
+      }
+    }
+    // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
+    if(atyp_ == AnalysisType::Voltage) {
+      b_.at(temp.variableIndex_) = 
+        (Constants::SIGMA) * (-(2.0 / (stepSize_ * factor)) * 
+          temp.pn1_ + (1.0 / (2.0 * (stepSize_ * factor))) * temp.pn2_);
+    // (4 / 3) φp1 - (1/3) φp2 
+    } else if (atyp_ == AnalysisType::Phase) {
+      b_.at(temp.variableIndex_) = 
+        (4.0 / 3.0) * temp.pn1_ - (1.0 / 3.0) * temp.pn2_;
+    }
+    temp.pn4_ = temp.pn3_;
+    temp.pn3_ = temp.pn2_;
+    temp.pn2_ = temp.pn1_;
+    temp.vn6_ = temp.vn5_;
+    temp.vn5_ = temp.vn4_;
+    temp.vn4_ = temp.vn3_;
+    temp.vn3_ = temp.vn2_;
+    // Update junction transition
+    if(model.value().get_resistanceType() == 1) {
+      auto testLU = temp.update_value(v0);
+      if(testLU && !needsLU_) {
+        needsLU_ = true;
+      }
+    }
+    // -(hR / h + 2RC) * (Ic sin φ0 - 2C / h Vp1 + C/2h Vp2 + It) 
+    b_.at(temp.indexInfo.currentIndex_.value()) = 
+      (temp.matrixInfo.nonZeros_.back()) * ((((Constants::PI * temp.del_) / 
+        (2 * Constants::EV * temp.rncalc_)) * ((-1)*sin(temp.phi0_) / 
+          sqrt(1 - model.value().get_transparency() * (sin(temp.phi0_ / 2) * 
+          sin(temp.phi0_ / 2)))) * tanh((temp.del_) / 
+        (2 * Constants::BOLTZMANN * model.value().get_temperature()) *
+        sqrt(1 - model.value().get_transparency() * 
+          (sin(temp.phi0_ / 2) * sin(temp.phi0_ / 2))))) -
+        (((2 * model.value().get_capacitance()) / 
+          (stepSize_ * factor)) * temp.vn1_) + 
+        ((model.value().get_capacitance() / 
+          (2.0 * (stepSize_ * factor))) * temp.vn2_) + 
+        temp.transitionCurrent_);
+    temp.vn2_ = temp.vn1_;
+  }
+}
+
 
 void Simulation::handle_vs(
   Matrix &mObj, const int &i, double &step, double factor) {

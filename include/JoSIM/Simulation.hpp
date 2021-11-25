@@ -53,6 +53,7 @@ namespace JoSIM {
     void handle_inductors(Matrix& mObj, double factor = 1);
     void handle_capacitors(Matrix& mObj);
     void handle_jj(Matrix& mObj, int& i, double& step, double factor = 1);
+    void handle_pijj(Matrix& mObj, int& i, double& step, double factor = 1);
     void handle_vs(
       Matrix& mObj, const int& i, double& step, double factor = 1);
     void handle_ps(
