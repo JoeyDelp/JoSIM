@@ -88,10 +88,10 @@ std::vector<tokens_t> Input::read_input(
           output_files.emplace_back(OutputFile(path.string()));
         }
         fileLines.emplace_back(tokens);
-        // If the line contains a "FINISH" statement
-      } else if (tokens.at(0) == ".FINISH" || tokens.at(0) == "FINISH") {
+        // If the line contains a "END" statement
+      } else if (tokens.at(0) == ".END" || tokens.at(0) == "END") {
         break;
-        // If the line does not contain an "INCLUDE" or "FILE" statement
+        // If the line does not contain an "INCLUDE", "FILE" or "END" statement
       } else {
         // Transform the entire line to upper case
         std::transform(tokens.begin() + 1, tokens.end(), tokens.begin() + 1,
