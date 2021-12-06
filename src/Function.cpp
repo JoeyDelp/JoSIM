@@ -236,6 +236,7 @@ void Function::parse_noise(
   const double& tstep = iObj.transSim.tstep();
   // Set amplitudes
   ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
+  ampValues_.emplace_back(0.0);
   // Default values for the arguments
   timeValues_.emplace_back(0.0);
   timeValues_.emplace_back(tstep);
@@ -244,6 +245,11 @@ void Function::parse_noise(
     timeValues_.at(0) = parse_param(t.at(1), iObj.parameters, s);
   if (t.size() >= 3)
     timeValues_.at(1) = parse_param(t.at(2), iObj.parameters, s);
+  miscValues_.emplace_back(0.0);
+  miscValues_.emplace_back(
+    ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back()));
+  miscValues_.emplace_back(timeValues_.at(0));
+  miscValues_.emplace_back(timeValues_.at(0) + timeValues_.at(1));
   if (iObj.argVerb) {
     if (ampValues_.at(0) == 0.0) {
       Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, t.at(1));
@@ -385,10 +391,23 @@ double Function::return_cus(double& x) {
 }
 
 double Function::return_noise(double& x) {
-  if (x < timeValues_.front())
-    return 0.0;
-  else
-    return ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back());
+  if (x < timeValues_.front()) {
+    return ampValues_.at(1);
+  } else {
+    if (x >= miscValues_.at(3)) {
+      miscValues_.at(0) = miscValues_.at(1);
+      miscValues_.at(1) = ampValues_.at(0) *
+        Misc::grand() / sqrt(2.0 * timeValues_.back());
+      miscValues_.at(2) = miscValues_.at(3);
+      miscValues_.at(3) = miscValues_.at(2) + timeValues_.back();
+    }
+    double& y2 = miscValues_.at(1);
+    double& y1 = miscValues_.at(0);
+    double& x2 = miscValues_.at(3);
+    double& x1 = miscValues_.at(2);
+    // Calculate function value and return it
+    return y1 + ((y2 - y1) / (x2 - x1)) * (x - x1);
+  }
 }
 
 double Function::return_pws(double& x) {

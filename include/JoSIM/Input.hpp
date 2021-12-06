@@ -24,7 +24,8 @@ namespace JoSIM {
     public:
     Netlist netlist;
     Transient transSim;
-    std::optional<double> globalTemp, neB;
+    std::optional<double> globalTemp; 
+    double neB = 1E12;
     std::vector<tokens_t> fileLines, controls;
     std::vector<std::string> relevantX;
     std::unordered_map<ParameterName, Parameter> parameters;

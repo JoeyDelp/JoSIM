@@ -96,11 +96,13 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | DELV            | 0, $\infty$         | 0.1E-3          | Transitional voltage from subgap to normal                   |
 | D               | 0.0, 1              | 0.0             | Point of contact transparency affecting current phase relationship |
 | ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
-| PHI             | 0, $\pi$            | 0               | Starting phase of junction                                   |
+| PHI             | 0, $2\pi$           | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
 
 The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
+
+By setting the **PHI** parameter of the model, the phase value is persistantly subtracted from the phase ($\phi$) in the $\sin(\phi)$ part of the JJ current. This allows elements such as the $\pi$-junction to be modeled. 
 
 ### Transmission Line
 
@@ -272,6 +274,8 @@ A subcircuit can be used in the main netlist or another subcircuit (nesting) usi
 **X**Label&emsp;*SubcktName*&emsp;*IO Nodes*&emsp;(JSIM mode)
 
 **X**Label&emsp;*IO Nodes*&emsp;*SubcktName*&emsp;(WRspice (normal SPICE) mode)
+
+Additionally, keywords in the form of **LABEL=VALUE** can be appended to the end of the subcircuit declaration line which when instantiated will replace the value of the **LABEL** component within the subcircuit with the associated **VALUE**. This allows for unique subcircuit instantiations which would prove useful in testing various parameters without altering the original subcircuit or having multiple instances of the same subcircuit definition. This could open the door for potential future margin and optimization software.
 
 ### Noise
 

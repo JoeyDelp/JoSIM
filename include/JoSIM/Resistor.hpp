@@ -9,6 +9,7 @@
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Spread.hpp"
+#include "JoSIM/Function.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -36,8 +37,10 @@ namespace JoSIM {
   class Resistor : public BasicComponent {
     private:
     JoSIM::AnalysisType at_;
+    std::optional<double> spAmp_, temp_, neb_;
     public:
     double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
+    std::optional<Function> thermalNoise;
 
     Resistor(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,

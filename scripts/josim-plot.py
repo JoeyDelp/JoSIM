@@ -112,11 +112,11 @@ def main():
 # Function that sets the Y-axis title relevant to the data
 def y_axis_title(figLabel):
   if figLabel[0] == 'V':
-    return "Voltage (volts)"
+    return "Voltage (V)"
   elif figLabel[0] == 'I':
-    return "Current (ampere)"
+    return "Current (A)"
   elif figLabel[0] == 'P':
-    return "Phase (radians)"
+    return "Phase (rad)"
   else:
     return "Unknown"
 

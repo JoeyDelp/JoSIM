@@ -5,6 +5,7 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
+#include "JoSIM/Noise.hpp"
 
 #include <utility>
 
@@ -31,11 +32,21 @@ Resistor::Resistor(
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
   Input& iObj, Spread& spread, int& bi) {
   double spr = 1.0;
-  for (auto i : s.first) {
-    if (i.find("SPREAD=") != std::string::npos) {
-      spr = 
-        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+  for (int i = 4; i < s.first.size(); ++i) {
+    auto& t = s.first.at(i);
+    if (t.rfind("SPREAD=", 0) == 0) {
+      spr = parse_param(t.substr(7), iObj.parameters, s.second);
+    } else if (t.rfind("TEMP=", 0) == 0) {
+      temp_ = parse_param(t.substr(5), iObj.parameters, s.second);
+    } else if (t.rfind("NEB=", 0) == 0) {
+      neb_ = parse_param(t.substr(4), iObj.parameters, s.second);
     }
+  }
+  if (!temp_ && iObj.globalTemp) {
+    temp_ = iObj.globalTemp;
+  }
+  if (!neb_ && iObj.neB) {
+    neb_ = iObj.neB;
   }
   at_ = iObj.argAnal;
   // Check if the label has already been defined
@@ -69,6 +80,15 @@ Resistor::Resistor(
     matrixInfo.nonZeros_.emplace_back(
       -((2.0 * iObj.transSim.tstep()) / 3.0) * 
       (netlistInfo.value_ / Constants::SIGMA));
+  }
+  if (temp_) {
+    spAmp_ = Noise::determine_spectral_amplitude(
+      netlistInfo.value_, temp_.value());
+    Function tnoise;
+    tnoise.parse_function("NOISE(" + 
+      Misc::precise_to_string(spAmp_.value()) + ", 0.0, " + 
+      Misc::precise_to_string(1.0 / neb_.value()) + ")", iObj, s.second);
+    thermalNoise = tnoise;
   }
 }
 

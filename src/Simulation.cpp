@@ -165,6 +165,9 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
   if (!tempMinOut) iObj.argMin = tempMinOut;
   results.xVector.clear();
   results.timeAxis.clear();
+  for (auto& i : mObj.sourcegen) {
+    i.clearMisc();
+  }
 }
 
 void Simulation::setup_b(
@@ -191,7 +194,7 @@ void Simulation::setup_b(
   // Handle current sources
   handle_cs(mObj, step, i);
   // Handle resistors
-  handle_resistors(mObj);
+  handle_resistors(mObj, step);
   // Handle inductors
   handle_inductors(mObj, factor);
   // Handle capacitors
@@ -226,15 +229,29 @@ void Simulation::handle_cs(Matrix &mObj, double &step, const int &i) {
   }
 }
 
-void Simulation::handle_resistors(Matrix &mObj) {
+void Simulation::handle_resistors(Matrix &mObj, double &step) {
   for (const auto &j : mObj.components.resistorIndices) {
     auto &temp = std::get<Resistor>(mObj.components.devices.at(j));
     NodeConfig &nc = temp.indexInfo.nodeConfig_;
     if(nc == NodeConfig::POSGND) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(nc == NodeConfig::GNDNEG) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value())
               - x_.at(temp.indexInfo.negIndex_.value()));
     }
@@ -311,10 +328,24 @@ void Simulation::handle_jj(
     auto &temp = std::get<JJ>(mObj.components.devices.at(j));
     const auto &model = temp.model_;
     if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value())
               - x_.at(temp.indexInfo.negIndex_.value()));
     }

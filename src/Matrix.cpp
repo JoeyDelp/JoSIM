@@ -34,6 +34,8 @@ void Matrix::create_matrix(Input& iObj) {
 void Matrix::setup(Input& iObj) {
   needsTR_ = false;
   spread.get_spreads(iObj);
+  Noise::determine_global_temperature(iObj);
+  Noise::determine_noise_effective_bandwidth(iObj);
   // Create a node counter variable
   int nodeCounter = 0;
   // Variables to store node configs since they are already identified here

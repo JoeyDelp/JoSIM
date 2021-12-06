@@ -10,6 +10,7 @@
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Spread.hpp"
+#include "JoSIM/Function.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -54,7 +55,7 @@ namespace JoSIM {
     public:
     int variableIndex_ = 0;
     double area_ = 1.0;
-    std::optional<double> Ic_;
+    std::optional<double> Ic_, temp_, neb_, spAmp_;
     Model model_;
     double phaseConst_ = 0.0;
     double lowerB_ = 0.0, upperB_ = 0.0, gLarge_ = 0.0;
@@ -64,6 +65,7 @@ namespace JoSIM {
       vn6_ = vn5_;
     double it_ = 0.0;
     JoSIM::AnalysisType at_;
+    std::optional<Function> thermalNoise;
 
     JJ(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,

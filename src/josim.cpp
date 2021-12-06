@@ -47,7 +47,7 @@ int main(int argc,
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
     // Add noise (if any)
-    Noise::add_noise_sources(iObj);
+    //Noise::add_noise_sources(iObj);
     // Create matrix object
     Matrix mObj;
     // Create the matrix in csr format

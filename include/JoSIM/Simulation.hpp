@@ -50,7 +50,7 @@ namespace JoSIM {
     void reduce_step(Input& iObj, Matrix& mObj);
 
     void handle_cs(Matrix& mObj, double& step, const int& i);
-    void handle_resistors(Matrix& mObj);
+    void handle_resistors(Matrix& mObj, double& step);
     void handle_inductors(Matrix& mObj, double factor = 1);
     void handle_capacitors(Matrix& mObj);
     void handle_jj(Matrix& mObj, int& i, double& step, double factor = 1);

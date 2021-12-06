@@ -5,6 +5,7 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Constants.hpp"
+#include "JoSIM/Noise.hpp"
 
 #include <cmath>
 
@@ -42,11 +43,30 @@ JJ::JJ(
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
   Input& iObj, Spread& spread, int& bi) {
   double spr = 1.0;
-  for (auto i : s.first) {
-    if (i.find("SPREAD=") != std::string::npos) {
-      spr = 
-        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+  tokens_t t;
+  for (int i = 3; i < s.first.size(); ++i) {
+    auto& ti = s.first.at(i);
+    if (ti.rfind("SPREAD=", 0) == 0) {
+      spr = parse_param(ti.substr(7), iObj.parameters, s.second);
+    } else if (ti.rfind("TEMP=", 0) == 0) {
+      temp_ = parse_param(ti.substr(5), iObj.parameters, s.second);
+    } else if (ti.rfind("NEB=", 0) == 0) {
+      neb_ = parse_param(ti.substr(4), iObj.parameters, s.second);
+    } else if (ti.rfind("AREA=", 0) == 0) {
+      area_ = spread.spread_value(
+        parse_param(ti.substr(5), iObj.parameters, s.second), Spread::JJ, spr);
+    } else if (ti.rfind("IC=", 0) == 0) {
+      Ic_ = spread.spread_value(
+        parse_param(ti.substr(3), iObj.parameters, s.second), Spread::JJ, spr);
+    } else {
+      t.emplace_back(ti);
     }
+  }
+  if (!temp_ && iObj.globalTemp) {
+    temp_ = iObj.globalTemp;
+  }
+  if (!neb_ && iObj.neB) {
+    neb_ = iObj.neB;
   }
   // Set component timestep
   h_ = iObj.transSim.tstep();
@@ -62,22 +82,6 @@ JJ::JJ(
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list
   lm.emplace(s.first.at(0));
-  tokens_t t;
-  // Identify the named parameters of the junction, leaving model as last token
-  for (auto i : s.first) {
-    if (i.find("AREA=") != std::string::npos) {
-      area_ = spread.spread_value(
-        parse_param(i.substr(i.find("AREA=") + 5), iObj.parameters, s.second),
-        Spread::JJ, spr);
-    } else if (i.find("IC=") != std::string::npos) {
-      Ic_ = spread.spread_value(
-        parse_param(i.substr(i.find("IC=") + 3), iObj.parameters, s.second),
-        Spread::JJ, spr);
-    } else if (i.find("SPREAD=") != std::string::npos) {
-    } else {
-      t.emplace_back(i);
-    }
-  }
   // Set the model for this JJ instance
   set_model(t, iObj.netlist.models_new, s.second);
   // Set the phase constant
@@ -98,6 +102,15 @@ JJ::JJ(
   set_node_indices(tokens_t(s.first.begin() + 1, s.first.begin() + 3), nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
+  if (temp_) {
+    spAmp_ = Noise::determine_spectral_amplitude(
+      this->model_.r0(), temp_.value());
+    Function tnoise;
+    tnoise.parse_function("NOISE(" +
+      Misc::precise_to_string(spAmp_.value()) + ", 0.0, " +
+      Misc::precise_to_string(1.0 / neb_.value()) + ")", iObj, s.second);
+    thermalNoise = tnoise;
+  }
 }
 
 double JJ::subgap_impedance() {
@@ -229,6 +242,11 @@ bool JJ::update_value(const double& v) {
   const Model& m = model_;
   // If the absolute value of the voltage is less than lower bounds
   if (fabs(v) < lowerB_) {
+    // Set temperature resistance
+    if (this->temp_) {
+      thermalNoise.value().ampValues().at(0) = 
+        Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
+    }
     // Set the transition current to 0
     it_ = 0.0;
     // If the non zero vector does not end with the subgap conductance
@@ -265,6 +283,11 @@ bool JJ::update_value(const double& v) {
     }
     // If neither of the above then it must be in normal operating region
   } else {
+    // Set temperature resistance
+    if (this->temp_) {
+      thermalNoise.value().ampValues().at(0) =
+        Noise::determine_spectral_amplitude(this->model_.rn(), temp_.value());
+    }
     // Reset the transition current, transition has passed.
     it_ = 0.0;
     // If the back of the non zero vector is not the normal conductance

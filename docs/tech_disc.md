@@ -58,6 +58,10 @@ This enables different levels of verbosity by the simulator. Level `1` verbosity
 
 Only displays the version string for **josim-cli** and then exits. This string is always displayed by default for any command. This command, however, only displays the version string.
 
+### Solver (-x):
+
+This option allows switching between LU solvers. Default is KLU solver. Setting this to `1` enables SuperLU solver.
+
 ## Parse Input {#parse-input}
 
 The input data received through any of the two means above is parsed in the following steps:

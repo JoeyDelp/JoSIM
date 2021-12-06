@@ -25,6 +25,7 @@ namespace JoSIM {
     FunctionType fType_ = FunctionType::PWL;
     std::vector<double> timeValues_;
     std::vector<double> ampValues_;
+    std::vector<double> miscValues_;
     void parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s);
     void parse_pulse(const tokens_t& t, const Input& iObj, const string_o& s);
     void parse_sin(const tokens_t& t, const Input& iObj, const string_o& s);
@@ -46,6 +47,12 @@ namespace JoSIM {
       const string_o& subckt);
     double value(double x);
     void ampValues(std::vector<double> values);
+    std::vector<double> ampValues() {
+      return ampValues_;
+    }
+    void clearMisc() {
+      miscValues_.clear();
+    }
 
   }; // class Function
 

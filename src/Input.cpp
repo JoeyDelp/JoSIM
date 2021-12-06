@@ -10,6 +10,7 @@
 #include <cstring>
 #include <filesystem>
 #include <thread>
+#include <ctime>
 
 using namespace JoSIM;
 
@@ -85,6 +86,9 @@ std::vector<tokens_t> Input::read_input(
           output_files.emplace_back(OutputFile(path.string()));
         }
         fileLines.emplace_back(tokens);
+        // If the line contains a "END" statement
+      } else if (tokens.at(0) == ".END" || tokens.at(0) == "END") {
+        break;
         // If the line does not contain an "INCLUDE" or "FILE" statement
       } else {
         // Transform the entire line to upper case
@@ -117,6 +121,7 @@ std::vector<tokens_t> Input::read_input(
 }
 
 void Input::parse_input(string_o fileName) {
+  srand(time(NULL));
   // Create a seperate thread that will be used for printing creation progress
   std::thread printingThread;
   // Variable to store the tokenized input
