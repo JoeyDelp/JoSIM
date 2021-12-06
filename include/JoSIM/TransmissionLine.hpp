@@ -60,7 +60,7 @@ namespace JoSIM {
     double n1_1_ = 0.0, n1_2_ = 0.0, n2_1_ = 0.0, n2_2_ = 0.0;
     double nk_1_ = 0.0, nk_2_ = 0.0, nk1_1_ = 0.0, nk1_2_ = 0.0, nk2_1_ = 0.0,
       nk2_2_ = 0.0;
-    int timestepDelay_ = 0.0;
+    int timestepDelay_ = 0;
 
     TransmissionLine(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
