@@ -35,7 +35,7 @@ namespace JoSIM {
     JoSIM::AnalysisType atyp_;
     bool minOut_;
     bool needsLU_;
-    bool needsTR_;
+    bool needsTR_ = true;
     bool startup_;
     double stepSize_, prstep_, prstart_;
     int simOK_;
