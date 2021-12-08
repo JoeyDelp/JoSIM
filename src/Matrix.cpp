@@ -363,7 +363,7 @@ void Matrix::handle_mutual_inductance(Input& iObj) {
 }
 
 void Matrix::reduce_step(Input& iObj) {
-  iObj.transSim.tstep(iObj.transSim.tstep() / 5);
+  iObj.transSim.tstep(iObj.transSim.tstep() / 2);
   nodeConfig.clear();
   nodeConfig2.clear();
   Components newComponents;

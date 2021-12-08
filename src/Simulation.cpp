@@ -151,7 +151,7 @@ void Simulation::trans_sim(Matrix &mObj) {
 }
 
 void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
-  iObj.transSim.tstep(iObj.transSim.tstep() / 5);
+  iObj.transSim.tstep(iObj.transSim.tstep() / 2);
   bool tempMinOut = iObj.argMin;
   if (!iObj.argMin) iObj.argMin = true;
   Matrix newmObj;
