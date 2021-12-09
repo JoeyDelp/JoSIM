@@ -96,9 +96,11 @@ tokens_t Misc::tokenize(
     }
     // If trim spaces is enabled
     if (trimSpaces) {
-      // Remove trailing, leading and duplicate spaces between tokens
-      tokens.back() =
-        std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+      if (!tokens.empty()) {
+        // Remove trailing, leading and duplicate spaces between tokens
+        tokens.back() =
+          std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+      }
     }
     lastPos = pos + 1;
     ++counter;
