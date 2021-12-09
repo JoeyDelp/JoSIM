@@ -803,6 +803,11 @@ void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
     formattedMessage += message.value_or("") + "\n";
     formattedMessage += "Please check for any disconnections in the netlist";
     throw std::runtime_error(formattedMessage);
+  default:
+    formattedMessage +=
+      "Unknown netlist error: " + message.value_or("") + "\n";
+    formattedMessage += "Please contact the developer.";
+    throw std::runtime_error(formattedMessage);
   }
 }
 
