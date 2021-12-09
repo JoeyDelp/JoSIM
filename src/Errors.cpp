@@ -480,7 +480,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
   }
 }
 
-[[noreturn]] void Errors::model_errors(ModelErrors errorCode,
+void Errors::model_errors(ModelErrors errorCode,
   string_o message) {
   std::string formattedMessage = "Model\n";
   switch (errorCode) {
@@ -507,7 +507,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
   }
 }
 
-void Errors::matrix_errors(MatrixErrors errorCode, string_o message) {
+[[noreturn]] void Errors::matrix_errors(MatrixErrors errorCode, string_o message) {
   std::string formattedMessage = "Matrix\n";
   switch (errorCode) {
   case MatrixErrors::NON_SQUARE:
@@ -790,7 +790,7 @@ void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
   }
 }
 
-void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
+[[noreturn]] void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
   std::string formattedMessage = "Netlist\n";
   switch (errorCode) {
   case NetlistErrors::NO_SUCH_NODE:

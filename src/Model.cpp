@@ -2,8 +2,8 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Model.hpp"
-#include "JoSIM/Misc.hpp"
 #include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
 #include "JoSIM/TypeDefines.hpp"
 
 using namespace JoSIM;
@@ -34,10 +34,11 @@ void Model::parse_model(
     Errors::model_errors(
       ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
   }
+  double value = 0.0;
   // Loop through the parameter tokens
   for (int i = 0; i < tokens.size(); i += 2) {
     // Every even odd token should be a value (otherwise complain)
-    double value = parse_param(tokens.at(i + 1), p, s.second);
+    value = parse_param(tokens.at(i + 1), p, s.second);
     if (std::isnan(value)) {
       Errors::model_errors(
         ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
@@ -73,7 +74,9 @@ void Model::parse_model(
     } else {
       // Incompatible parameter
       Errors::model_errors(ModelErrors::PARAM_TYPE_ERROR,
-        Misc::vector_to_string(s.first));
+        Misc::vector_to_string(
+          tokens_t{ Misc::vector_to_string(s.first), 
+            "\nThe parameter: ", tokens.at(i) }));
     }
   }
 
