@@ -157,6 +157,9 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
   Matrix newmObj;
   mObj = newmObj;
   // Create the matrix in csr format
+  for (auto& i : mObj.sourcegen) {
+    i.clearMisc();
+  }
   mObj.create_matrix(iObj);
   find_relevant_traces(iObj, mObj);
   //// Dump expanded Netlist since it is no longer needed
@@ -165,9 +168,6 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
   if (!tempMinOut) iObj.argMin = tempMinOut;
   results.xVector.clear();
   results.timeAxis.clear();
-  for (auto& i : mObj.sourcegen) {
-    i.clearMisc();
-  }
 }
 
 void Simulation::setup_b(
