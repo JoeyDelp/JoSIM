@@ -36,7 +36,9 @@ Referencing:
 
 ## Changelog
 ### v2.6
-- WIP
+- Full Johnson-Nyquist temperature noise for Resistors and Resistive branch of RCSJ model
+- Phi-junction model with verified Pi junction results
+- Various bug fixes and code clean up
 
 ### v2.5.8
 - Updated KLU to a 64-bit version capable of handling non-zero count larger than the maximum value of a 32-bit integer.
