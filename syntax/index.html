@@ -1054,10 +1054,11 @@
 <p><strong>C</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
 <p>The value of a capacitor is in Farad.</p>
 <h3 id="josephson-junction-jj">Josephson Junction (JJ)</h3>
-<p><strong>B</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<em>&lt;PhaseNode></em>&emsp;<strong>MODEL</strong>&emsp;[area=&lt;<strong>AREA</strong>>]&emsp;[ic=&lt;<strong>IC</strong>&gt;]</p>
+<p><strong>B</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<em>&lt;PhaseNode></em>&emsp;<strong>MODEL</strong>&emsp;[area=&lt;<strong>AREA</strong>>]&emsp;[ic=&lt;<strong>IC</strong>&gt;]&emsp;[temp=&lt;<strong>TEMP</strong>&gt;]&emsp;[neb=&lt;<strong>FREQ</strong>&gt;]</p>
 <p>A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.</p>
 <p>The Josephson junction requires specification of a model name which can be defined anywhere in the program using the control <strong>.MODEL</strong>.</p>
 <p>When <strong>AREA</strong> or <strong>IC</strong> is not specified then an area=1 is used as default.</p>
+<p>The temp and neb commands have the same descriptions as for the resistor.</p>
 <h4 id="model">Model</h4>
 <p>This model control has the following syntax</p>
 <p><strong>.MODEL</strong>&emsp;<em>ModelName</em>&emsp;<em>ModelType</em>([<strong>MODEL PARAMETERS</strong>])</p>
@@ -1140,14 +1141,15 @@
 </tr>
 <tr>
 <td>PHI</td>
-<td>0, <span class="arithmatex">\(\pi\)</span></td>
+<td>0, <span class="arithmatex">\(2\pi\)</span></td>
 <td>0</td>
-<td>Starting phase of junction</td>
+<td>Allows phi-junction capability such as the <span class="arithmatex">\(\pi\)</span>-junction.</td>
 </tr>
 </tbody>
 </table>
 <p>The <em>.model</em> line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.</p>
 <p>The <strong>AREA</strong> and <strong>IC</strong> parameters act as modifiers to the model parameters. <strong>AREA</strong> is a critical current multiplier, where if <strong>IC</strong> is specified it replaces the <strong>AREA</strong> value by <span class="arithmatex">\(AREA=\frac{IC_{jj}}{IC_{model}}\)</span>. </p>
+<p>By setting the <strong>PHI</strong> parameter of the model, the phase value is persistantly subtracted from the phase (<span class="arithmatex">\(\phi\)</span>) in the <span class="arithmatex">\(\sin(\phi)\)</span> part of the JJ current. This allows elements such as the <span class="arithmatex">\(\pi\)</span>-junction to be modeled. </p>
 <h3 id="transmission-line">Transmission Line</h3>
 <p><strong>T</strong>Label&emsp;<span class="arithmatex">\(N^{+}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{+}_{2}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{2}\)</span>&emsp;<strong>TD=VALUE</strong>&emsp;<strong>Z0=VALUE</strong></p>
 <p><strong>TD</strong> is the time delay in seconds.</p>
@@ -1243,9 +1245,10 @@
 <p>The simulation engine requires control commands to know what to do with the components it has just been provided with.</p>
 <p>The most important of these control commands is the transient simulation command as no simulation can be performed without it.</p>
 <h3 id="transient-analysis">Transient Analysis</h3>
-<p><strong>.tran</strong>&emsp;<span class="arithmatex">\(T_{STEP}\)</span>&emsp;<span class="arithmatex">\(T_{STOP}\)</span>&emsp;[<span class="arithmatex">\(P_{START}\)</span>&emsp;[<span class="arithmatex">\(P_{STEP}\)</span>]]</p>
+<p><strong>.tran</strong>&emsp;<span class="arithmatex">\(T_{STEP}\)</span>&emsp;<span class="arithmatex">\(T_{STOP}\)</span>&emsp;[<span class="arithmatex">\(P_{START}\)</span>&emsp;[<span class="arithmatex">\(P_{STEP}\)</span>]]&emsp;DST</p>
 <p>This generates a simulation that runs from 0 until <span class="arithmatex">\(T_{STOP}\)</span>. The amount simulation steps that will be performed is <span class="arithmatex">\(n=\frac{T_{STOP}}{T_{STEP}}\)</span>.</p>
 <p><span class="arithmatex">\(P_{START}\)</span> indicates at what point output will start printing. <span class="arithmatex">\(P_{STEP}\)</span> sets the size of the print steps. This has to be larger or equal to <span class="arithmatex">\(T_{STEP}\)</span>.</p>
+<p>DST disables the start-up time. The start-up time is a period calculated internally by the simulator in which components settle. This is equivalent to the few picoseconds from when a circuit initially receives power (power switch flipped).</p>
 <h3 id="subcircuits">Subcircuits</h3>
 <p>Subcircuits allow subdivision and reuse of smaller circuits within a larger design. When wrapped in a subcircuit control devices are allowed to have the same label names as specified elsewhere in the netlist as the subcircuit completely isolates them.</p>
 <p>Subcircuits have the following wrapping control syntax</p>
@@ -1256,6 +1259,7 @@
 <p>A subcircuit can be used in the main netlist or another subcircuit (nesting) using the following syntax</p>
 <p><strong>X</strong>Label&emsp;<em>SubcktName</em>&emsp;<em>IO Nodes</em>&emsp;(JSIM mode)</p>
 <p><strong>X</strong>Label&emsp;<em>IO Nodes</em>&emsp;<em>SubcktName</em>&emsp;(WRspice (normal SPICE) mode)</p>
+<p>Additionally, keywords in the form of <strong>LABEL=VALUE</strong> can be appended to the end of the subcircuit declaration line which when instantiated will replace the value of the <strong>LABEL</strong> component within the subcircuit with the associated <strong>VALUE</strong>. This allows for unique subcircuit instantiations which would prove useful in testing various parameters without altering the original subcircuit or having multiple instances of the same subcircuit definition. This could open the door for potential future margin and optimization software.</p>
 <h3 id="noise_1">Noise</h3>
 <p>As mentioned in the technical discussion, noise can be automatically inserted as current sources in parallel to each resistor. This thermal noise temperature and bandwidth can be specified globally using the following commands:</p>
 <p><strong>.temp</strong>&emsp;<em>Temperature in Kelvin</em></p>

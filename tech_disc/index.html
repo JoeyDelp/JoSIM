@@ -301,6 +301,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#solver-x" class="md-nav__link">
+    Solver (-x):
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -687,6 +694,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#solver-x" class="md-nav__link">
+    Solver (-x):
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -969,6 +983,8 @@
 <p>This enables different levels of verbosity by the simulator. Level <code>1</code> verbosity only displays statistics of the circuit being simulated. Level <code>2</code> verbosity displays all of level 1 and any evaluated <code>.param</code> statements found in the circuit. Level <code>3</code> verbosity displays level 2 and the completely expanded main design of circuit being simulated. These outputs are not muted by <code>-m</code></p>
 <h3 id="version-v">Version (-v):</h3>
 <p>Only displays the version string for <strong>josim-cli</strong> and then exits. This string is always displayed by default for any command. This command, however, only displays the version string.</p>
+<h3 id="solver-x">Solver (-x):</h3>
+<p>This option allows switching between LU solvers. Default is KLU solver. Setting this to <code>1</code> enables SuperLU solver.</p>
 <h2 id="parse-input">Parse Input</h2>
 <p>The input data received through any of the two means above is parsed in the following steps:</p>
 <div style="text-align:center;"><img src="../img/josim_parse_input.svg" alt="JoSIM Parse Input Overview" style="width:600px;" /></div>
