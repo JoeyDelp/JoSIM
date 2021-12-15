@@ -12,7 +12,6 @@ namespace JoSIM {
   class LUSolve {
     private:
     char equed[1] = { 'N' };
-    yes_no_t equil;
     trans_t trans;
     SuperMatrix A, L, U, B, X;
     GlobalLU_t Glu;
@@ -21,11 +20,11 @@ namespace JoSIM {
     long long* etree;
     void* work = nullptr;
     long long info, lwork, nrhs, ldx;
-    long long i, m, n, nnz;
+    long long m, n, nnz;
     double* rhsb,* rhsx,* xact;
     double* R,* C;
     double* ferr,* berr;
-    double u, rpg, rcond;
+    double rpg, rcond;
     mem_usage_t mem_usage;
     superlu_options_t options;
     SuperLUStat_t stat;

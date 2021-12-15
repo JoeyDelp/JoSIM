@@ -15,6 +15,45 @@
 using namespace JoSIM;
 
 Simulation::Simulation(Input &iObj, Matrix &mObj) {
+  while (needsTR_) {
+    // Do generic simulation setup for given step size
+    setup(iObj, mObj);
+    // Do solver setup
+    if (SLU) {
+      // SLU setup
+      lu.create_matrix(mObj.rp.size() - 1, mObj.nz, mObj.ci, mObj.rp);
+      lu.factorize();
+    } else {
+      // KLU setup
+      simOK_ = klu_l_defaults(&Common_);
+      assert(simOK_);
+      Symbolic_ = klu_l_analyze(
+        mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
+      Numeric_ = klu_l_factor(
+        &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(),
+        Symbolic_, &Common_);
+    }
+
+    // Run transient simulation
+    trans_sim(mObj);
+    // If step size is too large, reduce and try again
+    if (needsTR_) {
+      reduce_step(iObj, mObj);
+    }
+
+    // Do solver cleanup
+    if (SLU) {
+      // SLU cleanup
+      lu.free();
+    } else {
+      // KLU cleanup
+      klu_l_free_symbolic(&Symbolic_, &Common_);
+      klu_l_free_numeric(&Numeric_, &Common_);
+    }
+  }
+}
+
+void Simulation::setup(Input& iObj, Matrix& mObj) {
   // Simulation setup
   SLU = iObj.SLU;
   simSize_ = iObj.transSim.simsize();
@@ -25,37 +64,16 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
   stepSize_ = iObj.transSim.tstep();
   prstep_ = iObj.transSim.prstep();
   prstart_ = iObj.transSim.prstart();
+  startup_ = iObj.transSim.startup();
+  x_.clear();
   x_.resize(mObj.branchIndex, 0.0);
-  if(!mObj.relevantTraces.empty()) {
+  if (!mObj.relevantTraces.empty()) {
     results.xVector.resize(mObj.branchIndex);
-    for (const auto &i : mObj.relevantIndices) {
+    for (const auto& i : mObj.relevantIndices) {
       results.xVector.at(i).emplace();
     }
   } else {
     results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
-  }
-  if (SLU) {
-    // SLU setup
-    lu.create_matrix(mObj.rp.size() - 1, mObj.nz, mObj.ci, mObj.rp);
-    lu.factorize();
-    // Run transient simulation
-    trans_sim(mObj);
-    // SLU cleanup
-    lu.free();
-  } else {
-    // KLU setup
-    simOK_ = klu_l_defaults(&Common_);
-    assert(simOK_);
-    Symbolic_ = klu_l_analyze(
-      mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
-    Numeric_ = klu_l_factor(
-      &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(),
-      Symbolic_, &Common_);
-    // Run transient simulation
-    trans_sim(mObj);
-    // KLU cleanup
-    klu_l_free_symbolic(&Symbolic_, &Common_);
-    klu_l_free_numeric(&Numeric_, &Common_);
   }
 }
 
@@ -73,6 +91,28 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
   // Initialize the b matrix
   b_.resize(mObj.rp.size(), 0.0);
+  if (startup_) {
+    // Stabilize the simulation before starting at t=0
+    int startup = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
+    for (int i = -startup; i < 0; ++i) {
+      double step = i * stepSize_;
+      // Setup the b matrix
+      setup_b(mObj, i, i * stepSize_);
+      if (needsTR_) return;
+      // Assign x_prev the new b
+      x_ = b_;
+      // Solve Ax=b, storing the results in x_
+      if (SLU) {
+        lu.solve(x_);
+      } else {
+        simOK_ = klu_l_tsolve(
+          Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
+        // If anything is a amiss, complain about it
+        if (!simOK_) Errors::simulation_errors(
+          SimulationErrors::MATRIX_SINGULAR);
+      }
+    }
+  }
   // Start the simulation loop
   for(int i = 0; i < simSize_; ++i) {
     double step = i * stepSize_;
@@ -82,6 +122,7 @@ void Simulation::trans_sim(Matrix &mObj) {
     }
     // Setup the b matrix
     setup_b(mObj, i, i * stepSize_);
+    if (needsTR_) return;
     // Assign x_prev the new b
     x_ = b_;
     // Solve Ax=b, storing the results in x_
@@ -109,6 +150,26 @@ void Simulation::trans_sim(Matrix &mObj) {
   }
 }
 
+void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
+  iObj.transSim.tstep(iObj.transSim.tstep() / 2);
+  bool tempMinOut = iObj.argMin;
+  if (!iObj.argMin) iObj.argMin = true;
+  Matrix newmObj;
+  mObj = newmObj;
+  // Create the matrix in csr format
+  for (auto& i : mObj.sourcegen) {
+    i.clearMisc();
+  }
+  mObj.create_matrix(iObj);
+  find_relevant_traces(iObj, mObj);
+  //// Dump expanded Netlist since it is no longer needed
+  //iObj.netlist.expNetlist.clear();
+  //iObj.netlist.expNetlist.shrink_to_fit();
+  if (!tempMinOut) iObj.argMin = tempMinOut;
+  results.xVector.clear();
+  results.timeAxis.clear();
+}
+
 void Simulation::setup_b(
   Matrix &mObj, int i, double step, double factor) {
   // Clear b matrix and reset
@@ -133,7 +194,7 @@ void Simulation::setup_b(
   // Handle current sources
   handle_cs(mObj, step, i);
   // Handle resistors
-  handle_resistors(mObj);
+  handle_resistors(mObj, step);
   // Handle inductors
   handle_inductors(mObj, factor);
   // Handle capacitors
@@ -148,83 +209,6 @@ void Simulation::setup_b(
   handle_vccs(mObj);
   // Handle transmission lines
   handle_tx(mObj, i, step);
-}
-
-void Simulation::reduce_step(
-  Matrix &mObj, double factor, 
-  int &stepCount, double currentStep) {
-  // Backup the current nonzeros
-  mObj.nz_orig = mObj.nz;
-  // Restore the previous x
-  x_ = xn3_;
-  // Remove the stored results for the larger timesteps
-  for(auto &i : results.xVector){
-    if(i) {
-      i.value().pop_back();
-      i.value().pop_back();
-    }
-  }
-  results.timeAxis.pop_back();
-  results.timeAxis.pop_back();
-  // Determine how many steps to take using the reduced time step
-  int smallSteps = static_cast<int>(20E-12 / (factor * stepSize_));
-  // Update the non-zeros of each component to reflect the smaller timestep
-  for (auto &j : mObj.components.devices) {
-    BasicComponent &x = std::visit(
-          [](auto& x) -> BasicComponent &{ return x; },
-          j);
-      x.update_timestep(factor);
-      x.step_back();
-  }
-  // Recreate the non-zero matrix for the simulation
-  mObj.create_nz();
-  // Do a new LU decomposition
-  klu_l_free_numeric(&Numeric_, &Common_);
-  Numeric_ = klu_l_factor(
-    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
-    Symbolic_, &Common_);
-  for(int i = 0; i < smallSteps; ++i) {
-    double smallStep = currentStep + i * (factor * stepSize_);
-    // Setup the b matrix
-    setup_b(
-      mObj, stepCount, smallStep, factor);
-    // Assign x_prev the new b
-    x_ = b_;
-    // Solve Ax=b, storing the results in x_
-    simOK_ = klu_l_tsolve(
-      Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
-    // If anything is a amiss, complain about it
-    if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
-    float test = smallStep / stepSize_;
-    // if(test == stepCount) {
-      // Store results (only requested, to prevent massive memory usage)
-      for(int j = 0; j < results.xVector.size(); ++j) {
-        if(smallStep >= prstart_) {
-          if(results.xVector.at(j)) {
-            results.xVector.at(j).value().emplace_back(x_.at(j));
-          }
-        }
-      }
-      // Store the time step
-      if(smallStep >= prstart_) results.timeAxis.emplace_back(smallStep);
-    if(test == stepCount) {
-      stepCount++;
-    }
-  }
-  // Restore the timestep of all components to the correct values
-  for (auto &j : mObj.components.devices) {
-    BasicComponent &x = std::visit(
-          [](auto& x) -> BasicComponent &{ return x; },
-          j);
-      x.update_timestep(1/factor);
-  }
-  // Recreate the non-zero matrix for the simulation
-  mObj.create_nz();
-  // Do a new LU decomposition
-  klu_l_free_numeric(&Numeric_, &Common_);
-  Numeric_ = klu_l_factor(
-    &mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), 
-    Symbolic_, &Common_);
 }
 
 
@@ -245,15 +229,29 @@ void Simulation::handle_cs(Matrix &mObj, double &step, const int &i) {
   }
 }
 
-void Simulation::handle_resistors(Matrix &mObj) {
+void Simulation::handle_resistors(Matrix &mObj, double &step) {
   for (const auto &j : mObj.components.resistorIndices) {
     auto &temp = std::get<Resistor>(mObj.components.devices.at(j));
     NodeConfig &nc = temp.indexInfo.nodeConfig_;
     if(nc == NodeConfig::POSGND) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(nc == NodeConfig::GNDNEG) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value())
               - x_.at(temp.indexInfo.negIndex_.value()));
     }
@@ -330,10 +328,24 @@ void Simulation::handle_jj(
     auto &temp = std::get<JJ>(mObj.components.devices.at(j));
     const auto &model = temp.model_;
     if(temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
     } else if(!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
     } else {
+      if (temp.thermalNoise) {
+        b_.at(temp.indexInfo.posIndex_.value()) -=
+          temp.thermalNoise.value().value(step);
+        b_.at(temp.indexInfo.negIndex_.value()) +=
+          temp.thermalNoise.value().value(step);
+      }
       temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value())
               - x_.at(temp.indexInfo.negIndex_.value()));
     }
@@ -352,21 +364,21 @@ void Simulation::handle_jj(
     // Phase guess (P0)
     temp.phi0_ = (4.0/3.0) * temp.pn1_ - (1.0/3.0) * temp.pn2_ + 
       ((1.0 / Constants::SIGMA) * 
-        ((2.0 * (stepSize_ * factor)) / 3.0)) * v0;
+        ((2.0 * (stepSize_)) / 3.0)) * v0;
     // Ensure timestep is not too large
     if ((double)i/(double)simSize_ > 0.01) {
-      if (abs(temp.phi0_ - temp.pn1_) > (0.25 * 2 * Constants::PI)) {
-        // needsTR_ = true;
-        // return;
-        Errors::simulation_errors(
-          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);
+      if (abs(temp.phi0_ - temp.pn1_) > (0.20 * 2 * Constants::PI)) {
+        needsTR_ = true;
+        return;
+        /*Errors::simulation_errors(
+          SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);*/
       }
     }
     // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
     if(atyp_ == AnalysisType::Voltage) {
       b_.at(temp.variableIndex_) = 
-        (Constants::SIGMA) * (-(2.0 / (stepSize_ * factor)) * 
-          temp.pn1_ + (1.0 / (2.0 * (stepSize_ * factor))) * temp.pn2_);
+        (Constants::SIGMA) * (-(2.0 / (stepSize_)) * 
+          temp.pn1_ + (1.0 / (2.0 * (stepSize_))) * temp.pn2_);
     // (4 / 3) φp1 - (1/3) φp2 
     } else if (atyp_ == AnalysisType::Phase) {
       b_.at(temp.variableIndex_) = 
@@ -380,26 +392,43 @@ void Simulation::handle_jj(
     temp.vn4_ = temp.vn3_;
     temp.vn3_ = temp.vn2_;
     // Update junction transition
-    if(model.value().get_resistanceType() == 1) {
+    if(model.rtype() == 1) {
       auto testLU = temp.update_value(v0);
       if(testLU && !needsLU_) {
         needsLU_ = true;
       }
     }
-    // -(hR / h + 2RC) * (Ic sin φ0 - 2C / h Vp1 + C/2h Vp2 + It) 
-    b_.at(temp.indexInfo.currentIndex_.value()) = 
-      (temp.matrixInfo.nonZeros_.back()) * ((((Constants::PI * temp.del_) / 
-        (2 * Constants::EV * temp.rncalc_)) * (sin(temp.phi0_) / 
-          sqrt(1 - model.value().get_transparency() * (sin(temp.phi0_ / 2) * 
-          sin(temp.phi0_ / 2)))) * tanh((temp.del_) / 
-        (2 * Constants::BOLTZMANN * model.value().get_temperature()) *
-        sqrt(1 - model.value().get_transparency() * 
-          (sin(temp.phi0_ / 2) * sin(temp.phi0_ / 2))))) -
-        (((2 * model.value().get_capacitance()) / 
-          (stepSize_ * factor)) * temp.vn1_) + 
-        ((model.value().get_capacitance() / 
-          (2.0 * (stepSize_ * factor))) * temp.vn2_) + 
-        temp.transitionCurrent_);
+    // sin (φ0 - φ)
+    double sin_phi = sin(temp.phi0_ - temp.model_.phiOff());
+    if (!temp.model_.tDep()) {
+      // -(hR / h + 2RC) * (Ic sin (φ0) - 2C / h Vp1 + C/2h Vp2 + It) 
+      b_.at(temp.indexInfo.currentIndex_.value()) =
+        (temp.matrixInfo.nonZeros_.back()) * (temp.model_.ic() * sin_phi -
+          (((2 * model.c()) / (stepSize_)) * temp.vn1_) + 
+          ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + 
+          temp.it_);
+    } else {
+      double sin2_half_phi = sin((temp.phi0_ - temp.model_.phiOff()) / 2);
+      sin2_half_phi = sin2_half_phi * sin2_half_phi;
+      double sqrt_part = sqrt(1 - model.d() * sin2_half_phi);
+      b_.at(temp.indexInfo.currentIndex_.value()) =
+        // -(hR / h + 2RC) *(
+        (temp.matrixInfo.nonZeros_.back()) * ((
+          // (π * Δ / 2 * e * Rn)
+          ((Constants::PI * temp.del_) 
+            / (2 * Constants::EV * temp.model_.rn()))
+          // * (sin(φ0 - φ) / √(1 - D * sin²((φ0 - φ) / 2))
+          * (sin_phi / sqrt_part)
+          // * tanh(Δ / (2 * kB * T) * √(1 - D * sin²((φ0 - φ) / 2)))
+          * tanh(temp.del_ / (2 * Constants::BOLTZMANN * model.t()) 
+            * sqrt_part))
+          // - 2C / h Vp1
+          - (((2 * model.c()) / stepSize_) * temp.vn1_)
+          // + C/2h Vp2
+          + ((model.c() / (2.0 * stepSize_)) * temp.vn2_)
+          // + It)
+          + temp.it_);
+    }
     temp.vn2_ = temp.vn1_;
   }
 }

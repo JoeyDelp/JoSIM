@@ -44,6 +44,12 @@ void Verbose::print_circuit_stats(const Input& iObj, const Matrix& mObj) {
   // Print the total component count
   std::cout << std::left << std::setw(26) << "Component count:" <<
     mObj.components.devices.size() << "\n";
+  // Print the total non-zero count
+  std::cout << std::left << std::setw(26) << "Non-zero count:" <<
+    mObj.nz.size() << "\n";
+  // Print matrix dimensions
+  std::cout << std::left << std::setw(26) << "MxN size:" <<
+    mObj.rp.size() << "x" << mObj.rp.size() << "\n";
   // Print the total jj count
   if (mObj.components.junctionIndices.size() != 0) {
     std::cout << std::left << std::setw(26) << "JJ count:" <<

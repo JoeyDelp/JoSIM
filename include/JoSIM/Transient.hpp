@@ -15,12 +15,14 @@ namespace JoSIM {
     double tstop_;
     double prstart_;
     double prstep_;
+    bool startup_;
     public:
     Transient() :
       tstep_(0.25E-12),
       tstop_(0.0),
       prstart_(0.0),
-      prstep_(1E-12) {};
+      prstep_(1E-12), 
+      startup_(true) {};
 
     double tstep() const {
       return tstep_;
@@ -37,6 +39,9 @@ namespace JoSIM {
     int simsize() const {
       return static_cast<int>(tstop_ / tstep_);
     }
+    bool startup() const {
+      return startup_;
+    }
 
     void tstep(double value) {
       tstep_ = value;
@@ -50,9 +55,12 @@ namespace JoSIM {
     void prstep(double value) {
       prstep_ = value;
     }
+    void startup(bool value) {
+      startup_ = value;
+    }
 
     static void identify_simulation(
-      const std::vector<tokens_t>& controls, Transient& tObj);
+      std::vector<tokens_t>& controls, Transient& tObj);
   };
 }
 

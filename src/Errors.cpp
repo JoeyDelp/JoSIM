@@ -157,6 +157,14 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
     formattedMessage +=
       "Please check the input file and ensure that the file is not empty.";
     throw std::runtime_error(formattedMessage);
+  case InputErrors::IO_MISMATCH:
+    formattedMessage +=
+      "The IO of line \"" + message.value_or("") + "\" does not "
+      "match the subcircuit IO.\n";
+    formattedMessage +=
+      "Please check the line and ensure correct IO and "
+      "that parameters do not contain spaces.";
+    throw std::runtime_error(formattedMessage);
   case InputErrors::UNKNOWN_CONTROL:
     formattedMessage +=
       "The control \"" + message.value_or("") + "\" is not known.\n";
@@ -472,7 +480,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
   }
 }
 
-[[noreturn]] void Errors::model_errors(ModelErrors errorCode,
+void Errors::model_errors(ModelErrors errorCode,
   string_o message) {
   std::string formattedMessage = "Model\n";
   switch (errorCode) {
@@ -480,8 +488,10 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
     formattedMessage += "Unknown model parameter specified.\n";
     formattedMessage += "Model line: " + message.value_or("") + "\n";
     formattedMessage +=
-      "Please refer to the model definition in the documentation";
-    throw std::runtime_error(formattedMessage);
+      "Continuing with default model parameters.\n"
+      "Please consult the syntax guide for more information.";
+    warning_message(formattedMessage);
+    break;
   case ModelErrors::UNKNOWN_MODEL_TYPE:
     formattedMessage += "Unknown model type specified.\n";
     formattedMessage += "Model line: " + message.value_or("");
@@ -497,7 +507,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
   }
 }
 
-void Errors::matrix_errors(MatrixErrors errorCode, string_o message) {
+[[noreturn]] void Errors::matrix_errors(MatrixErrors errorCode, string_o message) {
   std::string formattedMessage = "Matrix\n";
   switch (errorCode) {
   case MatrixErrors::NON_SQUARE:
@@ -780,7 +790,7 @@ void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
   }
 }
 
-void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
+[[noreturn]] void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
   std::string formattedMessage = "Netlist\n";
   switch (errorCode) {
   case NetlistErrors::NO_SUCH_NODE:
@@ -792,6 +802,11 @@ void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
     formattedMessage += "Missing I/O nodes for subcircuit:\n";
     formattedMessage += message.value_or("") + "\n";
     formattedMessage += "Please check for any disconnections in the netlist";
+    throw std::runtime_error(formattedMessage);
+  default:
+    formattedMessage +=
+      "Unknown netlist error: " + message.value_or("") + "\n";
+    formattedMessage += "Please contact the developer.";
     throw std::runtime_error(formattedMessage);
   }
 }

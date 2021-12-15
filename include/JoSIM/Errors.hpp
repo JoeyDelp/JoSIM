@@ -35,6 +35,7 @@ namespace JoSIM {
     MISSING_MAIN,
     UNKNOWN_SUBCKT,
     EMPTY_FILE,
+    IO_MISMATCH,
     UNKNOWN_CONTROL
   };
 
@@ -188,10 +189,10 @@ namespace JoSIM {
     static void control_errors(
       ControlErrors errorCode, string_o message = std::nullopt);
 
-    [[noreturn]] static void model_errors(
+    static void model_errors(
       ModelErrors errorCode, string_o message = std::nullopt);
 
-    static void matrix_errors(
+    [[noreturn]] static void matrix_errors(
       MatrixErrors errorCode, string_o message = std::nullopt);
 
     [[noreturn]] static void misc_errors(
@@ -209,7 +210,7 @@ namespace JoSIM {
     static void output_errors(
       OutputErrors errorCode, string_o message = std::nullopt);
 
-    static void netlist_errors(
+    [[noreturn]] static void netlist_errors(
       NetlistErrors errorCode, string_o message = std::nullopt);
 
     static void verbosity_errors(

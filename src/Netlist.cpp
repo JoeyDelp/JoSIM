@@ -13,28 +13,30 @@
 using namespace JoSIM;
 
 void Netlist::id_io_subc_label(
-  const tokens_t& lineTokens, tokens_t& io,
+  const tokens_t& lineTokens, tokens_t& io, s_map& params,
   std::string& subcktName, std::string& label,
   const std::unordered_map<std::string, Subcircuit>& subcircuits) {
   // Id the label 
   label = lineTokens.front();
+  // Found flag
+  bool found = false;
   // Check the convention
   // At this point in the program all subcircuits should have been identified
   // Thus we can determine the convention from code
-  // If the token right after the label exists in the subcircuits map
-  if (subcircuits.count(lineTokens.at(1)) != 0) {
-    // This is the subcircuit name
-    subcktName = lineTokens.at(1);
-    // Assign the IO
-    io.assign(lineTokens.begin() + 2, lineTokens.end());
-    // Else if the last token exists in the subcircuit map
-  } else if (subcircuits.count(lineTokens.back()) != 0) {
-    // Then this is the subcircuit name
-    subcktName = lineTokens.back();
-    // Assign the IO
-    io.assign(lineTokens.begin() + 1, lineTokens.end() - 1);
-    // Else if the neither then this subcircuit surely does not exist
-  } else {
+  for (int i = 1; i < lineTokens.size(); ++i) {
+    if (subcircuits.count(lineTokens.at(i)) != 0) {
+      found = true;
+      subcktName = lineTokens.at(i);
+    } else if (lineTokens.at(i).find('=') != std::string::npos) {
+      std::string param, value;
+      param = lineTokens.at(i).substr(0, lineTokens.at(i).find('='));
+      value = lineTokens.at(i).substr(lineTokens.at(i).find('=') + 1);
+      params[param] = value;
+    } else {
+      io.emplace_back(lineTokens.at(i));
+    }
+  }
+  if (!found) {
     Errors::input_errors(
       InputErrors::UNKNOWN_SUBCKT, Misc::vector_to_string(lineTokens));
   }
@@ -59,12 +61,20 @@ bool Netlist::rename_io_nodes(
   return false;
 }
 
-void Netlist::expand_io(
-  Subcircuit& subc, const tokens_t& io, const std::string& label) {
+void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, 
+  const std::string& label) {
+  // Sanity check
+  if (io.size() != subc.io.size()) {
+    Errors::input_errors(InputErrors::IO_MISMATCH, label);
+  }
   // Loop through the identified subcircuit
   for (int k = 0; k < subc.lines.size(); ++k) {
     // Set shorthand for long variable name
     tokens_t& tokens = subc.lines.at(k).first;
+    // Check for value parameterization
+    if (params.count(tokens.front()) != 0) {
+      insert_parameter(tokens, params);
+    }
     // Append the label of the parent to the subcircuit label
     tokens.at(0) = tokens.at(0) + "|" + label;
     // Determine amount of nodes to process
@@ -87,9 +97,33 @@ void Netlist::expand_io(
   }
 }
 
+void Netlist::insert_parameter(tokens_t& t, s_map& params) {
+  std::string twonode = "RCLK";
+  std::string fournode = "EFHGT";
+  if (twonode.find(t.front().front()) != std::string::npos) {
+    t.at(3) = params.at(t.front());
+  } else if (fournode.find(t.front().front()) != std::string::npos) {
+    if (t.front().front() == 'T') {
+      for (auto& i : t) {
+        if (i.find("TD=") != std::string::npos) {
+          i = "TD=" + params.at(t.front());
+        }
+      }
+    } else {
+      t.at(5) = params.at(t.front());
+    }
+  } else if (t.front().front() == 'B') {
+    for (auto& i : t) {
+      if (i.find("AREA=") != std::string::npos) {
+        i = "AREA=" + params.at(t.front());
+      } else if (i.find("IC=") != std::string::npos) {
+        i = "IC=" + params.at(t.front());
+      }
+    }
+  }
+}
+
 void Netlist::expand_subcircuits() {
-  // Variable to store io
-  tokens_t io;
   // std::vector<std::pair<tokens_t, string_o>> moddedLines;
   std::string subcktName, label;
   // Loop through subcircuits, line by line
@@ -133,14 +167,17 @@ void Netlist::expand_subcircuits() {
         tokens_t& subcCurrentLine = subcircuit.lines.at(j).first;
         // If the line denotes a subcircuit
         if (subcCurrentLine.front().at(0) == 'X') {
+          // Variable to store io and parameters
+          tokens_t io;
+          s_map params;
           id_io_subc_label(
-            subcCurrentLine, io, subcktName, label, subcircuits);
+            subcCurrentLine, io, params, subcktName, label, subcircuits);
           // Create a copy of the subircuit for this instance
           Subcircuit subc = subcircuits.at(subcktName);
           // If not nested
           if (!subc.containsSubckt) {
             // Expand the IO nodes of the subcircuit for this instance
-            expand_io(subc, io, label);
+            expand_io(subc, params, io, label);
             // Erase the current line (tokens)
             subcircuit.lines.erase(subcircuit.lines.begin() + j);
             // Insert the subcircuit token lines at the erased line position
@@ -168,8 +205,6 @@ void Netlist::expand_subcircuits() {
 }
 
 void Netlist::expand_maindesign() {
-  // Variable to store io
-  tokens_t io;
   // std::vector<std::pair<std::string, std::string>> moddedLines;
   ProgressBar bar;
   if (!argMin) {
@@ -190,11 +225,15 @@ void Netlist::expand_maindesign() {
     }
     // If the line denotes a subcircuit
     if (maindesign.at(i).front().at(0) == 'X') {
-      id_io_subc_label(maindesign.at(i), io, subcktName, label, subcircuits);
+      // Variable to store io and parameters
+      tokens_t io;
+      s_map params;
+      id_io_subc_label(maindesign.at(i), io, params, 
+        subcktName, label, subcircuits);
       // Copy of subcircuit for this instance
       Subcircuit subc = subcircuits.at(subcktName);
       // Expand the appropriate IO nodes of the subcircuit for this instance
-      expand_io(subc, io, label);
+      expand_io(subc, params, io, label);
       // Add the expanded subcircuit lines to the expanded netlist
       expNetlist.insert(expNetlist.end(), subc.lines.begin(),
         subc.lines.end());

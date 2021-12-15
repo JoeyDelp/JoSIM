@@ -9,16 +9,21 @@
 
 using namespace JoSIM;
 
-void Transient::identify_simulation(
-  const std::vector<tokens_t>& controls, Transient& tObj) {
+void Transient::identify_simulation( 
+  std::vector<tokens_t>& controls, Transient& tObj) {
   // Flag to store that a transient simulation was found
   bool transFound = false;
   // Loop through all the controls
-  for (const auto& i : controls) {
+  for (auto& i : controls) {
     // If the first token of the line contains "TRAN"
     if (i.front().find("TRAN") != std::string::npos) {
       // Set the flag as true
       transFound = true;
+      // Check for disable startup flag
+      if (i.back() == "DST") {
+        tObj.startup(false);
+        i.pop_back();
+      }
       // If there are less than 2 tokens
       if (i.size() < 2) {
         // Complain of invalid transient analysis specification
@@ -69,11 +74,10 @@ void Transient::identify_simulation(
         tObj.tstop(1E-9);
         tObj.prstart(0);
       }
-      // While variable time step does not work yet
-      // If user provided time step is larger than 0.25ps
-      if (tObj.tstep() > 0.25E-12) {
-        tObj.tstep(0.25E-12);
-      }
+      //// If user provided time step is larger than 0.25ps junction will fail
+      //if (tObj.tstep() > 0.25E-12) {
+      //  tObj.tstep(0.25E-12);
+      //}
       // Also if PSTEP is smaller than TSTEP
       if (tObj.tstep() > tObj.prstep()) {
         // Reduce TSTEP to match PRSTEP

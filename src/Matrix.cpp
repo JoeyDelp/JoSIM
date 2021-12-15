@@ -16,16 +16,33 @@
 using namespace JoSIM;
 
 void Matrix::create_matrix(Input& iObj) {
+  while (needsTR_) {
+    // Do matrix setup
+    setup(iObj);
+    // Create the components
+    create_components(iObj);
+    if (needsTR_) {
+      reduce_step(iObj);
+    }
+  }
+  // Handle mutual inductances
+  handle_mutual_inductance(iObj);
+  // Create the compressed storage row format required for simulation
+  create_csr();
+}
+
+void Matrix::setup(Input& iObj) {
+  needsTR_ = false;
   spread.get_spreads(iObj);
-  // Create a seperate thread that will be used for printing creation progress
-  std::thread printingThread;
+  Noise::determine_global_temperature(iObj);
+  Noise::determine_noise_effective_bandwidth(iObj);
   // Create a node counter variable
   int nodeCounter = 0;
   // Variables to store node configs since they are already identified here
-  std::vector<NodeConfig> nodeConfig(
+  nodeConfig.resize(
     iObj.netlist.expNetlist.size(), NodeConfig::GND);
-  // Optional, only available when 4 node components are detected
-  std::vector<std::optional<NodeConfig>> nodeConfig2(
+  // Only available when 4 node components are detected
+  nodeConfig2.resize(
     iObj.netlist.expNetlist.size(), NodeConfig::GND);
   int cc = 0;
   for (auto& i : iObj.netlist.expNetlist) {
@@ -40,13 +57,13 @@ void Matrix::create_matrix(Input& iObj) {
           Misc::vector_to_string(i.first));
       }
       // Create a node map that maps the node names to numbers
-      if (i.first.at(1).find("GND") == 
+      if (i.first.at(1).find("GND") ==
         std::string::npos && i.first.at(1) != "0") {
         // Add the first node to the map if not ground
         if (nm.count(i.first.at(1)) == 0) nm[i.first.at(1)] = nodeCounter++;
         nodeConfig.at(cc) = NodeConfig::POSGND;
       }
-      if (i.first.at(2).find("GND") == 
+      if (i.first.at(2).find("GND") ==
         std::string::npos && i.first.at(2) != "0") {
         // Add the second node to the map if not ground
         if (nm.count(i.first.at(2)) == 0) nm[i.first.at(2)] = nodeCounter++;
@@ -57,7 +74,7 @@ void Matrix::create_matrix(Input& iObj) {
         }
       }
       // If the device is as 4 node device
-      if (std::string("EFGHT").find(i.first.front().at(0)) != 
+      if (std::string("EFGHT").find(i.first.front().at(0)) !=
         std::string::npos) {
         // Ensure the device has at least 6 parts
         if (i.first.size() < 6) {
@@ -90,6 +107,10 @@ void Matrix::create_matrix(Input& iObj) {
   nc.resize(nm.size());
   // Set the index to the first branch current to the size of the node map
   branchIndex = nm.size();
+}
+
+void Matrix::create_components(Input& iObj) {
+  int cc = 0;
   ProgressBar bar;
   if (!iObj.argMin) {
     bar.create_thread();
@@ -99,8 +120,6 @@ void Matrix::create_matrix(Input& iObj) {
     bar.set_status_text("Creating Matrix");
     bar.set_total((float)iObj.netlist.expNetlist.size());
   }
-  // Counter for progress report
-  cc = 0;
   // Loop through all the components in the netlist
   for (auto it = iObj.netlist.expNetlist.begin();
     it != iObj.netlist.expNetlist.end(); it++) {
@@ -198,6 +217,11 @@ void Matrix::create_matrix(Input& iObj) {
           i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc,
           iObj.parameters, iObj.argAnal, iObj.transSim.tstep(),
           branchIndex));
+      if (std::get<TransmissionLine>(components.devices.back()).timestepDelay_ 
+        <= 4) {
+        needsTR_ = true;
+        return;
+      }
       // Store the transmission line component list index for reference
       components.txIndices.emplace_back(components.devices.size() - 1);
       break;
@@ -255,6 +279,10 @@ void Matrix::create_matrix(Input& iObj) {
     bar.complete();
     std::cout << "\n";
   }
+}
+
+void Matrix::handle_mutual_inductance(Input& iObj) {
+  int cc = 0;
   ProgressBar bar2;
   if (!iObj.argMin && components.mutualinductances.size() != 0) {
     bar2.create_thread();
@@ -264,8 +292,6 @@ void Matrix::create_matrix(Input& iObj) {
     bar2.set_status_text("Adding Mutual Inductances");
     bar2.set_total((float)iObj.netlist.expNetlist.size());
   }
-  // Counter for progress report
-  cc = 0;
   // Loop through all identified mutual inductances
   for (const auto& s : components.mutualinductances) {
     // If not minimal printing
@@ -329,14 +355,29 @@ void Matrix::create_matrix(Input& iObj) {
     }
     ++cc;
   }
-  // Create the compressed storage row format required for simulation
-  create_csr();
   // Led the user know the matrix creation is complete
   if (!iObj.argMin && components.mutualinductances.size() != 0) {
     bar2.complete();
     std::cout << "\n";
   }
+}
 
+void Matrix::reduce_step(Input& iObj) {
+  iObj.transSim.tstep(iObj.transSim.tstep() / 2);
+  nodeConfig.clear();
+  nodeConfig2.clear();
+  Components newComponents;
+  components = newComponents;
+  nm.clear();
+  nodeconnections newNC;
+  nc = newNC;
+  lm.clear();
+  branchIndex = 0;
+  nz.clear();
+  ci.clear();
+  rp.clear();
+  relevantIndices.clear();
+  relevantTraces.clear();
 }
 
 void Matrix::create_csr() {

@@ -41,6 +41,7 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   double maxC = parse_param(i.at(2), iObj.parameters);
   // Create an input object for this simulation
   Input ivInp = iObj;
+  ivInp.controls.clear();
   tokens_t jj = { "B01", "1", "0", model, "AREA=1" };
   tokens_t ib = { "IB01", "0", "1", "PWL(0", "0", "10P", "0", "50P", "2.5U)" };
   ivInp.netlist.expNetlist = {
@@ -74,24 +75,28 @@ std::vector<std::pair<double, double>> IV::generate_iv(double maxC,
     currentCurr += currentIncrement;
     ivMat.sourcegen.back().ampValues({ 0, 0, currentCurr });
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
   }
   while (currentCurr >= 0) {
     // Create a matrix object using the input object
     currentCurr -= currentIncrement;
     ivMat.sourcegen.back().ampValues({ 0, maxC, currentCurr });
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
   }
   while (currentCurr >= -maxC) {
     // Create a matrix object using the input object
     currentCurr -= currentIncrement;
     ivMat.sourcegen.back().ampValues({ 0, 0, currentCurr });
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
   }
   while (currentCurr <= 0) {
     // Create a matrix object using the input object
     currentCurr += currentIncrement;
     ivMat.sourcegen.back().ampValues({ 0, -maxC, currentCurr });
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
   }
   return iv_data;
 }

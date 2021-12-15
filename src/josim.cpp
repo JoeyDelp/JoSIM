@@ -47,16 +47,16 @@ int main(int argc,
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
     // Add noise (if any)
-    Noise::add_noise_sources(iObj);
+    //Noise::add_noise_sources(iObj);
     // Create matrix object
     Matrix mObj;
     // Create the matrix in csr format
     mObj.create_matrix(iObj);
     // Do verbosity
     Verbose::handle_verbosity(iObj.argVerb, iObj, mObj);
-    // Dump expanded Netlist since it is no longer needed
-    iObj.netlist.expNetlist.clear();
-    iObj.netlist.expNetlist.shrink_to_fit();
+    //// Dump expanded Netlist since it is no longer needed
+    //iObj.netlist.expNetlist.clear();
+    //iObj.netlist.expNetlist.shrink_to_fit();
     // Find the relevant traces to store
     find_relevant_traces(iObj, mObj);
     // Create a simulation object

@@ -10,6 +10,7 @@
 #include <cstring>
 #include <filesystem>
 #include <thread>
+#include <ctime>
 
 using namespace JoSIM;
 
@@ -123,6 +124,7 @@ std::vector<tokens_t> Input::read_input(
 }
 
 void Input::parse_input(string_o fileName) {
+  srand(time(NULL));
   // Create a seperate thread that will be used for printing creation progress
   std::thread printingThread;
   // Variable to store the tokenized input

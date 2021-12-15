@@ -27,7 +27,7 @@ namespace JoSIM {
   class IndexInfo {
     public:
     int_o posIndex_, negIndex_, currentIndex_;
-    NodeConfig nodeConfig_;
+    NodeConfig nodeConfig_  = NodeConfig::GND;
   };
 
   class MatrixInfo {

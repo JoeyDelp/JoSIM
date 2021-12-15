@@ -67,13 +67,15 @@ The value of a capacitor is in Farad.
 
 ### Josephson Junction (JJ)
 
-**B**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;*<PhaseNode\>*&emsp;**MODEL**&emsp;[area=<**AREA**\>]&emsp;[ic=<**IC**>]
+**B**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;*<PhaseNode\>*&emsp;**MODEL**&emsp;[area=<**AREA**\>]&emsp;[ic=<**IC**>]&emsp;[temp=<**TEMP**>]&emsp;[neb=<**FREQ**>]
 
 A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.
 
 The Josephson junction requires specification of a model name which can be defined anywhere in the program using the control **.MODEL**.
 
 When **AREA** or **IC** is not specified then an area=1 is used as default.
+
+The temp and neb commands have the same descriptions as for the resistor.
 
 #### Model
 
@@ -96,11 +98,13 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | DELV            | 0, $\infty$         | 0.1E-3          | Transitional voltage from subgap to normal                   |
 | D               | 0.0, 1              | 0.0             | Point of contact transparency affecting current phase relationship |
 | ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
-| PHI             | 0, $\pi$            | 0               | Starting phase of junction                                   |
+| PHI             | 0, $2\pi$           | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
 
 The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
+
+By setting the **PHI** parameter of the model, the phase value is persistantly subtracted from the phase ($\phi$) in the $\sin(\phi)$ part of the JJ current. This allows elements such as the $\pi$-junction to be modeled. 
 
 ### Transmission Line
 
@@ -247,11 +251,13 @@ The most important of these control commands is the transient simulation command
 
 ### Transient Analysis
 
-**.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$]]
+**.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$]]&emsp;DST
 
 This generates a simulation that runs from 0 until $T_{STOP}$. The amount simulation steps that will be performed is $n=\frac{T_{STOP}}{T_{STEP}}$.
 
 $P_{START}$ indicates at what point output will start printing. $P_{STEP}$ sets the size of the print steps. This has to be larger or equal to $T_{STEP}$.
+
+DST disables the start-up time. The start-up time is a period calculated internally by the simulator in which components settle. This is equivalent to the few picoseconds from when a circuit initially receives power (power switch flipped).
 
 ### Subcircuits
 
@@ -272,6 +278,8 @@ A subcircuit can be used in the main netlist or another subcircuit (nesting) usi
 **X**Label&emsp;*SubcktName*&emsp;*IO Nodes*&emsp;(JSIM mode)
 
 **X**Label&emsp;*IO Nodes*&emsp;*SubcktName*&emsp;(WRspice (normal SPICE) mode)
+
+Additionally, keywords in the form of **LABEL=VALUE** can be appended to the end of the subcircuit declaration line which when instantiated will replace the value of the **LABEL** component within the subcircuit with the associated **VALUE**. This allows for unique subcircuit instantiations which would prove useful in testing various parameters without altering the original subcircuit or having multiple instances of the same subcircuit definition. This could open the door for potential future margin and optimization software.
 
 ### Noise
 

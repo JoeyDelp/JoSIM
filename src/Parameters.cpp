@@ -73,6 +73,10 @@ double JoSIM::parse_param(
   bool single) {
   // Initialize the expression to evaluate
   std::string expToEval = expr;
+  // Sanity check, prepend 0 to a string where the value is eg. .5 to vorm 0.5
+  if (expToEval.front() == '.') {
+    expToEval = "0" + expToEval;
+  }
   // Remove any and all whitespace characters
   expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace),
     expToEval.end());
@@ -476,41 +480,33 @@ void JoSIM::expand_inline_parameters(
       Errors::parsing_errors(
         ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s.first));
     }
-    // Create a temporary vector to split the token on '{'
-    tokens_t temp =
-      Misc::tokenize(s.first.at(oPos.value()), "{", true, true, 1);
-    // Erase the original token containing the '{'
-    s.first.erase(s.first.begin() + oPos.value());
-    // Insert at the previous token position the temporary vector
-    s.first.insert(s.first.begin() + oPos.value(), temp.begin(), temp.end());
-    // If the emporary token is of size 2. e.g. "td={4" becomes [td=][4]
-    if (temp.size() == 2) {
-      // Increment the position to the begining of the expression
-      oPos = oPos.value() + 1;
+    if (cPos.value() != oPos.value()) {
+      s.first.at(oPos.value()) = Misc::vector_to_string(
+        tokens_t{ s.first.begin() + oPos.value(), 
+        s.first.begin() + cPos.value() + 1 }, "");
+      s.first.erase(s.first.begin() + oPos.value() + 1, 
+        s.first.begin() + cPos.value() + 1);
     }
-    // Split the closing parenthesis into tokens on '}'
-    temp =
-      Misc::tokenize(s.first.at(cPos.value()), "}", true, true, 1);
-    // Erase the original closing token
-    s.first.erase(s.first.begin() + cPos.value());
-    // Insert the temporary vector at the original position
-    s.first.insert(s.first.begin() + cPos.value(), temp.begin(), temp.end());
-    // Parse the identified expression
-    double value = parse_param(
-      Misc::vector_to_string(tokens_t(s.first.begin() + oPos.value(),
-        s.first.begin() + cPos.value()), ""), parameters, s.second, false);
+    tokens_t temp = Misc::tokenize(s.first.at(oPos.value()), "{}", true, true, 2);
+    double value = parse_param(temp.back(), parameters, s.second, false);
     // If the returned value is not NaN
-    if (!std::isnan(value)) {
+    if (std::isnan(value)) {
       // Complain of invalid parameter expression
       Errors::parsing_errors(
         ParsingErrors::UNIDENTIFIED_PART, Misc::vector_to_string(s.first));
     }
     // Erase the expression part of the tokens
     s.first.erase(
-      s.first.begin() + oPos.value(), s.first.begin() + cPos.value());
-    // Insert the double value in the place of the expression
-    s.first.insert(
-      s.first.begin() + oPos.value(), Misc::precise_to_string(value));
+      s.first.begin() + oPos.value(), s.first.begin() + oPos.value() + 1);
+    if (temp.size() > 1) {
+      // Insert the double value in the place of the expression
+      s.first.insert(s.first.begin() + oPos.value(),
+        Misc::vector_to_string(
+          tokens_t{ temp.front(), Misc::precise_to_string(value) }, ""));
+    } else {
+      s.first.insert(s.first.begin() + oPos.value(), 
+        Misc::precise_to_string(value));
+    }
   }
   // If an expression closing was found
   if (cPos) {
