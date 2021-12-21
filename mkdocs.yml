@@ -10,6 +10,13 @@ nav:
   - Component Stamps: 'comp_stamps.md'
   - Syntax Guide: 'syntax.md'
   - Development Schedule and Bugs: 'bugs.md'
+  - Japanese 日本語版:
+    - Home: 'jp/index_jp.md'
+    - 技術的詳細: 'jp/tech_disc_jp.md'
+    - 使用例: 'jp/ex_usage_jp.md'
+    - 回路素子: 'jp/comp_stamps_jp.md'
+    - 文法ガイド: 'jp/syntax_jp.md'
+    - 開発スケジュール・バグ報告: 'jp/bugs_jp.md'
 theme: 
   name: material
   palette:
