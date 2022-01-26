@@ -36,8 +36,8 @@ namespace JoSIM {
     double prstep() const {
       return prstep_;
     }
-    int simsize() const {
-      return static_cast<int>(tstop_ / tstep_);
+    int64_t simsize() const {
+      return static_cast<int64_t>(tstop_ / tstep_);
     }
     bool startup() const {
       return startup_;

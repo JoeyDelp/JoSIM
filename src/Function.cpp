@@ -285,6 +285,10 @@ void Function::parse_exp(
     timeValues_.at(0) = parse_param(t.at(2), iObj.parameters, s);
   if (t.size() >= 4)
     timeValues_.at(1) = parse_param(t.at(3), iObj.parameters, s);
+  if (t.size() >= 5)
+    timeValues_.at(2) = parse_param(t.at(4), iObj.parameters, s);
+  if (t.size() >= 6)
+    timeValues_.at(3) = parse_param(t.at(5), iObj.parameters, s);
 }
 
 double Function::return_pwl(double& x) {
@@ -447,6 +451,8 @@ double Function::return_dc() {
 
 double Function::return_exp(double& x) {
   // Shorthand for time values
+  double& a1 = ampValues_.at(0);
+  double& a2 = ampValues_.at(1);
   double& td1 = timeValues_.at(0);
   double& tau1 = timeValues_.at(1);
   double& td2 = timeValues_.at(2);
@@ -454,12 +460,10 @@ double Function::return_exp(double& x) {
   if (x < td1) {
     return ampValues_.at(0);
   } else if (x >= td1 && x < td2) {
-    return ampValues_.at(0) + (ampValues_.at(1) - ampValues_.at(0)) *
-      (1 - exp(-(x - td1) / tau1));
+    return a1 + (a2 - a1) * (1 - exp(-(x - td1) / tau1));
   } else if (x >= td2) {
-    return ampValues_.at(0) + (ampValues_.at(1) - ampValues_.at(0)) *
-      (1 - exp(-(x - td1) / tau1)) + (ampValues_.at(0) - ampValues_.at(1)) *
-      (1 - exp(-(x - td2) / tau2));
+    return a1 + (a2 - a1) * (1 - exp(-(x - td1) / tau1)) + 
+      (a1 - a2) * (1 - exp(-(x - td2) / tau2));
   }
   return 0.0;
 }

@@ -5,7 +5,6 @@
 
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/FileOutputType.hpp"
-#include "JoSIM/InputType.hpp"
 #include "JoSIM/TypeDefines.hpp"
 
 #include <optional>
