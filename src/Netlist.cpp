@@ -5,7 +5,6 @@
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
-#include "JoSIM/InputType.hpp"
 #include "JoSIM/ProgressBar.hpp"
 
 #include <thread>

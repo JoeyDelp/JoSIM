@@ -31,7 +31,7 @@ namespace JoSIM {
     private:
     bool SLU = false;
     std::vector<double> x_, b_;
-    int simSize_;
+    int64_t simSize_;
     JoSIM::AnalysisType atyp_;
     bool minOut_;
     bool needsLU_;

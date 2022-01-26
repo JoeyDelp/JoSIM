@@ -5,7 +5,6 @@
 
 #include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/Parameters.hpp"
-#include "JoSIM/InputType.hpp"
 #include "JoSIM/Model.hpp"
 
 #include <string>
@@ -44,7 +43,6 @@ namespace JoSIM {
 
   class Netlist {
     private:
-    Input& parent;
     void id_io_subc_label(
       const tokens_t& lineTokens, tokens_t& io, s_map& params,
       std::string& subcktName, std::string& label,
@@ -65,8 +63,7 @@ namespace JoSIM {
     std::vector<std::pair<tokens_t, string_o>> expNetlist;
     int jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal = 0;
     bool containsSubckt, argMin = false;
-    Netlist(Input& p) :
-      parent(p),
+    Netlist() :
       jjCount(0),
       compCount(0),
       subcktCounter(0),

@@ -114,7 +114,7 @@ void Simulation::trans_sim(Matrix &mObj) {
     }
   }
   // Start the simulation loop
-  for(int i = 0; i < simSize_; ++i) {
+  for(int64_t i = 0; i < simSize_; ++i) {
     double step = i * stepSize_;
     // If not minimal printing report progress
     if(!minOut_) {

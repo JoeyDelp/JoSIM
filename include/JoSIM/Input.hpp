@@ -6,7 +6,6 @@
 #include "JoSIM/TypeDefines.hpp"
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/FileOutputType.hpp"
-#include "JoSIM/InputType.hpp"
 #include "JoSIM/ParameterName.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Netlist.hpp"
@@ -33,8 +32,7 @@ namespace JoSIM {
     std::vector<OutputFile> output_files;
     std::optional<std::string> fileParentPath;
 
-    Input() : netlist(*this) {};
-    Input(CliOptions& cli_options) : netlist(*this) {
+    Input(CliOptions& cli_options) {
       argAnal = cli_options.analysis_type;
       argVerb = cli_options.verbose;
       argMin = cli_options.minimal;
