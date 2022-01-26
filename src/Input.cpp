@@ -16,9 +16,12 @@ using namespace JoSIM;
 
 std::vector<tokens_t> Input::read_input(
   LineInput& input, string_o fileName) {
-  if (std::filesystem::path(fileName.value()).has_parent_path()) {
-    fileParentPath =
-      std::filesystem::path(fileName.value()).parent_path().string();
+  //When the standard input is selected, "fileName" will be in the nullopt state.
+  if(fileName != std::nullopt){
+    if (std::filesystem::path(fileName.value()).has_parent_path()) {
+      fileParentPath =
+        std::filesystem::path(fileName.value()).parent_path().string();
+    }
   }
   // Variable to store the read line
   std::string line;
@@ -89,7 +92,7 @@ std::vector<tokens_t> Input::read_input(
         // If the line contains a "END" statement
       } else if (tokens.at(0) == ".END" || tokens.at(0) == "END") {
         break;
-        // If the line does not contain an "INCLUDE" or "FILE" statement
+        // If the line does not contain an "INCLUDE", "FILE" or "END" statement
       } else {
         // Transform the entire line to upper case
         std::transform(tokens.begin() + 1, tokens.end(), tokens.begin() + 1,
