@@ -31,17 +31,17 @@ namespace JoSIM {
     std::optional<OutputFile> cli_output_file;
     std::vector<OutputFile> output_files;
     std::optional<std::string> fileParentPath;
-    AnalysisType argAnal = AnalysisType::Phase;
-    int argVerb = 0;
-    bool argMin = false;
-    bool SLU = false;
+    AnalysisType argAnal;
+    int argVerb;
+    bool argMin;
+    bool SLU;
 
-    Input(AnalysisType& at, int verb, bool min, bool slu) {
-        argAnal = at;
-        argVerb = verb;
-        argMin = min;
-        SLU = slu;
-    }
+    Input(AnalysisType at = AnalysisType::Phase,
+        int verb = 0, bool min = false, bool slu = false) :
+        argAnal(at),
+        argVerb(verb),
+        argMin(min),
+        SLU(slu) {};
     Input(CliOptions& cli_options) {
       argAnal = cli_options.analysis_type;
       argVerb = cli_options.verbose;
