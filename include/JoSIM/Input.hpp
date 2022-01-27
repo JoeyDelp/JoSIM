@@ -36,7 +36,12 @@ namespace JoSIM {
     bool argMin = false;
     bool SLU = false;
 
-    Input() {}
+    Input(AnalysisType& at, int verb, bool min, bool slu) {
+        argAnal = at;
+        argVerb = verb;
+        argMin = min;
+        SLU = slu;
+    }
     Input(CliOptions& cli_options) {
       argAnal = cli_options.analysis_type;
       argVerb = cli_options.verbose;
