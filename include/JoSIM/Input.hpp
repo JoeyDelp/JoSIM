@@ -31,7 +31,12 @@ namespace JoSIM {
     std::optional<OutputFile> cli_output_file;
     std::vector<OutputFile> output_files;
     std::optional<std::string> fileParentPath;
+    AnalysisType argAnal = AnalysisType::Phase;
+    int argVerb = 0;
+    bool argMin = false;
+    bool SLU = false;
 
+    Input() {}
     Input(CliOptions& cli_options) {
       argAnal = cli_options.analysis_type;
       argVerb = cli_options.verbose;
@@ -40,10 +45,6 @@ namespace JoSIM {
       SLU = cli_options.SLU;
     }
 
-    AnalysisType argAnal;
-    int argVerb = 0;
-    bool argMin = false;
-    bool SLU = false;
 
     std::vector<tokens_t> read_input(
       LineInput& input, string_o fileName = std::nullopt);
