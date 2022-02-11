@@ -1,4 +1,4 @@
-site_name: JoSIM v2.5 Documentation
+site_name: JoSIM Documentation
 repo_url: https://github.com/JoeyDelp/JoSIM
 repo_name: JoeyDelp/JoSIM
 site_author: Johannes Delport
@@ -46,4 +46,4 @@ extra:
           link: https://github.com/JoeyDelp
           name: JoeyDelp on GitHub
 
-copyright: Copyright &copy; 2021 Johannes Delport
+copyright: Copyright &copy; 2022 Johannes Delport
