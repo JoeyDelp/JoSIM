@@ -24,7 +24,7 @@ namespace JoSIM {
       return name_;
     }
 
-    /// Get subcircuit name of parameter, "" if it is in global scope
+    /// Get subcircuit name of parameter, nullopt if it is in global scope
     const std::optional<std::string>& subcircuit() const noexcept {
       return subcircuit_;
     }

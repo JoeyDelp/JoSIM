@@ -1,0 +1,100 @@
+**** **** **** **** **** **** **** **** **** **** **** 
+*JSIM control file for CADENCE by kameda@cq.jp.nec.com
+**** **** **** **** **** **** **** **** **** **** ****
+
+*JSIM model
+**HSTP**
+.model jjmod jj(Rtype=1, Vg=2.8mV, Cap=0.06pF, R0=100ohm, Rn=17ohm, Icrit=0.1mA, Phi=pi)
+**OPEN**
+*.model jjmod jj(Rtype=1, Vg=2.8mV, Cap=0.218pF, R0=200ohm, Rn=17ohm, Icrit=0.1mA)
+
+
+*** netlist file ***
+**** **** **** **** **** **** **** ****+
+*** Lib : hstp_komiya_lib
+*** Cell: pi_inv_test
+*** View: schematic
+*** Dec 18 20:28:23 2021
+**** **** **** **** **** **** **** ****
+
+*** pi_inverter
+.subckt pi_inverter          1          2          3          4          5          6
+***         a       din      dout         q       xin      xout
+Rout               7         4   1.000pohm nfree
+Bpi3               8         9  jjmod area=0.30
+Bpi1              10         0  jjmod area=0.60
+Bpi2              11         0  jjmod area=0.60
+Kxd                Lx         Ld 0.190
+Kd2                Ld         L2 -0.133
+Kx2                Lx         L2 -0.186
+Kx1                Lx         L1 -0.186
+Kd1                Ld         L1 -0.133
+Lq2                9         0   9.200pH fcheck
+Lq1                8         0   7.680pH fcheck
+L2                11         8   1.590pH fcheck
+Lin                1         8   1.230pH fcheck
+Lout               9         7   2.200pH fcheck
+Lx                 5         6   7.400pH fcheck
+Ld                 2         3   7.450pH fcheck
+L1                 8        10   1.590pH fcheck
+.ends
+
+*** pi_inverter2
+.subckt pi_inverter2          1          2          3          4          5          6
+***         a       din      dout         q       xin      xout
+Bpi3               8         9  jjmod area=0.30
+Bpi1              10         0  jjmod area=0.60
+Bpi2              11         0  jjmod area=0.60
+Kxd                Lx         Ld 0.190
+Kd2                Ld         L2 -0.133
+Kx2                Lx         L2 -0.186
+Kx1                Lx         L1 -0.186
+Kd1                Ld         L1 -0.133
+Lq2                9         0   9.200pH fcheck
+Lq1                8         0   7.680pH fcheck
+L2                11         8   1.590pH fcheck
+Lin                1         8   1.230pH fcheck
+Lout               9         7   2.20pH fcheck
+Lx                 5         6   7.400pH fcheck
+Ld                 2         3   7.450pH fcheck
+L1                 8        10   1.590pH fcheck
+Rout               7         4   1.000pohm nfree
+.ends
+
+*** top cell: pi_inv_test
+Vx2   0   12   SIN(0 811mV 5GHz 150ps 0)
+Vdc               13         0  PWL(0ps 0mv 20ps 1131mV)
+Vx1   14   0   SIN(0 811mV 5GHz 100ps 0)
+Vin   15   0   PWL(0ps 0mV 1ps -5mV 150ps -5mV 350ps -5mV 351ps 5mV 550ps 5mV 551ps -5mV 750ps -5mV 751ps 5mV 950ps 5mV 951ps -5mV 1150ps -5mV 1350ps -5mV 1351ps 5mV 1550ps 5mV 1750ps 5mV 1751ps -5mV 1950ps -5mV 2150ps -5mV )
+Rx2               12        16  1000.00ohm nfree
+Rdc               13        17  1000.00ohm nfree
+Rx1               14        18  1000.00ohm nfree
+Rin               15         7  1000.00ohm nfree
+XI12       pi_inverter         19         20          0          0          9          0
+*** ("22" "11" "21") mapped to 0
+XI5        pi_inverter         10         23         24         25          8         26
+XI6        pi_inverter         25         23         27         28          9         29
+XI7        pi_inverter         28         20         27         19          0         26
+*** ("30") mapped to 0
+XI2        pi_inverter         31         32         33         34         35         36
+XI3        pi_inverter         34         37         33         38          8         39
+XI0        pi_inverter          7         17         40         41         18         36
+XI1        pi_inverter         41         32         40         31         16         39
+XI4        pi_inverter2         42         37         24         43         35         29
+Lin               38        42   0.000pH fcheck
+Lout              43        10   0.000pH fcheck
+
+*** netlist file ***
+.tran 0.2ps 3000ps 0ps 0.2ps
+.print i(Rx1)
+.print i(Rx2)
+.print i(Rin)
+.print i(Lq1|XI0)
+.print i(Lq1|XI1)
+.print i(Lq1|XI2)
+.print i(Lq1|XI3)
+.print i(Lq1|XI4)
+.print i(Lq1|XI12)
+*** jsim input file ***
+
+*** jsim input file ***
