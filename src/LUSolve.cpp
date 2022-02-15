@@ -14,7 +14,7 @@ LUSolve::LUSolve() {
   options.Trans = trans;
 }
 
-void LUSolve::create_matrix(int shape, std::vector<double>& nz,
+void LUSolve::create_matrix(int64_t shape, std::vector<double>& nz,
   std::vector<long long>& ci, std::vector<long long>& rp) {
   bool do_allocation = (allocated == false || m != shape ||
     n != shape || nnz != nz.size());

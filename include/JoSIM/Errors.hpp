@@ -8,7 +8,7 @@
 #include <string>
 
 namespace JoSIM {
-  enum class CLIErrors : int {
+  enum class CLIErrors : int64_t {
     NO_ANALYSIS,
     NO_SOLVER,
     NO_INTEGRATION,
@@ -26,7 +26,7 @@ namespace JoSIM {
     INPUT_SAME_OUTPUT
   };
 
-  enum class InputErrors : int {
+  enum class InputErrors : int64_t {
     CANNOT_OPEN_FILE,
     CYCLIC_INCLUDE,
     MISSING_SUBCKT_IO,
@@ -39,7 +39,7 @@ namespace JoSIM {
     UNKNOWN_CONTROL
   };
 
-  enum class ComponentErrors : int {
+  enum class ComponentErrors : int64_t {
     INVALID_COMPONENT_DECLARATION,
     BOTH_GROUND,
     GROUNDED_VOLTAGE_SOURCE,
@@ -71,7 +71,7 @@ namespace JoSIM {
     SPECIAL_CHARS
   };
 
-  enum class ControlErrors : int {
+  enum class ControlErrors : int64_t {
     TRANS_ERROR,
     PRINT_ERROR,
     PLOT_ERROR,
@@ -103,22 +103,22 @@ namespace JoSIM {
     NODECURRENT
   };
 
-  enum class ModelErrors : int {
+  enum class ModelErrors : int64_t {
     PARAM_TYPE_ERROR,
     UNKNOWN_MODEL_TYPE,
     BAD_MODEL_DEFINITION
   };
 
-  enum class MatrixErrors : int {
+  enum class MatrixErrors : int64_t {
     NON_SQUARE,
     SANITY_ERROR
   };
 
-  enum class MiscErrors : int {
+  enum class MiscErrors : int64_t {
     STOD_ERROR
   };
 
-  enum class FunctionErrors : int {
+  enum class FunctionErrors : int64_t {
     INITIAL_VALUES,
     TOO_FEW_TIMESTEPS,
     TOO_FEW_VALUES,
@@ -143,7 +143,7 @@ namespace JoSIM {
     EXP_TOO_FEW_ARGUMENTS
   };
 
-  enum class SimulationErrors : int {
+  enum class SimulationErrors : int64_t {
     JJCAP_NOT_FOUND,
     JJICRIT_NOT_FOUND,
     JJPHASE_NODE_NOT_FOUND,
@@ -152,7 +152,7 @@ namespace JoSIM {
     PHASEGUESS_TOO_LARGE
   };
 
-  enum class ParsingErrors : int {
+  enum class ParsingErrors : int64_t {
     EXPRESSION_ARLEADY_DEFINED,
     UNIDENTIFIED_PART,
     MISMATCHED_PARENTHESIS,
@@ -160,17 +160,17 @@ namespace JoSIM {
     INVALID_DECLARATION
   };
 
-  enum class OutputErrors : int {
+  enum class OutputErrors : int64_t {
     CANNOT_OPEN_FILE,
     NOTHING_SPECIFIED
   };
 
-  enum class NetlistErrors : int {
+  enum class NetlistErrors : int64_t {
     NO_SUCH_NODE,
     MISSING_IO
   };
 
-  enum class VerbosityErrors : int {
+  enum class VerbosityErrors : int64_t {
     NO_SUCH_LEVEL,
     INVALID_VERBOSITY_LEVEL
   };

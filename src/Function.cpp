@@ -80,10 +80,10 @@ void Function::parse_pwl(
     timesteps.push_back(0.0);
     values.push_back(0.0);
   }
-  for (int i = 0; i < t.size(); i = i + 2) {
+  for (int64_t i = 0; i < t.size(); i = i + 2) {
     timesteps.push_back(Misc::modifier(t.at(i)));
   }
-  for (int i = 1; i < t.size(); i = i + 2) {
+  for (int64_t i = 1; i < t.size(); i = i + 2) {
     values.push_back(parse_param(t.at(i), iObj.parameters, s));
   }
   if (timesteps.size() < values.size()) {
@@ -216,7 +216,7 @@ void Function::parse_cus(
   }
   wffile.close();
   WF = Misc::tokenize(WFline, " ,;");
-  for (int i = 0; i < WF.size(); ++i) {
+  for (int64_t i = 0; i < WF.size(); ++i) {
     ampValues_.emplace_back(Misc::modifier(WF.at(i)));
   }
   if (timeValues_.at(0) < tstep) {
@@ -297,7 +297,7 @@ double Function::return_pwl(double& x) {
     return ampValues_.back();
     // Else check within which range x falls
   } else {
-    for (int i = 0; i < timeValues_.size() - 1; ++i) {
+    for (int64_t i = 0; i < timeValues_.size() - 1; ++i) {
       if (x >= timeValues_.at(i) && x < timeValues_.at(i + 1)) {
         double& y2 = ampValues_.at(i + 1);
         double& y1 = ampValues_.at(i);
@@ -323,7 +323,7 @@ double Function::return_pulse(double& x) {
   double& ahigh = ampValues_.at(1);
   auto val = alow;
   if (x < td) return(val);
-  int index = (x - td) / per;
+  int64_t index = (x - td) / per;
   auto time = x - td - index * per;
   if (time < tr)  {
     val = alow + (ahigh - alow) * time / tr;
@@ -354,20 +354,20 @@ double Function::return_cus(double& x) {
   double& td = timeValues_.at(3);
   double& per = timeValues_.at(4);
   double& tstop = timeValues_.at(5);
-  int n = 1;
+  int64_t n = 1;
   double repTime = 0;
-  if (static_cast<int>(per) != 1) {
+  if (static_cast<int64_t>(per) != 1) {
     n = tstop / (ampValues_.size() * ts);
     repTime = tstop / (ampValues_.size());
   }
-  for (int i = 1; i < n; ++i) {
+  for (int64_t i = 1; i < n; ++i) {
     if (sf == 1.0) {
       if (x >= (i * repTime) && x < (i * repTime + td)) {
         return 0;
       } else if (x >= (i * repTime + td) && x < (i * repTime + td + ts)) {
         return ((ampValues_.at(0) * sf) / ts) * (x - (i * repTime + td));
       } else {
-        for (int j = 1; j < ampValues_.size(); ++j) {
+        for (int64_t j = 1; j < ampValues_.size(); ++j) {
           if (x >= (i * repTime + td + j * ts) &&
             x < (i * repTime + td + (j + 1) * ts)) {
             return ((ampValues_.at(j - 1) * sf) +
@@ -382,7 +382,7 @@ double Function::return_cus(double& x) {
       } else if (x >= (i * repTime + td) && x < (i * repTime + td + ts)) {
         return (ampValues_.at(0));
       } else {
-        for (int j = 1; j < ampValues_.size(); ++j) {
+        for (int64_t j = 1; j < ampValues_.size(); ++j) {
           if (x >= (i * repTime + td + j * ts) &&
             x < (i * repTime + td + (j + 1) * ts)) {
             return (ampValues_.at(j));
@@ -420,7 +420,7 @@ double Function::return_pws(double& x) {
     return ampValues_.back();
     // Else check within which range x falls
   } else {
-    for (int i = 0; i < timeValues_.size() - 1; ++i) {
+    for (int64_t i = 0; i < timeValues_.size() - 1; ++i) {
       if (x >= timeValues_.at(i) && x < timeValues_.at(i + 1)) {
         double& y2 = ampValues_.at(i + 1);
         double& y1 = ampValues_.at(i);

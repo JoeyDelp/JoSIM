@@ -48,7 +48,7 @@ const std::vector<std::string> funcs = {
     "ACOSH", "ASINH", "ATANH", "EXP",  "LOG",  "LOG10", "SQRT", "CBRT"
 };
 
-int JoSIM::precedence_lvl(const std::string& op) {
+int64_t JoSIM::precedence_lvl(const std::string& op) {
   switch (op.at(0)) {
     // + and - are lowest level
   case '+':
@@ -87,7 +87,7 @@ double JoSIM::parse_param(
   // Substring reference to part of the expression
   std::string partToEval;
   // Counter
-  int popCount = 0;
+  int64_t popCount = 0;
   // Variable for the result to be returned
   double result;
   // Evaluate expression piece by piece until it is empy
@@ -100,7 +100,7 @@ double JoSIM::parse_param(
       }
     }
     // Find the position of the first operator
-    int opLoc = expToEval.find_first_of("/*-+(){}[]^");
+    int64_t opLoc = expToEval.find_first_of("/*-+(){}[]^");
     // If no operator is found
     if (opLoc == -1) {
       // The part to evaluate is the entire experssion
@@ -294,7 +294,7 @@ double JoSIM::parse_param(
     rpnQueueCopy.clear();
     qTypeCopy.clear();
     // Loop the the queue type
-    for (int i = 0; i < qType.size(); ++i) {
+    for (int64_t i = 0; i < qType.size(); ++i) {
       // If the queue type is value
       if (qType[i] == 'V') {
         // Add the value to the copy of the RPN
@@ -320,7 +320,7 @@ double JoSIM::parse_param(
           result = parse_operator(rpnQueue[i], Misc::modifier(rpnQueue[i - 2]),
             Misc::modifier(rpnQueue[i - 1]), popCount);
           // Remove the two values from the copy
-          for (int k = 0; k < popCount; ++k) {
+          for (int64_t k = 0; k < popCount; ++k) {
             rpnQueueCopy.pop_back();
           }
           // If we removed two
@@ -351,7 +351,7 @@ double JoSIM::parse_param(
 
 
 double JoSIM::parse_operator(
-  const std::string& op, double val1, double val2, int& popCount) {
+  const std::string& op, double val1, double val2, int64_t& popCount) {
   if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
     popCount = 1;
     if (op == "SIN")
@@ -408,11 +408,11 @@ void JoSIM::parse_parameters(param_map& parameters) {
   // Double parsed value that will be stored for each parameter
   double value;
   // Counter to ensure that we do not get stuck in a loop
-  int parsedCounter = 0;
+  int64_t parsedCounter = 0;
   // Parse parameters while counter is less than total parameter count
   while (parsedCounter < parameters.size()) {
     // Set previous counter to counter to do sanity check
-    int previous_counter = parsedCounter;
+    int64_t previous_counter = parsedCounter;
     // Loop through the parameters parsing them if possible
     for (auto& i : parameters) {
       // If the parameter does not yet have a value (double)
@@ -462,7 +462,7 @@ void JoSIM::expand_inline_parameters(
   std::pair<tokens_t, string_o>& s, param_map& parameters) {
   int_o oPos, cPos;
   // Loop through all the provided tokens, expanding any parameters
-  for (int i = 0; i < s.first.size(); ++i) {
+  for (int64_t i = 0; i < s.first.size(); ++i) {
     // If there exists a opening curly parenthesis, an expression exists
     if (s.first.at(i).find("{") != std::string::npos) {
       oPos = i;

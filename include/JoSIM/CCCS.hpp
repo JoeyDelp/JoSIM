@@ -36,7 +36,7 @@ namespace JoSIM {
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const std::optional<NodeConfig>& ncon2, const nodemap& nm,
       std::unordered_set<std::string>& lm, nodeconnections& nc,
-      const param_map& pm, int& bi);
+      const param_map& pm, int64_t& bi);
 
     void set_node_indices(
       const tokens_t& t, const nodemap& nm, nodeconnections& nc);

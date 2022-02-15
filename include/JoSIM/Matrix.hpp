@@ -25,14 +25,14 @@ namespace JoSIM {
 
     Components components;
     Spread spread;
-    std::unordered_map<std::string, int> nm;
+    std::unordered_map<std::string, int64_t> nm;
     nodeconnections nc;
     std::unordered_set<std::string> lm;
-    int branchIndex = 0;
+    int64_t branchIndex = 0;
     std::vector<double> nz;
     std::vector<long long> ci, rp;
     std::vector<RelevantTrace> relevantTraces;
-    std::vector<int> relevantIndices;
+    std::vector<int64_t> relevantIndices;
 
     Matrix() {};
     void create_matrix(Input& iObj);

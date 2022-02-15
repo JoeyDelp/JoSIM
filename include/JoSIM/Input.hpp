@@ -32,12 +32,12 @@ namespace JoSIM {
     std::vector<OutputFile> output_files;
     std::optional<std::string> fileParentPath;
     AnalysisType argAnal;
-    int argVerb;
+    int64_t argVerb;
     bool argMin;
     bool SLU;
 
     Input(AnalysisType at = AnalysisType::Phase,
-        int verb = 0, bool min = false, bool slu = false) :
+        int64_t verb = 0, bool min = false, bool slu = false) :
         argAnal(at),
         argVerb(verb),
         argMin(min),

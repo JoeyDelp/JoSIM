@@ -33,7 +33,7 @@ namespace JoSIM {
     
     public:
     LUSolve();
-    void create_matrix(int shape, std::vector<double>& nz,
+    void create_matrix(int64_t shape, std::vector<double>& nz,
       std::vector<long long>& ci, std::vector<long long>& rp);
     void factorize(bool symbolic = false);
     bool is_stable();

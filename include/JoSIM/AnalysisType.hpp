@@ -7,7 +7,7 @@
 
 namespace JoSIM {
 
-  enum class AnalysisType : int {
+  enum class AnalysisType : int64_t {
     Voltage = 0, Phase = 1
   };
 

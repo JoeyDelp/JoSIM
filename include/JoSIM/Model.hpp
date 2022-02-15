@@ -13,7 +13,7 @@ namespace JoSIM {
     std::string modelName_;
     double vg_;
     double ic_;
-    int rtype_;
+    int64_t rtype_;
     double rn_;
     double r0_;
     double c_;
@@ -59,10 +59,10 @@ namespace JoSIM {
     void ic(const double& i) {
       ic_ = i;
     }
-    int rtype() const {
+    int64_t rtype() const {
       return rtype_;
     }
-    void rtype(const int& r) {
+    void rtype(const int64_t& r) {
       rtype_ = r;
     }
     double rn() const {

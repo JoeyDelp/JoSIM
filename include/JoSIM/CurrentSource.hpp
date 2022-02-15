@@ -21,11 +21,11 @@ namespace JoSIM {
 
   class CurrentSource : public BasicComponent {
     public:
-    int sourceIndex_;
+    int64_t sourceIndex_;
 
     CurrentSource(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-      const nodemap& nm, std::unordered_set<std::string>& lm, const int& si);
+      const nodemap& nm, std::unordered_set<std::string>& lm, const int64_t& si);
 
     void set_node_indices(const tokens_t& t, const nodemap& nm);
   }; // class CurrentSource

@@ -64,13 +64,13 @@ std::string Misc::vector_to_string(const tokens_t& s, std::string d) {
 
 tokens_t Misc::tokenize(
   const std::string& c, std::string d, bool trimEmpty, bool trimSpaces,
-  int count) {
+  int64_t count) {
   // Create a position token to point to the found delimiter
   size_t pos = 0, lastPos = 0;
   // Tokens to return
   tokens_t tokens;
   // Counter to count times delimiter was found
-  int counter = 0;
+  int64_t counter = 0;
   // If times to delimit is 0 then delimit as much as we can
   if (count == 0) {
     count = c.length();
@@ -128,13 +128,13 @@ tokens_t Misc::tokenize(
 }
 
 void Misc::ltrim(std::string& s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int64_t ch) {
     return !std::isspace(ch);
   }));
 }
 
 void Misc::rtrim(std::string& s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int64_t ch) {
     return !std::isspace(ch);
   }).base(), s.end());
 }
@@ -197,9 +197,9 @@ void Misc::unique_push(std::vector<std::string>& vector,
   }
 }
 
-int Misc::index_of(const std::vector<std::string>& vector,
+int64_t Misc::index_of(const std::vector<std::string>& vector,
   const std::string& value) {
-  int counter = 0;
+  int64_t counter = 0;
   for (const auto& i : vector) {
     /* Value found, return counter */
     if (value == vector.at(counter))
@@ -234,8 +234,8 @@ std::string Misc::substring_before(const std::string& str,
 
 bool Misc::findX(const std::vector<std::string>& segment,
   std::string& theLine,
-  int& linePos) {
-  for (int i = linePos; i < segment.size(); ++i) {
+  int64_t& linePos) {
+  for (int64_t i = linePos; i < segment.size(); ++i) {
     if (segment.at(i).at(0) == 'X') {
       theLine = segment.at(i);
       if (i < segment.size() - 1)
@@ -248,8 +248,8 @@ bool Misc::findX(const std::vector<std::string>& segment,
   return false;
 }
 
-int Misc::numDigits(int number) {
-  int digits = 0;
+int64_t Misc::numDigits(int64_t number) {
+  int64_t digits = 0;
   if (number <= 0)
     digits = 1;
   while (number) {

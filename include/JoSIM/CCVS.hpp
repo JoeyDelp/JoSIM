@@ -41,19 +41,19 @@ namespace JoSIM {
 
   class CCVS : public BasicComponent {
     private:
-    int hDepPos_ = 0;
+    int64_t hDepPos_ = 0;
     JoSIM::AnalysisType at_;
     public:
     NodeConfig nodeConfig2_;
     int_o posIndex2_, negIndex2_;
-    int currentIndex2_ = 0;
+    int64_t currentIndex2_ = 0;
     double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0;
 
     CCVS(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const std::optional<NodeConfig>& ncon2, const nodemap& nm,
       std::unordered_set<std::string>& lm, nodeconnections& nc,
-      const param_map& pm, int& bi, const AnalysisType& at, const double& h);
+      const param_map& pm, int64_t& bi, const AnalysisType& at, const double& h);
 
     void set_node_indices(
       const tokens_t& t, const nodemap& nm, nodeconnections& nc);

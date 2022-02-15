@@ -22,7 +22,7 @@ void Netlist::id_io_subc_label(
   // Check the convention
   // At this point in the program all subcircuits should have been identified
   // Thus we can determine the convention from code
-  for (int i = 1; i < lineTokens.size(); ++i) {
+  for (int64_t i = 1; i < lineTokens.size(); ++i) {
     if (subcircuits.count(lineTokens.at(i)) != 0) {
       found = true;
       subcktName = lineTokens.at(i);
@@ -46,7 +46,7 @@ bool Netlist::rename_io_nodes(
   // If the subcircuit IO contains the first node 
   if (std::count(subIO.begin(), subIO.end(), node) != 0) {
     // Loop through the subcircuit IO
-    for (int l = 0; l < subIO.size(); ++l) {
+    for (int64_t l = 0; l < subIO.size(); ++l) {
       // If the nodes match
       if (::strcmp(node.c_str(), subIO.at(l).c_str()) == 0) {
         // Replace the node with the IO node
@@ -67,7 +67,7 @@ void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io,
     Errors::input_errors(InputErrors::IO_MISMATCH, label);
   }
   // Loop through the identified subcircuit
-  for (int k = 0; k < subc.lines.size(); ++k) {
+  for (int64_t k = 0; k < subc.lines.size(); ++k) {
     // Set shorthand for long variable name
     tokens_t& tokens = subc.lines.at(k).first;
     // Check for value parameterization
@@ -77,13 +77,13 @@ void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io,
     // Append the label of the parent to the subcircuit label
     tokens.at(0) = tokens.at(0) + "|" + label;
     // Determine amount of nodes to process
-    int nodeCount = 2;
+    int64_t nodeCount = 2;
     // If device type identifier is any of "EFGHT" check the next two nodes
     if (std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) {
       nodeCount = 4;
     }
     // Loop through all the nodes changing where necessary
-    for (int n = 1; n < nodeCount + 1; ++n) {
+    for (int64_t n = 1; n < nodeCount + 1; ++n) {
       // Ensure nodes don't identify as ground
       if (tokens.at(n) != "0" && tokens.at(n) != "GND") {
         // Ensure the node is not part of the IO
@@ -149,7 +149,7 @@ void Netlist::expand_subcircuits() {
     bar.set_total((float)nestedSubcktCount);
   }
   // If not minimal printing
-  int cc = 0;
+  int64_t cc = 0;
   // While we are nested (depth not zero)
   while (nestedSubcktCount != 0) {
     // If not minimal printing
@@ -159,7 +159,7 @@ void Netlist::expand_subcircuits() {
     }
     // Loop through subcircuits
     for (const auto& i : subcircuits) {
-      for (int j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
+      for (int64_t j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
         // Shorthand for the current subcircuit
         Subcircuit& subcircuit = subcircuits.at(i.first);
         // Shorthand for the current subcircuit line
@@ -215,7 +215,7 @@ void Netlist::expand_maindesign() {
     bar.set_total((float)maindesign.size());
   }
   // Loop through the identified main design, line by line
-  for (int i = 0; i < maindesign.size(); ++i) {
+  for (int64_t i = 0; i < maindesign.size(); ++i) {
     std::string subcktName, label;
     // If not minimal printing
     if (!argMin) {

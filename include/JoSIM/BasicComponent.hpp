@@ -15,8 +15,8 @@ namespace JoSIM {
     GND = 0, POSGND = 1, GNDNEG = 2, POSNEG = 3
   };
 
-  using nodemap = std::unordered_map<std::string, int>;
-  using nodeconnections = std::vector<std::vector<std::pair<double, int>>>;
+  using nodemap = std::unordered_map<std::string, int64_t>;
+  using nodeconnections = std::vector<std::vector<std::pair<double, int64_t>>>;
 
   class NetlistInfo {
     public:
@@ -33,8 +33,8 @@ namespace JoSIM {
   class MatrixInfo {
     public:
     std::vector<double> nonZeros_;
-    std::vector<int> columnIndex_;
-    std::vector<int> rowPointer_;
+    std::vector<int64_t> columnIndex_;
+    std::vector<int64_t> rowPointer_;
   };
 
   class BasicComponent {

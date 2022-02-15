@@ -37,7 +37,7 @@ CCVS::CCVS(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const std::optional<NodeConfig>& ncon2, const nodemap& nm,
   std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, int& bi, const AnalysisType& at, const double& h) {
+  const param_map& pm, int64_t& bi, const AnalysisType& at, const double& h) {
   at_ = at;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {

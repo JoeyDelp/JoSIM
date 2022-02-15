@@ -36,7 +36,7 @@ void Model::parse_model(
   }
   double value = 0.0;
   // Loop through the parameter tokens
-  for (int i = 0; i < tokens.size(); i += 2) {
+  for (int64_t i = 0; i < tokens.size(); i += 2) {
     // Every even odd token should be a value (otherwise complain)
     value = parse_param(tokens.at(i + 1), p, s.second);
     if (std::isnan(value)) {
@@ -49,7 +49,7 @@ void Model::parse_model(
     } else if (tokens.at(i) == "IC" || tokens.at(i) == "ICRIT") {
       temp.ic(value);
     } else if (tokens.at(i) == "RTYPE") {
-      temp.rtype((int)value);
+      temp.rtype((int64_t)value);
     } else if (tokens.at(i) == "RN") {
       temp.rn(value);
     } else if (tokens.at(i) == "R0") {

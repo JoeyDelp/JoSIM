@@ -16,7 +16,7 @@ namespace JoSIM {
   struct CliOptions {
     private:
 
-    tokens_t argv_to_tokens(const int& argc, const char** argv);
+    tokens_t argv_to_tokens(const int64_t& argc, const char** argv);
     vector_pair_t<char_o, string_o> argument_pairs(const tokens_t& tokens);
 
     public:
@@ -26,13 +26,13 @@ namespace JoSIM {
 
     AnalysisType analysis_type = AnalysisType::Phase;
 
-    int verbose = 0;
+    int64_t verbose = 0;
     bool SLU = false;
     bool minimal = false;
     bool parallel = false;
 
     // helper functions
-    static CliOptions parse(int argc, const char** argv);
+    static CliOptions parse(int64_t argc, const char** argv);
     static void display_help();
     static void version_info();
   };

@@ -35,7 +35,7 @@ namespace JoSIM {
    ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
   */
 
-  using mutualinductors = std::vector<std::pair<int, double>>;
+  using mutualinductors = std::vector<std::pair<int64_t, double>>;
 
   class Inductor : public BasicComponent {
     private:
@@ -47,13 +47,13 @@ namespace JoSIM {
     Inductor(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const nodemap& nm, std::unordered_set<std::string>& lm, 
-      nodeconnections& nc, Input& iObj, Spread spread, int& bi);
+      nodeconnections& nc, Input& iObj, Spread spread, int64_t& bi);
 
-    void set_mutualInductance(const std::pair<int, double>& mut) {
+    void set_mutualInductance(const std::pair<int64_t, double>& mut) {
       mutualInductances_.emplace_back(mut);
     }
     void add_mutualInductance(
-      const double& m, const AnalysisType& at, const double& h, const int& ci);
+      const double& m, const AnalysisType& at, const double& h, const int64_t& ci);
     const mutualinductors get_mutualInductance() const {
       return mutualInductances_;
     }

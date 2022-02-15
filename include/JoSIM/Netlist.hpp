@@ -28,7 +28,7 @@ namespace JoSIM {
     tokens_t io;
     std::vector<std::pair<tokens_t, string_o>> lines;
     tokens_t subckts;
-    int jjCount, compCount, subcktCounter;
+    int64_t jjCount, compCount, subcktCounter;
     bool containsSubckt;
     Subcircuit() :
       jjCount(0),
@@ -57,11 +57,11 @@ namespace JoSIM {
       std::pair<std::string, string_o>, tokens_t, pair_hash> models;
     std::vector<std::pair<Model, string_o>> models_new;
     std::unordered_map<std::string, Subcircuit> subcircuits;
-    std::unordered_map<std::string, int> subcktLookup;
+    std::unordered_map<std::string, int64_t> subcktLookup;
     std::vector<tokens_t> maindesign;
     tokens_t subckts;
     std::vector<std::pair<tokens_t, string_o>> expNetlist;
-    int jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal = 0;
+    int64_t jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal = 0;
     bool containsSubckt, argMin = false;
     Netlist() :
       jjCount(0),

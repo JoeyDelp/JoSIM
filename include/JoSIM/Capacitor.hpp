@@ -46,7 +46,7 @@ namespace JoSIM {
     Capacitor(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const nodemap& nm, std::unordered_set<std::string>& lm, 
-      nodeconnections& nc, Input& iObj, Spread& spread, int& bi);
+      nodeconnections& nc, Input& iObj, Spread& spread, int64_t& bi);
 
     void update_timestep(const double& factor) override;
 
