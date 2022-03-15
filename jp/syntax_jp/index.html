@@ -1,0 +1,1300 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Johannes Delport">
+      
+      
+      <link rel="icon" href="../../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.9">
+    
+    
+      
+        <title>文法ガイド - JoSIM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2b4465f4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#000000">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="black" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JoSIM Documentation" class="md-header__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+      
+  <img src="../../img/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JoSIM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              文法ガイド
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    JoeyDelp/JoSIM
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JoSIM Documentation" class="md-nav__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+      
+  <img src="../../img/favicon.ico" alt="logo">
+
+    </a>
+    JoSIM Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    JoeyDelp/JoSIM
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tech_disc/" class="md-nav__link">
+        Technical Discussion
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ex_usage/" class="md-nav__link">
+        Example Usage
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comp_stamps/" class="md-nav__link">
+        Component Stamps
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../syntax/" class="md-nav__link">
+        Syntax Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bugs/" class="md-nav__link">
+        Development Schedule and Bugs
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          Japanese 日本語版
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Japanese 日本語版" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Japanese 日本語版
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index_jp/" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tech_disc_jp/" class="md-nav__link">
+        技術的な議論
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ex_usage_jp/" class="md-nav__link">
+        使用例
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comp_stamps_jp/" class="md-nav__link">
+        素子のスタンプ
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          文法ガイド
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        文法ガイド
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    基本的な文法
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    基本素子
+  </a>
+  
+    <nav class="md-nav" aria-label="基本素子">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resistor" class="md-nav__link">
+    抵抗
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inductor" class="md-nav__link">
+    インダクタ
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacitor" class="md-nav__link">
+    キャパシタ
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#josephson-junction-jj" class="md-nav__link">
+    Josephson Junction (JJ)
+  </a>
+  
+    <nav class="md-nav" aria-label="Josephson Junction (JJ)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    モデル
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transmission-line" class="md-nav__link">
+    Transmission Line
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mutual-inductance" class="md-nav__link">
+    相互インダクタンス
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#independent-sources" class="md-nav__link">
+    Independent Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Independent Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#voltage-source" class="md-nav__link">
+    電圧源
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-source" class="md-nav__link">
+    電流源
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-source" class="md-nav__link">
+    位相源
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependent-sources" class="md-nav__link">
+    Dependent Sources
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependent Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-controlled-current-source" class="md-nav__link">
+    電流制御電流源
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-controlled-voltage-source" class="md-nav__link">
+    電流制御電圧源
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voltage-controlled-current-source" class="md-nav__link">
+    電圧制御電流源
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voltage-controlled-voltage-source" class="md-nav__link">
+    電圧制御電圧源
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-types" class="md-nav__link">
+    Source Types
+  </a>
+  
+    <nav class="md-nav" aria-label="Source Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pwl" class="md-nav__link">
+    区分線形 (PWL)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    パルス
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    サイン波
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    カスタム波形
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dc" class="md-nav__link">
+    DC
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    ノイズ
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    指数関数
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    コントロールコマンド
+  </a>
+  
+    <nav class="md-nav" aria-label="コントロールコマンド">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transient-analysis" class="md-nav__link">
+    トランジェント解析
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    サブサーキット
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#noise" class="md-nav__link">
+    ノイズ
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    ばらつき
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iv" class="md-nav__link">
+    IV曲線
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output" class="md-nav__link">
+    出力
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    ファイル
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    パラメータ
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    コントロールブロック
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#include" class="md-nav__link">
+    Include
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    標準入力
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    定数
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bugs_jp/" class="md-nav__link">
+        開発スケジュール・バグ報告
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+<h1 id="_1">文法ガイド</h1>
+<p>このセクションはJoSIMの中で利用可能な文法の包括的なガイドになります。</p>
+<p>JoSIMは<strong><em>CaSe InSeNsItIvE</em></strong>であり各行は読み込また際に大文字に変換されます。</p>
+<p>付け加えると、いくつかの特定のケースでは値を解釈する際混乱を生むことになるため値に単位をつけるのは<strong>推奨されません</strong>。例えばキャパシタにファラド(F)を指定したとき、後ろにFがついている値というのはフェムト(f)に解釈されてしまうかもしれません。これは5ファラドのキャパシタが欲しくても5<em>フェムト</em>ファラドのキャパシタになってしまうということです。素子のタイプが単位を示すため、決してシミュレータによっては単位は解釈されません。</p>
+<h2 id="_2">基本的な文法</h2>
+<p>各行はノーブレークスペースを識別子として用いる似たような構文に則っています。各識別子はJoSIMに各行をどのように処理すればいいかを指定しています。</p>
+<p>識別子は例えばL, C, Rのような回路中の物理素子に関係する文字から始まっています。この類の行はほぼ常にラベルと２つのノードを必要とする同様の文法に則っています。ノードには英数字を使うことができ、ただし<strong>0</strong>と<strong>GND</strong>は接地されたノードであることを示します。そして、JoSIMの予約語であるため、ピリオド(<strong>.</strong>)またはパイプ(<strong>|</strong>)のラベルまたはノード名への使用は禁止されています。</p>
+<p>ピリオド(<strong>.</strong>)によって始まる行は何らかのシミュレーションコントロールに関係していることを示しています。このような場合コマンドはコントロールを示すピリオドの後に続きます（.tran, .print, .endなど）。</p>
+<p>アスタリスク(<strong>*</strong>)もしくはシャープ(<strong>#</strong>)に続く行はコメントです。コメントは置かれている行に入っていることになりますが行末に置かれた場合は機能しません。</p>
+<p>行がプラス(<strong>+</strong>)から始まっている場合その行は前の行からの続きであることを表しています。内部的には二つの行は結合されます。多くの場合において素子の<strong>VALUE</strong>は変数名や式によって置き換え可能です。変数は<strong>.PARAM</strong>コントロールを用いて定義可能です。これについてはさらに詳しく議論されていきます。</p>
+<p>JoSIMでの値は工学的記数法またはSI接頭語を用いて調整することができます。使用可能なSI接頭語のリストは以下の通りです：</p>
+<p><center></p>
+<table>
+<thead>
+<tr>
+<th>SI接頭語</th>
+<th>意味</th>
+<th>工学的記数法での値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F</td>
+<td>Femto</td>
+<td>1E-15</td>
+</tr>
+<tr>
+<td>P</td>
+<td>Pico</td>
+<td>1E-12</td>
+</tr>
+<tr>
+<td>N</td>
+<td>Nano</td>
+<td>1E-9</td>
+</tr>
+<tr>
+<td>U</td>
+<td>Micro</td>
+<td>1E-6</td>
+</tr>
+<tr>
+<td>M</td>
+<td>Milli</td>
+<td>1E-3</td>
+</tr>
+<tr>
+<td>K</td>
+<td>Kilo</td>
+<td>1E3</td>
+</tr>
+<tr>
+<td>MEG</td>
+<td>Mega</td>
+<td>1E6</td>
+</tr>
+<tr>
+<td>X</td>
+<td>Mega</td>
+<td>1E6</td>
+</tr>
+<tr>
+<td>G</td>
+<td>Giga</td>
+<td>1E9</td>
+</tr>
+<tr>
+<td>T</td>
+<td>Tera</td>
+<td>1E12</td>
+</tr>
+</tbody>
+</table>
+<p></center></p>
+<h2 id="_3">基本素子</h2>
+<p>ここからは全ての使用可能な物理素子と制限について見ていきます。角括弧の中のパラメータは任意のものでありネストされた角括弧はその前のものがあることに依存した、カプセル化されたパラメータを意味しています。</p>
+<h3 id="resistor">抵抗</h3>
+<p><strong>R</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong>&emsp;[temp=&lt;<strong>TEMP</strong>&gt;]&emsp;[neb=&lt;<strong>FREQ</strong>&gt;]</p>
+<p>抵抗の値はオームです。</p>
+<p>温度はノイズ解析に使用され、単位はケルビンです。JoSIMではケルビンとして<strong>K</strong>を使おうとしてもキロとして解釈されるため、単位は除外しておく必要があります。（例：4Kは4000になります。）</p>
+<p>任意の周波数パラメータはノイズ解析における雑音の有効帯域幅を設定します。デフォルトは1GHzです。</p>
+<h3 id="inductor">インダクタ</h3>
+<p><strong>L</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
+<p>インダクタの値はヘンリーで表されます。</p>
+<h3 id="capacitor">キャパシタ</h3>
+<p><strong>C</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
+<p>キャパシタの値はファラドで表されます。</p>
+<h3 id="josephson-junction-jj">Josephson Junction (JJ)</h3>
+<p><strong>B</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<em>&lt;PhaseNode></em>&emsp;<strong>MODEL</strong>&emsp;[area=&lt;<strong>AREA</strong>>]&emsp;[ic=&lt;<strong>IC</strong>&gt;]&emsp;[temp=&lt;<strong>TEMP</strong>&gt;]&emsp;[neb=&lt;<strong>FREQ</strong>&gt;]</p>
+<p>ジョセフソン接合は二端子デバイスですがWRspiceとの互換性のため三番目の接続されていないノードと共に定義することも可能です。このノードはJoSIMでは使用されません。</p>
+<p>ジョセフソン接合には、<strong>.MODEL</strong>コントロールを用いてプログラムのどこにでも定義することができるモデル名の詳細が必要です。</p>
+<p><strong>AREA</strong>または<strong>IC</strong>が指定されていない場合area=1がデフォルトで使用されます。</p>
+<p>tempとnebコマンドの説明は抵抗と同じです。</p>
+<h4 id="_4">モデル</h4>
+<p>モデルコントロールは次のような文法を持ちます。</p>
+<p>This model control has the following syntax</p>
+<p><strong>.MODEL</strong>&emsp;<em>ModelName</em>&emsp;<em>ModelType</em>([<strong>MODEL PARAMETERS</strong>])</p>
+<p>JoSIMで現在サポートしている接合モデルはRCSJモデルだけであるため唯一使用可能なモデルタイプは次のようにパラメータが設定可能な<strong>jj</strong>だけです：</p>
+<table>
+<thead>
+<tr>
+<th>パラメータ</th>
+<th>範囲</th>
+<th>デフォルト</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RTYPE</td>
+<td>0, 1</td>
+<td>1</td>
+<td>線型化モデルが使われている</td>
+</tr>
+<tr>
+<td>VG or VGAP</td>
+<td>-<span class="arithmatex">\(\infty\)</span>, <span class="arithmatex">\(\infty\)</span></td>
+<td>2.8E-3</td>
+<td>超電導ギャップ電圧</td>
+</tr>
+<tr>
+<td>IC or ICRIT</td>
+<td>-<span class="arithmatex">\(\infty\)</span>, <span class="arithmatex">\(\infty\)</span></td>
+<td>1E-3</td>
+<td>超電導臨界電流値</td>
+</tr>
+<tr>
+<td>RN</td>
+<td>0, <span class="arithmatex">\(\infty\)</span></td>
+<td>5</td>
+<td>接合抵抗</td>
+</tr>
+<tr>
+<td>R0</td>
+<td>0, <span class="arithmatex">\(\infty\)</span></td>
+<td>30</td>
+<td>サブギャップ抵抗</td>
+</tr>
+<tr>
+<td>C or CAP</td>
+<td>0, <span class="arithmatex">\(\infty\)</span></td>
+<td>2.5E-12</td>
+<td>接合容量</td>
+</tr>
+<tr>
+<td>T</td>
+<td>0, <span class="arithmatex">\(\infty\)</span></td>
+<td>4.2</td>
+<td>冷却液の沸点</td>
+</tr>
+<tr>
+<td>TC</td>
+<td>0, <span class="arithmatex">\(\infty\)</span></td>
+<td>9.1</td>
+<td>超電導素材の臨界温度</td>
+</tr>
+<tr>
+<td>DELV</td>
+<td>0, <span class="arithmatex">\(\infty\)</span></td>
+<td>0.1E-3</td>
+<td>サブギャップから常伝導状態への転移電圧</td>
+</tr>
+<tr>
+<td>D</td>
+<td>0.0, 1</td>
+<td>0.0</td>
+<td>電流位相関係に影響する接点の透過率</td>
+</tr>
+<tr>
+<td>ICFCT or ICFACT</td>
+<td>0, 1</td>
+<td><span class="arithmatex">\(\frac{\pi}{4}\)</span></td>
+<td>臨界電流の準粒子ステップ高さに対する比</td>
+</tr>
+<tr>
+<td>PHI</td>
+<td>0, <span class="arithmatex">\(2\pi\)</span></td>
+<td>0</td>
+<td><span class="arithmatex">\(\pi\)</span>-junctionのようなphi-junctionを実現可能にする</td>
+</tr>
+</tbody>
+</table>
+<p><em>.model</em> の行はサブサーキット固有であるため同じ名前の異なるモデルを分離されたサブサーキット下にそれぞれ置くことができます。サブサーキット下にモデルが見つからなかった場合グローバルなものを探すことになり、それでも見つからない場合はデフォルトの値（デフォルトのモデル）が使用されます。</p>
+<p><strong>AREA</strong>と<strong>IC</strong>パラメータはモデルパラメータの修飾子としてはたらきます。<strong>IC</strong>が指定されると<strong>AREA</strong>の値は<span class="arithmatex">\(AREA=\frac{IC_{jj}}{IC_{model}}\)</span>によって置き換えられる、臨界電流でかけられた値となります。</p>
+<p>モデルの<strong>PHI</strong>パラメータを設定することで、JJ電流の<span class="arithmatex">\(\sin(\phi)\)</span>部分の中にある位相(<span class="arithmatex">\(\phi\)</span>)から常に引いたものが位相の値になります。これによって<span class="arithmatex">\(\pi\)</span>-junctionのような素子をモデル化可能です。</p>
+<h3 id="transmission-line">Transmission Line</h3>
+<p><strong>T</strong>Label&emsp;<span class="arithmatex">\(N^{+}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{+}_{2}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{2}\)</span>&emsp;<strong>TD=VALUE</strong>&emsp;<strong>Z0=VALUE</strong></p>
+<p><strong>TD</strong>は単位時間あたりの遅延時間です。</p>
+<p><strong>Z0</strong>はオームで表したインピーダンスです。</p>
+<h3 id="mutual-inductance">相互インダクタンス</h3>
+<p><strong>K</strong>Label&emsp;<span class="arithmatex">\(L_{1}\)</span>&emsp;<span class="arithmatex">\(L_{2}\)</span>&emsp;<strong>VALUE</strong></p>
+<p>値は結合係数<em>k</em>です。</p>
+<h2 id="sources">Sources</h2>
+<h3 id="independent-sources">Independent Sources</h3>
+<h4 id="voltage-source">電圧源</h4>
+<p><strong>V</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>SOURCETYPE</strong></p>
+<h4 id="current-source">電流源</h4>
+<p><strong>I</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>SOURCETYPE</strong></p>
+<h4 id="phase-source">位相源</h4>
+<p><strong>P</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>SOURCETYPE</strong></p>
+<h3 id="dependent-sources">Dependent Sources</h3>
+<h4 id="current-controlled-current-source">電流制御電流源</h4>
+<p><strong>F</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<span class="arithmatex">\(N^{+}\)</span>Control&emsp;<span class="arithmatex">\(N^{-}\)</span>Control&emsp;<strong>CURRENT GAIN</strong></p>
+<h4 id="current-controlled-voltage-source">電流制御電圧源</h4>
+<p><strong>H</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<span class="arithmatex">\(N^{+}\)</span>Control&emsp;<span class="arithmatex">\(N^{-}\)</span>Control&emsp;<strong>TRANSRESISTANCE IN OHMS</strong></p>
+<h4 id="voltage-controlled-current-source">電圧制御電流源</h4>
+<p><strong>G</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<span class="arithmatex">\(N^{+}\)</span>Control&emsp;<span class="arithmatex">\(N^{-}\)</span>Control&emsp;<strong>TRANSCONDUCTANCE IN MHOS</strong></p>
+<h4 id="voltage-controlled-voltage-source">電圧制御電圧源</h4>
+<p><strong>E</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<span class="arithmatex">\(N^{+}\)</span>Control&emsp;<span class="arithmatex">\(N^{-}\)</span>Control&emsp;<strong>VOLTAGE GAIN</strong></p>
+<h3 id="source-types">Source Types</h3>
+<h4 id="pwl">区分線形 (PWL)</h4>
+<p><strong>pwl(0</strong>&emsp;<strong>0</strong>&emsp;<span class="arithmatex">\(T_{1}\)</span>&emsp;<span class="arithmatex">\(A_{1}\)</span>&emsp;...&emsp;<span class="arithmatex">\(T_{n}\)</span>&emsp;<span class="arithmatex">\(A_{n}\)</span><strong>)</strong></p>
+<p>このソースは指定された振幅間で、シミュレーション中の各時間において線形に振幅を補間します。</p>
+<p>最初の2つの値はシミュレーションのはじめに0にしておく必要があります。</p>
+<h4 id="_5">パルス</h4>
+<p><strong>pulse(</strong><span class="arithmatex">\(A_{1}\)</span>&emsp;<span class="arithmatex">\(A_{2}\)</span>&emsp;[<span class="arithmatex">\(T_{D}\)</span>&emsp;[<span class="arithmatex">\(T_{R}\)</span>&emsp;[<span class="arithmatex">\(T_{F}\)</span>&emsp;[<em>PW</em>&emsp;[<em>PER</em>]]]]] <strong>)</strong></p>
+<p>このソースは二つの振幅(<span class="arithmatex">\(A_{1}\)</span>と<span class="arithmatex">\(A_{2}\)</span>)にわたり、<span class="arithmatex">\(T_{D}\)</span>後に始まってrise・fallタイム(<span class="arithmatex">\(T_{R}\)</span> &amp; <span class="arithmatex">\(T_{F}\)</span>)を持つパルスを生成します。rise・fallタイムのデフォルトはトランジェントシミュレーションのステップサイズです。</p>
+<p><em>PW</em>と<em>PER</em>はそれぞれパルス幅と周期を参照しています。この値は指定されていないときデフォルトではトランジェントシミュレーションの停止時間となります。</p>
+<p>このソースでは周波数を設定したとき継続的にパルスを発生させられるようになります。</p>
+<h4 id="_6">サイン波</h4>
+<p><strong>sin(</strong><span class="arithmatex">\(A_{O}\)</span>&emsp;<span class="arithmatex">\(A\)</span>&emsp;[<span class="arithmatex">\(f\)</span>&emsp;[<span class="arithmatex">\(T_{D}\)</span>&emsp;[<span class="arithmatex">\(\theta\)</span>]]] <strong>)</strong></p>
+<p><span class="arithmatex">\(A_{O}\)</span>がオフセット、<span class="arithmatex">\(A\)</span>が振幅、<span class="arithmatex">\(f\)</span> が周波数で<span class="arithmatex">\(\frac{1}{T_{STOP}}\)</span>がデフォルトであるようなサイン波を生成するソースです。</p>
+<p><span class="arithmatex">\(T_{D}\)</span> 停止時間を設定し、<span class="arithmatex">\(\theta\)</span>は信号振幅を変調させます。</p>
+<p>この関数は次の式に基づきトランジェント解析中の各ステップにおいてデータ点を生成します：</p>
+<p><span class="arithmatex">\(f(t)=A_{O}+A\sin(2\pi f(t-T_{D}))e^{-\theta(t-T_{D})}\)</span></p>
+<h4 id="_7">カスタム波形</h4>
+<p><strong>cus(</strong> <em>wavefile</em>&emsp;<span class="arithmatex">\(T_{S}\)</span>&emsp;<em>SF</em>&emsp;<em>IM</em>&emsp;[<span class="arithmatex">\(T_{D}\)</span>&emsp;<em>PER]</em> <strong>)</strong></p>
+<p>このソースはテキストの波形ファイルの中の点に基づいて関数を生成することが出来ます。このファイルは一行でスペース区切りの数値が入っていなければなりません。（例：0 2 3 6 2 1 0）</p>
+<p>行中の各数値はタイムステップ<span class="arithmatex">\(T_{S}\)</span>で分けられた振幅を表しており、スケールファクター<em>SF</em>によって拡大縮小されています。点と点の間の値は補間なし(0)、線形補間(1)、またはキュービック補間(2)のいずれかを用いて補間されます。関数はPERが1にセットされていると周期的にすることができ、ここでパターンはシミュレーション全体にわたって繰り返されます。</p>
+<p>波形は<span class="arithmatex">\(T_{D}\)</span>から始まります。</p>
+<h4 id="dc">DC</h4>
+<p><em>dc</em>&emsp;<span class="arithmatex">\(A\)</span></p>
+<p>DCソースはシミュレーションの間いつでも<span class="arithmatex">\(A\)</span>となります。
+A DC source that is always at <span class="arithmatex">\(A\)</span> at any given time during the simulation.</p>
+<h4 id="_8">ノイズ</h4>
+<p><strong>noise(</strong><span class="arithmatex">\(A\)</span>&emsp;<span class="arithmatex">\(T_{D}\)</span>&emsp;<span class="arithmatex">\(T_{STEP}\)</span><strong>)</strong></p>
+<p>このソースは<span class="arithmatex">\(T_{D}\)</span>の後のタイムステップに対しノイズ値を生み出します。<span class="arithmatex">\(T_{STEP}\)</span>は、<code>.neb</code>を使うことでグローバルに、または<code>neb=</code>を用いて抵抗に対しローカルに設定される、ノイズの有効帯域幅の逆数です。</p>
+<p>返されるノイズ値は次の式を用いて計算されます：</p>
+<p><span class="arithmatex">\(f(t) = A\frac{GRAND()}{\sqrt{2T_{STEP}}}\)</span></p>
+<p><span class="arithmatex">\(GRAND()\)</span>はガウシアン乱数生成関数です。</p>
+<h4 id="_9">指数関数</h4>
+<p><strong>exp(</strong> <span class="arithmatex">\(A_{1}\)</span>&emsp;<span class="arithmatex">\(A_{2}\)</span>&emsp;<span class="arithmatex">\(T_{D1}\)</span>&emsp;<span class="arithmatex">\(\tau_{1}\)</span>&emsp;<span class="arithmatex">\(T_{D2}\)</span>&emsp;<span class="arithmatex">\(\tau_{2}\)</span><strong>)</strong></p>
+<p><center></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(T_{D1}\)</span></td>
+<td>0.0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(T_{D2}\)</span></td>
+<td><span class="arithmatex">\(T_{STEP}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau_{1}\)</span></td>
+<td><span class="arithmatex">\(T_{D1}+T_{STEP}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tau_{2}\)</span></td>
+<td><span class="arithmatex">\(T_{STEP}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p></center></p>
+<p>3つの異なる時間区分で異なる値を返します。</p>
+<p><span class="arithmatex">\(t &lt; T_{D1}\)</span>において:</p>
+<p><span class="arithmatex">\(f(t)=A_{1}\)</span> </p>
+<p><span class="arithmatex">\(T_{D1}\le t &lt; T_{D2}\)</span>において:</p>
+<p><span class="arithmatex">\(f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})\)</span></p>
+<p>$T_{D2} \le t $において:</p>
+<p><span class="arithmatex">\(f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{\frac{t - T_{D2}}{\tau_{2}}})\)</span></p>
+<h2 id="_10">コントロールコマンド</h2>
+<p>シミュレーションエンジンには、今ちょうど供給されたコンポーネントに対して何をしたらいいか知るためのコントロールコマンドが必要です。</p>
+<p>コントロールコマンドの中では、それ抜きでシミュレーションは出来ないので、トランジェントシミュレーションコマンドが一番大事になります。</p>
+<h3 id="transient-analysis">トランジェント解析</h3>
+<p><strong>.tran</strong>&emsp;<span class="arithmatex">\(T_{STEP}\)</span>&emsp;<span class="arithmatex">\(T_{STOP}\)</span>&emsp;[<span class="arithmatex">\(P_{START}\)</span>&emsp;[<span class="arithmatex">\(P_{STEP}\)</span>]]&emsp;DST</p>
+<p>これによって0から<span class="arithmatex">\(T_{STOP}\)</span>までを走るシミュレーションが生成されます。実行されるシミュレーションステップ量は<span class="arithmatex">\(n=\frac{T_{STOP}}{T_{STEP}}\)</span>です。</p>
+<p><span class="arithmatex">\(P_{START}\)</span>はどの点の出力が最初に出力されるかを示します。<span class="arithmatex">\(P_{STEP}\)</span>は出力ステップの大きさを設定します。これは<span class="arithmatex">\(T_{STEP}\)</span>以上でなければなりません。</p>
+<p>DSTはstart-up timeを使用できなくします。start-up timeとは部品がついているシミュレータによって内部的に計算されている時間のことです。これは回路が最初に電力を受け取ってから（電源スイッチがonになってから）の数psと同等です。</p>
+<h3 id="_11">サブサーキット</h3>
+<p>サブサーキットによって、大きなデザインを部分に分割し小さな回路を再利用することが可能です。サブサーキットによって囲まれると、コントロールデバイスはネットリストの任意の場所で記述されているものと同じ名前を持つことができ、サブサーキットによって完全に隔離されているのと同じ状態になります。</p>
+<p>サブサーキットは次のようなラップするためのコントロール文を持っています。</p>
+<p><strong>.subckt</strong>&emsp;<em>SubcktName</em>&emsp;<em>IO Nodes</em></p>
+<p>...</p>
+<p><strong>.ends</strong></p>
+<p><em>SubcktName</em>はサブサーキットの名前を指定しており<em>IO Nodes</em>はサブサーキット内でどのノードが外側につながっているのかを指定しています。</p>
+<p>サブサーキットはメインのネットリストまたは他のサブサーキット（ネスト）で次の文法により使うことができます：</p>
+<p><strong>X</strong>Label&emsp;<em>SubcktName</em>&emsp;<em>IO Nodes</em>&emsp;(JSIM mode)</p>
+<p><strong>X</strong>Label&emsp;<em>IO Nodes</em>&emsp;<em>SubcktName</em>&emsp;(WRspice (normal SPICE) mode)</p>
+<p>さらに、<strong>LABEL=VALUE</strong>の形で書かれるキーワードはサブサーキット記述の最後の行に追加することができ、インスタンス化された際サブサーキット内の<strong>LABEL</strong>コンポーネントの値は関連する<strong>VALUE</strong>に置き換えられます。独立なサブサーキットのインスタンス化が可能になるため、元のサブサーキットの変更をしたり、同じ定義のサブサーキットを複数作ったりすることなく様々なパラメータをテストするのに役立つことでしょう。</p>
+<h3 id="noise">ノイズ</h3>
+<p>技術的な議論の中でも述べられているように、各抵抗と並列な電流源として自動的にノイズを入れることが可能です。この熱雑音の温度と帯域幅は次のコマンドを使うことで大域的に指定することが可能です：</p>
+<p><strong>.temp</strong>&emsp;<em>温度（ケルビン）</em></p>
+<p><strong>.neb</strong>&emsp;<em>帯域幅（Hz）</em></p>
+<h3 id="_12">ばらつき</h3>
+<p>JoSIMはインダクタ、抵抗、キャパシタ、JJ (area/Ic)の仮の値から指定したパーセンテージの範囲内で均一にばらつきを持たせることが出来ます。毎回この値は（行列生成に）使われ、一様な分布から新しいランダムな値が選ばれます。</p>
+<p>これによりプロセスによる変動をシミュレーションすることができます。</p>
+<p>大域的にばらつきを設定するには、次のコントロールを設定する必要があります：</p>
+<p><strong>.spread</strong>&emsp;<em>正規化されたパーセンテージ</em>&emsp;<em>[L=インダクタのばらつき]</em>&emsp;<em>[B=JJのばらつき]</em>&emsp;<em>[C=キャパシタのばらつき]</em>&emsp;<em>[R=抵抗のばらつき]</em></p>
+<p>各部品は、部品を定義している行に<strong>spread=</strong> と名付けられたパラメータを追加することでばらつかせることができます。</p>
+<p>優先順位としてはまずローカル、特定のグローバル変数、そしてグローバル変数の順です。つまり、グローバルなばらつきやインダクタ特有のグローバルなばらつきが設定されていたとしても、ローカルなばらつきを持ったインダクタが追加された場合それが最も優先されます。</p>
+<p>例：</p>
+<p>インダクタが<em>2pH</em>という値を持っていた場合、これが仮の値になります。もしローカルで<em>0.2</em>のばらつきが指定されていた場合、これはランダムな値が<em>1.6pH</em>から<em>2.4pH</em>の間で選ばれることを意味しています。もしグローバルにインダクタ固有のばらつきが<em>0.3</em>に指定されておりローカルなばらつきは指定されていない場合、値は<em>1.4pH -  2.6pH</em>の範囲をとり得ます。同じようにグローバルなばらつきが<em>0.5</em>と定義されていた場合毎回のシミュレーションでは<em>1pH</em>から<em>3pH</em>の間の値を取ります。</p>
+<h3 id="iv">IV曲線</h3>
+<p>JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:</p>
+<p>JoSIMでは次のコマンドでネットリスト中において指定されたJJモデルのIV曲線を出力することができます：</p>
+<p><strong>.iv</strong>&emsp;<em>モデル名</em>&emsp;<em>最大電流</em>&emsp;<em>ファイルパス</em></p>
+<p>このコマンドは<em>filepath</em>に指定されたカンマ区切り(CSV)の値を、<em>modelname</em>のIV曲線のデータについて、負の<em>max_current</em>から正の<em>max_current</em>まで出力します。</p>
+<p>サブサーキットのモデルは、<em>modelname</em> やサブサーキットのNAMEの間を<code>.</code>（ピリオド）もしくは<code>|</code>（パイプ）で区切って出力することができます。</p>
+<h3 id="output">出力</h3>
+<p>シミュレーションは結果のポスト処理が行われるまで意味がありません。この出力をどう保存するかシミュレータが知るためには出力コントロールコマンドを必要とします。</p>
+<p>出力コマンドはどちらの場合もあり得ます：</p>
+<p><strong>.print</strong>&emsp;<strong>.plot</strong>&emsp;<strong>.save</strong></p>
+<p>どちらのコマンドでも、いずれかのコマンドが続く場合があります：</p>
+<p><em>PrintType</em>&emsp;&nbsp;<em>Device</em> or <em>Node</em></p>
+<p><em>PType(Device or Node)</em><span class="arithmatex">\(_0\)</span>&emsp;&nbsp;<em>...</em>&emsp;<em>PType(Device or Node)</em><span class="arithmatex">\(_n\)</span></p>
+<p>ここで<em>PrintType</em>はデバイス電圧(<em>DEVV</em>)、デバイス電流(<em>DEVI</em>)、デバイス位相(<em>PHASE</em>)、ノード電圧(<em>NODEV</em>)、またはノード位相(<em>NODEP</em>)となる可能性があります。</p>
+<p>デバイスタイプを指定する場合一つだけのデバイスが指定出来ますが、ノードタイプの場合2つのノードの差を指定することが可能です。</p>
+<p><em>PType</em>は上の省略形で行ごとに複数持つことが出来ます。<em>PType</em>は<em>V</em>、<em>I</em>（または<em>C</em>）、<em>P</em>のいずれかとなり、括弧の中に入る形でデバイスまたはノードの後に続きます。もし一つより多いデバイスまたはノードがカンマ区切りで指定される場合（最大は2）、2つのデバイスまたはノードの差が格納されます。</p>
+<p>次のような文法で追加のセーブ型も存在します：</p>
+<p>@<em>Device</em>[<em>PType</em>]</p>
+<p>これは指定されたデバイスの<em>PType</em>を保存します。</p>
+<p>サブサーキットのパラメータは<code>.</code>（ピリオド）または<code>|</code>（パイプ）をデバイスのラベルとサブサーキットのラベルのセパレータとして用いて出力可能です。</p>
+<p>例： <strong>.print</strong> v(14.X01) p(B01.X02)</p>
+<p>この方法ではネストしたサブサーキットが使われているとき内側から外側に向かって辿っていっています。</p>
+<p>前に述べたようにサブサーキットはシミュレーション上で展開されるためほぼ無限にネストすることが可能です。</p>
+<p>もしラベルが直ちに明らかになってはおらず出力に必要な場合、シミュレーションは展開されたメイン回路を示すため<code>-V 3</code>CLIオプションを使って実行される可能性があり、正確なラベル名が識別できるようになります。</p>
+<h3 id="_13">ファイル</h3>
+<p>次のコマンドで出力コマンドを分けることにより複数ファイル出力を実現できます：</p>
+<p><strong>.file</strong>&emsp;<em>filepath</em></p>
+<p>このコマンドに従う全ての出力リクエストは<em>filepath</em>によって指定されたファイルの中に格納されている必要があるということを示しています。</p>
+<p>例：</p>
+<div class="highlight"><pre><span></span><code>.file output1.csv
+.print p(B1) p(B2) p(B3)
+.file output2.dat
+.plot i(L01) i(L02) i(L03)
+.file output3
+.save v(1) v(2) v(3)
+</code></pre></div>
+<p>これにより3つの出力ファイルが作られます。最初の行により位相出力のみのCSVファイルができます。2番目のファイルは電流のみを含むスペース区切りファイルです。最後に、3番目のファイルはSPICE RAWフォーマットとなり電圧のみを含みます。</p>
+<p>このコマンドの使用によってファイルを出力するためのコマンドラインオプションに影響を与えることはありません。コマンドライン出力オプションがもし与えられれば、全ての出力リクエスト（位相、電流、電圧）が含まれた追加のファイルが出力されます。</p>
+<h3 id="_14">パラメータ</h3>
+<p>JoSIMの中で重要となる最後のコントロールコマンドは次の構文を持つパラメータコマンドです：</p>
+<p><strong>.param</strong> &emsp;<em>VarName</em>=<em>Expression</em></p>
+<p><em>VarName</em>は回路中のどこでも使える変数名で、<em>Expression</em>はダイクストラ操車場アルゴリズムの実装を用いて評価される数式であり、ここで数式は逆ポーランド記法(RPN)に変換され評価されます。</p>
+<p>さらに、数式に他の変数やパラメータが含まれる場合全ての変数が値へと変換されるまで続けて評価されます。もし変数がプログラム内に定義されていない場合終了しエラーを出します。</p>
+<p>数式のパースは<em>.param</em> コントロール限定です。つまり素子の値やプロットのパラメータやモデルのコントロールとして数式が広く全体に使われてしまうと、JoSIMは文字列をdouble型に変換しようとして <em>std::invalid_argument: stod: no conversion</em>のエラーを起こします。</p>
+<h3 id="_15">コントロールブロック</h3>
+<p>次の構文を用いて、上に書かれた全てのコントロールはコントロールブロックの中にまとめることが出来ます：</p>
+<p><strong>.control</strong></p>
+<p>...</p>
+<p><strong>.endc</strong></p>
+<p>ここで全てのコントロールはコマンドに通常ついている<code>.</code>（ピリオド）を省略することで指定可能です。</p>
+<p>このブロックは、今のところ一見無意味なようですが、将来的にさらに発展的な機能として使われます。</p>
+<h3 id="include">Include</h3>
+<p>JoSIMは次の構文を用いて<em>.include</em> コントロール句を使えるようになっています：</p>
+<p><strong>.include</strong> <em>relative_path_to_file</em></p>
+<p>このコマンドは、ネットリストをパースした際の関連パスによって指し示される関連ファイルの内容を読み込みます。これは大きなサブサーキットが含まれていたり、サブサーキットの再利用が複数ファイルに渡って必要な場合に非常に便利です。</p>
+<p>これはシミュレーションに使われる全てのモデルをまとめておくのにも使えるので、モデルが変更されるような際にも変更の中心を決めておくことができます。</p>
+<h3 id="_16">標準入力</h3>
+<p>JoSIMは現在標準入力からの入力を受け付けるようになっており<em>.end</em>句が見つかるまで、もしくは代わりにEOF文字が返されるまでネットリストを一行一行読み込むことができます。</p>
+<h2 id="_17">定数</h2>
+<p>JoSIMはビルトインの定数セットを持っており、展開された時対応する値になります。以下は定数とその値のリストです。定数名は大文字でも小文字でも無関係です：</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Symbol</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PI</td>
+<td><span class="arithmatex">\(\pi\)</span></td>
+<td>3.141592653589793238463</td>
+</tr>
+<tr>
+<td>PHI_ZERO</td>
+<td><span class="arithmatex">\(\Phi_{0}\)</span></td>
+<td>2.067833831170082E-15</td>
+</tr>
+<tr>
+<td>BOLTZMANN</td>
+<td><span class="arithmatex">\(k_{B}\)</span></td>
+<td>1.38064852E-23</td>
+</tr>
+<tr>
+<td>EV</td>
+<td><span class="arithmatex">\(e\)</span></td>
+<td>1.6021766208E-19</td>
+</tr>
+<tr>
+<td>HBAR</td>
+<td><span class="arithmatex">\(\bar{h}\)</span></td>
+<td>1.0545718001391127E-34</td>
+</tr>
+<tr>
+<td>C</td>
+<td><span class="arithmatex">\(c\)</span></td>
+<td>299792458</td>
+</tr>
+<tr>
+<td>MU0</td>
+<td><span class="arithmatex">\(\mu_{0}\)</span></td>
+<td>12.566370614E-7</td>
+</tr>
+<tr>
+<td>EPS0</td>
+<td><span class="arithmatex">\(\epsilon_{0}\)</span></td>
+<td>8.854187817E-12</td>
+</tr>
+<tr>
+<td>SIGMA</td>
+<td><span class="arithmatex">\(\sigma\)</span> (short for <span class="arithmatex">\(\frac{\Phi_{0}}{2\pi}\)</span>)</td>
+<td>3.291059757E-16</td>
+</tr>
+</tbody>
+</table>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../comp_stamps_jp/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 素子のスタンプ" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              素子のスタンプ
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../bugs_jp/" class="md-footer__link md-footer__link--next" aria-label="Next: 開発スケジュール・バグ報告" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              開発スケジュール・バグ報告
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022 Johannes Delport
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/JoeyDelp" target="_blank" rel="noopener" title="JoeyDelp on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["toc.integrate", "header.autohide"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.22074ed6.min.js"}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.960e086b.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
