@@ -1,30 +1,30 @@
-# Syntax Guide
+# 文法ガイド
 
-In this section we will attempt to provide the user with a comprehensive guide of the available syntax within JoSIM
+このセクションはJoSIMの中で利用可能な文法の包括的なガイドになります。
 
-JoSIM is ***CaSe InSeNsItIvE*** as each line is cast to uppercase upon read-in.
+JoSIMは***CaSe InSeNsItIvE***であり各行は読み込また際に大文字に変換されます。
 
-Additionally, it is **discouraged** to add units to values since in some specific cases this creates confusion in interpretation of the values. An example of this is specifying Farad when assigning a capacitor its value since a value followed by F would be interpreted as Femto. This will lead to wanting a 5 Farad capacitor but receiving a 5 *Femto* Farad capacitor. Units are not interpreted by the simulator in any way since the component type implies the unit. 
+付け加えると、いくつかの特定のケースでは値を解釈する際混乱を生むことになるため値に単位をつけるのは**推奨されません**。例えばキャパシタにファラド(F)を指定したとき、後ろにFがついている値というのはフェムト(f)に解釈されてしまうかもしれません。これは5ファラドのキャパシタが欲しくても5*フェムト*ファラドのキャパシタになってしまうということです。素子のタイプが単位を示すため、決してシミュレータによっては単位は解釈されません。
 
-## Basic Syntax
 
-Each line follows similar syntax which uses the first non-blank space character as identifier. Each identifier tells JoSIM how to handle that specific line. 
+## 基本的な文法
 
-Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of **0** and **GND** which indicate a grounded node. Additionally, the use of period (**.**) or vertical bars (**|**) in label or node names are prohibited as these are reserved characters within JoSIM.
+各行はノーブレークスペースを識別子として用いる似たような構文に則っています。各識別子はJoSIMに各行をどのように処理すればいいかを指定しています。
 
-Lines that start with a period (**.**) indicate that the line relates in some way to simulation control. In this case the command that follows the period identifies the control, e.g. .tran, .print, .end.
+識別子は例えばL, C, Rのような回路中の物理素子に関係する文字から始まっています。この類の行はほぼ常にラベルと２つのノードを必要とする同様の文法に則っています。ノードには英数字を使うことができ、ただし**0**と**GND**は接地されたノードであることを示します。そして、JoSIMの予約語であるため、ピリオド(**.**)またはパイプ(**|**)のラベルまたはノード名への使用は禁止されています。
 
-Comments are lines that start with an asterisk (**\***) or a hash (**\#**). Comments are meant to be in a line of their own and will not work if placed at the end of a line.
+ピリオド(**.**)によって始まる行は何らかのシミュレーションコントロールに関係していることを示しています。このような場合コマンドはコントロールを示すピリオドの後に続きます（.tran, .print, .endなど）。
 
-Lines that start with a plus sign (**+**) indicate that the line is a continuation of the previous line. Internally the two lines will be combined.
+アスタリスク(**\***)もしくはシャープ(**\#**)に続く行はコメントです。コメントは置かれている行に入っていることになりますが行末に置かれた場合は機能しません。
 
-In most cases the **VALUE** of a component can be replaced by a variable name or an expression. Variables can be defined using the **.PARAM** control. These will be discussed in detail further.
+行がプラス(**+**)から始まっている場合その行は前の行からの続きであることを表しています。内部的には二つの行は結合されます。多くの場合において素子の**VALUE**は変数名や式によって置き換え可能です。変数は**.PARAM**コントロールを用いて定義可能です。これについてはさらに詳しく議論されていきます。
 
-Values in JoSIM can be modified with engineering notation or through suffixes. A list of the available suffixes is found below:
+JoSIMでの値は工学的記数法またはSI接頭語を用いて調整することができます。使用可能なSI接頭語のリストは以下の通りです：
+
 
 <center>
 
-| Suffix | Meaning | Engineering Notation Equivalent |
+| SI接頭語 | 意味 | 工学的記数法での値 |
 | ------ | ------- | ------------------------------- |
 | F      | Femto   | 1E-15                           |
 | P      | Pico    | 1E-12                           |
@@ -39,182 +39,198 @@ Values in JoSIM can be modified with engineering notation or through suffixes. A
 
 </center>
 
-## Basic Components
+## 基本素子
 
-We will now run through all the available physical components and their limitations. Any parameter surrounded by square brackets are optional and nested square brackets mean that the encapsulated parameter relies on the existence of the previous.
+ここからは全ての使用可能な物理素子と制限について見ていきます。角括弧の中のパラメータは任意のものでありネストされた角括弧はその前のものがあることに依存した、カプセル化されたパラメータを意味しています。
 
-### Resistor
+
+### 抵抗 {#resistor}
 
 **R**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**&emsp;[temp=<**TEMP**>]&emsp;[neb=<**FREQ**>]
 
-The value of a resistor is in Ohms.
+抵抗の値はオームです。
 
-Temperature used for noise analysis in  Kelvin. Units need to be excluded since **K** for Kelvin will be interpreted as Kilo by JoSIM, e.g. 4K will become 4000.
+温度はノイズ解析に使用され、単位はケルビンです。JoSIMではケルビンとして**K**を使おうとしてもキロとして解釈されるため、単位は除外しておく必要があります。（例：4Kは4000になります。）
 
-Optional frequency parameter sets the noise effective bandwidth during noise analysis. Default is 1GHz.
+任意の周波数パラメータはノイズ解析における雑音の有効帯域幅を設定します。デフォルトは1GHzです。
 
-### Inductor
+### インダクタ {#inductor}
 
 **L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
-The value of an inductor is in Henry.
+インダクタの値はヘンリーで表されます。
 
-### Capacitor
+### キャパシタ {#capacitor}
 
 **C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
-The value of a capacitor is in Farad.
+キャパシタの値はファラドで表されます。
 
-### Josephson Junction (JJ)
+### Josephson Junction (JJ) {#josephson-junction-jj}
 
 **B**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;*<PhaseNode\>*&emsp;**MODEL**&emsp;[area=<**AREA**\>]&emsp;[ic=<**IC**>]&emsp;[temp=<**TEMP**>]&emsp;[neb=<**FREQ**>]
 
-A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.
+ジョセフソン接合は二端子デバイスですがWRspiceとの互換性のため三番目の接続されていないノードと共に定義することも可能です。このノードはJoSIMでは使用されません。
 
-The Josephson junction requires specification of a model name which can be defined anywhere in the program using the control **.MODEL**.
 
-When **AREA** or **IC** is not specified then an area=1 is used as default.
+ジョセフソン接合には、**.MODEL**コントロールを用いてプログラムのどこにでも定義することができるモデル名の詳細が必要です。
 
-The temp and neb commands have the same descriptions as for the resistor.
+**AREA**または**IC**が指定されていない場合area=1がデフォルトで使用されます。
 
-#### Model
+tempとnebコマンドの説明は抵抗と同じです。
+
+
+
+#### モデル
+
+モデルコントロールは次のような文法を持ちます。
 
 This model control has the following syntax
 
 **.MODEL**&emsp;*ModelName*&emsp;*ModelType*([**MODEL PARAMETERS**])
 
-The only junction model currently supported by JoSIM is the RCSJ model and thus the only available ModelType is **jj** with the following tunable parameters:
+JoSIMで現在サポートしている接合モデルはRCSJモデルだけであるため唯一使用可能なモデルタイプは次のようにパラメータが設定可能な**jj**だけです：
 
-| Parameter       | Range               | Default         | Description                                                  |
+
+| パラメータ       | 範囲               | デフォルト         | 説明                                                  |
 | --------------- | ------------------- | --------------- | ------------------------------------------------------------ |
-| RTYPE           | 0, 1                | 1               | Linearization model used                                     |
-| VG or VGAP      | -$\infty$, $\infty$ | 2.8E-3          | Junction gap voltage                                         |
-| IC or ICRIT     | -$\infty$, $\infty$ | 1E-3            | Junction critical current                                    |
-| RN              | 0, $\infty$         | 5               | Junction normal resistance                                   |
-| R0              | 0, $\infty$         | 30              | Junction subgap resistance                                   |
-| C or CAP        | 0, $\infty$         | 2.5E-12         | Junction capacitance                                         |
-| T               | 0, $\infty$         | 4.2             | Boiling point of liquid coolant                              |
-| TC              | 0, $\infty$         | 9.1             | Critical temperature of superconducting material             |
-| DELV            | 0, $\infty$         | 0.1E-3          | Transitional voltage from subgap to normal                   |
-| D               | 0.0, 1              | 0.0             | Point of contact transparency affecting current phase relationship |
-| ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
-| PHI             | 0, $2\pi$           | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
+| RTYPE           | 0, 1                | 1               | 線型化モデルが使われている                                     |
+| VG or VGAP      | -$\infty$, $\infty$ | 2.8E-3          | 超電導ギャップ電圧                                         |
+| IC or ICRIT     | -$\infty$, $\infty$ | 1E-3            | 超電導臨界電流値                                    |
+| RN              | 0, $\infty$         | 5               | 接合抵抗                                   |
+| R0              | 0, $\infty$         | 30              | サブギャップ抵抗                                   |
+| C or CAP        | 0, $\infty$         | 2.5E-12         | 接合容量                                         |
+| T               | 0, $\infty$         | 4.2             | 冷却液の沸点                              |
+| TC              | 0, $\infty$         | 9.1             | 超電導素材の臨界温度             |
+| DELV            | 0, $\infty$         | 0.1E-3          | サブギャップから常伝導状態への転移電圧                   |
+| D               | 0.0, 1              | 0.0             | 電流位相関係に影響する接点の透過率 |
+| ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | 臨界電流の準粒子ステップ高さに対する比       |
+| PHI             | 0, $2\pi$           | 0               | $\pi$-junctionのようなphi-junctionを実現可能にする   |
 
-The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
+*.model* の行はサブサーキット固有であるため同じ名前の異なるモデルを分離されたサブサーキット下にそれぞれ置くことができます。サブサーキット下にモデルが見つからなかった場合グローバルなものを探すことになり、それでも見つからない場合はデフォルトの値（デフォルトのモデル）が使用されます。
 
-The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
+**AREA**と**IC**パラメータはモデルパラメータの修飾子としてはたらきます。**IC**が指定されると**AREA**の値は$AREA=\frac{IC_{jj}}{IC_{model}}$によって置き換えられる、臨界電流でかけられた値となります。
 
-By setting the **PHI** parameter of the model, the phase value is persistantly subtracted from the phase ($\phi$) in the $\sin(\phi)$ part of the JJ current. This allows elements such as the $\pi$-junction to be modeled. 
+モデルの**PHI**パラメータを設定することで、JJ電流の$\sin(\phi)$部分の中にある位相($\phi$)から常に引いたものが位相の値になります。これによって$\pi$-junctionのような素子をモデル化可能です。
 
-### Transmission Line
+
+### Transmission Line {#transmission-line}
 
 **T**Label&emsp;$N^{+}_{1}$&emsp;$N^{-}_{1}$&emsp;$N^{+}_{2}$&emsp;$N^{-}_{2}$&emsp;**TD=VALUE**&emsp;**Z0=VALUE**
 
-**TD** is the time delay in seconds.
+**TD**は単位時間あたりの遅延時間です。
 
-**Z0** is the impedance in Ohms.
+**Z0**はオームで表したインピーダンスです。
 
-### Mutual Inductance
+
+### 相互インダクタンス {#mutual-inductance}
 
 **K**Label&emsp;$L_{1}$&emsp;$L_{2}$&emsp;**VALUE**
 
-The value is the coupling factor *k*.
+値は結合係数*k*です。
+
 
 ## Sources
 
 ### Independent Sources
 
-#### Voltage Source
+#### 電圧源 {#voltage-source}
 
 **V**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**SOURCETYPE**
 
-#### Current Source
+#### 電流源 {#current-source}
 
 **I**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**SOURCETYPE**
 
-#### Phase Source
+#### 位相源 {#phase-source}
 
 **P**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**SOURCETYPE**
 
 ### Dependent Sources
 
-#### Current controlled current source
+#### 電流制御電流源 {#current-controlled-current-source}
 
 **F**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**CURRENT GAIN**
 
-#### Current controlled voltage source
+#### 電流制御電圧源 {#current-controlled-voltage-source}
 
 **H**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**TRANSRESISTANCE IN OHMS**
 
-#### Voltage controlled current source
+#### 電圧制御電流源 {#voltage-controlled-current-source}
 
 **G**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**TRANSCONDUCTANCE IN MHOS**
 
-#### Voltage controlled voltage source
+#### 電圧制御電圧源 {#voltage-controlled-voltage-source}
 
 **E**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;$N^{+}$Control&emsp;$N^{-}$Control&emsp;**VOLTAGE GAIN**
 
 ### Source Types
 
-#### Piece Wise Linear (PWL)
+#### 区分線形 (PWL)
 
 **pwl(0**&emsp;**0**&emsp;$T_{1}$&emsp;$A_{1}$&emsp;...&emsp;$T_{n}$&emsp;$A_{n}$**)**
 
-This source linearly interpolates amplitude values for every time point in the simulation between the specified amplitudes.
+このソースは指定された振幅間で、シミュレーション中の各時間において線形に振幅を補間します。
 
-The initial two values are required to be zero at the start of the simulation.
 
-#### Pulse
+最初の2つの値はシミュレーションのはじめに0にしておく必要があります。
+
+
+#### パルス
 
 **pulse(**$A_{1}$&emsp;$A_{2}$&emsp;[$T_{D}$&emsp;[$T_{R}$&emsp;[$T_{F}$&emsp;[*PW*&emsp;[*PER*]]]]] **)**
 
-This source generates a pulse between two amplitudes ($A_{1}$ and $A_{2}$), starts after $T_{D}$ and has a rise and fall time ($T_{R}$ & $T_{F}$), which default to the transient simulation step size.
+このソースは二つの振幅($A_{1}$と$A_{2}$)にわたり、$T_{D}$後に始まってrise・fallタイム($T_{R}$ & $T_{F}$)を持つパルスを生成します。rise・fallタイムのデフォルトはトランジェントシミュレーションのステップサイズです。
 
-*PW* and *PER* refer to the pulse width and the period respectively. These values default to the transient simulation stop time when not specified.
+*PW*と*PER*はそれぞれパルス幅と周期を参照しています。この値は指定されていないときデフォルトではトランジェントシミュレーションの停止時間となります。
 
-This source allows the continuous generation of a pulse at a set frequency.
+このソースでは周波数を設定したとき継続的にパルスを発生させられるようになります。
 
-#### Sinusoidal
+
+#### サイン波
 
 **sin(**$A_{O}$&emsp;$A$&emsp;[$f$&emsp;[$T_{D}$&emsp;[$\theta$]]] **)**
 
-A source that generates a sinusoidal signal with $A_{O}$ offset and $A$ amplitude at a frequency of $f$ which defaults to $\frac{1}{T_{STOP}}$.
+$A_{O}$がオフセット、$A$が振幅、$f$ が周波数で$\frac{1}{T_{STOP}}$がデフォルトであるようなサイン波を生成するソースです。
 
-$T_{D}$ sets the stop time and $\theta$ modulates the signal amplitude.
+$T_{D}$ 停止時間を設定し、$\theta$は信号振幅を変調させます。
 
-The function generates a data point for each step in the transient simulation based on the following equation:
+この関数は次の式に基づきトランジェント解析中の各ステップにおいてデータ点を生成します：
+
 
 $f(t)=A_{O}+A\sin(2\pi f(t-T_{D}))e^{-\theta(t-T_{D})}$
 
-#### Custom Waveform
+#### カスタム波形
 
 **cus(** *wavefile*&emsp;$T_{S}$&emsp;*SF*&emsp;*IM*&emsp;[$T_{D}$&emsp;*PER]* **)**
 
-This source allows the generates a function based on the points inside the plain text wave file. This file should contain a single line of space separated numbers. E.g 0 2 3 6 2 1 0
+このソースはテキストの波形ファイルの中の点に基づいて関数を生成することが出来ます。このファイルは一行でスペース区切りの数値が入っていなければなりません。（例：0 2 3 6 2 1 0）
 
-Each number in this line represents an amplitude separated by time step $T_{S}$ and scaled using scale factor *SF*. The values between the points are interpolated using either no interpolation (0), linear (1) or cubic (2). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.
+行中の各数値はタイムステップ$T_{S}$で分けられた振幅を表しており、スケールファクター*SF*によって拡大縮小されています。点と点の間の値は補間なし(0)、線形補間(1)、またはキュービック補間(2)のいずれかを用いて補間されます。関数はPERが1にセットされていると周期的にすることができ、ここでパターンはシミュレーション全体にわたって繰り返されます。
 
-The waveform only starts of $T_{D}$.
+波形は$T_{D}$から始まります。
+
 
 #### DC
 
 *dc*&emsp;$A$
 
+DCソースはシミュレーションの間いつでも$A$となります。
 A DC source that is always at $A$ at any given time during the simulation.
 
-#### Noise
+#### ノイズ
 
 **noise(**$A$&emsp;$T_{D}$&emsp;$T_{STEP}$**)**
 
-This source produces a noise value for the time step provided that it is after $T_{D}$. The $T_{STEP}$ is the inverse of the noise effective bandwidth set globally using `.neb` or locally for a resistor using `neb=`.
+このソースは$T_{D}$の後のタイムステップに対しノイズ値を生み出します。$T_{STEP}$は、`.neb`を使うことでグローバルに、または`neb=`を用いて抵抗に対しローカルに設定される、ノイズの有効帯域幅の逆数です。
 
-The noise value returned is calculated using the following equation:
+返されるノイズ値は次の式を用いて計算されます：
 
 $f(t) = A\frac{GRAND()}{\sqrt{2T_{STEP}}}$
 
-$GRAND()$ is a Gaussian random number generating function.
+$GRAND()$はガウシアン乱数生成関数です。
 
-#### Exponential
+#### 指数関数
 
 **exp(** $A_{1}$&emsp;$A_{2}$&emsp;$T_{D1}$&emsp;$\tau_{1}$&emsp;$T_{D2}$&emsp;$\tau_{2}$**)**
 
@@ -229,41 +245,44 @@ $GRAND()$ is a Gaussian random number generating function.
 
 </center>
 
-Returns different values for the 3 different time segments.
+3つの異なる時間区分で異なる値を返します。
 
-For $t < T_{D1}$:
+$t < T_{D1}$において:
 
 $f(t)=A_{1}$ 
 
-For $T_{D1}\le t < T_{D2}$:
+$T_{D1}\le t < T_{D2}$において:
 
 $f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})$
 
-For $T_{D2} \le t $:
+$T_{D2} \le t $において:
 
 $f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{\frac{t - T_{D2}}{\tau_{2}}})$
 
-## Control Commands
+## コントロールコマンド
 
-The simulation engine requires control commands to know what to do with the components it has just been provided with.
+シミュレーションエンジンには、今ちょうど供給されたコンポーネントに対して何をしたらいいか知るためのコントロールコマンドが必要です。
 
-The most important of these control commands is the transient simulation command as no simulation can be performed without it.
+コントロールコマンドの中では、それ抜きでシミュレーションは出来ないので、トランジェントシミュレーションコマンドが一番大事になります。
 
-### Transient Analysis
+
+### トランジェント解析 {#transient-analysis}
 
 **.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$]]&emsp;DST
 
-This generates a simulation that runs from 0 until $T_{STOP}$. The amount simulation steps that will be performed is $n=\frac{T_{STOP}}{T_{STEP}}$.
+これによって0から$T_{STOP}$までを走るシミュレーションが生成されます。実行されるシミュレーションステップ量は$n=\frac{T_{STOP}}{T_{STEP}}$です。
 
-$P_{START}$ indicates at what point output will start printing. $P_{STEP}$ sets the size of the print steps. This has to be larger or equal to $T_{STEP}$.
+$P_{START}$はどの点の出力が最初に出力されるかを示します。$P_{STEP}$は出力ステップの大きさを設定します。これは$T_{STEP}$以上でなければなりません。
 
-DST disables the start-up time. The start-up time is a period calculated internally by the simulator in which components settle. This is equivalent to the few picoseconds from when a circuit initially receives power (power switch flipped).
+DSTはstart-up timeを使用できなくします。start-up timeとは部品がついているシミュレータによって内部的に計算されている時間のことです。これは回路が最初に電力を受け取ってから（電源スイッチがonになってから）の数psと同等です。
 
-### Subcircuits
 
-Subcircuits allow subdivision and reuse of smaller circuits within a larger design. When wrapped in a subcircuit control devices are allowed to have the same label names as specified elsewhere in the netlist as the subcircuit completely isolates them.
+### サブサーキット
 
-Subcircuits have the following wrapping control syntax
+サブサーキットによって、大きなデザインを部分に分割し小さな回路を再利用することが可能です。サブサーキットによって囲まれると、コントロールデバイスはネットリストの任意の場所で記述されているものと同じ名前を持つことができ、サブサーキットによって完全に隔離されているのと同じ状態になります。
+
+サブサーキットは次のようなラップするためのコントロール文を持っています。
+
 
 **.subckt**&emsp;*SubcktName*&emsp;*IO Nodes*
 
@@ -271,97 +290,105 @@ Subcircuits have the following wrapping control syntax
 
 **.ends**
 
-The *SubcktName* specifies the name of the subcircuit and *IO Nodes* specify the which nodes within the subcircuit connects to outside.
+*SubcktName*はサブサーキットの名前を指定しており*IO Nodes*はサブサーキット内でどのノードが外側につながっているのかを指定しています。
 
-A subcircuit can be used in the main netlist or another subcircuit (nesting) using the following syntax
+サブサーキットはメインのネットリストまたは他のサブサーキット（ネスト）で次の文法により使うことができます：
+
 
 **X**Label&emsp;*SubcktName*&emsp;*IO Nodes*&emsp;(JSIM mode)
 
 **X**Label&emsp;*IO Nodes*&emsp;*SubcktName*&emsp;(WRspice (normal SPICE) mode)
 
-Additionally, keywords in the form of **LABEL=VALUE** can be appended to the end of the subcircuit declaration line which when instantiated will replace the value of the **LABEL** component within the subcircuit with the associated **VALUE**. This allows for unique subcircuit instantiations which would prove useful in testing various parameters without altering the original subcircuit or having multiple instances of the same subcircuit definition. This could open the door for potential future margin and optimization software.
+さらに、**LABEL=VALUE**の形で書かれるキーワードはサブサーキット記述の最後の行に追加することができ、インスタンス化された際サブサーキット内の**LABEL**コンポーネントの値は関連する**VALUE**に置き換えられます。独立なサブサーキットのインスタンス化が可能になるため、元のサブサーキットの変更をしたり、同じ定義のサブサーキットを複数作ったりすることなく様々なパラメータをテストするのに役立つことでしょう。
 
-### Noise
 
-As mentioned in the technical discussion, noise can be automatically inserted as current sources in parallel to each resistor. This thermal noise temperature and bandwidth can be specified globally using the following commands:
+### ノイズ {#noise}
 
-**.temp**&emsp;*Temperature in Kelvin*
+技術的な議論の中でも述べられているように、各抵抗と並列な電流源として自動的にノイズを入れることが可能です。この熱雑音の温度と帯域幅は次のコマンドを使うことで大域的に指定することが可能です：
 
-**.neb**&emsp;*Bandwidth in Hertz*
+**.temp**&emsp;*温度（ケルビン）*
 
-### Spread
+**.neb**&emsp;*帯域幅（Hz）*
 
-JoSIM allows each value of inductors, resistors, capacitors and JJ (area/Ic) to be spread uniformly within a specified percentage range from the nominal value. Each time the value is used (in matrix creation), a new random value from the uniform distribution is chosen.
+### ばらつき
 
-This allows for process variation to be simulated.
+JoSIMはインダクタ、抵抗、キャパシタ、JJ (area/Ic)の仮の値から指定したパーセンテージの範囲内で均一にばらつきを持たせることが出来ます。毎回この値は（行列生成に）使われ、一様な分布から新しいランダムな値が選ばれます。
 
-To set the spread globally, the following control needs to be set:
+これによりプロセスによる変動をシミュレーションすることができます。
 
-**.spread**&emsp;*Normalized percentage*&emsp;*[L=Inductor spread]*&emsp;*[B=JJ spread]*&emsp;*[C=Capacitor spread]*&emsp;*[R=Resistor spread]*
+大域的にばらつきを設定するには、次のコントロールを設定する必要があります：
 
-Each individual component can also be spread by adding the **spread=** named parameter to the component declaration line.
+**.spread**&emsp;*正規化されたパーセンテージ*&emsp;*[L=インダクタのばらつき]*&emsp;*[B=JJのばらつき]*&emsp;*[C=キャパシタのばらつき]*&emsp;*[R=抵抗のばらつき]*
 
-The order of precedence is taken as local, specific global and then global. This means that if a global spread exists but  a global inductor specific spread also exists and the inductor being added has a local spread then the local spread will take precedence.
+各部品は、部品を定義している行に**spread=** と名付けられたパラメータを追加することでばらつかせることができます。
 
-An example:
+優先順位としてはまずローカル、特定のグローバル変数、そしてグローバル変数の順です。つまり、グローバルなばらつきやインダクタ特有のグローバルなばらつきが設定されていたとしても、ローカルなばらつきを持ったインダクタが追加された場合それが最も優先されます。
 
-If an inductor has a value of *2pH*, this is its nominal value. If a local spread of *0.2* is specified this means a random value can be chosen anywhere between *1.6pH* and *2.4pH*. If global inductor specific spread is specified as *0.3* and the local spread is not defined, the value can be anything within the range *1.4pH -  2.6pH*. Similarly if the global spread is defined as *0.5* then the value each time the simulation is run can be anywhere between *1pH* and *3pH*.
+例：
 
-### IV Curve
+インダクタが*2pH*という値を持っていた場合、これが仮の値になります。もしローカルで*0.2*のばらつきが指定されていた場合、これはランダムな値が*1.6pH*から*2.4pH*の間で選ばれることを意味しています。もしグローバルにインダクタ固有のばらつきが*0.3*に指定されておりローカルなばらつきは指定されていない場合、値は*1.4pH -  2.6pH*の範囲をとり得ます。同じようにグローバルなばらつきが*0.5*と定義されていた場合毎回のシミュレーションでは*1pH*から*3pH*の間の値を取ります。
+
+
+### IV曲線
 
 JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:
 
-**.iv**&emsp;*modelname*&emsp;*max_current*&emsp;*filepath*
+JoSIMでは次のコマンドでネットリスト中において指定されたJJモデルのIV曲線を出力することができます：
 
-This command outputs a comma seperated value (CSV) at the *filepath* specified which contains the IV curve data for the *modelname* from negative *max_current* to positive *max_current*.
+**.iv**&emsp;*モデル名*&emsp;*最大電流*&emsp;*ファイルパス*
 
-Subcircuit models can be output using the `.`(period) or `|`(vertical bar) as separator between the *modelname* and the subcircuit NAME.
+このコマンドは*filepath*に指定されたカンマ区切り(CSV)の値を、*modelname*のIV曲線のデータについて、負の*max_current*から正の*max_current*まで出力します。
 
-### Output
+サブサーキットのモデルは、*modelname* やサブサーキットのNAMEの間を`.`（ピリオド）もしくは`|`（パイプ）で区切って出力することができます。
 
-A simulation is meaningless unless the results are post processed. In order to know which of these results are relevant for storage the simulator needs output control commands.
 
-These output commands can be of either 
+### 出力 {#output}
+
+シミュレーションは結果のポスト処理が行われるまで意味がありません。この出力をどう保存するかシミュレータが知るためには出力コントロールコマンドを必要とします。
+
+出力コマンドはどちらの場合もあり得ます：
+
 
 **.print**&emsp;**.plot**&emsp;**.save**
 
-Any of these commands can be followed by either of the following commands
+どちらのコマンドでも、いずれかのコマンドが続く場合があります：
 
 *PrintType*&emsp;&nbsp;*Device* or *Node*
 
 *PType(Device or Node)*\(_0\)&emsp;&nbsp;*...*&emsp;*PType(Device or Node)*\(_n\)
 
-Where *PrintType* can be either device voltage (*DEVV*), device current (*DEVI*), device phase (*PHASE*), node voltage (*NODEV*) or node phase (*NODEP*).
+ここで*PrintType*はデバイス電圧(*DEVV*)、デバイス電流(*DEVI*)、デバイス位相(*PHASE*)、ノード電圧(*NODEV*)、またはノード位相(*NODEP*)となる可能性があります。
 
-When specifying a device type store only a single device can be specified, but when a node type store is specified 2 nodes can be specified to store the difference between them.
+デバイスタイプを指定する場合一つだけのデバイスが指定出来ますが、ノードタイプの場合2つのノードの差を指定することが可能です。
 
-*PType* is shorthand for the above and can have multiple per line requests. *PType* can be either of *V*, *I* (or *C*) or *P* followed by the device or node in brackets. If more than one device or node is specified by comma seperation (maximum 2) the difference between the two devices or nodes is stored.
+*PType*は上の省略形で行ごとに複数持つことが出来ます。*PType*は*V*、*I*（または*C*）、*P*のいずれかとなり、括弧の中に入る形でデバイスまたはノードの後に続きます。もし一つより多いデバイスまたはノードがカンマ区切りで指定される場合（最大は2）、2つのデバイスまたはノードの差が格納されます。
 
-An additional save type exists that has the following syntax
+次のような文法で追加のセーブ型も存在します：
 
 @*Device*[*PType*]
 
-This stores the *PType* of the device specified.
+これは指定されたデバイスの*PType*を保存します。
 
-Subcircuit parameters can be output using the `.`(period) or `|`(vertical bar) as separator between the device label and the subcircuit label name. 
+サブサーキットのパラメータは`.`（ピリオド）または`|`（パイプ）をデバイスのラベルとサブサーキットのラベルのセパレータとして用いて出力可能です。
 
-i.e. **.print** v(14.X01) p(B01.X02)
+例： **.print** v(14.X01) p(B01.X02)
 
-This method follows the path from inside to out when nested subcircuits are used. 
+この方法ではネストしたサブサーキットが使われているとき内側から外側に向かって辿っていっています。
 
-Subcircuits as mentioned before can also be nested almost indefinitely as they are expanded upon simulation.
+前に述べたようにサブサーキットはシミュレーション上で展開されるためほぼ無限にネストすることが可能です。
 
-If the label is not immediately apparent and required for output, the simulation can be run using the `-V 3` cli option to show the expanded main design, allowing the exact label name to be identified. 
+もしラベルが直ちに明らかになってはおらず出力に必要な場合、シミュレーションは展開されたメイン回路を示すため`-V 3`CLIオプションを使って実行される可能性があり、正確なラベル名が識別できるようになります。
 
-### File
 
-Multi-file output can be achieved by separating output commands with the following command:
+### ファイル
+
+次のコマンドで出力コマンドを分けることにより複数ファイル出力を実現できます：
 
 **.file**&emsp;*filepath*
 
-This indicates that every output request that follows this command needs to be stored in the file specified by *filepath*. 
+このコマンドに従う全ての出力リクエストは*filepath*によって指定されたファイルの中に格納されている必要があるということを示しています。
 
-I.e. 
+例：
 
 ```
 .file output1.csv
@@ -372,25 +399,25 @@ I.e.
 .save v(1) v(2) v(3)
 ```
 
-This will create 3 output files. The first will be a CSV file containing only the phase outputs. The second file will be a space separated file containing only the currents. Lastly, the third file will be in a SPICE RAW format and contain only the voltages.
+これにより3つの出力ファイルが作られます。最初の行により位相出力のみのCSVファイルができます。2番目のファイルは電流のみを含むスペース区切りファイルです。最後に、3番目のファイルはSPICE RAWフォーマットとなり電圧のみを含みます。
 
-The use of this command does not affect the command line option request to output a file. The command line output option, if requested, will output an additional file which contains all of the output requests (phase, current and voltage).
+このコマンドの使用によってファイルを出力するためのコマンドラインオプションに影響を与えることはありません。コマンドライン出力オプションがもし与えられれば、全ての出力リクエスト（位相、電流、電圧）が含まれた追加のファイルが出力されます。
 
-### Parameters
+### パラメータ
 
-The final control command that is of importance in JoSIM is the parameters command with the following syntax
+JoSIMの中で重要となる最後のコントロールコマンドは次の構文を持つパラメータコマンドです：
 
 **.param** &emsp;*VarName*=*Expression*
 
-*VarName* is the variable name that can be used anywhere else in the circuit and *Expression* is a mathematical expression that is evaluated using an implementation of Dijkstra's shunting yard algorithm, whereby the expression is converted into reverse polish notation (RPN) and evaluated.
+*VarName*は回路中のどこでも使える変数名で、*Expression*はダイクストラ操車場アルゴリズムの実装を用いて評価される数式であり、ここで数式は逆ポーランド記法(RPN)に変換され評価されます。
 
-Additionally, expressions can also contain other variables and parameters will be continuously evaluated until all variables are reduced to values. If variables are not defined the program will halt and produce an error.
+さらに、数式に他の変数やパラメータが含まれる場合全ての変数が値へと変換されるまで続けて評価されます。もし変数がプログラム内に定義されていない場合終了しエラーを出します。
 
-Expression parsing is exclusive to the *.param* control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in *std::invalid_argument: stod: no conversion* as it tries to convert a string into a double. Please be mindful when using expressions and restrict them to *.param* controls.
+数式のパースは*.param* コントロール限定です。つまり素子の値やプロットのパラメータやモデルのコントロールとして数式が広く全体に使われてしまうと、JoSIMは文字列をdouble型に変換しようとして *std::invalid_argument: stod: no conversion*のエラーを起こします。
 
-### Control Block
+### コントロールブロック
 
-Any of the above controls can be wrapped inside a control block with the following syntax
+次の構文を用いて、上に書かれた全てのコントロールはコントロールブロックの中にまとめることが出来ます：
 
 **.control**
 
@@ -398,29 +425,29 @@ Any of the above controls can be wrapped inside a control block with the followi
 
 **.endc**
 
-Wherein all controls can be specified by omitting the usual prepending `.`(period) to the command.
+ここで全てのコントロールはコマンドに通常ついている`.`（ピリオド）を省略することで指定可能です。
 
-This block, though seemingly useless at present, will be used for more advanced functionality in the future.
+このブロックは、今のところ一見無意味なようですが、将来的にさらに発展的な機能として使われます。
 
-### Include
+### Include {#include}
 
-JoSIM allows the use of a *.include* control card that uses the following syntax
+JoSIMは次の構文を用いて*.include* コントロール句を使えるようになっています：
 
 **.include** *relative_path_to_file*
 
-This command reads in the contents of the relevant file pointed to by the relevant path upon parsing of the netlist essentially extending the netlist by the linked file. This is incredibly handy when large subcircuits are involved and reuse of subcircuits across multiple files is required.
+このコマンドは、ネットリストをパースした際の関連パスによって指し示される関連ファイルの内容を読み込みます。これは大きなサブサーキットが含まれていたり、サブサーキットの再利用が複数ファイルに渡って必要な場合に非常に便利です。
 
-This can also be used to house all the models used in simulation allowing a central point of alteration if the model is changed.
-
-### Standard Input
-
-JoSIM now allows input from standard input allowing a line-by-line read in of a netlist until the *.end* card is found or alternatively the EOF character is returned.
+これはシミュレーションに使われる全てのモデルをまとめておくのにも使えるので、モデルが変更されるような際にも変更の中心を決めておくことができます。
 
 
+### 標準入力
 
-## Constants
+JoSIMは現在標準入力からの入力を受け付けるようになっており*.end*句が見つかるまで、もしくは代わりにEOF文字が返されるまでネットリストを一行一行読み込むことができます。
 
-JoSIM has a set of built in constants that when used expand to the corresponding values. Below is a list of these constants and their values. The constants names are case insensitive:
+## 定数
+
+JoSIMはビルトインの定数セットを持っており、展開された時対応する値になります。以下は定数とその値のリストです。定数名は大文字でも小文字でも無関係です：
+
 
 | Constant  | Symbol                                       | Value                   |
 | --------- | -------------------------------------------- | ----------------------- |

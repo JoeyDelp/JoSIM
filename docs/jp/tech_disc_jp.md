@@ -1,114 +1,129 @@
-# Technical Discussion
+# 技術的な議論
 
-This section of the documentation is dedicated to providing the user with better understanding of the internal operations of JoSIM.
+ドキュメンテーションのこのセクションはユーザがJoSIMの内部動作についてより良く理解できるよう作られています。
 
-As mentioned, this section will follow the sections of the macro overview, providing more detail to each block.
+既に述べられているように、このセクションは全体の概観を見た後、各ブロックの詳細を書いていきます。
 
-<div style="text-align:center;"><img src="../img/josim_macro.svg" alt="JoSIM Macro Overview" style="width:600px;" /></div>
 
-## Input circuit file
+<div style="text-align:center;"><img src="../../img/josim_macro.svg" alt="JoSIM Macro Overview" style="width:600px;" /></div>
 
-JoSIM requires an input file that follows the syntax as stipulated in the [Syntax Guideline](syntax.md). This input file further requires a single [transient analysis](syntax.md#transient-analysis) command which instructs the simulation engine what to do with the rest of the input file.
+## 回路の入力ファイル
 
-This input file does not require a specific extension, but a `.cir` extension is recommended to fit with universal circuit simulation standards. 
+JoSIMの入力ファイルは [文法ガイド](syntax_jp.md)に規定されている文法に沿っていることが必要です。この入力ファイルはさらに、シミュレーションエンジンにこのファイルは何をするファイルなのかを教えるための[トランジェント解析](syntax_jp.md#transient-analysis)に書かれているコマンドが必要です。
 
-Additionally, JoSIM allows the user the capability to feed input from standard input using the `-i` switch when running **josim-cli**. This command instructs JoSIM to read input from the command line, line by line, until the `.end` control card is received. This is ideal in a case where the output from another program is piped to **josim-cli**.
+入力ファイルは特別な拡張子が必要というわけではないですが、回路シミュレーションにおける標準に合わせる意味で`.cir`拡張子を推奨しています。
 
-## CLI Options
+さらに、**josim-cli**を実行している場合JoSIMでは`-i`オプションをつけることで標準入力から入力させることができます。このコマンドではJoSIMにコマンドラインから、`.end`制御文字列を受け取るまで一行一行入力を読み取る指示を出しています。他のプログラムの出力から**josim-cli**にパイプするような使い方が理想的なケースです。
 
-When **josim-cli** is used, JoSIM needs to check and handle any command line options that the user provided before continuing to [parse the input](#parse-input). 
 
-A CLI Options object is created from the handled command line options and fed to the input parser along with the input data.
+## CLIオプション {#cli-option}
 
-A list of available command line options can be displayed using the `-h`, but each command what action is performed by it is discussed here.
+**josim-cli**を使っているとき、JoSIMは[入力のパース](#parse-input)に進んでいく前にユーザからのコマンドラインオプションが何かないかチェックして処理する必要があります。
 
-Running `-h` produces the following:
+CLIのオプションオブジェクトが処理されたコマンドラインオプションから作られ、入力データとともに入力パーサに送られます。
 
-<div style="text-align:center;"><img src="../img/josim_help.png" alt="JoSIM Help" style="zoom:100%;" /></div>
+利用可能なコマンドラインオプションは`-h`を使うことで表示することが出来ます。どのコマンドがどのような動作をするかをここに記述していきます。
+
+`-h`を実行すると次のように出力されます：
+
+
+<div style="text-align:center;"><img src="../../img/josim_help.png" alt="JoSIM Help" style="zoom:100%;" /></div>
 
 ### Analysis (-a):
 
-This command specifies which analysis type is used by JoSIM. This can be either `0` for voltage analysis or `1` for phase analysis. Phase mode has been made the default mode of analysis as of version 2.5. The differences between these methods are discussed in the [modified nodal analysis](#modified-nodal-analysis) section.
+このコマンドはJoSIMでどの解析タイプを使用するか指定します。`0`で電圧解析または`1`で位相解析になります。バージョン2.5以降は位相モードがデフォルトのモードになっています。この方法の違いについては [modified nodal analysis](#modified-nodal-analysis) のセクションで議論されています。
+
 
 ### Help (-h):
 
-Displays the above help menu and immediately exits the program. If this command is provided with any other command, this command takes precedence.
+上記のヘルプメニューを表示しすぐにプログラムを終了します。このコマンドが他のコマンドと合わせて送られてた場合、このコマンドが優先します。
+
 
 ### Input (-i):
 
-As mentioned before, JoSIM has the capability to receive input from the command line interface (standard input) line by line. This command ignores any additional input files specified and stops reading once the .end command or an EOF (platform specific) character is received.
+先に述べた通り、JoSIMは一行一行コマンドラインインターフェース（標準入力）からの入力を受け付けることが出来ます。このコマンドは追加の入力ファイルの指定などに関わらず、.endコマンドが読み込まれたときまたはEOF（プラットフォーム固有）文字が読み込まれたとき終了します。
+
 
 ### Minimal (-m):
 
-To prevent JoSIM from printing any unnecessary output to the command interface, such as progress indicators. This does not mute verbose output.
+JoSIMが進捗バーなどの不必要な出力をコマンドラインインターフェースに表示するのを防ぐために使います。詳細出力はミュートされません。
+
 
 ### Output (-o):
 
-Specifies the filename and type (through extension) of the output file where results will be stored. By default, if `-o` is specified and no filename is provided, a `output.csv` file is produced. The available file formats are discussed in detail in the [output results](#output-results) section.
+結果が保存されるときの出力ファイルのファイル名と（拡張子によって）ファイルタイプを指定します。デフォルトでは、`-o`が指定されファイル名が入力されなかった場合、`output.csv` が出力されます。利用可能なファイルフォーマットは[出力結果](#output-results)のセクションで詳細に議論されています。
 
 ### Parallel (-p):
 
-As of version 2.5 there are currently no sections of JoSIM that are parallel processed. This option, when enabled, checks whether JoSIM was compiled with `--DUSING_OPENMP=1` CMake switch. This is reserved for future implementation of very large circuits. At present, does nothing and not detrimental to performance in any scenario.
+バージョン2.5からは今のところJoSIMで並列実行される部分はありません。このオプションが有効化されるとCMakeのスイッチでJoSIMが`--DUSING_OPENMP=1`でコンパイルされているかどうかをチェックします。このオプションは将来的に非常に大規模な回路を実装する時のために用意されています。現在のところ、このオプションは何もしておらずパフォーマンスに害を与えることもありません。
+
 
 ### Verbose (-V):
 
-This enables different levels of verbosity by the simulator. Level `1` verbosity only displays statistics of the circuit being simulated. Level `2` verbosity displays all of level 1 and any evaluated `.param` statements found in the circuit. Level `3` verbosity displays level 2 and the completely expanded main design of circuit being simulated. These outputs are not muted by `-m`
+シミュレータによるログ出力レベルを設定できます。レベル`1`ではシミュレーションされている回路の統計情報だけを表示します。レベル`2`ではレベル1の全てと、回路中で評価された`.param` 記述部分全てを表示します。レベル3ではレベル2とシミュレーションされているメインの回路を全て展開して表示します。この出力は`-m`によってミュートされません。
 
 ### Version (-v):
 
-Only displays the version string for **josim-cli** and then exits. This string is always displayed by default for any command. This command, however, only displays the version string.
+**josim-cli**のバージョン情報の出力だけを行い終了します。どのコマンドでもデフォルトでこの文字列は出力されますが、このコマンドはバージョン情報だけを表示します。
 
 ### Solver (-x):
 
-This option allows switching between LU solvers. Default is KLU solver. Setting this to `1` enables SuperLU solver.
+このオプションでLUソルバと切り替えることが出来ます。デフォルトはKLUソルバです。`1`を設定することでSuperLUを有効化出来ます。
 
-## Parse Input {#parse-input}
+## 入力のパース {#parse-input}
 
-The input data received through any of the two means above is parsed in the following steps:
+上述の2つのうちいずれかの方法で受け取った入力データは次のステップによりパースされます：
 
-<div style="text-align:center;"><img src="../img/josim_parse_input.svg" alt="JoSIM Parse Input Overview" style="width:600px;" /></div>
+<div style="text-align:center;"><img src="../../img/josim_parse_input.svg" alt="JoSIM Parse Input Overview" style="width:600px;" /></div>
 
-### Read Input
+### 入力の読み込み
 
-Each line in the input data is taken and cast to uppercase to avoid ambiguity. This is very important to note, **JoSIM is CaSe InSeNsItIvE**, meaning that any syntactical identifiers in the data with different case are seen as the same. Each line is further tokenized by space white spaces, this allows JoSIM to remove any ambiguity to spacing and positional info in the input data.
+入力データの各行は曖昧さ回避のため大文字に変換されます。これは非常に重要なことで、**JoSIM is CaSe InSeNsItIvE**、つまり文法上の識別子は大文字小文字が違っても全て同じものとして見なされます。各行はさらに空白によってトークン化されるため、JoSIMではスペースによる曖昧さや入力データの位置情報を排除することが出来ています。
 
-If the line is blank or begins with a `*` (asterisk) or `#` (hash) character, this line is ignored and not processed. Lines that begin with a `+` (plus) character are treated internally as part of the previously processed lines. In JoSIM, this means that the processed tokens from this line are added to the end of the tokens of the previous line.
+もし行が空白または（アスタリスク）または`#`（ハッシュ）の文字から始まっている場合、その行は無視され処理されません。`+` （プラス）文字から始まる行は内部的に既に処理された行として扱われます。JoSIM内では、ある行における処理済みのトークンは、前の行の処理済みのトークンの最後に付け加えられることになります。
 
-Furthermore, this section handles any type of `.include` statement. This control allows for inclusion of other files immediately into the currently being processed data. This is extremely handy when a set of subcircuits that are used across multiple files (such as a cell library) are stored in a central location and simply included in each file where needed. This centralizes changes and reduces fragmentation of subcircuits. Please see the [include](syntax.md#include) section of the syntax guideline. 
+さらに、このセクションでは色々な種類の`.include`記述について取り扱います。このコントロール文字列によって現在処理されているデータの中に直ちに他のファイルを含めることが出来ます。これは極めて便利で、いくつものサブサーキットが複数のファイルにわたって使用されていて（セルライブラリなど）ある場所に保存されているような時に、簡単に必要なところで各ファイルをインクルードすることが出来ます。ファイルを一元化することでサブサーキットが散在してしまう状態を減らせます。文法ガイドの[include](syntax_jp.md#include)セクションも見てみてください。
 
-### Parse Input
 
-The list of tokens created from the previous process are now further processed by sorting each line into either controls, parameters, subcircuits or main design.
+### 入力のパース
 
-This is performed by taking a look at the first token of each item in the list. If the is a  `.subckt` or `.ends` card, this signals the start or end of a subcircuit respectively. Each line between these list items are added to a subcircuit object. If the token is a `.param` token, this list item is added to the parameters list. Lines that begin with `.model` are added to the list of models. Further, if the token starts with a `.` (period) but is not either of the above then it is a normal control and added to the controls list. Lastly, if it isn't any of the above it is added to the main design object.
+前のプロセスで処理されたトークンのリストはコントロール文字列、パラメータ、サブサーキット、メイン回路に分類されさらに処理されます。
 
-Further information on any of these parts can be found in the [syntax](syntax.md) section.
+リストにある各要素の最初のトークンを見ていくことで実行されていきます。もしこれが`.subckt` または`.ends`であれば、信号はそれぞれサブサーキットの始まりもしくは終わりであることを表しています。これらのリストの間にある行はサブサーキットオブジェクトに追加されます。トークンが`.param`トークンであった場合パラメータのリストに追加され、行が`.model`から始まる場合はモデルのリストに追加されます。さらに、もしトークンが`.`（ピリオド）から始まっており上のどちらでもないなら通常のコントロール文字列であり、コントロールのリストに追加されます。最後に、上のどれでもない場合メイン回路のオブジェクトとして追加されます。
 
-### Parameters
+各部分に関してのこれ以上の情報は[文法ガイド](syntax_jp.md)セクションで見ることが出来ます。
 
-Any identified parameters are recursively parsed until there aren't any unparsed parameters remaining. If it is exhaustively parsed but there are remaining parameters, an error is thrown for undefined parameters. 
 
-With the proper syntax each parameter is passed to a custom implementation of Dijkstra's shunting yard algorithm[^1]. This algorithm returns the processed value and attaches it to the relevant variable name.
+### パラメータ
 
-Parameters are unique to subcircuits, which means that during parsing a parameter is checked to see what subcircuit it belongs to. If it does not belong to any, it is seen as a global parameter. This allows subcircuits to have unique values for parameters while retaining the same variable name.
+分類されたパラメータはパースされていないパラメータがなくなるまで再帰的にパースされます。もし網羅的にパースされてもパラメータが残っている場合、定義されていないパラメータに関するエラーが投げられます。
 
-### Models
+正常な文法のパラメータはカスタム実装のダイクストラの操車場アルゴリズム[^1]に渡されます。このアルゴリズムは処理された値を返し、関連する変数に結びつけます。パラメータはサブサーキットに固有のものであるため、パラメータはパースされているときどのサブサーキットに属しているかチェックされています。もしどこにも属していない場合グローバルパラメータとなります。これによって同じ変数名を保持していたとしてもサブサーキットは固有のパラメータの値を持つことが出来るようになります。
 
-Models identified are processed and checked for syntax. If any model does not comply with recognized syntax, JoSIM halts with an error. At present the only supported model is the Josephson junction model. This is covered in the [Josephson junction](syntax.md#josephson-junction-jj) part of the syntax guide.
 
-### Expanding Subcircuits
+### モデル
 
-This section only acts to check that subcircuits are not more than 1 level deep. By this, we mean that nested subcircuits need to be flattened to a point where they are only one level deep. To achieve this, a recursive check is done to see if any subcircuit contains a list item that begins with a `X` (subcircuit identifier).  By traversing the nest to the deepest level and expanding backwards we are able to arrive at a list of subcircuits that are not nested.
+各モデルに対して処理が行われ文法がチェックされます。もしどのモデルも正しい文法に従っていなかった場合、JoSIMはエラーにより停止します。現在ではジョセフソン接合モデルのみがサポートされています。これについては文法ガイドの[Josephson Junction](syntax_jp.md#josephson-junction-jj)の部分で取り扱っています。
 
-The process of expansion is done by taking the device label (token that starts with an `X`) as the subcircuit name. This is then appended to all labels of the identified flattened subcircuit as well as the nodes by means of a `|` (vertical bar) followed by the name. During this process, the I/O (Input Output) nodes are identified and replaced by their respective nodes for the circuit they belong to. 
+### サブサーキットの展開
 
-With each level the name of the parent subcircuit is appended to the name of the current subcircuit name. This is shown in detail in the [expanding main design](#expanding-main-design) section with an example.
+このセクションではサブサーキットは1段より深くならないことの確認だけを行います。つまり、ネストしたサブサーキットは1段だけになるところまで平坦化する必要があるということです。そのためには、リストの要素が`X`（サブサーキットの識別子）から始まるサブサーキットがあるかどうかを再帰的にチェックします。ネストを最も深いレベルまで辿り、逆に展開していくことでネストされていないサブサーキットのリストが得られます。
 
-### Expanding Main Design
+展開の処理はサブサーキットの名前としてデバイスのラベル（`X`から始まるトークン）を受け取ることで行われます。
+その時これは、`|`（パイプ）の後に名前を続けることで、ノード同様識別・展開されたサブサーキットの全てのラベルに追加されます。このプロセス中に、I/O（入出力）ノードはそれぞれが属している回路に識別・置換されていきます。
 
-Each circuit requires a main design, which is a circuit netlist that is not a subcircuit and contains some form of input and output. Any subcircuits that were flattened in the previous section are populated into the main design using the same method of appending the subcircuit name to device labels and node names.
 
-To illustrate what is meant by this process we provide a small example. First we show a compact netlist. Note: this is purely for illustration and does not represent any form of working circuitry.
+各レベルごとに親サブサーキットの名前は現在のサブサーキット名に追加されていきます。
+[メイン回路の展開](#expanding-main-design)セクションに例とともに詳細が示されています。
+
+
+### メイン回路の展開 {#expanding-main-design}
+
+各回路にはメイン回路が必要です。メイン回路はサブサーキットではないネットリストで、何らかの形での入出力を含んでいます。前のセクションの方法で平坦化されたサブサーキットは全て、デバイスのラベルとノードの名前にサブサーキット名を追加するという、前のセクションで用いたのと同じ方法を用いてメイン回路に追加されます。
+
+このプロセスがどういう意味なのか説明するため簡単な例を示します。まずコンパクトなネットリストを示します。
+注：これは完全に説明のためのものであり回路の動作を示すものではありません。
+
 
 ```
 # Subcircuit
@@ -134,7 +149,8 @@ R01	2	0	2
 
 ```
 
-This very basic circuit shows that there is a subcircuit that is nested within another subcircuit that is used in the main design. When expanded the main design becomes:
+この非常に単純な回路では、メイン回路で使われているサブサーキットの中にネストされた他のサブサーキットがあることを示しています。展開された回路はこのようになります：
+
 
 ```
 V01			1			0			DC	5V
@@ -148,101 +164,107 @@ R01			2			0			2
 .TRAN	0.25P	500P
 ```
 
-This might seem bizarre and rather complex but it allows each node name and label to be unique within the larger main design. This further simplifies saving results for specific devices that are nested deep within the circuit. Further information on saving results is provided in the [output](syntax.md#output) section of the syntax guide.
+奇妙でやや複雑に感じるかもしれませんが、これにより大きなメイン回路の中で各ノードの名前とラベルを一意にすることが出来ます。これにより回路の深いところでネストしたデバイスの結果の保存がさらに簡単になります。文法ガイドの[出力](syntax_jp.md#output)のセクションで結果の保存に関するさらなる情報が述べられています。
 
-### Identify Simulation
 
-Lastly, a netlist requires a simulation command to be able to do work. JoSIM only supports transient simulation method at present. This requires the presence of a `.tran` command that follows the correct syntax. See [transient simulation](syntax.md#transient-analysis) for more information on the syntax.
+### シミュレーションの種類
 
-## Noise Insertion
+最後に、ネットリストを動かすためにはシミュレーションコマンドが必要です。JoSIMは現在トランジェントシミュレーションしかサポートしていません。このため正しい文法の内容に続いて、`.tran`コマンドが存在する必要があります。文法に関してのさらなる情報に関しては、[トランジェント解析](syntax_jp.md#transient-analysis) を見てください。
 
-As of version 2.5, JoSIM has the capability to add thermal noise to the circuit through a current source in parallel to each resistor (heat generating element). If a the `.temp` control was found in the controls list during parsing this function is triggered. This scans through the entire expanded main design, adding current sources in parallel to each resistor using the following equation[^2]:
+
+## ノイズの導入
+
+バージョン2.5より、JoSIMは抵抗（発熱素子）と並列になっている電流源より回路に熱雑音を加えられるようになりました。パース中にコントロールのリストの中に`.temp` コントロール文字列が見つかった場合この機能が起動します。展開された全体のメイン回路がスキャンされ、次の式[^2]を用いて全ての抵抗に対して並列に電流源が追加されます：
+
+
 $$
 I_n=\sqrt{\frac{4k_{B}T}{R}}
 $$
-In this equation, `T` is the temperature provided by the `.temp` control in Kelvin, `R` is the resistance and \(k_{B}\) is the Boltzmann constant. This equation provides the noise spectral amplitude to for the noise source. Further information on [noise sources](syntax.md#noise), and the syntax thereof, can be found in the syntax guide.
 
-It is important to note that subcircuits cannot contain a `.temp` command. A warning will be thrown and the command ignored.
+この式では、`T`は`.temp`コントロールから指定できるケルビン単位での温度であり、`R`は抵抗で\(k_{B}\) はボルツマン定数です。この式はノイズ源に対してノイズのスペクトル振幅を与えます。さらなる情報については[ノイズ](syntax_jp.md#noise)に、そして文法に関しては文法ガイドに書かれています。
 
-## Create Matrix
+コマンドはサブサーキットに含めることは出来ないことに注意が必要です。警告が発生し、コマンドは無視されます。
 
-The matrix creation process follows the steps set out in the overview depicted below.
 
-<div style="text-align:center;"><img src="../img/josim_create_matrix.svg" alt="JoSIM Create Matrix Overview" style="width:600px;" /></div>
+## 行列の作成
 
-### Create Components
+行列を作成するプロセスは以下の概要の図に示されたステップを辿ります。
 
-The expanded main design is iterated through, identifying the type of component each line represents through the first character. An object is created for each component storing relevant information such as the node numbers, label, value, non-zeros, etc.
+<div style="text-align:center;"><img src="../../img/josim_create_matrix.svg" alt="JoSIM Create Matrix Overview" style="width:600px;" /></div>
 
-A list of available components based on the first character is shown below. Any line starting with a character not listed below will cause an error and program termination.
+### 素子の作成
+
+展開されたメイン回路の各行に対し、最初の文字によって素子のタイプを繰り返し識別していきます。各素子の持つnode number、ラベル、値、non-zerosなどのような関係する情報からオブジェクトが作られます。
+
+以下に最初の一文字を下にして利用可能になる素子のリストを示します。下のリストにない文字から始まる行はエラーを起こしプログラムは終了します。
+
 
 <center>
 
 | Character |                          Component                           |
 | :-------: | :----------------------------------------------------------: |
-|     B     | [Junction](syntax.md#josephson-junction-jj) (at present only Josephson) |
-|     C     |               [Capacitor](syntax.md#capacitor)               |
-|     E     | [Voltage Controlled Voltage Source](syntax.md#voltage-controlled-voltage-source) (VCVS) |
-|     F     | [Current Controlled Current Source](syntax.md#current-controlled-current-source) (CCCS) |
-|     G     | [Voltage Controlled Current Source](syntax.md#voltage-controlled-current-source) (VCCS) |
-|     H     | [Current Controlled Voltage Source](syntax.md#current-controlled-voltage-source) (CCVS) |
-|     I     |          [Current Source](syntax.md#current-source)          |
-|     K     |       [Mutual Inductance](syntax.md#mutual-inductance)       |
-|     L     |                [Inductor](syntax.md#inductor)                |
-|     P     |            [Phase Source](syntax.md#phase-source)            |
-|     R     |                [Resistor](syntax.md#resistor)                |
-|     T     |       [Transmission Line](syntax.md#transmission-line)       |
-|     V     |          [Voltage Source](syntax.md#voltage-source)          |
+|     B     | [Junction](syntax_jp.md#josephson-junction-jj) (at present only Josephson) |
+|     C     |               [Capacitor](syntax_jp.md#capacitor)               |
+|     E     | [Voltage Controlled Voltage Source](syntax_jp.md#voltage-controlled-voltage-source) (VCVS) |
+|     F     | [Current Controlled Current Source](syntax_jp.md#current-controlled-current-source) (CCCS) |
+|     G     | [Voltage Controlled Current Source](syntax_jp.md#voltage-controlled-current-source) (VCCS) |
+|     H     | [Current Controlled Voltage Source](syntax_jp.md#current-controlled-voltage-source) (CCVS) |
+|     I     |          [Current Source](syntax_jp.md#current-source)          |
+|     K     |       [Mutual Inductance](syntax_jp.md#mutual-inductance)       |
+|     L     |                [Inductor](syntax_jp.md#inductor)                |
+|     P     |            [Phase Source](syntax_jp.md#phase-source)            |
+|     R     |                [Resistor](syntax_jp.md#resistor)                |
+|     T     |       [Transmission Line](syntax_jp.md#transmission-line)       |
+|     V     |          [Voltage Source](syntax_jp.md#voltage-source)          |
 
 </center>
 
-Syntax for each of these components can be found in the relevant sections of the syntax guide.
+各素子についての文法は文法ガイドのセクションの各該当箇所に書かれています。
 
-The matrix is set up using the [modified nodal analysis](#modified-nodal-analysis).
+行列は [modified nodal analysis](#modified-nodal-analysis)を用いてセットアップされます。
+
 
 #### Modified nodal analysis {#modified-nodal-analysis}
 
-There are many ways to set up a set of linear equations to solve the voltage or currents in a circuit. One of the more well known ways is to use nodal analysis which creates an equation for each node defined in the circuit netlist. This method is the basis on which the original Berkeley SPICE[^3] was built. This method, however, only calculates the voltages of every node which makes it difficult to handle components that are voltage dependent such as inductors and junctions.
+回路中の電圧または電流について解くための一次方程式を用意する方法はいくつもあります。よく知られている方法の一つは回路のネットリスト中で定義された各ノードに対して式を作成する節点解析法を用いる方法です。この方法は元々のBerkeley SPICE[^3] が出来たことを基礎とする方法です。一方、この方法ではただ全てのノードの電圧を計算しているだけなのでインダクタやJJのような電圧依存素子を取り扱うのが難しくなります。
 
-This drawback led to the creation of the modified nodal analysis (MNA) which is an extension to the prior with the ability to calculating branch currents in addition to nodal voltages[^4]. We therefore make use of the MNA method to build the set of linear equations within JoSIM due to the large use of inductors as well as Josephson junctions in superconductivity.
+この欠点より、ノード電圧に加えブランチ電流を計算できるようにした、先の発展形のとしてのmodified nodal analysis (MNA)が作られました。したがってインダクタや超伝導のジョセフソン接合を大規模に使用するため我々はJoSIM中で一次方程式の集合を作ってMNA法を使用しています。
 
-A useful feature of the MNA method allows every component to be represented as a sub-matrix called a stamp. The summation of all the stamps provide us with the **A**, **x** as well as **b** matrices that are required to solve the linear equations. These stamps will be discussed further in the following subsection.
+MNA法の便利な特徴は全ての素子をスタンプと呼ばれる部分行列によって表せることです。全てのスタンプの総和は**A**となり、一次方程式を解くためには**x**と**b**行列も必要です。スタンプについては今後のサブセクションで議論されます。
 
-#### Backward Differentiation Formula
 
-In transient analysis many components have time dependent $(\frac{d}{dt})$ voltage or current values. These differentials are not easily solvable and require special techniques to approximate the value at the requested time given previous time values. One such method is the backward differential formula (BDF)[^5], which is a linear multistep method. In circuit analysis applications, the BDF2 (2nd order) method is considered the most stable method.
+#### 後体微分法
 
-This method is expressed as:
+トランジェント解析では多くの素子は時間依存性$(\frac{d}{dt})$の電圧か電流の値を持っています。こういった微分は簡単には解くことが出来ず、前のステップの値が与えられている、あるタイミングでの値を近似するためには特別なテクニックが必要になります。そのための一つの方法が後体微分法(BDF)[^5]です。これは線形多段法であり、回路解析のアプリケーションとしては、BDF2法（二次）が最も安定であると考えられています。
 
+この方法は以下のように表されます：
 
 $$
 \left(\frac{dx}{dt}\right)_n = \frac{3}{2h}\left[x_n - \frac{4}{3}x_{n-1} + \frac{1}{3}x_{n−2}\right]
 $$
 
+ここで\(h​\)は時間微分、より正確にはシミュレーションのタイムステップです。この方法では\(n-1\)と\(n-2\)によって示される、2つ前までのタイムステップを知っている必要があります。この方法を使うと全素子に対して余計な計算が必要に見えますが、実際は微分が必要な素子を簡単化しています。
 
-With \(h​\) as the time difference or rather time step of the simulation. This method requires knowledge of 2 prior timesteps, indicated by \(n-1\) and \(n-2\). Though this method might seem like it requires extra computation for every component, it actually simplifies components that require differentials.
+キャパシタを使って例を示します。
 
-We demonstrate this using the capacitor.
 
-<div style="text-align:center;"><img src="../img/josim_capacitor.svg" alt="Basic Capacitor Element" style="width:400px;" /></div>
+<div style="text-align:center;"><img src="../../img/josim_capacitor.svg" alt="Basic Capacitor Element" style="width:400px;" /></div>
 
-The capacitor above has a general equation to determine the current through it as:
+上記のキャパシタには、通る電流を決めるための一般式があります：
 
 
 $$
 i_{C_{1}}(t) = C_{1}\frac{dv}{dt}
 $$
 
-
-It is noted that this equation is time dependent and we therefore need to apply the BDF2 method:
+この式は時間依存であることに注意すると、BDF2法を適用する必要があります：
 
 
 $$
 I_{C1} = \frac{3C_{1}}{2h}\left[V_{n}-\frac{4}{3}V_{n-1}+\frac{1}{3}V_{n-2}\right]
 $$
 
-
-We note that the $V$ is the difference in voltage across the component and taken as $V_{1} - V_{2}$. We further expand the above equation to place values of the current time step on the left hand side (LHS) and all known values on the right hand side (RHS):
+ここで$V$は素子での電圧の差であり$V_{1} - V_{2}$であることに注意します。ここでさらに現在のタイムステップを左辺(LHS)に置き、既知の値を右辺(RHS)に置くため式を展開します：
 
 
 $$
@@ -258,7 +280,7 @@ $$
 V_{n} - \frac{2h}{3C_{1}}I_{C_{1}} = \frac{4}{3}V_{n-1}-\frac{1}{3}V_{n-2}
 $$
 
-Which we can then write in matrix form as:
+行列の形では次のように書けます：
 
 
 $$
@@ -280,20 +302,17 @@ I_{C_{1}}
 \end{bmatrix}
 $$
 
-
-The matrix above is a generic stamp that we can place into the A matrix which describes the capacitor $C_{1}$.
+上の行列はキャパシタ$C_{1}$を記述するものとして見なすことができる一般的なスタンプとなっています。
 
 #### Modified nodal phase analysis
 
-First introduced in version 2.0, the ability to perform a simulation that calculates the nodal phase instead of voltage was implemented. This new analysis method is named the modified nodal phase analysis (MNPA) and utilizes the voltage-phase[^6] relationship seen below.
-
+バージョン2.0で初めて導入され、電圧ではなくノード位相を計算するシミュレーションを行うことができます。この新しい解析法は modified nodal phase analysis (MNPA)と呼ばれ、以下で見られるように電圧-位相[^6]関係を利用しています。
 
 $$
 v = \frac{\Phi_{0}}{2\pi}\frac{d\phi}{dt}
 $$
 
-
-If this relationship is applied to all the component models found in JoSIM we obtain the MNPA stamps, which allow us to solve the phase directly. As example we demonstrate this on the capacitor equation shown in the previous section.
+JoSIMの中での全ての素子にこの関係が適用されていればMNPAスタンプを得ることができ、phaseを直ちに解くことが出来るようになります。前のセクションでは例としてキャパシタの式を示しています。
 
 
 $$
@@ -325,8 +344,7 @@ $$
 $$
 
 
-
-This can then be reduced to a component stamp as follows:
+これは以下のように素子のスタンプとしてまとめることができます：
 
 
 $$
@@ -349,28 +367,28 @@ I_{C_{1}}
 $$
 
 
-With this expansion it is shown, the capacitor requires up to 4 previous time step values to compute the current step.
+この展開式が示す通り、キャパシタは現在のステップを計算するために4つ前までのタイムステップを必要とします。
 
-JoSIM has been adapted to allow phase analysis on any design that works with voltage analysis without requiring alterations to the netlist file. Since the voltage is simply the scaled time derivative of the phase the voltage can be calculated as a post process if the user requests it.
+電圧解析が可能なデザインに対しネットリストに対する変更の必要なしに位相解析が出来るようJoSIMは変化してきました。電圧は単純に位相の時間微分によって見積もられるため、電圧はユーザが必要とすればポスト処理として計算可能です。
 
-As noted in the [CLI Options](#cli-options) section, the default mode for simulation is now phase as of version 2.5. 
+[CLIオプション](#cli-option)セクションで述べられているように、バージョン2.5よりシミュレーションのデフォルトモードはphaseになっています。
 
-All the MNPA stamps are included in the [Component Stamps](comp_stamps.md) section.
+全てのMNPAスタンプは [素子のスタンプ](comp_stamps_jp.md)セクションに入っています。
 
-### Mutual Inductances
+### 相互インダクタンス
 
-If there are any mutual inductances in the circuit then this section is triggered. When found in the previous section the mutual inductances are simply added to a list for later processing. This is done to allow all inductors to be created as objects first before the mutual inductors are applied.
+相互インダクタンスが回路に含まれている場合このセクションが動作します。前のセクションで相互インダクタンスが見つかったとき、単純に後処理のためのリストに追加されます。これによって相互インダクタンスが適用される前に全てのインダクタをオブジェクトとして作成することが出来ます。
 
-This also allows us to perform a sanity check, ensuring that the inductors being coupled exist.
+同時にカップリングされているインダクタが存在するかという正常性チェックをすることも出来るようになります。
 
-### Create CSR
 
-The concept of zero is a strange thing, to humans it is nothing but to machines it is the same as all other numbers and takes up just as much memory. Since we do not want to waste memory and computation storing the number zero we use a different form of matrix representation known as the compressed row storage (CSR)[^7]. 
+### CSRの作成
 
-This data structure consists of 3 vectors, namely the non-zero (nnz), the  column indices (ci) and the row pointer (rp) vectors. The non-zero vector only stores the non-zero elements of each component. The column indices vector stores the index where each of the non-zeros are found. The row pointer stores the total number of non-zeros after each row, starting with zero. This allows the simulation engine to quickly discern which non-zero belongs in which position if the matrix were actually a full sparse matrix.
+ゼロの概念というものは不思議なもので、人間にとっては何もないことであるのに機械にとっては他の全ての数値と同じであり同じだけのメモリを消費します。もちろんゼロを保持することでメモリも計算も無駄遣いはしたくないので、圧縮行格納方式(CSR)[^7]として知られる異なる行列表現を用います。
 
-As example to demonstrate this we use the following 5x5 matrix:
+このデータは非ゼロ (nnz)、列インデックス(ci)、行ポインタ(rp)という3つのベクトルから成ります。 非ゼロベクトルは各素子のnon-zero要素だけを保持します。列インデックスベクトルは各非ゼロが見つかったインデックスを保持します。行ポインタは各行がゼロから始まる後に非ゼロがいくつあるかを保持しています。これにより行列が疎行列であったとしてもシミュレーションエンジンは素早く非ゼロがどこにあるかを判断することができます。
 
+例として次の5x5行列を使います：
 
 $$
 \begin{bmatrix}
@@ -382,8 +400,7 @@ $$
 	\end{bmatrix}
 $$
 
-
-Storing this matrix in system memory would take up 25 numbers. If we were to convert this to CSR format we arrive at the following 3 vectors:
+この行列をシステムメモリに格納しようとすると数値25個分がかかります。CSR形式に変換すると次の3ベクトルとなります：
 
 
 $$
@@ -398,71 +415,78 @@ $$
 rp=\left[0,2,3,4,6,7\right]
 $$
 
-This data structure only takes up 20 numbers to store. This does not seem much less than the 25 before, but this scales very significantly when working with very large circuits.
+このデータ構造では数値20個分しか使用していません。これは以前の25に比べてそこまで大きく減っていないように見えますが、非常に大きな回路では非常に顕著にスケールします。
 
-During the matrix creation part, the objects created already form these nnz, ci and rp vectors for each component. During this part all these vectors are simply collected to form the overall CSR for the circuit.
+行列の作成パート中では、既に作られているオブジェクトによって各素子がnnz, ci, rpベクトルを成します。このパート中では回路全体のCSRを作るために全てのベクトルが集められます。
 
-### Find Relevant Traces
 
-Like before with the CSR instead of storing the full matrix to save memory, it would also be advantageous to not store every value computed during the simulation step for every component. To avoid this, we identify the specific traces (reference to relevant computed values)  before simulation starts.
+### 関連するトレースを見つける
 
-This is done by combing the controls list for any output statements (`.print`,`.plot` or `.save`) and identifying which component or node each refer to. The relevant node and current branch indices are then stored in a list which will be used during simulation.
+前で全ての行列を保持するのではなくCSRによってメモリを節約していたように、シミュレーションのステップ中計算された全ての素子の値を持っておかないということもまた有益であることがあります。これを避けるためには、シミュレーションが始まる前に固有のトレース（計算済みの値への参照）を特定します。
 
-## Simulation
+これは出力文（`.print`,`.plot`または`.save`）のコントロールのリストと、どの素子またはノードがそれぞれ何を参照しているかを組み合わせることで実現できます。関連するノードと電流ブランチのインデックスはシミュレーション中で使用するためここでリストに保持されます。
 
-Once we have a all the component objects and a CSR representing the matrix we can perform the requested simulation. An overview of the simulation step is shown below.
 
-<div style="text-align:center;"><img src="../img/josim_simulation.svg" alt="JoSIM Simulation Overview" style="width:600px;" /></div>
+## シミュレーション
 
-### Create Simulation Objects
+全ての素子オブジェクトと行列を表現するCSRを用意すると、要求されたシミュレーションを行えるようになります。シミュレーションの概要を下に示します。
 
-JoSIM uses the sparse matrix solver library SuiteSparse[^8] of which the KLU solver is implemented. To use KLU specific objects need to be created using the CSR vectors. During this part these objects are created and initialized using the relevant data.
 
-### Start Simulation
+<div style="text-align:center;"><img src="../../img/josim_simulation.svg" alt="JoSIM Simulation Overview" style="width:600px;" /></div>
 
-A transient simulation is synonymous to a time domain simulation, and since we are working with a digital system this time simulation needs to be discretized into a set amount of steps determined by the total simulation time divided by the step size. 
+### シミュレーションオブジェクトを作る
 
-#### Create **b** Matrix
+JoSIMは疎行列ソルバのライブラリであるSuiteSparse[^8]を使用しておりそのうちのKLUソルバが実装されています。KLU固有のオブジェクトはCSRベクトルを用いて作る必要があります。このパートでは関連するデータを用いてオブジェクトを作成・初期化します。
 
-The **b** matrix is created using the known values from each component's RHS of the equation. All components are itterated through and their RHS values inserted into the **b** matrix at the correct locations before simulation is done.
 
-#### Solve Ax=b
+### シミュレーションを始める
 
-With both **A** and **b** known, KLU solves **x** (the unknowns) for the current step.
+トランジェントシミュレーションは時間領域シミュレーションと同義であるので、合計のシミュレーション時間をステップサイズで割ったステップ回数で時間シミュレーションは離散化する必要があります。
 
-#### Store results
 
-The results in **x** are iterated, storing only the relevant trace data as previously determined. 
+#### **b**行列を作る
 
-The implementation of a transmission line in JoSIM is only a scaled time delay at present and as such the currents of and nodes connected to all transmission lines need to be stored for all time. 
+各素子の式のRHSから得られた値を用いて**b**行列はつくられます。全ての素子にわたってイテレーションが行われ、シミュレーションが終わるまでにRHSの値は行列の正しい場所に挿入されます。
 
-Once completed, the process is repeated for the next time step until the simulation is finished.
 
-## Output Results {#output-results}
+#### Ax=bを解く
 
-The results from the simulation along with the time data is formatted to form  a 2D data set with a label describing each column of data.
+**A**と**b**がともに知られているとき、KLUは現在のステップに対し（未知の）**x**を解きます。
 
-JoSIM supports exactly 3 output formats. Each of which are determined by the extension of the file specified in the [CLI Options](#cli-options). These formats are comma separated value (CSV), space separated value (DAT) and raw SPICE output.
+#### 結果を保存する
+
+**x**中の結果はイテレーションされ、前で求められた関連トレースデータだけが保持されます。
+
+現在JoSIMの伝送線路の実装は規格化された遅延についてだけであり、伝送線路に接続されているノードや電流などは常に保持されていなければなりません。
+
+一度完了したあとは、シミュレーションが終わるまで次のタイムステップの処理が繰り返されます。
+
+## 出力結果 {#output-results}
+
+時間情報のついたシミュレーションの結果は各列の意味を記述したラベルとともに、二次元のデータセットの形に整形されます。
+
+JoSIMは3つの出力形式をサポートしています。それぞれは[CLIオプション](#cli-option)で指定されたファイルの拡張子によって決定されます。形式はカンマ区切りファイル(CSV)、スペース区切りファイル(DAT)、生のSPICE出力の3つです。
+
 
 ### CSV (.csv)
 
-The formatted results are stored in a file with the labels at the top followed by each row of data starting with the time point. All elements in this file are comma separated. This makes it very easy to read and understand from a human perspective but as well by many software libraries for plotting. This is also the default format in the case that output was requested but no file name provided. In this case the results will be stored in a file called *output.csv*.
+整形された結果は一番上の行のラベルとともに、各行のデータが時間から始まるようなファイルとして格納されます。このファイルの全ての素子はカンマ区切りになっています。これは人間の観点からだけでなく、グラフプロットのための様々なライブラリにとっても非常に読みやすく解釈しやすい形式です。これは出力が要求されていてもファイル名が指定されていないときのデフォルトの形式でもあります。この場合*output.csv*という名前のファイルに保存されます。
 
 ### DAT (.dat)
 
-Very similar to the CSV file but instead of commas, spaces are used. This is a legacy format used as output by older simulators such as JSIM.
+CSVファイルに非常に似ていますがカンマではなく、空白が使われています。これはJSIMのような昔のシミュレータで出力として使われていた古典的なフォーマットです。
 
-### RAW (no extension)
+### RAW形式（拡張子なし）
 
-If no extension is given for the file name then a RAW SPICE file will be created. This is a very specifically formatted file that specifies the variables in a list, followed by a time step and each variable's data for that time point. This format is understood by many SPICE output plotting tools.
+拡張子が指定されていない場合生のSPICEファイルが作られます。これはリストの中に変数を指定し、タイムステップとその時の変数のデータを後に続けるという非常に具体的な形式のファイルです。この形式は様々なSPICE出力のプロットツールが読むことが出来ます。
 
-## Plotting interfaces
+## プロットのインターフェース
 
-In previous versions of JoSIM there existed 2 plotting windows, namely FLTK and Matplotlib. These interfaces were, however, ultimately scrapped due to maintainability issues as well as cross-platform compatibility. The user is requested to use the plotting system they are most comfortable with. 
+前のバージョンのJoSIMではFLTKとMatplotlibという2つのプロットウインドウが存在しました。しかし、このインターフェースは最終的にはメンテナンス性やクロスプラットフォームの互換性の問題から破棄されました。ユーザは各自が一番いいと思うプロットシステムを使って頂くことになりました。
 
-Below we provide a simple Python 3 script that plots all the results in a *.csv* file. It is very basic and the user should modify it as required. This script requires installation of the **Numpy** as well as **Matplotlib** packages for Python 3. Optionally, we comment the lines for use of the **Qt5** backend for plotting. The user can enable this if the **PyQt5** package is installed.
+以下に全ての結果が*.csv*となっているファイルをプロットする簡単なPython 3スクリプトを示します。これは非常にシンプルなので必要に応じて修正してください。このスクリプトはPython 3の**Numpy**と**Matplotlib**パッケージのインストールを必要とします。オプションとして、**Qt5**プロットのバックエンドとして使用した場合の行をコメントにしてあります。**PyQt5**パッケージがインストールされている場合有効化できます。
 
-A **Plotly** and **Pandas** script is provided in the [scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts) folder of the GitHub repository that visualizes the results in a much more elegant way, with many more settings that can be adjusted by the user.
+よりエレガントな方法で結果を可視化する**Plotly**や **Pandas**というスクリプトはGitHubリポジトリの[scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts)フォルダに用意されており、より多くの設定をユーザが調整できるようになっています。
 
 ```python
 #!/usr/bin/env python

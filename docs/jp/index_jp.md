@@ -1,80 +1,85 @@
-# JoSIM - Superconducting Circuit Simulator
+# JoSIM - 超伝導回路シミュレータ
 
 Developers Manual for v2.5.1
 
-## Project Status
+## プロジェクトの状況
 
 ### Testing: v2.6 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
 
 ### Stable: v2.6 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
 
-## Introduction
+## はじめに
 
-JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.
+JoSIMはIARPA（助成金：U.S. Army Research Office grant W911NF-17-1-0120）のSuperToolsの下で開発されました。
 
-JoSIM is meant to function as an alternative to the simulators such as JSIM[^1] and WRspice[^2]. JoSIM is written in modern C++ and is fully customizable and extendable to offer support for improved superconducting elements as well better approximations to the Josephson effect in superconducting materials.
+JoSIMはアナログ回路シミュレータであり、超伝導素子であるJosephson junctionを表現できる性質を持った、SPICEという文法を用いています。
 
-A *.cir* file containing a SPICE syntax circuit netlist is provided as input. The circuit netlist, given appropriate input excitations can then be simulated through transient analysis. Results of this simulation can be dumped to standard output or saved in various formats such as a comma separated value (*.csv*) file.
+JoSIMはJSIM[^1]やWRspice[^2]のようなシミュレータの代わりの役割を果たすことを意図して作られました。JoSIMはモダンなC++で書かれており、新しい超電導素子の助けになるように、そして超電導素材のJosephson効果に対する良い近似になるよう幅広いカスタマイズ性・拡張性を持たせています。
 
-Below is a macro overview of the process performed by JoSIM. This is very basic and is discussed in further detail in the [Technical Discussion](tech_disc.md) section of the documentation.
+SPICE文法による回路のネットリストを表す*.cir*ファイルを入力すると、ネットリストをトランジェント解析することが出来ます。
+シミュレーション結果は標準出力へのダンプ、もしくは*.csv*ファイルとしての出力が可能です。
 
-<center><img src="img/josim_macro.svg" alt="JoSIM Macro Overview" style="width:600px;" /></center>
+以下がざっくりとしたJoSIMによる処理過程です。これは非常に基礎的なものであり詳細についてはドキュメントの[技術的な議論](tech_disc_jp.md) のセクションで示します。
 
 
-## Project layout
+<center><img src="../../img/josim_macro.svg" alt="JoSIM Macro Overview" style="width:600px;" /></center>
 
-The JoSIM repository has the following layout. A quick description shows the purpose of the various files and folders.
 
-    cmake   			# CMake scripts.
+## ファイル構成
+
+JoSIMリポジトリは次のような構成になっています。ファイルとフォルダの目的を簡単に示します。
+
+
+    cmake   			# CMakeスクリプト。
     docs/
-        index.md		# The documentation homepage.
-        ...      		# Other markdown pages, images and other files.
+        index.md		# ドキュメンテーションのホームページ。
+        ...      		# その他のマークダウンページ、画像・その他のファイル。
     include/
-        JoSIM			# JoSIM header files.
-    scripts				# Some Python3 scripts to automate testing and plotting
-    site				# Where this documentation spawns from.
+        JoSIM			# JoSIMのヘッダファイル。
+    scripts				# テスト自動化とグラフ描画のためのPython3スクリプト。
+    site				# このドキュメンテーションが生成される場所。
     src/
-        ...				# JoSIM source files.
-    test				# Folder containing various examples.
-    README.md			# Basic readme to get the user going.
-    LICENSE				# License that governs use of JoSIM.
-    CMakeLists.txt		# Configuration to compile code.
-    ...					# Other configuration files and scripts.
+        ...				# JoSIMのソースファイル。
+    test				# 様々なサンプルが入っているフォルダ。
+    README.md			# ユーザに始めてもらうための基本的なreadme。
+    LICENSE				# JoSIMの利用に適用されるライセンスについて。
+    CMakeLists.txt		# コードをコンパイルするためのコンフィグ。
+    ...					# その他のコンフィグファイルとスクリプト。
 
-## Initial setup
-With each major version of JoSIM a release for all major platforms is generated and placed under the [Releases](https://github.com/JoeyDelp/JoSIM/releases) section of the GitHub repository. At the time of writing, this is version 2.5.
+## 初期セットアップ
+メジャーなプラットフォームに対するメジャー版のJoSIMはGitHubリポジトリの[Releases](https://github.com/JoeyDelp/JoSIM/releases) にあります。これが書かれている段階のバージョンは2.5です。
 
-To compile JoSIM from source, the following packages are required:
+JoSIMをソースからコンパイルするためには、以下のパッケージが必要になります：
 
 - CMake 3.14
 - Git
 - C++ compiler with C++17 support
 
-### Building from source
+### ソースからのビルド
 #### Linux
 
-These instructions were executed on a minimal install of CentOS 7 to reduce oversight in the compilation instructions created by previous package installs. For other distributions please use the package manager relevant to the distribution of choice.
+これからの手順は最低限のインストールがされたCentOS 7上で実行されています。その他のディストリビューションを利用している場合、それぞれに合ったディストリビューションのパッケージマネージャを利用してください。
 
-A working internet connection is required, as well as the ability to install packages. If the internet connection is not up please run, and replace <network interface> with your relevant interface i.e *eth0*:
+インターネット接続と、パッケージをインストールするための動作環境が必要です。もしインターネット接続がされていない場合オンにします。<network interface>の部分は*eth0*など、利用しているインターフェースに置き換えてください。
 
 ```bash
 sudo ifup <network interface>
 ```
 
-CentOS 7 does not contain all the enterprise Linux packages in its default repository and therefore needs to be activated using:
+CentOS 7はデフォルトで全てのLinuxエンタープライズのパッケージを含んでいるわけではないので、以下を有効化する必要があります：
 
 ```bash
 sudo yum install epel-release
 sudo yum update
 ```
 
-CentOS 7 will require development packages to be installed. Fortunately this can be done using a single command:
+CentOS 7は開発パッケージを必要とします。幸いなことにこちらはコマンド一つで済みます：
 
 ```bash
 sudo yum groupinstall "Development Tools"
 ```
 
-This will install various development tools such as *gcc*, *make* and *git*. JoSIM, however, requires a newer version of *gcc* than the one supplied within these packages. Fortunately this can be installed fairly easily by running the following:
+ *gcc*, *make*, *git*といった様々な開発ツールがこれでインストールされます。しかし、JoSIMはここで入ったものよりさらに新しいバージョンの*gcc*が必要です。ありがたいことに、次のように実行することでかなり簡単にインストール可能です。
 
 ```bash
 sudo yum install centos-release-scl
@@ -82,36 +87,37 @@ sudo yum install devtoolset-8
 scl enable devtoolset-8 bash
 ```
 
+最後のコマンドは新しい*gcc* が必要となった時に毎回入力する必要があります。幸いこのようなエイリアスを使えば短くすることができます：
 The last command needs to be entered whenever the newer *gcc* is needed. This can fortunately be shortened using an alias:
 
 ```bash
 echo 'alias dts8="scl enable devtoolset-8 bash"' >> ~/.bashrc
 ```
 
-This will enable the devtoolset-8 environment on the current bash by just entering the command *dts8*.
+これは*dts8*とコマンドを打つだけでdevtoolset-8環境を現在のbash上で有効化することができるということです。
 
-To simplify installation of various packages we make use of Python 3 and pip:
+いろいろなパッケージのインストールを簡単に行うためにPython3とpipを使います：
 
 ```bash
 sudo install python36 python36-pip
 ```
 
-This allows installation of the most relevant package version of *cmake*:
+これで適切なバージョンの*cmake*をインストールしてくれます：
 
 ```bash
 pip3 install cmake --user
 ```
 
-We are now ready to compile JoSIM
+これでJoSIMのコンパイルの準備ができました。
 
-JoSIM source can be directly downloaded from the repository as a compressed *.tar.gz* file or by cloning the repository. In either case, navigate to a directory where compilation will take place and extract the tarball or execute:
+JoSIMのソースは圧縮された*.tar.gz*形式またはリポジトリをcloneすることで直接ダウンロードできます。いずれの場合にしても展開するためのディレクトリまで行ってtarballまたは以下を実行してください：
 
 ```bash
 git clone https://github.com/JoeyDelp/JoSIM.git
 cd JoSIM
 ```
 
-Navigate to the newly cloned/extracted JoSIM directory then run the following commands:
+新しくcloneまたは展開されたJoSIMディレクトリに入り、次のコマンドを実行してください：
 
 ```bash
 mkdir build
@@ -120,41 +126,41 @@ cmake ..
 cmake --build . --config Release
 ```
 
-This will generate a JoSIM executable in the **build** directory.
+これで**build**ディレクトリの中に実行可能なJoSIMが生成されます。
 
-Additionally, the *libjosim* library will also be generated. To use the library (and josim-cli) it needs to be PATH obtainable. The best way to do this is to do: 
+さらに、*libjosim* ライブラリも生成されます。このライブラリ（そしてjosim-cli）を使うためにはパスを通す必要があります。一番いい方法は：
 
 ```bash
 sudo make install
 ```
 
-This option will install *josim-cli* and *libjosim*, as well as the header files needed to use it, in the relevant installation directories detected by the CMake *GNUInstallDirs* macro.
+これによってCMakeの*GNUInstallDirs*マクロが見つけた適切なインストールディレクトリの中に*josim-cli* 、*libjosim*、それを使うのに必要なヘッダファイルがインストールされます。
 
 #### Apple macOS
 
-Apple macOS is very similar to most Unix systems and therefore follows mostly the same procedure. The user would clone the repository and install CMake and Git. These requirements can be installed using either Homebrew, Macports or compiled from source using the standard macOS compilers (installed through Xcode).
+Apple macOSは他のUnixシステムと非常に似ているのでほぼ同じ手順で行うことができます。ユーザによってはリポジトリのクローンやCMake・Gitのインストールをするかもしれません。必要要件はHomebrewでもMacportsでも、（Xcodeからインストールされている）標準のmacOSのコンパイラを利用してソースからコンパイルしてもインストール可能です。
 
-Python 3 is available through Homebrew and CMake can almost always be installed using pip (PyPI). 
+Python 3はHomebrewから利用可能で、CMakeは通常pip (PyPI)からインストール可能です。
 
 #### Microsoft Windows
 
-There are various ways to compile JoSIM on the Microsoft Windows platform. The simplest way to do this is to install the [Community version of Microsoft Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16), which is free to use. This is only to acquire a working C++ compiler that can be used by CMake.
+Microsoft WindowsプラットフォームでJoSIMをコンパイルする方法はいくつもあります。最も簡単な方法はフリーの[Community version of Microsoft Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16)をインストールすることです。これはCMakeで使うC++コンパイラを取得するためだけにやっています。
 
-Next Python 3 will also be needed. This can be installed using Windows Store, Anaconda or [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Once installed CMake can be installed much the same as any other system:
+次にPython 3も同様に必要になります。Windows Store・Anaconda・[Miniconda](https://docs.conda.io/en/latest/miniconda.html)からインストールできます。インストール後は他システムと同様、CMakeは次のようにインストールできます：
 
 ```powershell
 pip install cmake --user
 ```
 
-To ensure that CMake detects the correct compiler (a restart might be required after MSVC install) simply run:
+CMakeが適切なコンパイラを見つけていることを確認するためには単純に次のようにします（MSVCのインストール後再起動が必要かもしれません）：
 
 ```powershell
 cmake --help
 ```
 
-This should produce a help menu with a generator list at the bottom. If MSVC is installed and detected then it should have an asterisk (*) next to the relevant MSVC version to indicate that it is the default generator.
+ヘルプとジェネレータのリストが最後に表示されたはずです。MSVCがインストールされていて検出されていた場合、デフォルトのジェネレータとなっていることを示すためアスタリスク（*）が適切なMSVCのバージョンの隣についているはずです。
 
-The rest of the guide follows the same steps as Linux:
+残りのステップはLinuxと同じです：
 
 ```powershell
 mkdir build
@@ -163,35 +169,35 @@ cmake ..
 cmake --build . --config Release
 ```
 
-This will produce the JoSIM executable (*josim-cli*) and library (*josim.lib*) in the **build/Release** folder.
+これで実行可能なJoSIM(*josim-cli*)とライブラリ (*josim.lib*) が**build/Release**フォルダの中に生成されます。
 
-Unlike Unix systems, Windows does not complete the *CMake* *GNUInstallDirs* macro correctly and if used would potentially install *josim-cli* in a strange location such as **C:\usr\local\josim\bin\josim-cli**. It is therefore not recommended to use the install command on Windows systems but to rather copy or move the executable *josim-cli* to a location that is PATH obtainable under Windows.
+Unixシステムとは異なり、Windowsでは*CMake* *GNUInstallDirs*マクロを正しく補完してくれないため、もし同じようにすると*josim-cli* は**C:\usr\local\josim\bin\josim-cli**のような変な場所にインストールされる可能性があります。したがってWindowsシステム上ではコマンドによるインストールは推奨されず、むしろ*josim-cli* をパスが通っている場所までコピーまたは移動させた方がよいです。
 
-One way to do this is to create a folder under **C:\\**  called **JoSIM**, placing the *josim-cli* and *josim.lib* files from the **build/Release** directory inside and adding it to PATH environment by opening an elevated command prompt through **Win+x** key combination and choosing **Command Prompt (Admin)**. Type in the following command and hit enter:
+そうするための一つの方法としては、例えば**JoSIM**のようなフォルダを**C:\\**以下に作成し、**build/Release**ディレクトリ内部から*josim-cli*と*josim.lib*ファイルを持ってきてフォルダをPATH環境に追加する、というものがあります。そのために**Win+x**キーを押すと出てくる管理者権限の**Command Prompt (Admin)**を選択し、次のコマンドを打ってエンターを押します：
 
 ```bash
 SETX PATH %PATH%;C:\JoSIM
 ```
 
-This will add the **C:\JoSIM**  folder to the PATH and allow *josim-cli* to be located through non-elevated command prompt. 
+これで**C:\JoSIM**フォルダにパスが通り、*josim-cli* を管理者権限でないコマンドプロンプトでも使える場所に置けるようになります。
 
-#### TimeEx and other tools
+#### TimExとその他のツール
 
-Some tools, such as TimEx, require *josim-cli* to be named *josim*. Since the josim command line executable (*josim-cli*) is a singular executable, this means that there are no files that rely on its specific naming for JoSIM to function correctly. It can thus safely be renamed or copies made thereof with varying names as required by external tools (such as TimEx).
+TimExのようないくつかのツールでは*josim-cli* を*josim*という名前にする必要があります。josimコマンドラインツール(*josim-cli*)は単体で実行可能なので、正しく機能するために特定のJoSIMの名前に依存しているファイルなどはどこにもないことになります。すなわち安全に名前を変えたり（TimExのような）外部ツールで必要な色々な名前の複製を作ったりすることが可能です。
 
-Under Unix systems a symbolic link can be established through:
+Unixシステムでは以下のようにシンボリックリンクを作ることができます：
 
 ```bash
 sudo ln -s /usr/local/bin/josim-cli /usr/local/bin/josim
 ```
 
-Where the first path is the source and the second is the destination. If *josim-cli* is updated *josim* will reflect this since the symbolic link simply makes *josim-cli* obtainable through another name.
+ここで最初のパスはソースで、二番目は指し示している先を表しています。シンボリックリンクは単純に他の名前で*josim-cli* を取得可能にしているだけなので、もし*josim-cli*がアップデートされた場合でも、*josim*はその変更を反映しています。
 
-On Windows it is best to simply rename *josim-cli* or to make a copy thereof with a new name.
+Windowsの場合は単純に*josim-cli*をリネームするかコピーして新しい名前をつけるのが一番いいです。
 
 ### License
+JoSIMにはMITライセンスが適用されており、これは誰でもソースの再配布が可能・無償利用可能という非常に寛容なライセンスです。MITライセンスでは、MITライセンスと著作権表示がコピーされたソフトウェアに含まれている限りは所有の範囲内での利用を認めています。
 
-JoSIM is governed by the MIT license, which is a very permissive license that allows anyone to redistribute the source as well as commercialize it without repercussions. The MIT license allows use of this software within proprietary software as long as all copies of the licensed software includes a copy of the MIT license as well as the copyright notice.
 
 [^1]: E. S. Fang and T. Van Duzer, "A Josephson integrated circuit simulator (JSIM) for superconductive electronics application," in *Extended Abstracts of 1989 Intl. Superconductivity Electronics Conf. (ISEC '89)*, Tokyo, Japan: JSAP, pp. 407-410, 1989
 [^2]: S. R. Whiteley, "WRspice Circuit Simulator" by *Whiteley Research Incorporated*. http://www.wrcad.com/wrspice.html

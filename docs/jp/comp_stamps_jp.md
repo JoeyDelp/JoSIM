@@ -1,15 +1,14 @@
-# Component Stamps
+# 素子のスタンプ
 
-In this section we will explore each of the available component stamps found in JoSIM. This will serve as insight into how BDF2 method is applied to produce time dependent voltage or phase equations for each component.
+このセクションではJoSIMの中で使える素子のスタンプについて見ていきます。2段の後退微分法（BDF2）がどのように各素子の時間依存の電圧やphaseの式に適用されているのか見ていくのに役立ちます。
 
-This will serve as a continuation of what was shown in the [Technical Discussion](tech_disc.md) section for the Capacitor.
+[技術的な議論](tech_disc_jp.md)のセクションで見たキャパシタの話については続きの内容になっています。
 
-### Resistor
+### 抵抗
 
-<center><img src="../img/josim_resistor.svg" alt="Basic Resistor Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_resistor.svg" alt="Basic Resistor Element" style="width:400px;" /></center>
 
-A resistor is a passive circuit element for which the voltage dependent equation is defined through Ohm's law:
-
+抵抗はオームの法則で電位依存式が定められた受動素子です：
 
 $$
 v(t) = i_{R_{1}}(t) R_{1}
@@ -20,8 +19,7 @@ V_{n}-R_{1}I_{R_{1}} = 0
 $$
 
 
-
-This can then be written as a matrix stamp in the form
+行列のスタンプとしてはこのように書けます：
 
 $$
 \begin{bmatrix}
@@ -43,15 +41,14 @@ I_{R_{1}}
 $$
 
 
-If we expand this using the voltage-phase relation shown in [Technical Discussion](tech_disc.md), then we can rewrite the equation as:
+[技術的な議論](tech_disc_jp.md)のセクションで示した電圧-位相関係を用いてこれを展開すると、数式はこのように書き直すことが出来ます：
 
 
 $$
 \frac{\Phi_{0}}{2\pi}\frac{d\phi}{dt}_{n}\frac{1}{R_{1}} = I_{R_{1}}
 $$
 
-
-This equation will now require the application of the BDF2 method:
+ここでBDF2法の適用が必要となります：
 
 
 $$
@@ -63,8 +60,7 @@ $$
 $$
 
 
-
-This allows us to create a phase resistor matrix stamp as:
+これにより位相と抵抗の行列のスタンプを作ることができます：
 
 
 $$
@@ -85,11 +81,11 @@ $$
 \end{bmatrix}
 $$
 
-### Inductor
+### インダクタ
 
-<center><img src="../img/josim_inductor.svg" alt="Basic Inductor Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_inductor.svg" alt="Basic Inductor Element" style="width:400px;" /></center>
 
-A inductor is defined in terms of voltage and current as:
+電圧と電流の点からインダクタはこのように定義されます：
 
 
 $$
@@ -97,8 +93,7 @@ v(t)=L_{1}\frac{di}{dt}
 $$
 
 
-
-This is a first order differential and needs to be expanded using the BDF2 method:
+これは一次微分でありBDF2法による展開が必要です：
 
 
 $$
@@ -112,8 +107,7 @@ $$
 
 
 
-
-This allows us to create the inductor stamp as:
+これにより次のようなインダクタのスタンプを作ることが出来ます：
 
 
 $$
@@ -136,8 +130,7 @@ I_{L_{1}}
 $$
 
 
-
-The MNPA stamp for the inductor is derived by substituting the voltage-phase relation.
+電圧-位相関係を代入することによりインダクタのMNPAスタンプを得ることが出来ます。
 
 
 $$
@@ -145,8 +138,7 @@ $$
 $$
 
 
-
-With derivatives on both sides, we can integrate with respect to time on both sides:
+両辺の導関数を用いて、時間に関して両辺を積分します：
 
 
 $$
@@ -162,8 +154,7 @@ $$
 $$
 
 
-
-Which leads to the extremely simplistic inductor MNPA stamp matrix:
+極めて単純なMNPAスタンプ行列が導かれます：
 
 
 $$
@@ -189,18 +180,16 @@ $$
 
 ### Josephson Junction
 
-<center><img src="../img/josim_jj.svg" alt="Basic JJ Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_jj.svg" alt="Basic JJ Element" style="width:400px;" /></center>
 
-The Josephson junction above is a simplification of the resistively and capacitively shunted junction (RCSJ) model implemented in JoSIM. This model sums the current through the 3 parallel branches and is represented by the following equation:
-
+上のJJはJoSIMで実装されている抵抗・容量成分でシャントされた簡略化されたモデル(RCSJモデル)です。このモデルでは3つの並列に流れる電流の和を取っており次の式で表されます：
 
 $$
 I_{B_{1}} = I_c \sin{\phi} + \frac{V_{n}}{R_{B_{1}}} + C_{B_{1}}\frac{dV_{n}}{dt}
 $$
 
 
-
-Which when expanded with the BDF2 method becomes:
+BDF2法により展開されると次のようになります：
 
 
 $$
@@ -216,8 +205,7 @@ V_{n}-\frac{2hR_{B_{1}}}{2h+3C_{B_{1}}R_{B_{1}}}I_{B_{1}}=\frac{2hR_{B_{1}}}{2h+
 $$
 
 
-
-This equation depends on the phase at the present time step, which needs to be solved. Phase is not, however, solved and we therefore need to use the voltage-phase relationship to find a voltage dependent solution for the phase:
+この式は前のタイムステップのphaseを必要としているため、値は計算されている必要があります。しかし、phaseに関しては解かれていないため、電圧-位相関係からphaseの電圧依存式を見る必要があります：
 
 
 $$
@@ -233,8 +221,7 @@ V_{n}-\frac{\Phi_{0}}{2\pi}\frac{3}{2h}\phi_n=-\frac{\Phi_{0}}{2\pi}\frac{2}{h}\
 $$
 
 
-
-We can now combine these two equations to form the component stamp matrix:
+スタンプ行列を作るためこの2つの式を組み合わせます：
 
 
 $$
@@ -263,11 +250,9 @@ $$
 Where $I_{s} = \frac{2hR_{B_{1}}}{2h+3C_{B_{1}}R_{B_{1}}}\left[I_{c}\sin\phi-\frac{2C_{B_{1}}}{h}V_{n-1}+\frac{C_{B_{1}}}{2h}V_{n-2}\right]$
 
 
+しかし、現在のタイムステップのphaseを現在のタイムステップの計算に使えるわけではないので、前のタイムステップの値を元にした推定値に頼るしかありません。
 
-It is, however, not possible to use the phase value for the current time step in the calculation of the current time step, we therefore have to rely on an estimated phase value based on previous values.
-
-We define this estimation as:
-
+推定方法は以下のように定義されています：
 
 $$
 \phi_{n}^{0} =\frac{4}{3}\phi_{n-1}-\frac{1}{3}\phi_{n-2}+ \frac{2\pi}{\Phi_{0}}\frac{2h}{3}V_{n}^{0}
@@ -286,7 +271,7 @@ V_{n}^{0}=\frac{5}{2}V_{n-1}-2V_{n-2}+\frac{1}{2}V_{n-3}
 $$
 
 
-
+現在のphaseはやや基本的すぎる例となっているのでHaberkorn[^1]によって定義されたより一般的な超伝導電流項があるものに置き換えています：
 The current phase case is rather basic and we therefore replace the supercurrent term with the more general term defined by Haberkorn[^1]:
 
 
@@ -294,8 +279,7 @@ $$
 I_c\sin\phi = \frac{\pi\Delta}{2eR_N}\frac{\sin{\phi}}{\sqrt{1 - \overline{D}\sin^2\left(\frac{\phi}{2}\right)}}\tanh\left[\frac{\Delta}{2k_BT}\sqrt{1-\overline{D}\sin^2\left(\frac{\phi}{2}\right)}\right]
 $$
 
-
-This equation introduces temperature dependence within the junction model through $\Delta$:
+この式ではjunctionモデルに$\Delta$より温度依存性が導入されています：
 
 
 $$
@@ -307,21 +291,18 @@ $$
 $$
 
 
+$T$はヘリウムの沸点（4.2K）であり、$T_{c}$ はニオブの臨界温度 (9.1K) 、$k_{B}$は粒子の平均運動エネルギーによるボルツマン定数です。
 
-with $T$, the boiling point of liquid Helium (4.2K), $T_{c}$ the critical temperature of Niobium (9.1K) and $k_{B}$ is Boltzmann's constant for average kinetic energy of particles.
-
-The resistance value $R_{N}$ is defined as:
+抵抗値$R_{N}$は以下のように定義されます：
 
 
 $$
 R_N = \frac{\pi\Delta}{2eI_c}\tanh\left(\frac{\Delta}{2k_{B}T}\right)
 $$
 
+これによって\(\overline{D}\)の透過度をただ変更するだけでトンネル電流の特性を変えることができます。$\overline{D} \ll 1$の場合は通常の正弦波の式になる一方、$\overline{D}$が大きい場合は非正弦波形の弾道的トンネリングの式になります。
 
-This allows us to change the characteristics of the tunnel current by simply altering the transparency value \(\overline{D}\). For values of $\overline{D} \ll 1$ the equation becomes the normal sinusoidal equation whereas for large values of $\overline{D}$ it becomes the non-sinusoidal ballistic tunneling equation.
-
-To define the Josephson junction in phase we simply swap the voltage and phase of the component previously identified. The equations remain mostly the same since the Josephson junction is already a phase element.
-
+Josephson接合を定義するにはこれまでに明らかにした電圧と位相の部分をただ入れ替えればよいです。Josephson接合は既にphase素子となっているため式はほぼ同じままです。
 
 $$
 \begin{bmatrix}
@@ -345,11 +326,12 @@ I_{s}
 \end{bmatrix}
 $$
 
-### Voltage Source
+### 電圧源
 
-<center><img src="../img/josim_vs.svg" alt="Basic Voltage Source Element" style="Width:400px;" /></center>
+<center><img src="../../img/josim_vs.svg" alt="Basic Voltage Source Element" style="Width:400px;" /></center>
 
-A voltage source is nothing more than is implied. It is a source of voltage, this indicates that the voltage at any time step is known. We can therefore easily create a component stamp matrix in the form:
+
+電圧源に関しては既に知られていること以外何もありません。電圧のソースであり、つまり全てのタイムステップにおいての電圧が分かっています。したがって次のような式で簡単に素子のスタンプ行列を作ることが出来ます：
 
 
 $$
@@ -371,8 +353,7 @@ V_{1}
 \end{bmatrix}
 $$
 
-
-The phase version of this element simply sees the voltage replaced with the voltage-phase relation:
+この素子の位相は単純に電圧-位相関係から電圧を置き換えて見ています：
 
 
 $$
@@ -396,11 +377,11 @@ $$
 
 
 
-### Current Source
+### 電流源
 
-<center><img src="../img/josim_cs.svg" alt="Basic Current Source Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_cs.svg" alt="Basic Current Source Element" style="width:400px;" /></center>
 
-A current source is, as implied, a current that is known at every time step in the simulation. It can therefore simply be applied where needed on the RHS.
+電流源は文字通り、シミュレーション中の全てのタイムステップで電流量が知られているものです。したがってRHSで必要な場合簡単に利用可能です。
 
 
 $$
@@ -421,9 +402,10 @@ $$
 
 
 
-### Phase Source
+### 位相ソース
 
-Like a voltage source, simply applies a phase where needed within the circuit.
+
+電圧源のように、回路中で必要な位相を単純に印加します。
 
 
 $$
@@ -446,7 +428,7 @@ I_{\phi}
 $$
 
 
-When voltage mode is used for analysis, this device transforms into a voltage source with the following stamp:
+解析で電圧モードが使用されている場合、この素子は次のスタンプにより電圧源に変換されます：
 
 
 $$
@@ -472,14 +454,13 @@ $$
 
 ### Transmission Line
 
-<center><img src="../img/josim_tx.svg" alt="Basic Ideal Transmission Line Element" style="width:400px" /></center>
+<center><img src="../../img/josim_tx.svg" alt="Basic Ideal Transmission Line Element" style="width:400px" /></center>
 
+Transmission lineは現在のところ、遅延($T_{D}$)とインピーダンス($Z_{0}$)によって長さを定義している単純な遅延素子になっています。
 
-A transmission line is, at present, simply a delay element where the delay ($T_{D}$) and impedance ($Z_{0}$) define the length of the transmission line.
+現在のところtransmission lineのモデルは何の損失もない理想的な素子となっています。将来的にはより実際に近いtransmission lineのモデルを実装する予定です。
 
-At present we model the transmission line as an ideal element without any losses. We will in future implement a more accurate model of the transmission line.
-
-The equations that govern this lossless transmission line are:
+損失なしのtransmission lineの式は以下の通りです：
 
 
 $$
@@ -491,7 +472,7 @@ V_2(t) = Z_{0}I_{T_{2}} + Z_{0}I_{T_{1}}(t − T_{D}) + V_1(t − T_{D})
 $$
 
 
-which leads to
+ここから次の式が導かれます：
 
 
 $$
@@ -503,15 +484,14 @@ $$
 $$
 
 
-where
+ただし
 
 
 $$
 k=\frac{T_D}{h}
 $$
 
-
-Which allows us to create a component stamp matrix
+ここから素子のスタンプ行列を作ることが出来ます。
 
 
 $$
@@ -542,8 +522,7 @@ Z_{0}(I_{T_{1}})_{n-k} + (V_{1})_{n-k}
 \end{bmatrix}
 $$
 
-
-We only expand the first equation of the transmission line in phase for simplicity:
+簡単のため、最初のtransmission lineの式だけphaseに展開します：
 
 
 $$
@@ -568,8 +547,7 @@ $$
 $$
 
 
-
-Simplifying this equation results in:
+式を整理した結果がこのようになります：
 
 
 $$
@@ -581,8 +559,7 @@ $$
 (\phi_{2})_n - Z_{0}\frac{2\pi}{\Phi_{0}}\frac{2h}{3}(I_{T_{2}})_{n} = Z_{0}\frac{2\pi}{\Phi_{0}}\frac{2h}{3}{I_{T_{1}}}_{n-k} + \frac{4}{3}(\phi_{2})_{n-1} - \frac{1}{3}(\phi_{2})_{n-2} + (\phi_{1})_{n-k} - \frac{4}{3}(\phi_{1})_{n-k-1} + \frac{1}{3}(\phi_{1})_{n-k-2}
 $$
 
-
-This leads to the component stamp matrix:
+ここから素子のスタンプ行列を導くことが出来ます：
 
 
 $$
@@ -613,14 +590,14 @@ $$
 	\end{bmatrix}
 $$
 
+ここで$V_{T_{1}}$と$V_{T_{2}}$ は上で展開された式のRHSです。
 
-With $V_{T_{1}}$ and $V_{T_{2}}$ the RHS of the expanded equations above.
+### 相互インダクタンス
 
-### Mutual inductance
+<center><img src="../../img/josim_mutual.svg" alt="Basic Mutual Inductance Element" style="width:400px;" /></center>
 
-<center><img src="../img/josim_mutual.svg" alt="Basic Mutual Inductance Element" style="width:400px;" /></center>
+相互インダクタンスによって複数のインダクタ間のカップリングをシミュレーションすることが出来ます。このカップリングではインダクタの式に追加の項を加えます：
 
-Mutual inductance allows simulation of coupling between inductors. This coupling adds an additional term to the inductor equation:
 
 
 $$
@@ -632,15 +609,14 @@ v_{L_{2}}(t) = L2 \frac{di_{2}(t)}{dt} + M\frac{di_{1}(t)}{dt}
 $$
 
 
-with 
+ここで
 
 
 $$
 M = k\sqrt{L_{1} L_{2}}
 $$
 
-
-We expand these equations to:
+次のように展開します：
 
 
 $$
@@ -652,8 +628,7 @@ $$
 $$
 
 
-
-This leads to the component stamp matrix:
+これにより素子のスタンプ行列を導くことが出来ます：
 
 
 $$
@@ -684,8 +659,7 @@ I_{L_{2}}
 \end{bmatrix}
 $$
 
-
-The phase variant of this
+phaseにより変形するとこのようになります：
 
 
 $$
@@ -697,8 +671,7 @@ $$
 $$
 
 
-
-With integration on both sides
+両辺を積分すると
 
 
 $$
@@ -711,7 +684,7 @@ $$
 $$
 
 
-
+これによりかなり単純な素子のスタンプ行列が導かれます：
 This leads to a quite simplified component stamp matrix
 
 
@@ -743,12 +716,12 @@ I_{L_{2}}
 \end{bmatrix}
 $$
 
-### Current Controlled Current Source
+### 電流制御電流源
 
-<center><img src="../img/josim_cccs.svg" alt="Basic Current Controlled Current Source Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_cccs.svg" alt="Basic Current Controlled Current Source Element" style="width:400px;" /></center>
 
+電流制御電流源とは、離れたブランチの電流によって特定のブランチの電流を変調できるような電流源です。
 
-Current controlled current source allows modulation of current in a particular branch through the current in a remote branch.
 
 $$
 I_{out} = \beta I_{in}
@@ -787,12 +760,11 @@ $$
 	\end{bmatrix}
 $$
 
-### Current Controlled Voltage Source
+### 電流制御電圧源
 
-<center><img src="../img/josim_ccvs.svg" alt="Basic Current Controlled Voltage Source Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_ccvs.svg" alt="Basic Current Controlled Voltage Source Element" style="width:400px;" /></center>
 
-
-Current controlled voltage source allows the modulation of a voltage node through a remote current.
+電流制御電圧源とは、離れた電流によって電圧ノードを変調させることが出来るような電圧源です。
 
 $$
 V_{1} - V_{2} = 0
@@ -829,12 +801,12 @@ I_{out}\end{bmatrix}
 \end{bmatrix}
 $$
 
-### Voltage Controlled Current Source
+### 電圧制御電流源
 
-<center><img src="../img/josim_vccs.svg" alt="Basic Voltage Controlled Current Source Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_vccs.svg" alt="Basic Voltage Controlled Current Source Element" style="width:400px;" /></center>
 
+電圧制御電流源とは、離れた電圧によってブランチの電流を変調させることが出来るような電流源です。
 
-Voltage controlled current source allows the modulation of a current in a branch through a remote voltage.
 
 $$
 \alpha(V_{1} - V_{2}) = I_{out}
@@ -865,12 +837,11 @@ I_{in}
 \end{bmatrix}
 $$
 
-### Voltage Controlled Voltage Source
+### 電圧制御電圧源
 
-<center><img src="../img/josim_vcvs.svg" alt="Basic Voltage Controlled Voltage Source Element" style="width:400px;" /></center>
+<center><img src="../../img/josim_vcvs.svg" alt="Basic Voltage Controlled Voltage Source Element" style="width:400px;" /></center>
 
-
-Voltage controlled current source allows the modulation of a current in a branch through a remote voltage.
+電圧制御電圧源とは、離れた電圧によって電圧ノードを変調させることが出来るような電圧源です。
 
 $$
 A(V_{1} - V_{2}) = V_{3}-V_{4}

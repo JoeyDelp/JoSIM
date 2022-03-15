@@ -1,10 +1,10 @@
-# Example Usage
+# 使用例
 
-## Basic JTL Example
+## JTLの基本例
 
-In this section we provide example usage for JoSIM. In the [*test*](https://github.com/JoeyDelp/JoSIM/tree/master/test) subfolder of the repository the user will find multiple example files that can be used to test JoSIM with.
+このセクションではJoSIMの使い方の例を示します。[*test*](https://github.com/JoeyDelp/JoSIM/tree/master/test)フォルダの中にJoSIMを使ってテストできるサンプルファイルが複数入っています。
 
-In this example we will make use of the[ *ex_jtl_basic.cir*](https://github.com/JoeyDelp/JoSIM/tree/master/test/ex_jtl_basic.cir) file. This is a basic Josephson transmission line (JTL) that transmits a single flux quantum pulse from input to output.
+この例では[ *ex_jtl_basic.cir*](https://github.com/JoeyDelp/JoSIM/tree/master/test/ex_jtl_basic.cir)のファイルを利用します。これは基本的なJosephson transmission line (JTL)でのsingle flux quantumパルスの入力から出力への伝搬を表しています。
 
 ~~~
 * Example JTL Basic
@@ -34,22 +34,22 @@ VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602
 ~~~
 
 
-Only the device voltage (DEVV) of the input source (VIN), the device current (DEVI) of the output resistor (ROUT) and the phase of both junctions are requested to be output.
+電圧源(VIN)の電圧(DEVV) 、出力抵抗(ROUT) の電流(DEVI)、両方のJJの位相が出力されるよう要求しています。
 
-The simulation executes for a total of 1000ps and produces a result every 0.25ps which results in 4000 points of data for each requested variable.
+シミュレーションは0.25psごとに1000ps実行されるので、要求されたパラメータをそれぞれ4000点出力します。
 
-We simulate this circuit (on a CentOS 7 machine) using the command:
+（CentOS 7の場合）シミュレーションは以下のコマンドで実行します：
 
 ````bash
 josim-cli -o ./ex_jtl_basic.csv ./ex_jtl_basic.cir -V 1
 ````
 
-This simulation is almost instant, given the size of the problem and should take no longer than 10ms to complete.
+このシミュレーションはほぼ一瞬で、10msはかからないはずです。
 
-<center><img src="../img/josim_jtl_ex.png" alt="Simulation Output"/></center>
+<center><img src="../../img/josim_jtl_ex.png" alt="Simulation Output"/></center>
 
+シミュレーション結果は以下のように2つのイベントをまとめて*ex_jtl_basic.csv*に保存されます。
 
-The results of this simulation are stored in the *ex_jtl_basic.csv* file of which an excerpt of the two events is shown below.
 
 ```
 time,"V(VIN)","I(ROUT)","P(B01)","P(B02)"
@@ -88,17 +88,16 @@ time,"V(VIN)","I(ROUT)","P(B01)","P(B02)"
 
 ```
 
-We then plot this result with the [*josim-plot*](https://github.com/JoeyDelp/JoSIM/tree/master/scripts/josim-plot) script found in the [scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts) using the following command:
+この後[scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts) にある[*josim-plot*](https://github.com/JoeyDelp/JoSIM/tree/master/scripts/josim-plot) というスクリプトで、以下のようなコマンドを使うと結果をプロットすることが出来ます。
 
 ```
 josim-plot ./ex_jtl_basic.csv -t stacked
 ```
 
-This produces the following visualized result:
+結果は次のように可視化されます。
 
-<center><img alt="JoSIM JTL Example Results" src="../img/josim_jtl_ex_results.png"/></center>
+<center><img alt="JoSIM JTL Example Results" src="../../img/josim_jtl_ex_results.png"/></center>
 
+可視化された結果から、入力と出力抵抗を通った2つのSFQパルスと、2つのJJの位相を確認することが出来ます。
 
-Through the representation of the results visually, the user can see the two SFQ pulses at the input and through the output resistor, including the phases of the two junctions.
-
-The same process can be done for every example found in the *test* folder on the repository.
+リポジトリ上の*test*フォルダにある全ての例で同様に実行可能です。
