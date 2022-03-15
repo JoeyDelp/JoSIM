@@ -157,9 +157,13 @@ Lastly, a netlist requires a simulation command to be able to do work. JoSIM onl
 ## Noise Insertion
 
 As of version 2.5, JoSIM has the capability to add thermal noise to the circuit through a current source in parallel to each resistor (heat generating element). If a the `.temp` control was found in the controls list during parsing this function is triggered. This scans through the entire expanded main design, adding current sources in parallel to each resistor using the following equation[^2]:
+
+
 $$
 I_n=\sqrt{\frac{4k_{B}T}{R}}
 $$
+
+
 In this equation, `T` is the temperature provided by the `.temp` control in Kelvin, `R` is the resistance and \(k_{B}\) is the Boltzmann constant. This equation provides the noise spectral amplitude to for the noise source. Further information on [noise sources](syntax.md#noise), and the syntax thereof, can be found in the syntax guide.
 
 It is important to note that subcircuits cannot contain a `.temp` command. A warning will be thrown and the command ignored.

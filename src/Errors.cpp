@@ -653,6 +653,11 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
     formattedMessage += message.value_or("") + " specified.\n";
     formattedMessage += "Program will terminate.";
     throw std::runtime_error(formattedMessage);
+  case FunctionErrors::CUS_UNKNOWN_IM:
+      formattedMessage += "CUS waveform has unknown interpolation method.\n";
+      formattedMessage += message.value_or("") + " specified.\n";
+      formattedMessage += "Program will terminate.";
+      throw std::runtime_error(formattedMessage);
   case FunctionErrors::NOISE_TOO_FEW_ARGUMENTS:
     formattedMessage +=
       "Total arguments specified do not match the required for NOISE.\n";

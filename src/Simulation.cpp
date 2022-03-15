@@ -94,6 +94,7 @@ void Simulation::trans_sim(Matrix &mObj) {
   if (startup_) {
     // Stabilize the simulation before starting at t=0
     int64_t startup = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
+    if (startup > 1000) startup = 1000;
     for (int64_t i = -startup; i < 0; ++i) {
       double step = i * stepSize_;
       // Setup the b matrix

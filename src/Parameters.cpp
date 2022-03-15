@@ -98,6 +98,20 @@ double JoSIM::parse_param(
         expToEval =
           params.at(ParameterName(expToEval, subc)).get_expression();
       }
+      else {
+        expToEval =
+          params.at(ParameterName(expToEval, subc)).get_value().value();
+      }
+    } else if (params.count(ParameterName(expToEval, std::nullopt)) != 0) {
+      subc = std::nullopt;
+      if (!params.at(ParameterName(expToEval, std::nullopt)).get_value()) {
+        expToEval =
+          params.at(ParameterName(expToEval, std::nullopt)).get_expression();
+      }
+      else {
+        expToEval =
+          params.at(ParameterName(expToEval, subc)).get_value().value();
+      }
     }
     // Find the position of the first operator
     int64_t opLoc = expToEval.find_first_of("/*-+(){}[]^");
