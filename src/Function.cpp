@@ -184,11 +184,20 @@ void Function::parse_cus(
 		Errors::function_errors(
 			FunctionErrors::CUS_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
 	}
-	// First argument is required and is the wave file name                     
+	// First argument is required and is the wave file name
 	std::filesystem::path WFline(t.at(0));
 	if (!WFline.has_parent_path()) {
 		WFline = std::filesystem::path(iObj.fileParentPath.value());
 		WFline.append(t.at(0));
+	}
+	if (!std::filesystem::exists(WFline)) {
+		auto& pp = WFline.parent_path();
+		auto stem = WFline.filename().string();
+		std::transform(stem.begin(), stem.end(), stem.begin(), ::tolower);
+		WFline = std::filesystem::path(pp.append(stem));
+		if (!std::filesystem::exists(WFline)) {
+			Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, t.at(0));
+		}
 	}
 	std::vector<std::string> WF;
 	const double& tstep = iObj.transSim.tstep();
