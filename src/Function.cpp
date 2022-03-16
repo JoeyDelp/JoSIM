@@ -191,7 +191,7 @@ void Function::parse_cus(
 		WFline.append(t.at(0));
 	}
 	if (!std::filesystem::exists(WFline)) {
-		auto& pp = WFline.parent_path();
+		auto pp = WFline.parent_path();
 		auto stem = WFline.filename().string();
 		std::transform(stem.begin(), stem.end(), stem.begin(), ::tolower);
 		WFline = std::filesystem::path(pp.append(stem));
