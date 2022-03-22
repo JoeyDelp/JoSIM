@@ -25,6 +25,9 @@ namespace JoSIM {
     void set_expression(const std::string& s) {
       expression_ = s;
     };
+    void restet_value() {
+        value_ = std::nullopt;
+    }
     void set_value(const double& v) {
       value_ = v;
     };
