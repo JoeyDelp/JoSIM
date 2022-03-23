@@ -25,7 +25,7 @@ VCVS::VCVS(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const std::optional<NodeConfig>& ncon2, const nodemap& nm,
   std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, int& bi) {
+  const param_map& pm, int64_t& bi) {
   // Set the label
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list

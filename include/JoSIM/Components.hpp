@@ -38,7 +38,7 @@ namespace JoSIM {
       VCVS,
       CCVS>> devices;
     std::vector<CurrentSource> currentsources;
-    std::vector<int> junctionIndices,
+    std::vector<int64_t> junctionIndices,
       resistorIndices,
       inductorIndices,
       capacitorIndices,

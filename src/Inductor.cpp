@@ -30,7 +30,7 @@ using namespace JoSIM;
 Inductor::Inductor(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  Input& iObj, Spread spread, int& bi) {
+  Input& iObj, Spread spread, int64_t& bi) {
   double spr = 1.0;
   for (auto i : s.first) {
     if (i.find("SPREAD=") != std::string::npos) {
@@ -75,7 +75,7 @@ Inductor::Inductor(
 }
 
 void Inductor::add_mutualInductance(
-  const double& m, const AnalysisType& at, const double& h, const int& ci) {
+  const double& m, const AnalysisType& at, const double& h, const int64_t& ci) {
   // Adds the mutual inductance to the non zero vector
   if (at == AnalysisType::Voltage) {
     // If voltage mode then add -(3/2) * (m/h)

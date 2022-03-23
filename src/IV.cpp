@@ -108,7 +108,7 @@ std::pair<double, double> IV::do_simulate(Input& ivInp, Matrix& ivMat) {
   double& current = ivSim.results.xVector.back().value().back();
   auto& voltVect = ivSim.results.xVector.front().value();
   double voltage = 0;
-  for (int i = voltVect.size() / 2; i < voltVect.size(); ++i) {
+  for (int64_t i = voltVect.size() / 2; i < voltVect.size(); ++i) {
     voltage += voltVect.at(i);
   }
   voltage = voltage / (voltVect.size() / 2);

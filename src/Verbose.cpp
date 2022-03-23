@@ -10,7 +10,7 @@
 using namespace JoSIM;
 
 void Verbose::handle_verbosity(
-  const int& vl, const Input& iObj, const Matrix& mObj) {
+  const int64_t& vl, const Input& iObj, const Matrix& mObj) {
   switch (vl) {
   case 0:
     break;

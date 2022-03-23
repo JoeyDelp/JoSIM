@@ -14,7 +14,7 @@ namespace JoSIM {
 
   namespace Verbose {
     void handle_verbosity(
-      const int& vl, const Input& iObj, const Matrix& mObj);
+      const int64_t& vl, const Input& iObj, const Matrix& mObj);
 
     void print_circuit_stats(const Input& iObj, const Matrix& mObj);
 

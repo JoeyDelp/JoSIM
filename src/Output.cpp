@@ -37,7 +37,7 @@ Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
     }
   }
   if (!iObj.output_files.empty()) {
-    for (int i = 0; i < iObj.output_files.size(); ++i) {
+    for (int64_t i = 0; i < iObj.output_files.size(); ++i) {
       if (iObj.output_files.at(i).type() == FileOutputType::Csv) {
         format_csv_or_dat(
           iObj.output_files.at(i).name(), ',', iObj.argMin, i);
@@ -57,27 +57,33 @@ Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
 
 void Output::write_output(
   const Input& iObj, Matrix& mObj, Simulation& sObj) {
-  // Shorhand for the results vector
+  // Shorthand
   auto& x = sObj.results.xVector;
-  // Add the time axis trace to the set of traces to print
+  auto& t = sObj.results.timeAxis;
+  auto& tran = iObj.transSim;
+  // Indices to print
+  std::vector<int64_t> result_indices;
+  for (auto i = 0; i < t.size(); ++i) {
+      if (t.at(i) >= tran.prstart()) {
+          result_indices.emplace_back(i);
+          break;
+      }
+  }
+  double next_print_point = tran.prstart() + tran.prstep();
+  for (auto i = result_indices.back(); i < t.size(); ++i) {
+      if (t.at(i) >= next_print_point) {
+          result_indices.emplace_back(i);
+          next_print_point += tran.prstep();
+      }
+  }
+  // Create the time trace
   traces.emplace_back("time");
   traces.back().type_ = 'T';
-  // Only the requested time pieces
-  int printStartIndex = 0, cc = 0;
-  double prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
-  for (auto& i : sObj.results.timeAxis) {
-    if (i >= iObj.transSim.prstart()) {
-      if (Misc::isclose(i, iObj.transSim.prstart())) {
-        printStartIndex = cc;
-      }
-      if (Misc::isclose(i, (prevPoint + iObj.transSim.prstep()))) {
-        traces.back().data_.emplace_back(i);
-        prevPoint += iObj.transSim.prstep();
-      }
-    }
-    cc++;
+  for (auto i : result_indices) {
+      traces.back().data_.emplace_back(t.at(i));
   }
-  // Check if there are any traces to print
+  // Print only the indices of the relevant traces
+  int64_t cc = 0;
   if (mObj.relevantTraces.size() != 0) {
     // Create progress bar
     ProgressBar bar;
@@ -110,28 +116,25 @@ void Output::write_output(
         double valin1n1, valin1n2;
         double valin2n1, valin2n2;
         double voltN1 = 0;
-        prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
         // Add the values for each value on the time axis
-        for (int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
+        for (auto j : result_indices) {
           double value;
           // Shorthand values
           auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
           auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
           auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
-          if (j == printStartIndex) {
-            if (j == 1) {
-              valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
-              valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
-            } else if (j >= 2) {
-              valin1n2 = i1 != -1 ? x.at(i1).value().at(j - 2) : 0;
-              valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
-              valin2n2 = i2 != -1 ? x.at(i2).value().at(j - 2) : 0;
-              valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
-            } else {
-              valin1n2 = valin1n1 = valin1;
-              valin2n2 = valin2n1 = valin2;
-            } 
-          }
+          if (j == 1) {
+            valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
+            valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
+          } else if (j >= 2) {
+            valin1n2 = i1 != -1 ? x.at(i1).value().at(j - 2) : 0;
+            valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
+            valin2n2 = i2 != -1 ? x.at(i2).value().at(j - 2) : 0;
+            valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
+          } else {
+            valin1n2 = valin1n1 = valin1;
+            valin2n2 = valin2n1 = valin2;
+          } 
           // If the analysis method was voltage
           if (iObj.argAnal == AnalysisType::Voltage) {
             value = valin1 - valin2;
@@ -150,11 +153,7 @@ void Output::write_output(
             }
           }
           traces.back().type_ = 'V';
-          if (Misc::isclose(sObj.results.timeAxis.at(j),
-            (prevPoint + iObj.transSim.prstep()))) {
-            traces.back().data_.emplace_back(value);
-            prevPoint += iObj.transSim.prstep();
-          }
+          traces.back().data_.emplace_back(value);
         }
       } else if (st == StorageType::Phase) {
         // Set the label for the plot
@@ -162,9 +161,8 @@ void Output::write_output(
         traces.back().fileIndex = i.fIndex;
         // Temporary values for lookback
         double phaseN1 = 0, phaseN2 = phaseN1;
-        prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
         // Add the values for each value on the time axis
-        for (int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
+        for (auto j : result_indices) {
           double value;
           // Shorthand values
           auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
@@ -187,39 +185,23 @@ void Output::write_output(
             }
           }
           traces.back().type_ = 'P';
-          if (Misc::isclose(sObj.results.timeAxis.at(j),
-            (prevPoint + iObj.transSim.prstep()))) {
-            traces.back().data_.emplace_back(value);
-            prevPoint += iObj.transSim.prstep();
-          }
+          traces.back().data_.emplace_back(value);
         }
       } else if (st == StorageType::Current) {
         traces.emplace_back(i.deviceLabel.value());
         traces.back().fileIndex = i.fIndex;
         if (i.deviceLabel.value().at(3) != 'I') {
-          prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
-          for (
-            int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
+          for (auto j : result_indices) {
             double value = x.at(i.index1.value()).value().at(j);
             traces.back().type_ = 'I';
-            if (Misc::isclose(sObj.results.timeAxis.at(j),
-              (prevPoint + iObj.transSim.prstep()))) {
-              traces.back().data_.emplace_back(value);
-              prevPoint += iObj.transSim.prstep();
-            }
+            traces.back().data_.emplace_back(value);
           }
         } else {
-          prevPoint = iObj.transSim.prstart() - iObj.transSim.prstep();
-          for (
-            int j = printStartIndex; j < sObj.results.timeAxis.size(); ++j) {
+          for (auto j : result_indices) {
             double value = mObj.sourcegen.at(i.sourceIndex.value()).value(
               sObj.results.timeAxis.at(j));
             traces.back().type_ = 'I';
-            if (Misc::isclose(sObj.results.timeAxis.at(j),
-              (prevPoint + iObj.transSim.prstep()))) {
-              traces.back().data_.emplace_back(value);
-              prevPoint += iObj.transSim.prstep();
-            }
+            traces.back().data_.emplace_back(value);
           }
         }
       }
@@ -239,7 +221,7 @@ void Output::write_output(
       bar.set_status_text("Formatting Output");
       bar.set_total((float)mObj.nm.size());
     }
-    int cc = 0;
+    int64_t cc = 0;
     for (const auto& i : mObj.nm) {
       if (!iObj.argMin) {
         bar.update(cc);
@@ -251,7 +233,7 @@ void Output::write_output(
         traces.emplace_back("P(" + i.first + ")");
         traces.back().type_ = 'P';
       }
-      for (int j = 0; j < sObj.results.timeAxis.size(); ++j) {
+      for (auto j : result_indices) {
         traces.back().data_.emplace_back(x.at(i.second).value().at(j));
       }
       ++cc;
@@ -266,9 +248,9 @@ void Output::write_output(
 
 void Output::format_csv_or_dat(
   const std::string& filename, const char& delimiter, bool argmin, 
-  int fIndex) {
-  std::vector<int> tIndices = { 0 };
-  for (int i = 1; i < traces.size(); ++i) {
+  int64_t fIndex) {
+  std::vector<int64_t> tIndices = { 0 };
+  for (int64_t i = 1; i < traces.size(); ++i) {
     if (traces.at(i).fileIndex == fIndex || fIndex == -1) {
       tIndices.emplace_back(i);
     }
@@ -276,7 +258,7 @@ void Output::format_csv_or_dat(
   std::ofstream outfile(filename);
   outfile << std::setprecision(15);
   if (outfile.is_open()) {
-    for (int i = 0; i < tIndices.size() - 1; ++i) {
+    for (int64_t i = 0; i < tIndices.size() - 1; ++i) {
         outfile << traces.at(tIndices.at(i)).name_ << delimiter;
     }
     outfile << traces.at(tIndices.at(tIndices.size() - 1)).name_ << "\n";
@@ -289,11 +271,11 @@ void Output::format_csv_or_dat(
       bar.set_status_text("Writing Output");
       bar.set_total((float)traces.at(0).data_.size());
     }
-    for (int j = 0; j < traces.at(0).data_.size(); ++j) {
+    for (int64_t j = 0; j < traces.at(0).data_.size(); ++j) {
       if (!argmin) {
         bar.update(j);
       }
-      for (int i = 0; i < tIndices.size() - 1; ++i) {
+      for (int64_t i = 0; i < tIndices.size() - 1; ++i) {
         outfile << std::scientific << std::setprecision(6) <<
           traces.at(tIndices.at(i)).data_.at(j) << delimiter;
       }
@@ -310,15 +292,15 @@ void Output::format_csv_or_dat(
 }
 
 // Writes the output to a standard spice raw file
-void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
-  std::vector<int> tIndices = { 0 };
-  for (int i = 1; i < traces.size(); ++i) {
+void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex) {
+  std::vector<int64_t> tIndices = { 0 };
+  for (int64_t i = 1; i < traces.size(); ++i) {
     if (traces.at(i).fileIndex == fIndex || fIndex == -1) {
       tIndices.emplace_back(i);
     }
   }
   // Variable to store the total number of points to be saved
-  int loopsize = 0;
+  int64_t loopsize = 0;
   // Opens an output stream with provided file name
   std::ofstream outfile(filename);
   // Set the output presicion
@@ -340,7 +322,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
       outfile << "Variables:\n";
       outfile << " 0 time Seconds\n";
       // Determine the variable name and type in a format acceptable for raw
-      for (int i = 1; i < tIndices.size(); ++i) {
+      for (int64_t i = 1; i < tIndices.size(); ++i) {
         // Make a copy of the name so we can alter it
         std::string name = traces.at(tIndices.at(i)).name_;
         // Erase all the double quote characters
@@ -362,7 +344,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
       }
       // Start filling the values
       outfile << "Values:\n";
-      int pointSizeSpacing = std::to_string(loopsize).length() + 1;
+      int64_t pointSizeSpacing = std::to_string(loopsize).length() + 1;
       ProgressBar bar;
       if (!argmin) {
         bar.create_thread();
@@ -372,7 +354,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
         bar.set_status_text("Writing Output");
         bar.set_total((float)loopsize);
       }
-      for (int i = 0; i < loopsize; ++i) {
+      for (int64_t i = 0; i < loopsize; ++i) {
         if (!argmin) {
           bar.update(i);
         }
@@ -380,7 +362,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
         outfile << std::left << std::setw(pointSizeSpacing) << i <<
           traces.at(0).data_.at(i) << "\n";
         // Fill in rest of variable values
-        for (int j = 1; j < tIndices.size(); ++j) {
+        for (int64_t j = 1; j < tIndices.size(); ++j) {
           outfile << std::left << std::setw(pointSizeSpacing) << "" <<
             traces.at(tIndices.at(j)).data_.at(i) << "\n";
         }
@@ -404,12 +386,12 @@ void Output::format_raw(const std::string& filename, bool argmin, int fIndex) {
 
 void Output::format_cout(const bool& argMin) {
   if (!argMin) {
-    for (int i = 0; i < traces.size() - 1; ++i) {
+    for (int64_t i = 0; i < traces.size() - 1; ++i) {
       std::cout << traces.at(i).name_ << " ";
     }
     std::cout << traces.at(traces.size() - 1).name_ << "\n";
-    for (int j = 0; j < traces.at(0).data_.size(); ++j) {
-      for (int i = 0; i < traces.size() - 1; ++i) {
+    for (int64_t j = 0; j < traces.at(0).data_.size(); ++j) {
+      for (int64_t i = 0; i < traces.size() - 1; ++i) {
         std::cout << std::setw(15) << std::scientific << std::setprecision(6)
           << traces.at(i).data_.at(j) << " ";
       }

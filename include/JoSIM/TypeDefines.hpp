@@ -16,7 +16,7 @@ namespace JoSIM {
   using string_o = std::optional<std::string>;
   using char_o = std::optional<char>;
   using double_o = std::optional<double>;
-  using int_o = std::optional<int>;
+  using int_o = std::optional<int64_t>;
 
   // Define a type that is a vector of pairs of type T1 and T2
   template <typename T1, typename T2>

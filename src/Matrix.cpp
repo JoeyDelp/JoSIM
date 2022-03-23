@@ -37,14 +37,14 @@ void Matrix::setup(Input& iObj) {
   Noise::determine_global_temperature(iObj);
   Noise::determine_noise_effective_bandwidth(iObj);
   // Create a node counter variable
-  int nodeCounter = 0;
+  int64_t nodeCounter = 0;
   // Variables to store node configs since they are already identified here
   nodeConfig.resize(
     iObj.netlist.expNetlist.size(), NodeConfig::GND);
   // Only available when 4 node components are detected
   nodeConfig2.resize(
     iObj.netlist.expNetlist.size(), NodeConfig::GND);
-  int cc = 0;
+  int64_t cc = 0;
   for (auto& i : iObj.netlist.expNetlist) {
     if (i.first.at(0).at(0) != 'K') {
       // Expand all inline parameters
@@ -110,7 +110,7 @@ void Matrix::setup(Input& iObj) {
 }
 
 void Matrix::create_components(Input& iObj) {
-  int cc = 0;
+  int64_t cc = 0;
   ProgressBar bar;
   if (!iObj.argMin) {
     bar.create_thread();
@@ -282,7 +282,7 @@ void Matrix::create_components(Input& iObj) {
 }
 
 void Matrix::handle_mutual_inductance(Input& iObj) {
-  int cc = 0;
+  int64_t cc = 0;
   ProgressBar bar2;
   if (!iObj.argMin && components.mutualinductances.size() != 0) {
     bar2.create_thread();
@@ -308,7 +308,7 @@ void Matrix::handle_mutual_inductance(Input& iObj) {
     // Variables to store the indices of the relevant inductors
     int_o ind1Index, ind2Index;
     // Loop through all the components in the simulation
-    for (int i = 0; i < components.devices.size(); ++i) {
+    for (int64_t i = 0; i < components.devices.size(); ++i) {
       // Find the component label
       const auto& label =
         std::visit([](const auto& device) noexcept -> const std::string& {
@@ -428,7 +428,7 @@ void Matrix::create_ci() {
   for (auto& i : components.devices) {
     // Get each device's column index vector
     const auto& columnIndices =
-      std::visit([](const auto& device) noexcept -> const std::vector<int>& {
+      std::visit([](const auto& device) noexcept -> const std::vector<int64_t>& {
       return device.matrixInfo.columnIndex_;
     }, i);
     // Insert the column index vector of the device into the greater vector
@@ -449,7 +449,7 @@ void Matrix::create_rp() {
   for (auto& i : components.devices) {
     // Get the row pointer vector for each device
     const auto& rowPointer =
-      std::visit([](const auto& device) noexcept -> const std::vector<int>& {
+      std::visit([](const auto& device) noexcept -> const std::vector<int64_t>& {
       return device.matrixInfo.rowPointer_;
     }, i);
     // For each entry in the row pointer vector of the device

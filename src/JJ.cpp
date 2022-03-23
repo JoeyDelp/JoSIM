@@ -41,10 +41,10 @@ using namespace JoSIM;
 JJ::JJ(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  Input& iObj, Spread& spread, int& bi) {
+  Input& iObj, Spread& spread, int64_t& bi) {
   double spr = 1.0;
   tokens_t t;
-  for (int i = 3; i < s.first.size(); ++i) {
+  for (int64_t i = 3; i < s.first.size(); ++i) {
     auto& ti = s.first.at(i);
     if (ti.rfind("SPREAD=", 0) == 0) {
       spr = parse_param(ti.substr(7), iObj.parameters, s.second);

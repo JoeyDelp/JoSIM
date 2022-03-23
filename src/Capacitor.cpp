@@ -31,7 +31,7 @@ using namespace JoSIM;
 Capacitor::Capacitor(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  Input& iObj, Spread& spread, int& bi) {
+  Input& iObj, Spread& spread, int64_t& bi) {
   double spr = 1.0;
   for (auto i : s.first) {
     if (i.find("SPREAD=") != std::string::npos) {

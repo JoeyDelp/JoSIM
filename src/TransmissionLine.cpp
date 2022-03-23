@@ -52,7 +52,7 @@ TransmissionLine::TransmissionLine(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const std::optional<NodeConfig>& ncon2, const nodemap& nm,
   std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, const AnalysisType& at, const double& h, int& bi) {
+  const param_map& pm, const AnalysisType& at, const double& h, int64_t& bi) {
   at_ = at;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
@@ -64,7 +64,7 @@ TransmissionLine::TransmissionLine(
   // Add the label to the known labels list
   lm.emplace(s.first.at(0));
   // Find the parts that contain the impedance and time delay
-  for (int i = 5; i < s.first.size(); ++i) {
+  for (int64_t i = 5; i < s.first.size(); ++i) {
     // Impedance
     if (::memcmp(s.first.at(i).c_str(), "Z0=", 3) == 0) {
       // If impedance keyword is specified but no value given
@@ -87,7 +87,7 @@ TransmissionLine::TransmissionLine(
           Misc::vector_to_string(s.first));
       }
       // Set the time delay (TD), this should be a value
-      timestepDelay_ = parse_param(s.first.at(i).substr(3), pm, s.second) / h;
+      timestepDelay_ = std::round(parse_param(s.first.at(i).substr(3), pm, s.second) / h);
     }
   }
   // Set the node configuration type

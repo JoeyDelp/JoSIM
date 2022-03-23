@@ -21,7 +21,7 @@ using namespace JoSIM;
 PhaseSource::PhaseSource(
   const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
   const nodemap& nm, std::unordered_set<std::string>& lm,
-  nodeconnections& nc, int& bi, const int& si) {
+  nodeconnections& nc, int64_t& bi, const int64_t& si) {
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
     Errors::invalid_component_errors(

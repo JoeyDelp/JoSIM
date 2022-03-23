@@ -38,7 +38,7 @@ namespace JoSIM {
       std::string d = " \t",
       bool trimEmpty = true,
       bool trimSpaces = false,
-      int count = 0);
+      int64_t count = 0);
 
     void ltrim(std::string& s);
 
@@ -49,7 +49,7 @@ namespace JoSIM {
     void unique_push(std::vector<std::string>& vector,
       const std::string& string);
 
-    int index_of(const std::vector<std::string>& vector,
+    int64_t index_of(const std::vector<std::string>& vector,
       const std::string& value);
 
     std::string substring_after(const std::string& str,
@@ -60,7 +60,7 @@ namespace JoSIM {
 
     bool findX(const std::vector<std::string>& segment,
       std::string& theLine,
-      int& linePos);
+      int64_t& linePos);
 
     template <typename A, typename B>
     std::pair<B, A> flip_pair(const std::pair<A, B>& p) {
@@ -84,7 +84,7 @@ namespace JoSIM {
       return out.str();
     }
 
-    int numDigits(int number);
+    int64_t numDigits(int64_t number);
 
     double grand();
   } // namespace Misc

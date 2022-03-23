@@ -158,7 +158,7 @@ void Input::parse_input(string_o fileName) {
   // If not minimal printing
   netlist.argMin = argMin;
   // Loop through all the tokenized input
-  for (int i = 0; i < fileLines.size(); ++i) {
+  for (int64_t i = 0; i < fileLines.size(); ++i) {
     // If not minimal printing
     if (!argMin) {
       // Report progress
@@ -177,7 +177,7 @@ void Input::parse_input(string_o fileName) {
             // Set the subcircuit name the second token
             subckt = fileLines.at(i).at(1);
             // Populate the a subcircuit at given name with its IO nodes
-            for (int j = 2; j < fileLines.at(i).size(); ++j) {
+            for (int64_t j = 2; j < fileLines.at(i).size(); ++j) {
               netlist.subcircuits[subckt.value()].io.push_back(
                 fileLines.at(i).at(j));
             }

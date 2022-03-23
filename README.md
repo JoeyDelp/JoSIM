@@ -1,10 +1,6 @@
 # JoSIM
 ### Superconductor Circuit Simulator
 
-##### Testing: v2.6 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
-
-##### Stable: v2.6 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
-
 ---
 
 ## Full Documentation
@@ -35,6 +31,13 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.1
+- Fixed an issue with custom waveform where it wasn't reading from the file properly
+- Added spline method for cubic interpolation of custom waveform
+- Moved entire codebase to 64bit integers to allow larger/longer simulations
+- Fixed parameters
+- Fixed transmission line integer step delay rounding issue that caused an error build up
+
 ### v2.6
 - Full Johnson-Nyquist temperature noise for Resistors and Resistive branch of RCSJ model
 - Phi-junction model with verified Pi junction results

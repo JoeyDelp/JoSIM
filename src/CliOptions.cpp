@@ -14,7 +14,7 @@
 
 using namespace JoSIM;
 
-tokens_t CliOptions::argv_to_tokens(const int& argc, const char** argv) {
+tokens_t CliOptions::argv_to_tokens(const int64_t& argc, const char** argv) {
   // Tokens variable of size argc to store arguments
   tokens_t tokens(argc - 1);
   // If argument count is less or equal to one
@@ -23,7 +23,7 @@ tokens_t CliOptions::argv_to_tokens(const int& argc, const char** argv) {
     Errors::cli_errors(CLIErrors::TOO_FEW_ARGUMENTS);
   }
   // Loop through arguments, starting at 1 (0 is josim-cli)
-  for (int i = 1; i < argc; ++i) {
+  for (int64_t i = 1; i < argc; ++i) {
     // Add the arguments at the appropriate position
     tokens.at(i - 1) = std::string(argv[i]);
   }
@@ -83,7 +83,7 @@ vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
   return ap;
 }
 
-CliOptions CliOptions::parse(int argc, const char** argv) {
+CliOptions CliOptions::parse(int64_t argc, const char** argv) {
   // Variable where all the CLI options will be stored
   CliOptions out;
   // Parse and generate argument pairs from tokens

@@ -93,8 +93,9 @@ void Simulation::trans_sim(Matrix &mObj) {
   b_.resize(mObj.rp.size(), 0.0);
   if (startup_) {
     // Stabilize the simulation before starting at t=0
-    int startup = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
-    for (int i = -startup; i < 0; ++i) {
+    int64_t startup = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
+    if (startup > 1000) startup = 1000;
+    for (int64_t i = -startup; i < 0; ++i) {
       double step = i * stepSize_;
       // Setup the b matrix
       setup_b(mObj, i, i * stepSize_);
@@ -136,7 +137,7 @@ void Simulation::trans_sim(Matrix &mObj) {
         SimulationErrors::MATRIX_SINGULAR);
     }
     // Store results (only requested, to prevent massive memory usage)
-    for(int j = 0; j < results.xVector.size(); ++j) {
+    for(int64_t j = 0; j < results.xVector.size(); ++j) {
       if(results.xVector.at(j)) {
         results.xVector.at(j).value().emplace_back(x_.at(j));
       }
@@ -171,7 +172,7 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
 }
 
 void Simulation::setup_b(
-  Matrix &mObj, int i, double step, double factor) {
+  Matrix &mObj, int64_t i, double step, double factor) {
   // Clear b matrix and reset
   b_.clear();
   b_.resize(mObj.rp.size(), 0.0);
@@ -212,7 +213,7 @@ void Simulation::setup_b(
 }
 
 
-void Simulation::handle_cs(Matrix &mObj, double &step, const int &i) {
+void Simulation::handle_cs(Matrix &mObj, double &step, const int64_t &i) {
   for (const auto &j : mObj.components.currentsources) {
     if(j.indexInfo.nodeConfig_ == NodeConfig::POSGND) {
       b_.at(j.indexInfo.posIndex_.value()) -= 
@@ -323,7 +324,7 @@ void Simulation::handle_capacitors(Matrix &mObj) {
 }
 
 void Simulation::handle_jj(
-  Matrix &mObj, int &i, double &step, double factor) {
+  Matrix &mObj, int64_t &i, double &step, double factor) {
   for (const auto &j : mObj.components.junctionIndices) {
     auto &temp = std::get<JJ>(mObj.components.devices.at(j));
     const auto &model = temp.model_;
@@ -434,7 +435,7 @@ void Simulation::handle_jj(
 }
 
 void Simulation::handle_vs(
-  Matrix &mObj, const int &i, double &step, double factor) {
+  Matrix &mObj, const int64_t &i, double &step, double factor) {
   for (const auto &j : mObj.components.vsIndices) {
     auto &temp = std::get<VoltageSource>(mObj.components.devices.at(j));
     JoSIM::NodeConfig &nc = temp.indexInfo.nodeConfig_;
@@ -464,7 +465,7 @@ void Simulation::handle_vs(
 }
 
 void Simulation::handle_ps(
-  Matrix &mObj, const int &i, double &step, double factor) {
+  Matrix &mObj, const int64_t &i, double &step, double factor) {
   for (const auto &j : mObj.components.psIndices) {
     auto &temp = std::get<PhaseSource>(mObj.components.devices.at(j));
     if (atyp_ == AnalysisType::Phase) {
@@ -539,13 +540,13 @@ void Simulation::handle_vccs(Matrix &mObj) {
 }
 
 void Simulation::handle_tx(
-  Matrix &mObj, const int &i, double &step, double factor) {
+  Matrix &mObj, const int64_t &i, double &step, double factor) {
   for (const auto &j : mObj.components.txIndices) {
     auto &temp = std::get<TransmissionLine>(mObj.components.devices.at(j));
     // Z0
     double &Z = temp.netlistInfo.value_;
     // Td == k
-    int &k = temp.timestepDelay_;
+    int64_t &k = temp.timestepDelay_;
     // Shorthands
     JoSIM::NodeConfig &nc = temp.indexInfo.nodeConfig_, 
       &nc2 = temp.nodeConfig2_;
@@ -553,7 +554,7 @@ void Simulation::handle_tx(
       &negInd = temp.indexInfo.negIndex_,
       &posInd2 = temp.posIndex2_,
       &negInd2 = temp.negIndex2_;
-    int &curInd = temp.indexInfo.currentIndex_.value(),
+    int64_t &curInd = temp.indexInfo.currentIndex_.value(),
       &curInd2 = temp.currentIndex2_;
     if(atyp_ == AnalysisType::Voltage) {
       if(i >= k) {

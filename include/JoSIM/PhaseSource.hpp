@@ -25,11 +25,11 @@ namespace JoSIM {
 
   class PhaseSource : public BasicComponent {
     public:
-    int sourceIndex_;
+    int64_t sourceIndex_;
     PhaseSource(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const nodemap& nm, std::unordered_set<std::string>& lm,
-      nodeconnections& nc, int& bi, const int& ci);
+      nodeconnections& nc, int64_t& bi, const int64_t& ci);
   }; // class PhaseSource
 
 } // namespace JoSIM

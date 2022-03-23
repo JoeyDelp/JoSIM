@@ -38,7 +38,7 @@ namespace JoSIM {
     bool needsTR_ = true;
     bool startup_;
     double stepSize_, prstep_, prstart_;
-    int simOK_;
+    int64_t simOK_;
     klu_l_symbolic* Symbolic_;
     klu_l_common Common_;
     klu_l_numeric* Numeric_;
@@ -46,22 +46,22 @@ namespace JoSIM {
 
     void setup(Input& iObj, Matrix& mObj);
     void trans_sim(Matrix& mObj);
-    void setup_b(Matrix& mObj, int i, double step, double factor = 1);
+    void setup_b(Matrix& mObj, int64_t i, double step, double factor = 1);
     void reduce_step(Input& iObj, Matrix& mObj);
 
-    void handle_cs(Matrix& mObj, double& step, const int& i);
+    void handle_cs(Matrix& mObj, double& step, const int64_t& i);
     void handle_resistors(Matrix& mObj, double& step);
     void handle_inductors(Matrix& mObj, double factor = 1);
     void handle_capacitors(Matrix& mObj);
-    void handle_jj(Matrix& mObj, int& i, double& step, double factor = 1);
+    void handle_jj(Matrix& mObj, int64_t& i, double& step, double factor = 1);
     void handle_vs(
-      Matrix& mObj, const int& i, double& step, double factor = 1);
+      Matrix& mObj, const int64_t& i, double& step, double factor = 1);
     void handle_ps(
-      Matrix& mObj, const int& i, double& step, double factor = 1);
+      Matrix& mObj, const int64_t& i, double& step, double factor = 1);
     void handle_ccvs(Matrix& mObj);
     void handle_vccs(Matrix& mObj);
     void handle_tx(
-      Matrix& mObj, const int& i, double& step, double factor = 1);
+      Matrix& mObj, const int64_t& i, double& step, double factor = 1);
 
     public:
     Results results;

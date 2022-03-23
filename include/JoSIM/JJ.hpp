@@ -49,11 +49,11 @@ namespace JoSIM {
 
   class JJ : public BasicComponent {
     private:
-    int hDepPos_ = 0;
-    int state_ = 0;
+    int64_t hDepPos_ = 0;
+    int64_t state_ = 0;
     double h_ = 0.0;
     public:
-    int variableIndex_ = 0;
+    int64_t variableIndex_ = 0;
     double area_ = 1.0;
     std::optional<double> Ic_, temp_, neb_, spAmp_;
     Model model_;
@@ -70,7 +70,7 @@ namespace JoSIM {
     JJ(
       const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       const nodemap& nm, std::unordered_set<std::string>& lm, 
-      nodeconnections& nc, Input& iObj, Spread& spread, int& bi);
+      nodeconnections& nc, Input& iObj, Spread& spread, int64_t& bi);
 
     double subgap_impedance();
     double transient_impedance();

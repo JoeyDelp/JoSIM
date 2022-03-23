@@ -12,10 +12,10 @@ using namespace JoSIM;
 void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
   // Temporary trace to store in known traces
   RelevantTrace temp;
-  int fIndex = -1;
+  int64_t fIndex = -1;
   std::vector<tokens_t>& c = iObj.controls;
   // Loop through and handle plot, print and save commands
-  for (int i = 0; i < c.size(); ++i) {
+  for (int64_t i = 0; i < c.size(); ++i) {
     if ((c.at(i).front() == "PRINT") ||
       (c.at(i).front() == "PLOT") ||
       (c.at(i).front() == "SAVE")) {
@@ -33,11 +33,11 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
         }
       }
       // Remove any "TRAN" tokens. We don't do that here. 
-      for (int j = 0; j < t.size(); ++j) {
+      for (int64_t j = 0; j < t.size(); ++j) {
         if (t.at(j) == "TRAN") t.erase(t.begin() + j);
       }
       // Determine the type of plot
-      for (int j = 1; j < t.size(); ++j) {
+      for (int64_t j = 1; j < t.size(); ++j) {
         switch (t.at(j).back()) {
         case ')':
           switch (t.at(j).at(0)) {
@@ -173,12 +173,12 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
     mObj.relevantIndices.end());
 }
 
-void JoSIM::handle_current(const std::string& s, Matrix& mObj, int fIndex) {
+void JoSIM::handle_current(const std::string& s, Matrix& mObj, int64_t fIndex) {
   RelevantTrace temp;
   temp.fIndex = fIndex;
   temp.storageType = StorageType::Current;
   if (s.at(0) != 'I') {
-    for (int j = 0; j < mObj.components.devices.size(); ++j) {
+    for (int64_t j = 0; j < mObj.components.devices.size(); ++j) {
       const auto& l =
         std::visit([](const auto& device) noexcept -> const std::string& {
         return device.netlistInfo.label_;
@@ -188,7 +188,7 @@ void JoSIM::handle_current(const std::string& s, Matrix& mObj, int fIndex) {
         temp.deviceLabel = "\"I(" + s + ")\"";
         temp.device = true;
         temp.index1 = std::visit(
-          [](const auto& device) noexcept -> const int& {
+          [](const auto& device) noexcept -> const int64_t& {
           return device.indexInfo.currentIndex_.value();
         }, mObj.components.devices.at(j));
         mObj.relevantTraces.emplace_back(temp);
@@ -199,7 +199,7 @@ void JoSIM::handle_current(const std::string& s, Matrix& mObj, int fIndex) {
       Errors::control_errors(ControlErrors::NODECURRENT, s);
     }
   } else {
-    for (int i = 0; i < mObj.components.currentsources.size(); ++i) {
+    for (int64_t i = 0; i < mObj.components.currentsources.size(); ++i) {
       if (s == mObj.components.currentsources.at(i).netlistInfo.label_) {
         temp.deviceLabel = "\"I(" + s + ")\"";
         temp.device = true;
@@ -212,7 +212,7 @@ void JoSIM::handle_current(const std::string& s, Matrix& mObj, int fIndex) {
 }
 
 void JoSIM::handle_voltage_or_phase(
-  const std::string& s, bool voltage, Matrix& mObj, int fIndex) {
+  const std::string& s, bool voltage, Matrix& mObj, int64_t fIndex) {
   std::vector<std::string> tokens = Misc::tokenize(s, " ,");
   RelevantTrace temp;
   temp.fIndex = fIndex;
@@ -221,7 +221,7 @@ void JoSIM::handle_voltage_or_phase(
   } else {
     temp.storageType = StorageType::Phase;
   }
-  for (int j = 0; j < mObj.components.devices.size(); ++j) {
+  for (int64_t j = 0; j < mObj.components.devices.size(); ++j) {
     const auto& l = std::visit(
       [](const auto& device) noexcept -> const std::string& {
       return device.netlistInfo.label_;

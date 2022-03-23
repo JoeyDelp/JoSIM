@@ -43,7 +43,7 @@ void Spread::get_spreads(Input& iObj) {
   }
 }
 
-double Spread::spread_value(double value, int type, double spread) {
+double Spread::spread_value(double value, int64_t type, double spread) {
   if (spread == 1.0) {
     switch (type) {
       case GLB:

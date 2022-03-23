@@ -54,10 +54,10 @@ namespace JoSIM {
     string_o subc = std::nullopt,
     bool single = true);
 
-  int precedence_lvl(const std::string& op);
+  int64_t precedence_lvl(const std::string& op);
 
   double parse_operator(
-    const std::string& op, double val1, double val2, int& popCount);
+    const std::string& op, double val1, double val2, int64_t& popCount);
 
   void parse_parameters(param_map& parameters);
 
