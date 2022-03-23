@@ -87,7 +87,7 @@ TransmissionLine::TransmissionLine(
           Misc::vector_to_string(s.first));
       }
       // Set the time delay (TD), this should be a value
-      timestepDelay_ = parse_param(s.first.at(i).substr(3), pm, s.second) / h;
+      timestepDelay_ = std::round(parse_param(s.first.at(i).substr(3), pm, s.second) / h);
     }
   }
   // Set the node configuration type
