@@ -20,9 +20,3 @@ CPMAddPackage(
   VERSION 0.1.0
   GIT_TAG 8ee64086a8ab012595744c4a97a49cdfc73b81ab
 )
-
-CPMAddPackage(
-  NAME Catch2
-  GITHUB_REPOSITORY catchorg/Catch2
-  VERSION 2.5.0
-)
