@@ -239,7 +239,7 @@ void Function::parse_cus(
 	wffile.close();
 	WF = Misc::tokenize(line, " ,;");
 	for (int64_t i = 0; i < WF.size(); ++i) {
-		ampValues_.emplace_back(Misc::modifier(WF.at(i)));
+		ampValues_.emplace_back(Misc::modifier(WF.at(i)) * miscValues_.at(1));
 	}
 	if (miscValues_.at(0) < tstep) {
 		miscValues_.at(0) = tstep;
