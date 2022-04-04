@@ -1,10 +1,9 @@
 include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 
 CPMAddPackage(
-  NAME CMakeSuiteSparse
-  GITHUB_REPOSITORY JoeyDelp/CMakeSuiteSparse
-  VERSION 0.1.0
-  GIT_TAG 96c16fab251376f1496fedf0a05274e7d058fe3c
+	NAME CMakeSuiteSparse
+	VERSION 0.1.0
+	URL https://github.com/JoeyDelp/CMakeSuiteSparse/archive/refs/heads/master.zip
 )
 
 CPMAddPackage(
