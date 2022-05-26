@@ -202,6 +202,10 @@ void JJ::set_model(
     Errors::invalid_component_errors(
       ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
   }
+  // Change the area if ic was defined
+  if (Ic_) {
+    area_ = Ic_.value() / model_.ic();
+  }
   // Set the model critical current for this JJ instance  
   model_.ic(model_.ic() * area_);
   if (model_.tDep()) {
@@ -216,10 +220,6 @@ void JJ::set_model(
   } else {
     // Set the model normal resistance for this JJ instance  
     model_.rn(model_.rn() / area_);
-  }
-  // Change the area if ic was defined
-  if (Ic_) {
-    area_ = Ic_.value() / model_.ic();
   }
   // Set the model capacitance for this JJ instance
   model_.c(model_.c() * area_);

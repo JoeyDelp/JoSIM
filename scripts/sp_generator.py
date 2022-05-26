@@ -130,7 +130,7 @@ def main():
 
     # Print sp if verbos
     if args.verbose:
-    print(sp)
+        print(sp)
 
     # Tabulate the contents for a more pleasant viewing experience
     content = tabulate(sp.values.tolist(), list(sp.columns), tablefmt="plain")
