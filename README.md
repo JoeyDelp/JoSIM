@@ -31,6 +31,10 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.2
+- Fixed sp_generator.py having invalid tab spacing
+- Fixed Area= and Ic= JJ parameters not producing the same result for the same critical current
+
 ### v2.6.1
 - Fixed an issue with custom waveform where it wasn't reading from the file properly
 - Added spline method for cubic interpolation of custom waveform
