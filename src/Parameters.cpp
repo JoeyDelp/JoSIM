@@ -95,8 +95,13 @@ double JoSIM::parse_param(
         // First test the expression to see if it is a parameter
         if (params.count(ParameterName(expToEval, subc)) != 0) {
             if (!params.at(ParameterName(expToEval, subc)).get_value()) {
-                expToEval =
-                    params.at(ParameterName(expToEval, subc)).get_expression();
+                if (!single) {
+                    // Return NaN to indicate this ocurred
+                    return std::numeric_limits<double>::quiet_NaN();
+                }
+                else {
+                    Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
+                }
             }
         }
         // Find the position of the first operator

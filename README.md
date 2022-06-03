@@ -31,6 +31,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.3
+- Fixed a bug where Windows and CentOS parameters do not coincide. Issue was due to expression substitution.
+
 ### v2.6.2
 - Fixed sp_generator.py having invalid tab spacing
 - Fixed Area= and Ic= JJ parameters not producing the same result for the same critical current
