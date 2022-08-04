@@ -31,6 +31,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.4
+- Added the ability to specify CPR in the JJ model to enable non-sinusoidal CPRs needed for pi-junctions.
+
 ### v2.6.3
 - Fixed a bug where Windows and CentOS parameters do not coincide. Issue was due to expression substitution.
 
