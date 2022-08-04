@@ -2,15 +2,16 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Transient.hpp"
-#include "JoSIM/Misc.hpp"
 
 #include <string>
 #include <vector>
 
+#include "JoSIM/Misc.hpp"
+
 using namespace JoSIM;
 
-void Transient::identify_simulation( 
-  std::vector<tokens_t>& controls, Transient& tObj) {
+void Transient::identify_simulation(std::vector<tokens_t>& controls,
+                                    Transient& tObj) {
   // Flag to store that a transient simulation was found
   bool transFound = false;
   // Loop through all the controls
@@ -28,8 +29,8 @@ void Transient::identify_simulation(
       if (i.size() < 2) {
         // Complain of invalid transient analysis specification
         Errors::control_errors(
-          ControlErrors::TRANS_ERROR,
-          "Too few parameters: " + Misc::vector_to_string(i));
+            ControlErrors::TRANS_ERROR,
+            "Too few parameters: " + Misc::vector_to_string(i));
         // Set the parameters to default values and continue
         tObj.tstep(0.25E-12);
         tObj.prstep(1E-12);
@@ -66,8 +67,8 @@ void Transient::identify_simulation(
       // If either the step size or stop time is 0
       if (tObj.tstep() == 0 || tObj.tstop() == 0) {
         // Complain
-        Errors::control_errors(
-          ControlErrors::TRANS_ERROR, Misc::vector_to_string(i));
+        Errors::control_errors(ControlErrors::TRANS_ERROR,
+                               Misc::vector_to_string(i));
         // Set defaults and continue
         tObj.tstep(0.25E-12);
         tObj.prstep(tObj.tstep());
@@ -75,10 +76,10 @@ void Transient::identify_simulation(
         tObj.prstart(0);
       }
       //// If user provided time step is larger than 0.25ps junction will fail
-      //if (tObj.tstep() > 0.25E-12) {
-      //  tObj.tstep(0.25E-12);
-      //}
-      // Also if PSTEP is smaller than TSTEP
+      // if (tObj.tstep() > 0.25E-12) {
+      //   tObj.tstep(0.25E-12);
+      // }
+      //  Also if PSTEP is smaller than TSTEP
       if (tObj.tstep() > tObj.prstep()) {
         // Reduce TSTEP to match PRSTEP
         tObj.tstep(tObj.prstep());

@@ -99,12 +99,15 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | D               | 0.0, 1              | 0.0             | Point of contact transparency affecting current phase relationship |
 | ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
 | PHI             | 0, $2\pi$           | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
+| CPR             | 0, $\infty$         | 1               | Sets the Current Phase Relationship constant.                |
 
 The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
 
 By setting the **PHI** parameter of the model, the phase value is persistantly subtracted from the phase ($\phi$) in the $\sin(\phi)$ part of the JJ current. This allows elements such as the $\pi$-junction to be modeled. 
+
+Setting **CPR** changes the coefficient of the supercurrent phase relationship. Default is 1 relating to $I_S=I_C\sin(\phi)$. Setting this to 2 would change this relationship to $I_S=I_C\sin(2\phi)$ which allows the use of $\pi$-junctions by enabling only the second harmonic of the supercurrent and suppressing the first.[^1][^2]
 
 ### Transmission Line
 
@@ -434,3 +437,5 @@ JoSIM has a set of built in constants that when used expand to the corresponding
 | EPS0      | $\epsilon_{0}$                               | 8.854187817E-12         |
 | SIGMA     | $\sigma$ (short for $\frac{\Phi_{0}}{2\pi}$) | 3.291059757E-16         |
 
+[^1]: I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
+[^2]:S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.

@@ -2,12 +2,13 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/JJ.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/Constants.hpp"
-#include "JoSIM/Noise.hpp"
 
 #include <cmath>
+
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Noise.hpp"
 
 using namespace JoSIM;
 
@@ -38,10 +39,9 @@ using namespace JoSIM;
   RHS1 = (4/3)φn-1 - (1/3)φn-2
 */
 
-JJ::JJ(
-  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-  const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  Input& iObj, Spread& spread, int64_t& bi) {
+JJ::JJ(const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+       const nodemap& nm, std::unordered_set<std::string>& lm,
+       nodeconnections& nc, Input& iObj, Spread& spread, int64_t& bi) {
   double spr = 1.0;
   tokens_t t;
   for (int64_t i = 3; i < s.first.size(); ++i) {
@@ -54,10 +54,12 @@ JJ::JJ(
       neb_ = parse_param(ti.substr(4), iObj.parameters, s.second);
     } else if (ti.rfind("AREA=", 0) == 0) {
       area_ = spread.spread_value(
-        parse_param(ti.substr(5), iObj.parameters, s.second), Spread::JJ, spr);
+          parse_param(ti.substr(5), iObj.parameters, s.second), Spread::JJ,
+          spr);
     } else if (ti.rfind("IC=", 0) == 0) {
       Ic_ = spread.spread_value(
-        parse_param(ti.substr(3), iObj.parameters, s.second), Spread::JJ, spr);
+          parse_param(ti.substr(3), iObj.parameters, s.second), Spread::JJ,
+          spr);
     } else {
       t.emplace_back(ti);
     }
@@ -75,8 +77,8 @@ JJ::JJ(
   state_ = 0;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
-    Errors::invalid_component_errors(
-      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL,
+                                     s.first.at(0));
   }
   // Set the label
   netlistInfo.label_ = s.first.at(0);
@@ -103,12 +105,13 @@ JJ::JJ(
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   if (temp_) {
-    spAmp_ = Noise::determine_spectral_amplitude(
-      this->model_.r0(), temp_.value());
+    spAmp_ =
+        Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
     Function tnoise;
-    tnoise.parse_function("NOISE(" +
-      Misc::precise_to_string(spAmp_.value()) + ", 0.0, " +
-      Misc::precise_to_string(1.0 / neb_.value()) + ")", iObj, s.second);
+    tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) +
+                              ", 0.0, " +
+                              Misc::precise_to_string(1.0 / neb_.value()) + ")",
+                          iObj, s.second);
     thermalNoise = tnoise;
   }
 }
@@ -130,38 +133,38 @@ double JJ::normal_impedance() {
 
 void JJ::set_matrix_info() {
   switch (indexInfo.nodeConfig_) {
-  case NodeConfig::POSGND:
-    matrixInfo.nonZeros_.emplace_back(1);
-    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
-    matrixInfo.rowPointer_.emplace_back(2);
-    break;
-  case NodeConfig::GNDNEG:
-    matrixInfo.nonZeros_.emplace_back(-1);
-    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-    matrixInfo.rowPointer_.emplace_back(2);
-    break;
-  case NodeConfig::POSNEG:
-    matrixInfo.nonZeros_.emplace_back(1);
-    matrixInfo.nonZeros_.emplace_back(-1);
-    matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
-    matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-    matrixInfo.rowPointer_.emplace_back(3);
-    break;
-  case NodeConfig::GND:
-    matrixInfo.rowPointer_.emplace_back(1);
-    break;
+    case NodeConfig::POSGND:
+      matrixInfo.nonZeros_.emplace_back(1);
+      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+      matrixInfo.rowPointer_.emplace_back(2);
+      break;
+    case NodeConfig::GNDNEG:
+      matrixInfo.nonZeros_.emplace_back(-1);
+      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+      matrixInfo.rowPointer_.emplace_back(2);
+      break;
+    case NodeConfig::POSNEG:
+      matrixInfo.nonZeros_.emplace_back(1);
+      matrixInfo.nonZeros_.emplace_back(-1);
+      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+      matrixInfo.rowPointer_.emplace_back(3);
+      break;
+    case NodeConfig::GND:
+      matrixInfo.rowPointer_.emplace_back(1);
+      break;
   }
   matrixInfo.nonZeros_.emplace_back(-phaseConst_);
   hDepPos_ = matrixInfo.nonZeros_.size() - 1;
   matrixInfo.columnIndex_.emplace_back(variableIndex_);
   if (at_ == AnalysisType::Voltage) {
-    matrixInfo.nonZeros_.insert(
-      matrixInfo.nonZeros_.end(),
-      matrixInfo.nonZeros_.begin(), matrixInfo.nonZeros_.end());
+    matrixInfo.nonZeros_.insert(matrixInfo.nonZeros_.end(),
+                                matrixInfo.nonZeros_.begin(),
+                                matrixInfo.nonZeros_.end());
     matrixInfo.nonZeros_.back() = -1 / subgap_impedance();
-    matrixInfo.columnIndex_.insert(
-      matrixInfo.columnIndex_.end(),
-      matrixInfo.columnIndex_.begin(), matrixInfo.columnIndex_.end());
+    matrixInfo.columnIndex_.insert(matrixInfo.columnIndex_.end(),
+                                   matrixInfo.columnIndex_.begin(),
+                                   matrixInfo.columnIndex_.end());
     matrixInfo.columnIndex_.back() = indexInfo.currentIndex_.value();
     matrixInfo.rowPointer_.emplace_back(matrixInfo.rowPointer_.back());
   } else if (at_ == AnalysisType::Phase) {
@@ -173,9 +176,9 @@ void JJ::set_matrix_info() {
   }
 }
 
-void JJ::set_model(
-  const tokens_t& t, const vector_pair_t<Model, string_o>& models,
-  const string_o& subc) {
+void JJ::set_model(const tokens_t& t,
+                   const vector_pair_t<Model, string_o>& models,
+                   const string_o& subc) {
   bool found = false;
   // Loop through all models
   for (auto& i : models) {
@@ -199,31 +202,31 @@ void JJ::set_model(
   // If no model was found
   if (!found) {
     // Complain about it
-    Errors::invalid_component_errors(
-      ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
+    Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED,
+                                     Misc::vector_to_string(t));
   }
   // Change the area if ic was defined
   if (Ic_) {
     area_ = Ic_.value() / model_.ic();
   }
-  // Set the model critical current for this JJ instance  
+  // Set the model critical current for this JJ instance
   model_.ic(model_.ic() * area_);
   if (model_.tDep()) {
     // Set the Del0 parameter
     del0_ = 1.76 * Constants::BOLTZMANN * model_.tc();
     // Set the del parameter
-    del_ = del0_ * sqrt(cos((Constants::PI / 2) *
-      (model_.t() / model_.tc()) * (model_.t() / model_.tc())));
+    del_ = del0_ * sqrt(cos((Constants::PI / 2) * (model_.t() / model_.tc()) *
+                            (model_.t() / model_.tc())));
     // Set the temperature dependent normal resistance
     model_.rn(((Constants::PI * del_) / (2 * Constants::EV * model_.ic())) *
-      tanh(del_ / (2 * Constants::BOLTZMANN * model_.t())));
+              tanh(del_ / (2 * Constants::BOLTZMANN * model_.t())));
   } else {
-    // Set the model normal resistance for this JJ instance  
+    // Set the model normal resistance for this JJ instance
     model_.rn(model_.rn() / area_);
   }
   // Set the model capacitance for this JJ instance
   model_.c(model_.c() * area_);
-  // Set the model subgap resistance for this JJ instance  
+  // Set the model subgap resistance for this JJ instance
   model_.r0(model_.r0() / area_);
   // Set the lower boundary for the transition region
   lowerB_ = model_.vg() - 0.5 * model_.deltaV();
@@ -244,8 +247,8 @@ bool JJ::update_value(const double& v) {
   if (fabs(v) < lowerB_) {
     // Set temperature resistance
     if (this->temp_) {
-      thermalNoise.value().ampValues().at(0) = 
-        Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
+      thermalNoise.value().ampValues().at(0) =
+          Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
     }
     // Set the transition current to 0
     it_ = 0.0;
@@ -286,7 +289,7 @@ bool JJ::update_value(const double& v) {
     // Set temperature resistance
     if (this->temp_) {
       thermalNoise.value().ampValues().at(0) =
-        Noise::determine_spectral_amplitude(this->model_.rn(), temp_.value());
+          Noise::determine_spectral_amplitude(this->model_.rn(), temp_.value());
     }
     // Reset the transition current, transition has passed.
     it_ = 0.0;

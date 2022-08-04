@@ -3,32 +3,32 @@
 #ifndef JOSIM_CURRENTSOURCE_HPP
 #define JOSIM_CURRENTSOURCE_HPP
 
-#include "JoSIM/BasicComponent.hpp"
-
 #include <optional>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <string>
+
+#include "JoSIM/BasicComponent.hpp"
 
 namespace JoSIM {
 
-  /*
-    Ilabel V⁺ V⁻ sourcetype
+/*
+  Ilabel V⁺ V⁻ sourcetype
 
-    ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
-    ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
-  */
+  ⎡ 0  0⎤ ⎡ V⁺⎤ = ⎡  Io⎤
+  ⎣ 0  0⎦ ⎣ V⁻⎦   ⎣ -Io⎦
+*/
 
-  class CurrentSource : public BasicComponent {
-    public:
-    int64_t sourceIndex_;
+class CurrentSource : public BasicComponent {
+ public:
+  int64_t sourceIndex_;
 
-    CurrentSource(
-      const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-      const nodemap& nm, std::unordered_set<std::string>& lm, const int64_t& si);
+  CurrentSource(const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+                const nodemap& nm, std::unordered_set<std::string>& lm,
+                const int64_t& si);
 
-    void set_node_indices(const tokens_t& t, const nodemap& nm);
-  }; // class CurrentSource
+  void set_node_indices(const tokens_t& t, const nodemap& nm);
+};  // class CurrentSource
 
-} // namespace JoSIM
+}  // namespace JoSIM
 #endif

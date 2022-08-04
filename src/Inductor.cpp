@@ -2,11 +2,12 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Inductor.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/Constants.hpp"
 
 #include <utility>
+
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
 
 using namespace JoSIM;
 
@@ -27,15 +28,15 @@ using namespace JoSIM;
  ⎣ 1 -1 -L(2e/hbar)⎦ ⎣Io⎦   ⎣ 0⎦
 */
 
-Inductor::Inductor(
-  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-  const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  Input& iObj, Spread spread, int64_t& bi) {
+Inductor::Inductor(const std::pair<tokens_t, string_o>& s,
+                   const NodeConfig& ncon, const nodemap& nm,
+                   std::unordered_set<std::string>& lm, nodeconnections& nc,
+                   Input& iObj, Spread spread, int64_t& bi) {
   double spr = 1.0;
   for (auto i : s.first) {
     if (i.find("SPREAD=") != std::string::npos) {
-      spr = 
-        parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+      spr = parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters,
+                        s.second);
     }
   }
   at_ = iObj.argAnal;
@@ -43,16 +44,15 @@ Inductor::Inductor(
   In2_ = 0.0;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
-    Errors::invalid_component_errors(
-      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL,
+                                     s.first.at(0));
   }
   // Set the label
   netlistInfo.label_ = s.first.at(0);
   // Add the label to the known labels list
   lm.emplace(s.first.at(0));
   // Set the value (Inductance), this should be the 4th token
-  netlistInfo.value_ = 
-    spread.spread_value(
+  netlistInfo.value_ = spread.spread_value(
       parse_param(s.first.at(3), iObj.parameters, s.second), Spread::IND, spr);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
@@ -66,16 +66,15 @@ Inductor::Inductor(
   if (at_ == AnalysisType::Voltage) {
     // If voltage mode analysis then append -(3/2) * (L/h)
     matrixInfo.nonZeros_.emplace_back(
-      -(3.0 / 2.0) * (netlistInfo.value_ / iObj.transSim.tstep()));
+        -(3.0 / 2.0) * (netlistInfo.value_ / iObj.transSim.tstep()));
   } else if (at_ == AnalysisType::Phase) {
     // If phase mdoe analysis then append -(L/σ)
-    matrixInfo.nonZeros_.emplace_back(
-      -netlistInfo.value_ / Constants::SIGMA);
+    matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_ / Constants::SIGMA);
   }
 }
 
-void Inductor::add_mutualInductance(
-  const double& m, const AnalysisType& at, const double& h, const int64_t& ci) {
+void Inductor::add_mutualInductance(const double& m, const AnalysisType& at,
+                                    const double& h, const int64_t& ci) {
   // Adds the mutual inductance to the non zero vector
   if (at == AnalysisType::Voltage) {
     // If voltage mode then add -(3/2) * (m/h)
