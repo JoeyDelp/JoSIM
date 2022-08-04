@@ -2,13 +2,14 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/IV.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Parameters.hpp"
 
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Parameters.hpp"
 
 using namespace JoSIM;
 
@@ -23,7 +24,7 @@ IV::IV(const Input iObj) {
 void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   if (i.size() < 4) {
     Errors::control_errors(ControlErrors::INVALID_IV_COMMAND,
-      Misc::vector_to_string(i));
+                           Misc::vector_to_string(i));
   }
   // Model can be part of a subcircuit so find subcircuit and model name
   tokens_t t = Misc::tokenize(i.at(1), ".|");
@@ -35,19 +36,17 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   // Check to see if model exists
   if (iObj.netlist.models.count(std::make_pair(model, subc)) == 0) {
     Errors::control_errors(ControlErrors::IV_MODEL_NOT_FOUND,
-      model + ((subc) ? "|" + subc.value() : ""));
+                           model + ((subc) ? "|" + subc.value() : ""));
   }
   // Determine the maximum current to which to draw the IV curve
   double maxC = parse_param(i.at(2), iObj.parameters);
   // Create an input object for this simulation
   Input ivInp = iObj;
   ivInp.controls.clear();
-  tokens_t jj = { "B01", "1", "0", model, "AREA=1" };
-  tokens_t ib = { "IB01", "0", "1", "PWL(0", "0", "10P", "0", "50P", "2.5U)" };
-  ivInp.netlist.expNetlist = {
-    std::make_pair(jj, subc),
-    std::make_pair(ib, std::nullopt)
-  };
+  tokens_t jj = {"B01", "1", "0", model, "AREA=1"};
+  tokens_t ib = {"IB01", "0", "1", "PWL(0", "0", "10P", "0", "50P", "2.5U)"};
+  ivInp.netlist.expNetlist = {std::make_pair(jj, subc),
+                              std::make_pair(ib, std::nullopt)};
   ivInp.transSim.tstep(0.05E-12);
   ivInp.transSim.tstop(500E-12);
   ivInp.argAnal = JoSIM::AnalysisType::Voltage;
@@ -63,38 +62,38 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   write_iv(iv_data, path.string());
 }
 
-std::vector<std::pair<double, double>> IV::generate_iv(double maxC, 
-  Input ivInp) {
+std::vector<std::pair<double, double>> IV::generate_iv(double maxC,
+                                                       Input ivInp) {
   std::vector<std::pair<double, double>> iv_data;
   double currentIncrement = 25E-7;
   double currentCurr = 0.0;
   Matrix ivMat;
   ivMat.create_matrix(ivInp);
-  while(currentCurr <= maxC) {
+  while (currentCurr <= maxC) {
     // Create a matrix object using the input object
     currentCurr += currentIncrement;
-    ivMat.sourcegen.back().ampValues({ 0, 0, currentCurr });
+    ivMat.sourcegen.back().ampValues({0, 0, currentCurr});
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
     ivInp.transSim.tstep(0.05E-12);
   }
   while (currentCurr >= 0) {
     // Create a matrix object using the input object
     currentCurr -= currentIncrement;
-    ivMat.sourcegen.back().ampValues({ 0, maxC, currentCurr });
+    ivMat.sourcegen.back().ampValues({0, maxC, currentCurr});
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
     ivInp.transSim.tstep(0.05E-12);
   }
   while (currentCurr >= -maxC) {
     // Create a matrix object using the input object
     currentCurr -= currentIncrement;
-    ivMat.sourcegen.back().ampValues({ 0, 0, currentCurr });
+    ivMat.sourcegen.back().ampValues({0, 0, currentCurr});
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
     ivInp.transSim.tstep(0.05E-12);
   }
   while (currentCurr <= 0) {
     // Create a matrix object using the input object
     currentCurr += currentIncrement;
-    ivMat.sourcegen.back().ampValues({ 0, -maxC, currentCurr });
+    ivMat.sourcegen.back().ampValues({0, -maxC, currentCurr});
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
     ivInp.transSim.tstep(0.05E-12);
   }
@@ -116,7 +115,7 @@ std::pair<double, double> IV::do_simulate(Input& ivInp, Matrix& ivMat) {
 }
 
 void IV::write_iv(std::vector<std::pair<double, double>>& iv_data,
-  const std::string& output_path) {
+                  const std::string& output_path) {
   auto path = std::filesystem::path(output_path);
   std::ofstream outfile(path.string());
   outfile << std::setprecision(6);

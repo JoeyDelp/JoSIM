@@ -15,14 +15,15 @@ LUSolve::LUSolve() {
 }
 
 void LUSolve::create_matrix(int64_t shape, std::vector<double>& nz,
-  std::vector<long long>& ci, std::vector<long long>& rp) {
-  bool do_allocation = (allocated == false || m != shape ||
-    n != shape || nnz != nz.size());
+                            std::vector<long long>& ci,
+                            std::vector<long long>& rp) {
+  bool do_allocation =
+      (allocated == false || m != shape || n != shape || nnz != nz.size());
   m = n = shape;
   nnz = nz.size();
   if (do_allocation) {
-    dCreate_CompCol_Matrix(&A, m, n, nnz, &nz.front(), &ci.front(), 
-      &rp.front(), SLU_NC, SLU_D, SLU_GE);
+    dCreate_CompCol_Matrix(&A, m, n, nnz, &nz.front(), &ci.front(), &rp.front(),
+                           SLU_NC, SLU_D, SLU_GE);
     if (!(rhsb = doubleMalloc(m * nrhs))) ABORT("Malloc fails for rhsb[].");
     if (!(rhsx = doubleMalloc(m * nrhs))) ABORT("Malloc fails for rhsx[].");
     dCreate_Dense_Matrix(&B, m, nrhs, rhsb, m, SLU_DN, SLU_D, SLU_GE);
@@ -53,8 +54,8 @@ bool LUSolve::is_stable() {
 
 void LUSolve::factorize(bool symbolic) {
   options.Fact = symbolic ? SamePattern_SameRowPerm : DOFACT;
-  dgssvx(&options, &A, perm_c, perm_r, etree, equed, R, C, &L, &U, work, lwork, 
-    &B, &X, &rpg, &rcond, ferr, berr, &Glu, &mem_usage, &stat, &info);
+  dgssvx(&options, &A, perm_c, perm_r, etree, equed, R, C, &L, &U, work, lwork,
+         &B, &X, &rpg, &rcond, ferr, berr, &Glu, &mem_usage, &stat, &info);
   options.Fact = FACTORED;
   constructed = true;
 }
@@ -63,9 +64,9 @@ void LUSolve::solve(std::vector<double>& x) {
   if (!constructed) {
     ABORT("Preconditioner not constructed.");
   }
-  DNformat LHSstore = { static_cast<int_t>(x.size()), &x.front() };
-  SuperMatrix LHSmat = { SLU_DN, SLU_D, SLU_GE, static_cast<int_t>(x.size()), 
-    1, &LHSstore };
+  DNformat LHSstore = {static_cast<int_t>(x.size()), &x.front()};
+  SuperMatrix LHSmat = {SLU_DN, SLU_D,    SLU_GE, static_cast<int_t>(x.size()),
+                        1,      &LHSstore};
   dgstrs(trans, &L, &U, perm_c, perm_r, &LHSmat, &stat, &info);
 }
 

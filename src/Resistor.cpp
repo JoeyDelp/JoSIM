@@ -2,12 +2,13 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Resistor.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/Constants.hpp"
-#include "JoSIM/Noise.hpp"
 
 #include <utility>
+
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Noise.hpp"
 
 using namespace JoSIM;
 
@@ -27,10 +28,10 @@ using namespace JoSIM;
  ⎣ 1 -1 -R(2e/hbar)(2h/3)⎦ ⎣Io⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦
 */
 
-Resistor::Resistor(
-  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-  const nodemap& nm, std::unordered_set<std::string>& lm, nodeconnections& nc,
-  Input& iObj, Spread& spread, int64_t& bi) {
+Resistor::Resistor(const std::pair<tokens_t, string_o>& s,
+                   const NodeConfig& ncon, const nodemap& nm,
+                   std::unordered_set<std::string>& lm, nodeconnections& nc,
+                   Input& iObj, Spread& spread, int64_t& bi) {
   double spr = 1.0;
   for (int64_t i = 4; i < s.first.size(); ++i) {
     auto& t = s.first.at(i);
@@ -51,8 +52,8 @@ Resistor::Resistor(
   at_ = iObj.argAnal;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
-    Errors::invalid_component_errors(
-      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL,
+                                     s.first.at(0));
   }
   // Set the label
   netlistInfo.label_ = s.first.at(0);
@@ -60,7 +61,7 @@ Resistor::Resistor(
   lm.emplace(s.first.at(0));
   // Set the value (Resistance), this should be the 4th token
   netlistInfo.value_ = spread.spread_value(
-    parse_param(s.first.at(3), iObj.parameters, s.second), Spread::RES, spr);
+      parse_param(s.first.at(3), iObj.parameters, s.second), Spread::RES, spr);
   // Set the node configuration type
   indexInfo.nodeConfig_ = ncon;
   // Set current index and increment it
@@ -77,17 +78,17 @@ Resistor::Resistor(
     // Set the value of node n-2 to 0
     pn2_ = 0;
     // If phase mdoe analysis then append -((2*h)/3) * (R/σ)
-    matrixInfo.nonZeros_.emplace_back(
-      -((2.0 * iObj.transSim.tstep()) / 3.0) * 
-      (netlistInfo.value_ / Constants::SIGMA));
+    matrixInfo.nonZeros_.emplace_back(-((2.0 * iObj.transSim.tstep()) / 3.0) *
+                                      (netlistInfo.value_ / Constants::SIGMA));
   }
   if (temp_) {
-    spAmp_ = Noise::determine_spectral_amplitude(
-      netlistInfo.value_, temp_.value());
+    spAmp_ =
+        Noise::determine_spectral_amplitude(netlistInfo.value_, temp_.value());
     Function tnoise;
-    tnoise.parse_function("NOISE(" + 
-      Misc::precise_to_string(spAmp_.value()) + ", 0.0, " + 
-      Misc::precise_to_string(1.0 / neb_.value()) + ")", iObj, s.second);
+    tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) +
+                              ", 0.0, " +
+                              Misc::precise_to_string(1.0 / neb_.value()) + ")",
+                          iObj, s.second);
     thermalNoise = tnoise;
   }
 }
@@ -95,7 +96,6 @@ Resistor::Resistor(
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
 void Resistor::update_timestep(const double& factor) {
   if (at_ == AnalysisType::Phase) {
-    matrixInfo.nonZeros_.back() = 
-      factor * factor * matrixInfo.nonZeros_.back();
+    matrixInfo.nonZeros_.back() = factor * factor * matrixInfo.nonZeros_.back();
   }
 }

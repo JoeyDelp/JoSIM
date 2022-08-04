@@ -2,21 +2,22 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Output.hpp"
-#include "JoSIM/AnalysisType.hpp"
-#include "JoSIM/FileOutputType.hpp"
-#include "JoSIM/Input.hpp"
-#include "JoSIM/Simulation.hpp"
-#include "JoSIM/Constants.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/ProgressBar.hpp"
 
 #include <algorithm>
 #include <cassert>
-#include <functional>
-#include <iterator>
-#include <fstream>
-#include <iostream>
 #include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <iterator>
+
+#include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/FileOutputType.hpp"
+#include "JoSIM/Input.hpp"
+#include "JoSIM/ProgressBar.hpp"
+#include "JoSIM/Simulation.hpp"
 
 using namespace JoSIM;
 
@@ -26,27 +27,21 @@ Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
   // Format the output into the relevant type
   if (iObj.cli_output_file) {
     if (iObj.cli_output_file.value().type() == FileOutputType::Csv) {
-      format_csv_or_dat(
-        iObj.cli_output_file.value().name(), ',', iObj.argMin);
+      format_csv_or_dat(iObj.cli_output_file.value().name(), ',', iObj.argMin);
     } else if (iObj.cli_output_file.value().type() == FileOutputType::Dat) {
-      format_csv_or_dat(
-        iObj.cli_output_file.value().name(), ' ', iObj.argMin);
+      format_csv_or_dat(iObj.cli_output_file.value().name(), ' ', iObj.argMin);
     } else if (iObj.cli_output_file.value().type() == FileOutputType::Raw) {
-      format_raw(
-        iObj.cli_output_file.value().name(), iObj.argMin);
+      format_raw(iObj.cli_output_file.value().name(), iObj.argMin);
     }
   }
   if (!iObj.output_files.empty()) {
     for (int64_t i = 0; i < iObj.output_files.size(); ++i) {
       if (iObj.output_files.at(i).type() == FileOutputType::Csv) {
-        format_csv_or_dat(
-          iObj.output_files.at(i).name(), ',', iObj.argMin, i);
+        format_csv_or_dat(iObj.output_files.at(i).name(), ',', iObj.argMin, i);
       } else if (iObj.output_files.at(i).type() == FileOutputType::Dat) {
-        format_csv_or_dat(
-          iObj.output_files.at(i).name(), ' ', iObj.argMin, i);
+        format_csv_or_dat(iObj.output_files.at(i).name(), ' ', iObj.argMin, i);
       } else if (iObj.output_files.at(i).type() == FileOutputType::Raw) {
-        format_raw(
-          iObj.output_files.at(i).name(), iObj.argMin, i);
+        format_raw(iObj.output_files.at(i).name(), iObj.argMin, i);
       }
     }
   }
@@ -55,8 +50,7 @@ Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
   }
 }
 
-void Output::write_output(
-  const Input& iObj, Matrix& mObj, Simulation& sObj) {
+void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
   // Shorthand
   auto& x = sObj.results.xVector;
   auto& t = sObj.results.timeAxis;
@@ -64,23 +58,23 @@ void Output::write_output(
   // Indices to print
   std::vector<int64_t> result_indices;
   for (auto i = 0; i < t.size(); ++i) {
-      if (t.at(i) >= tran.prstart()) {
-          result_indices.emplace_back(i);
-          break;
-      }
+    if (t.at(i) >= tran.prstart()) {
+      result_indices.emplace_back(i);
+      break;
+    }
   }
   double next_print_point = tran.prstart() + tran.prstep();
   for (auto i = result_indices.back(); i < t.size(); ++i) {
-      if (t.at(i) >= next_print_point) {
-          result_indices.emplace_back(i);
-          next_print_point += tran.prstep();
-      }
+    if (t.at(i) >= next_print_point) {
+      result_indices.emplace_back(i);
+      next_print_point += tran.prstep();
+    }
   }
   // Create the time trace
   traces.emplace_back("time");
   traces.back().type_ = 'T';
   for (auto i : result_indices) {
-      traces.back().data_.emplace_back(t.at(i));
+    traces.back().data_.emplace_back(t.at(i));
   }
   // Print only the indices of the relevant traces
   int64_t cc = 0;
@@ -134,7 +128,7 @@ void Output::write_output(
           } else {
             valin1n2 = valin1n1 = valin1;
             valin2n2 = valin2n1 = valin2;
-          } 
+          }
           // If the analysis method was voltage
           if (iObj.argAnal == AnalysisType::Voltage) {
             value = valin1 - valin2;
@@ -143,9 +137,10 @@ void Output::write_output(
             if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
               value = valvi;
             } else {
-              value = ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep()))
-                * ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1)
-                  + (1.0 / 3.0) * (valin1n2 - valin2n2));
+              value =
+                  ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep())) *
+                  ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1) +
+                   (1.0 / 3.0) * (valin1n2 - valin2n2));
               valin1n2 = valin1n1;
               valin1n1 = valin1;
               valin2n2 = valin2n1;
@@ -176,10 +171,10 @@ void Output::write_output(
             if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
               value = valvi;
             } else {
-              value = ((2.0 * iObj.transSim.tstep()) / 
-                (3.0 * Constants::SIGMA)) * (valin1 - valin2) 
-                + (4.0 / 3.0) * (phaseN1)
-                - (1.0 / 3.0) * (phaseN2);
+              value =
+                  ((2.0 * iObj.transSim.tstep()) / (3.0 * Constants::SIGMA)) *
+                      (valin1 - valin2) +
+                  (4.0 / 3.0) * (phaseN1) - (1.0 / 3.0) * (phaseN2);
               phaseN2 = phaseN1;
               phaseN1 = value;
             }
@@ -198,8 +193,8 @@ void Output::write_output(
           }
         } else {
           for (auto j : result_indices) {
-            double value = mObj.sourcegen.at(i.sourceIndex.value()).value(
-              sObj.results.timeAxis.at(j));
+            double value = mObj.sourcegen.at(i.sourceIndex.value())
+                               .value(sObj.results.timeAxis.at(j));
             traces.back().type_ = 'I';
             traces.back().data_.emplace_back(value);
           }
@@ -246,10 +241,10 @@ void Output::write_output(
   }
 }
 
-void Output::format_csv_or_dat(
-  const std::string& filename, const char& delimiter, bool argmin, 
-  int64_t fIndex) {
-  std::vector<int64_t> tIndices = { 0 };
+void Output::format_csv_or_dat(const std::string& filename,
+                               const char& delimiter, bool argmin,
+                               int64_t fIndex) {
+  std::vector<int64_t> tIndices = {0};
   for (int64_t i = 1; i < traces.size(); ++i) {
     if (traces.at(i).fileIndex == fIndex || fIndex == -1) {
       tIndices.emplace_back(i);
@@ -259,7 +254,7 @@ void Output::format_csv_or_dat(
   outfile << std::setprecision(15);
   if (outfile.is_open()) {
     for (int64_t i = 0; i < tIndices.size() - 1; ++i) {
-        outfile << traces.at(tIndices.at(i)).name_ << delimiter;
+      outfile << traces.at(tIndices.at(i)).name_ << delimiter;
     }
     outfile << traces.at(tIndices.at(tIndices.size() - 1)).name_ << "\n";
     ProgressBar bar;
@@ -276,11 +271,12 @@ void Output::format_csv_or_dat(
         bar.update(j);
       }
       for (int64_t i = 0; i < tIndices.size() - 1; ++i) {
-        outfile << std::scientific << std::setprecision(6) <<
-          traces.at(tIndices.at(i)).data_.at(j) << delimiter;
+        outfile << std::scientific << std::setprecision(6)
+                << traces.at(tIndices.at(i)).data_.at(j) << delimiter;
       }
-      outfile << std::scientific << std::setprecision(6) <<
-        traces.at(tIndices.at(tIndices.size() - 1)).data_.at(j) << "\n";
+      outfile << std::scientific << std::setprecision(6)
+              << traces.at(tIndices.at(tIndices.size() - 1)).data_.at(j)
+              << "\n";
     }
     if (!argmin) {
       bar.complete();
@@ -292,8 +288,9 @@ void Output::format_csv_or_dat(
 }
 
 // Writes the output to a standard spice raw file
-void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex) {
-  std::vector<int64_t> tIndices = { 0 };
+void Output::format_raw(const std::string& filename, bool argmin,
+                        int64_t fIndex) {
+  std::vector<int64_t> tIndices = {0};
   for (int64_t i = 1; i < traces.size(); ++i) {
     if (traces.at(i).fileIndex == fIndex || fIndex == -1) {
       tIndices.emplace_back(i);
@@ -359,12 +356,12 @@ void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex
           bar.update(i);
         }
         // Point and time value
-        outfile << std::left << std::setw(pointSizeSpacing) << i <<
-          traces.at(0).data_.at(i) << "\n";
+        outfile << std::left << std::setw(pointSizeSpacing) << i
+                << traces.at(0).data_.at(i) << "\n";
         // Fill in rest of variable values
         for (int64_t j = 1; j < tIndices.size(); ++j) {
-          outfile << std::left << std::setw(pointSizeSpacing) << "" <<
-            traces.at(tIndices.at(j)).data_.at(i) << "\n";
+          outfile << std::left << std::setw(pointSizeSpacing) << ""
+                  << traces.at(tIndices.at(j)).data_.at(i) << "\n";
         }
       }
       if (!argmin) {
@@ -393,10 +390,10 @@ void Output::format_cout(const bool& argMin) {
     for (int64_t j = 0; j < traces.at(0).data_.size(); ++j) {
       for (int64_t i = 0; i < traces.size() - 1; ++i) {
         std::cout << std::setw(15) << std::scientific << std::setprecision(6)
-          << traces.at(i).data_.at(j) << " ";
+                  << traces.at(i).data_.at(j) << " ";
       }
-      std::cout << std::setw(15) << std::scientific << std::setprecision(6) <<
-        traces.at(traces.size() - 1).data_.at(j) << "\n";
+      std::cout << std::setw(15) << std::scientific << std::setprecision(6)
+                << traces.at(traces.size() - 1).data_.at(j) << "\n";
     }
   }
 }

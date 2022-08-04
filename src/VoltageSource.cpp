@@ -2,11 +2,12 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/VoltageSource.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/Constants.hpp"
 
 #include <utility>
+
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
 
 using namespace JoSIM;
 
@@ -18,14 +19,15 @@ using namespace JoSIM;
  ⎣ 1 -1  0⎦ ⎣Io⎦   ⎣  0⎦
 */
 
-VoltageSource::VoltageSource(
-  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-  const nodemap& nm, std::unordered_set<std::string>& lm,
-  nodeconnections& nc, int64_t& bi, const int64_t& si) {
+VoltageSource::VoltageSource(const std::pair<tokens_t, string_o>& s,
+                             const NodeConfig& ncon, const nodemap& nm,
+                             std::unordered_set<std::string>& lm,
+                             nodeconnections& nc, int64_t& bi,
+                             const int64_t& si) {
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
-    Errors::invalid_component_errors(
-      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL,
+                                     s.first.at(0));
   }
   // Set the label
   netlistInfo.label_ = s.first.at(0);

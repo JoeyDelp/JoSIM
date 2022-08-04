@@ -2,19 +2,20 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Model.hpp"
+
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/TypeDefines.hpp"
 
 using namespace JoSIM;
 
-void Model::parse_model(
-  const std::pair<tokens_t, string_o>& s,
-  vector_pair_t<Model, string_o>& models, const param_map& p) {
+void Model::parse_model(const std::pair<tokens_t, string_o>& s,
+                        vector_pair_t<Model, string_o>& models,
+                        const param_map& p) {
   // Ensure the model conforms to correct syntax
   if (s.first.size() < 3) {
-    Errors::model_errors(
-      ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
+    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                         Misc::vector_to_string(s.first));
   }
   // Create a model that will be stored
   Model temp;
@@ -22,17 +23,16 @@ void Model::parse_model(
   temp.modelName(s.first.at(1));
   // The third token needs to start with "JJ" for this to be valid
   if (s.first.at(2).compare(0, 2, "JJ") != 0) {
-    Errors::model_errors(
-      ModelErrors::UNKNOWN_MODEL_TYPE, Misc::vector_to_string(s.first));
+    Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE,
+                         Misc::vector_to_string(s.first));
   }
   // Create a temporary tokens variable containing the model parameters
   tokens_t tokens(s.first.begin() + 2, s.first.end());
-  tokens = Misc::tokenize(
-    Misc::vector_to_string(tokens).substr(2), "=(), ");
+  tokens = Misc::tokenize(Misc::vector_to_string(tokens).substr(2), "=(), ");
   // Sanity check, there should be an even number of tokens (parameter=value)
   if (tokens.size() % 2 != 0) {
-    Errors::model_errors(
-      ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
+    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                         Misc::vector_to_string(s.first));
   }
   double value = 0.0;
   // Loop through the parameter tokens
@@ -40,8 +40,8 @@ void Model::parse_model(
     // Every even odd token should be a value (otherwise complain)
     value = parse_param(tokens.at(i + 1), p, s.second);
     if (std::isnan(value)) {
-      Errors::model_errors(
-        ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
+      Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                           Misc::vector_to_string(s.first));
     }
     // Assign the relevant model parameters
     if (tokens.at(i) == "VG" || tokens.at(i) == "VGAP") {
@@ -71,12 +71,14 @@ void Model::parse_model(
       temp.icFct(value);
     } else if (tokens.at(i) == "PHI") {
       temp.phiOff(value);
+    } else if (tokens.at(i) == "CPR") {
+      temp.cpr(value);
     } else {
       // Incompatible parameter
-      Errors::model_errors(ModelErrors::PARAM_TYPE_ERROR,
-        Misc::vector_to_string(
-          tokens_t{ Misc::vector_to_string(s.first), 
-            "\nThe parameter: ", tokens.at(i) }));
+      Errors::model_errors(
+          ModelErrors::PARAM_TYPE_ERROR,
+          Misc::vector_to_string(tokens_t{Misc::vector_to_string(s.first),
+                                          "\nThe parameter: ", tokens.at(i)}));
     }
   }
 

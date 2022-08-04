@@ -2,23 +2,22 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/CliOptions.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/IV.hpp"
+#include "JoSIM/Input.hpp"
 #include "JoSIM/Matrix.hpp"
+#include "JoSIM/Model.hpp"
+#include "JoSIM/Noise.hpp"
 #include "JoSIM/Output.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/Simulation.hpp"
-#include "JoSIM/Verbose.hpp"
-#include "JoSIM/CliOptions.hpp"
-#include "JoSIM/Input.hpp"
-#include "JoSIM/Errors.hpp"
 #include "JoSIM/Transient.hpp"
-#include "JoSIM/Model.hpp"
-#include "JoSIM/Noise.hpp"
-#include "JoSIM/IV.hpp"
+#include "JoSIM/Verbose.hpp"
 
 using namespace JoSIM;
 
-int main(int argc,
-  const char** argv) {
+int main(int argc, const char** argv) {
   try {
     // Before anything. Display versioning info.
     CliOptions::version_info();
@@ -34,9 +33,8 @@ int main(int argc,
     }
     // Parse any identified models
     for (const auto& i : iObj.netlist.models) {
-      Model::parse_model(
-        std::make_pair(i.second, i.first.second), iObj.netlist.models_new,
-        iObj.parameters);
+      Model::parse_model(std::make_pair(i.second, i.first.second),
+                         iObj.netlist.models_new, iObj.parameters);
     }
     // Expand nested subcircuits
     iObj.netlist.expand_subcircuits();
@@ -47,7 +45,7 @@ int main(int argc,
     // Identify the simulation parameters
     Transient::identify_simulation(iObj.controls, iObj.transSim);
     // Add noise (if any)
-    //Noise::add_noise_sources(iObj);
+    // Noise::add_noise_sources(iObj);
     // Create matrix object
     Matrix mObj;
     // Create the matrix in csr format
@@ -55,10 +53,14 @@ int main(int argc,
     // Do verbosity
     Verbose::handle_verbosity(iObj.argVerb, iObj, mObj);
     //// Dump expanded Netlist since it is no longer needed
-    //iObj.netlist.expNetlist.clear();
-    //iObj.netlist.expNetlist.shrink_to_fit();
-    // Find the relevant traces to store
+    // iObj.netlist.expNetlist.clear();
+    // iObj.netlist.expNetlist.shrink_to_fit();
+    //  Find the relevant traces to store
     find_relevant_traces(iObj, mObj);
+    int sum = 0.0;
+    for (auto& i : mObj.ci) {
+      sum += i;
+    }
     // Create a simulation object
     Simulation sObj(iObj, mObj);
     // Create an output object

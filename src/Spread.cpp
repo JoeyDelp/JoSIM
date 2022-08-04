@@ -2,19 +2,20 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Spread.hpp"
-#include "JoSIM/Constants.hpp"
-#include "JoSIM/Parameters.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Errors.hpp"
 
 #include <random>
+
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
+#include "JoSIM/Parameters.hpp"
 
 using namespace JoSIM;
 
 void Spread::get_spreads(Input& iObj) {
   for (auto& i : iObj.controls) {
     if (i.front() == "SPREAD") {
-      for (auto& j : tokens_t(i.begin()+1,i.end())) {
+      for (auto& j : tokens_t(i.begin() + 1, i.end())) {
         if (j.at(0) == 'R') {
           auto t = Misc::tokenize(j, "=");
           if (t.size() == 2) {
@@ -66,14 +67,14 @@ double Spread::spread_value(double value, int64_t type, double spread) {
   if (spread == 1.0 && gspread_ != 1.0) {
     spread = gspread_;
   }
-  if(spread == 1.0 && gspread_ == 1.0) {
+  if (spread == 1.0 && gspread_ == 1.0) {
     return value;
   } else {
     std::random_device rd{};
-    std::mt19937 gen{ rd() };
+    std::mt19937 gen{rd()};
     auto min = value * (1 - spread);
     auto max = value * (1 + spread);
-    std::normal_distribution<> d(value, (max - min)/6);
+    std::normal_distribution<> d(value, (max - min) / 6);
     return d(gen);
   }
   return value;

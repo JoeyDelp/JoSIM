@@ -106,12 +106,15 @@ JoSIMで現在サポートしている接合モデルはRCSJモデルだけで�
 | D               | 0.0, 1              | 0.0             | 電流位相関係に影響する接点の透過率 |
 | ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | 臨界電流の準粒子ステップ高さに対する比       |
 | PHI             | 0, $2\pi$           | 0               | $\pi$-junctionのようなphi-junctionを実現可能にする   |
+| CPR | 0,$\infty$ | 1 | 電流の位相関係定数を設定します。 |
 
 *.model* の行はサブサーキット固有であるため同じ名前の異なるモデルを分離されたサブサーキット下にそれぞれ置くことができます。サブサーキット下にモデルが見つからなかった場合グローバルなものを探すことになり、それでも見つからない場合はデフォルトの値（デフォルトのモデル）が使用されます。
 
 **AREA**と**IC**パラメータはモデルパラメータの修飾子としてはたらきます。**IC**が指定されると**AREA**の値は$AREA=\frac{IC_{jj}}{IC_{model}}$によって置き換えられる、臨界電流でかけられた値となります。
 
 モデルの**PHI**パラメータを設定することで、JJ電流の$\sin(\phi)$部分の中にある位相($\phi$)から常に引いたものが位相の値になります。これによって$\pi$-junctionのような素子をモデル化可能です。
+
+***CPR***を設定すると、超電流位相関係の係数が変更されます。デフォルトは$I_S=I_C\sin(\phi)$に関連する1です。これを2に設定すると、この関係が$I_S = I_C\sin(2\phi)$に変更され、超電流の2次高調波のみを有効にして、最初の高調波を抑制することにより、$\pi$-junctionを使用できるようになります。[^1][^2]
 
 
 ### Transmission Line {#transmission-line}
@@ -461,3 +464,5 @@ JoSIMはビルトインの定数セットを持っており、展開された時
 | EPS0      | $\epsilon_{0}$                               | 8.854187817E-12         |
 | SIGMA     | $\sigma$ (short for $\frac{\Phi_{0}}{2\pi}$) | 3.291059757E-16         |
 
+[^1]:I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
+[^2]:S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.

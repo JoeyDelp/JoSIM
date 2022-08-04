@@ -2,15 +2,16 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/TransmissionLine.hpp"
-#include "JoSIM/Misc.hpp"
-#include "JoSIM/Errors.hpp"
-#include "JoSIM/Constants.hpp"
 
-#include <iostream>
-#include <string>
 #include <algorithm>
-#include <locale>
 #include <functional>
+#include <iostream>
+#include <locale>
+#include <string>
+
+#include "JoSIM/Constants.hpp"
+#include "JoSIM/Errors.hpp"
+#include "JoSIM/Misc.hpp"
 
 using namespace JoSIM;
 
@@ -49,15 +50,15 @@ using namespace JoSIM;
 */
 
 TransmissionLine::TransmissionLine(
-  const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
-  const std::optional<NodeConfig>& ncon2, const nodemap& nm,
-  std::unordered_set<std::string>& lm, nodeconnections& nc,
-  const param_map& pm, const AnalysisType& at, const double& h, int64_t& bi) {
+    const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
+    const std::optional<NodeConfig>& ncon2, const nodemap& nm,
+    std::unordered_set<std::string>& lm, nodeconnections& nc,
+    const param_map& pm, const AnalysisType& at, const double& h, int64_t& bi) {
   at_ = at;
   // Check if the label has already been defined
   if (lm.count(s.first.at(0)) != 0) {
-    Errors::invalid_component_errors(
-      ComponentErrors::DUPLICATE_LABEL, s.first.at(0));
+    Errors::invalid_component_errors(ComponentErrors::DUPLICATE_LABEL,
+                                     s.first.at(0));
   }
   // Set the label
   netlistInfo.label_ = s.first.at(0);
@@ -70,9 +71,8 @@ TransmissionLine::TransmissionLine(
       // If impedance keyword is specified but no value given
       if (s.first.at(i).length() < 4) {
         // Complain
-        Errors::invalid_component_errors(
-          ComponentErrors::INVALID_TX_DEFINED,
-          Misc::vector_to_string(s.first));
+        Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED,
+                                         Misc::vector_to_string(s.first));
       }
       // Set the value (Z0), this should be a value
       netlistInfo.value_ = parse_param(s.first.at(i).substr(3), pm, s.second);
@@ -82,12 +82,12 @@ TransmissionLine::TransmissionLine(
       // If impedance keyword is specified but no value given
       if (s.first.at(i).length() < 4) {
         // Complain
-        Errors::invalid_component_errors(
-          ComponentErrors::INVALID_TX_DEFINED,
-          Misc::vector_to_string(s.first));
+        Errors::invalid_component_errors(ComponentErrors::INVALID_TX_DEFINED,
+                                         Misc::vector_to_string(s.first));
       }
       // Set the time delay (TD), this should be a value
-      timestepDelay_ = std::round(parse_param(s.first.at(i).substr(3), pm, s.second) / h);
+      timestepDelay_ =
+          std::round(parse_param(s.first.at(i).substr(3), pm, s.second) / h);
     }
   }
   // Set the node configuration type
@@ -101,8 +101,8 @@ TransmissionLine::TransmissionLine(
   // Set the node configuration type for secondary nodes
   nodeConfig2_ = ncon2.value();
   // Set te node indices, using token 4 and 5
-  set_secondary_node_indices(
-    tokens_t(s.first.begin() + 3, s.first.begin() + 5), nm, nc);
+  set_secondary_node_indices(tokens_t(s.first.begin() + 3, s.first.begin() + 5),
+                             nm, nc);
   // Set the non zero, column index and row pointer vectors
   set_matrix_info();
   // Append the value to the non zero vector
@@ -111,8 +111,8 @@ TransmissionLine::TransmissionLine(
     matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
   } else if (at == AnalysisType::Phase) {
     // If phase mdoe analysis then append -(2*h/3) * (Z0/σ)
-    matrixInfo.nonZeros_.emplace_back(
-      -(2.0 * h / 3.0) * (netlistInfo.value_ / Constants::SIGMA));
+    matrixInfo.nonZeros_.emplace_back(-(2.0 * h / 3.0) *
+                                      (netlistInfo.value_ / Constants::SIGMA));
   }
   hDepPos_ = matrixInfo.nonZeros_.size() - 1;
   // Set the non zero, column index and row pointer vectors
@@ -123,57 +123,58 @@ TransmissionLine::TransmissionLine(
     matrixInfo.nonZeros_.emplace_back(-netlistInfo.value_);
   } else if (at == AnalysisType::Phase) {
     // If phase mdoe analysis then append -(2*h/3) * (Z0/σ)
-    matrixInfo.nonZeros_.emplace_back(
-      -(2.0 * h / 3.0) * (netlistInfo.value_ / Constants::SIGMA));
+    matrixInfo.nonZeros_.emplace_back(-(2.0 * h / 3.0) *
+                                      (netlistInfo.value_ / Constants::SIGMA));
   }
 }
 
-void TransmissionLine::set_secondary_node_indices(
-  const tokens_t& t, const nodemap& nm, nodeconnections& nc) {
+void TransmissionLine::set_secondary_node_indices(const tokens_t& t,
+                                                  const nodemap& nm,
+                                                  nodeconnections& nc) {
   // Transmission lines have 4 nodes, this sets the 2nd pair of the 4
   switch (nodeConfig2_) {
-  case NodeConfig::POSGND:
-    posIndex2_ = nm.at(t.at(0));
-    nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
-    break;
-  case NodeConfig::GNDNEG:
-    negIndex2_ = nm.at(t.at(1));
-    nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
-    break;
-  case NodeConfig::POSNEG:
-    posIndex2_ = nm.at(t.at(0));
-    negIndex2_ = nm.at(t.at(1));
-    nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
-    nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
-    break;
-  case NodeConfig::GND:
-    break;
+    case NodeConfig::POSGND:
+      posIndex2_ = nm.at(t.at(0));
+      nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
+      break;
+    case NodeConfig::GNDNEG:
+      negIndex2_ = nm.at(t.at(1));
+      nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
+      break;
+    case NodeConfig::POSNEG:
+      posIndex2_ = nm.at(t.at(0));
+      negIndex2_ = nm.at(t.at(1));
+      nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
+      nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
+      break;
+    case NodeConfig::GND:
+      break;
   }
 }
 
 void TransmissionLine::set_secondary_matrix_info() {
   // Tranmission lines have two current branches, this sets the second branch
   switch (nodeConfig2_) {
-  case NodeConfig::POSGND:
-    matrixInfo.nonZeros_.emplace_back(1);
-    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
-    matrixInfo.rowPointer_.emplace_back(2);
-    break;
-  case NodeConfig::GNDNEG:
-    matrixInfo.nonZeros_.emplace_back(-1);
-    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
-    matrixInfo.rowPointer_.emplace_back(2);
-    break;
-  case NodeConfig::POSNEG:
-    matrixInfo.nonZeros_.emplace_back(1);
-    matrixInfo.nonZeros_.emplace_back(-1);
-    matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
-    matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
-    matrixInfo.rowPointer_.emplace_back(3);
-    break;
-  case NodeConfig::GND:
-    matrixInfo.rowPointer_.emplace_back(1);
-    break;
+    case NodeConfig::POSGND:
+      matrixInfo.nonZeros_.emplace_back(1);
+      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+      matrixInfo.rowPointer_.emplace_back(2);
+      break;
+    case NodeConfig::GNDNEG:
+      matrixInfo.nonZeros_.emplace_back(-1);
+      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+      matrixInfo.rowPointer_.emplace_back(2);
+      break;
+    case NodeConfig::POSNEG:
+      matrixInfo.nonZeros_.emplace_back(1);
+      matrixInfo.nonZeros_.emplace_back(-1);
+      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+      matrixInfo.rowPointer_.emplace_back(3);
+      break;
+    case NodeConfig::GND:
+      matrixInfo.rowPointer_.emplace_back(1);
+      break;
   }
   matrixInfo.columnIndex_.emplace_back(currentIndex2_);
 }
@@ -182,7 +183,7 @@ void TransmissionLine::set_secondary_matrix_info() {
 void TransmissionLine::update_timestep(const double& factor) {
   if (at_ == AnalysisType::Phase) {
     matrixInfo.nonZeros_.at(hDepPos_) =
-      factor * matrixInfo.nonZeros_.at(hDepPos_);
+        factor * matrixInfo.nonZeros_.at(hDepPos_);
     matrixInfo.nonZeros_.back() = factor * matrixInfo.nonZeros_.back();
   }
 }

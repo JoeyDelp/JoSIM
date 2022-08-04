@@ -2,25 +2,26 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Input.hpp"
-#include "JoSIM/ProgressBar.hpp"
 
+#include <cstring>
+#include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <regex>
-#include <cstring>
-#include <filesystem>
 #include <thread>
-#include <ctime>
+
+#include "JoSIM/ProgressBar.hpp"
 
 using namespace JoSIM;
 
-std::vector<tokens_t> Input::read_input(
-  LineInput& input, string_o fileName) {
-  //When the standard input is selected, "fileName" will be in the nullopt state.
-  if(fileName != std::nullopt){
+std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
+  // When the standard input is selected, "fileName" will be in the nullopt
+  // state.
+  if (fileName != std::nullopt) {
     if (std::filesystem::path(fileName.value()).has_parent_path()) {
       fileParentPath =
-        std::filesystem::path(fileName.value()).parent_path().string();
+          std::filesystem::path(fileName.value()).parent_path().string();
     }
   }
   // Variable to store the read line
@@ -42,9 +43,10 @@ std::vector<tokens_t> Input::read_input(
       tokens = Misc::tokenize(line);
       // Uppercase just the first token for ".INCLUDE" and ".FILE" check
       std::transform(tokens.begin(), tokens.begin() + 1, tokens.begin(),
-        [](std::string& c) -> std::string {
-        std::transform(c.begin(), c.end(), c.begin(), toupper);
-        return c; });
+                     [](std::string& c) -> std::string {
+                       std::transform(c.begin(), c.end(), c.begin(), toupper);
+                       return c;
+                     });
       // If the line contains a "INCLUDE" statement
       if (tokens.at(0) == ".INCLUDE" || tokens.at(0) == "INCLUDE") {
         // Variable to store path to file to include
@@ -53,38 +55,41 @@ std::vector<tokens_t> Input::read_input(
         if (fileName) {
           // Sanity check to prevent cyclic includes
           if (std::filesystem::path(fileName.value()).c_str() ==
-            std::filesystem::path(fileName.value()).parent_path().append(
-              tokens.at(1)).c_str()) {
+              std::filesystem::path(fileName.value())
+                  .parent_path()
+                  .append(tokens.at(1))
+                  .c_str()) {
             Errors::input_errors(InputErrors::CYCLIC_INCLUDE, fileName);
           }
-          includeFile = std::filesystem::path(
-            fileName.value()).parent_path().append(tokens.at(1)).string();
+          includeFile = std::filesystem::path(fileName.value())
+                            .parent_path()
+                            .append(tokens.at(1))
+                            .string();
         } else {
           includeFile =
-            std::filesystem::current_path().append(tokens.at(1)).string();
+              std::filesystem::current_path().append(tokens.at(1)).string();
         }
         // Create a new LineInput variable for the included file
         FileInput file(includeFile);
         // Attempt to read the contents of the included file
         std::vector<tokens_t> tempInclude =
-          Input::read_input(file, includeFile);
+            Input::read_input(file, includeFile);
         // Insert the lines from the included file in place
-        fileLines.insert(
-          fileLines.end(), tempInclude.begin(), tempInclude.end());
+        fileLines.insert(fileLines.end(), tempInclude.begin(),
+                         tempInclude.end());
         // If the line contains a "FILE" statement
       } else if (tokens.at(0) == ".FILE" || tokens.at(0) == "FILE") {
         // Ensure there is a second token
         if (tokens.size() < 2) {
           Errors::control_errors(ControlErrors::INVALID_FILE_COMMAND, line);
         } else {
-          // Sanity check, if parent path of output file is empty then 
-          // change path to input file path, otherwise file is written 
+          // Sanity check, if parent path of output file is empty then
+          // change path to input file path, otherwise file is written
           // in executable location
           auto path = std::filesystem::path(tokens.at(1));
           if (!path.has_parent_path() && fileParentPath) {
-            path = 
-              std::filesystem::path(
-                fileParentPath.value()).append(tokens.at(1));
+            path = std::filesystem::path(fileParentPath.value())
+                       .append(tokens.at(1));
           }
           output_files.emplace_back(OutputFile(path.string()));
         }
@@ -96,15 +101,16 @@ std::vector<tokens_t> Input::read_input(
       } else {
         // Transform the entire line to upper case
         std::transform(tokens.begin() + 1, tokens.end(), tokens.begin() + 1,
-          [](std::string& c) -> std::string {
-          std::transform(c.begin(), c.end(), c.begin(), toupper);
-          return c; });
+                       [](std::string& c) -> std::string {
+                         std::transform(c.begin(), c.end(), c.begin(), toupper);
+                         return c;
+                       });
         // If the line starts with a '+' append it to the previous line.
         if (tokens.at(0).at(0) == '+') {
           // Remove the '+'
           tokens.at(0) = tokens.at(0).substr(1);
-          fileLines.back().insert(
-            fileLines.back().end(), tokens.begin(), tokens.end());
+          fileLines.back().insert(fileLines.back().end(), tokens.begin(),
+                                  tokens.end());
           // Add the line to the read in lines variable
         } else {
           fileLines.emplace_back(tokens);
@@ -179,7 +185,7 @@ void Input::parse_input(string_o fileName) {
             // Populate the a subcircuit at given name with its IO nodes
             for (int64_t j = 2; j < fileLines.at(i).size(); ++j) {
               netlist.subcircuits[subckt.value()].io.push_back(
-                fileLines.at(i).at(j));
+                  fileLines.at(i).at(j));
             }
             // Complain if no IO is found
           } else {
@@ -204,7 +210,7 @@ void Input::parse_input(string_o fileName) {
         // If model, add model to models list
       } else if (::strcmp(fileLines.at(i).front().c_str(), ".MODEL") == 0) {
         netlist.models[std::make_pair(fileLines.at(i).at(1), subckt)] =
-          fileLines.at(i);
+            fileLines.at(i);
         // If neither of these, normal control, add to controls list
       } else {
         // Controls cannot exist within a subcircuit
@@ -226,7 +232,7 @@ void Input::parse_input(string_o fileName) {
         // If model, add to models list
       } else if (::strcmp(fileLines.at(i).front().c_str(), "MODEL") == 0) {
         netlist.models[std::make_pair(fileLines.at(i).at(1), subckt)] =
-          fileLines.at(i);
+            fileLines.at(i);
         // If neither, add to controls list
       } else {
         if (!subckt) {
@@ -240,7 +246,7 @@ void Input::parse_input(string_o fileName) {
       // If subcircuit flag, add line to relevant subcircuit
       if (subckt) {
         netlist.subcircuits[subckt.value()].lines.push_back(
-          std::make_pair(fileLines.at(i), subckt));
+            std::make_pair(fileLines.at(i), subckt));
         // If not, add line to main design
       } else {
         netlist.maindesign.push_back(fileLines.at(i));
@@ -261,9 +267,8 @@ void Input::parse_input(string_o fileName) {
 
 void Input::syntax_check_controls(std::vector<tokens_t>& controls) {
   // This will simply check controls, complaining if any are not allowed
-  std::vector<std::string> v =
-  { "PRINT", "TRAN", "SAVE", "PLOT", "END", 
-    "TEMP", "NEB", "SPREAD", "FILE", "IV" };
+  std::vector<std::string> v = {"PRINT", "TRAN", "SAVE",   "PLOT", "END",
+                                "TEMP",  "NEB",  "SPREAD", "FILE", "IV"};
   for (auto i : controls) {
     if (std::find(v.begin(), v.end(), i.at(0)) == v.end()) {
       Errors::input_errors(InputErrors::UNKNOWN_CONTROL, i.at(0));

@@ -7,14 +7,12 @@
 
 namespace JoSIM {
 
-  class Noise {
-    public:
-    static void determine_global_temperature(Input& iObj);
-    static void determine_noise_effective_bandwidth(Input& iObj);
-    static double determine_spectral_amplitude(const double& R,
-      const double& T);
-
-  };
-}
+class Noise {
+ public:
+  static void determine_global_temperature(Input& iObj);
+  static void determine_noise_effective_bandwidth(Input& iObj);
+  static double determine_spectral_amplitude(const double& R, const double& T);
+};
+}  // namespace JoSIM
 
 #endif

@@ -2,31 +2,41 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Misc.hpp"
-#include "JoSIM/Constants.hpp"
 
 #include <cassert>
-#include <fstream>
-#include <cmath>
 #include <cctype>
-#include <random>
 #include <cfloat>
+#include <cmath>
+#include <fstream>
+#include <random>
+
+#include "JoSIM/Constants.hpp"
 
 using namespace JoSIM;
 
 double Misc::string_constant(const std::string& s) {
-  if (s == "PI") return Constants::PI;
-  else if (s == "PHI_ZERO") return Constants::PHI_ZERO;
-  else if (s == "BOLTZMANN") return Constants::BOLTZMANN;
-  else if (s == "EV") return Constants::EV;
-  else if (s == "HBAR") return Constants::HBAR;
-  else if (s == "C") return Constants::C;
-  else if (s == "MU0") return Constants::MU0;
-  else if (s == "EPS0") return Constants::EPS0;
-  else if (s == "SIGMA") return Constants::SIGMA;
+  if (s == "PI")
+    return Constants::PI;
+  else if (s == "PHI_ZERO")
+    return Constants::PHI_ZERO;
+  else if (s == "BOLTZMANN")
+    return Constants::BOLTZMANN;
+  else if (s == "EV")
+    return Constants::EV;
+  else if (s == "HBAR")
+    return Constants::HBAR;
+  else if (s == "C")
+    return Constants::C;
+  else if (s == "MU0")
+    return Constants::MU0;
+  else if (s == "EPS0")
+    return Constants::EPS0;
+  else if (s == "SIGMA")
+    return Constants::SIGMA;
   return 0.0;
 }
 
-bool Misc::isclose(const double &a, const double &b) {
+bool Misc::isclose(const double& a, const double& b) {
   return fabs(a - b) < DBL_EPSILON;
 }
 
@@ -39,10 +49,9 @@ std::string Misc::file_from_path(const std::string& path) {
     return path.substr(posLastSlash + 1);
 }
 
-bool Misc::has_suffix(const std::string& str,
-  const std::string& suffix) {
+bool Misc::has_suffix(const std::string& str, const std::string& suffix) {
   return str.size() >= suffix.size() &&
-    str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
 bool Misc::starts_with(const std::string& input, char test) {
@@ -62,9 +71,8 @@ std::string Misc::vector_to_string(const tokens_t& s, std::string d) {
   return ss.str();
 }
 
-tokens_t Misc::tokenize(
-  const std::string& c, std::string d, bool trimEmpty, bool trimSpaces,
-  int64_t count) {
+tokens_t Misc::tokenize(const std::string& c, std::string d, bool trimEmpty,
+                        bool trimSpaces, int64_t count) {
   // Create a position token to point to the found delimiter
   size_t pos = 0, lastPos = 0;
   // Tokens to return
@@ -98,8 +106,8 @@ tokens_t Misc::tokenize(
     if (trimSpaces) {
       if (!tokens.empty()) {
         // Remove trailing, leading and duplicate spaces between tokens
-        tokens.back() =
-          std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+        tokens.back() = std::regex_replace(tokens.back(),
+                                           std::regex("^ +| +$|( ) +"), "$1");
       }
     }
     lastPos = pos + 1;
@@ -121,7 +129,7 @@ tokens_t Misc::tokenize(
   if (trimSpaces) {
     // Remove trailing, leading and duplicate spaces between tokens
     tokens.back() =
-      std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
+        std::regex_replace(tokens.back(), std::regex("^ +| +$|( ) +"), "$1");
   }
   // Return the tokens
   return tokens;
@@ -129,14 +137,15 @@ tokens_t Misc::tokenize(
 
 void Misc::ltrim(std::string& s) {
   s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int64_t ch) {
-    return !std::isspace(ch);
-  }));
+            return !std::isspace(ch);
+          }));
 }
 
 void Misc::rtrim(std::string& s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int64_t ch) {
-    return !std::isspace(ch);
-  }).base(), s.end());
+  s.erase(std::find_if(s.rbegin(), s.rend(),
+                       [](int64_t ch) { return !std::isspace(ch); })
+              .base(),
+          s.end());
 }
 
 double Misc::modifier(const std::string& value) {
@@ -150,60 +159,59 @@ double Misc::modifier(const std::string& value) {
     Errors::misc_errors(MiscErrors::STOD_ERROR, value);
   }
   switch (value.substr(sz)[0]) {
-    /* mega */
-  case 'X':
-    return number * 1E6;
-    /* mega or milli */
-  case 'M':
-    /* mega */
-    if (value.substr(sz)[1] == 'E' && value.substr(sz)[2] == 'G')
+      /* mega */
+    case 'X':
       return number * 1E6;
-    /* milli */
-    else
-      return number * 1E-3;
-    /* micro */
-  case 'U':
-    return number * 1E-6;
-    /* nano */
-  case 'N':
-    return number * 1E-9;
-    /* pico */
-  case 'P':
-    return number * 1E-12;
-    /* femto */
-  case 'F':
-    return number * 1E-15;
-    /* kilo */
-  case 'K':
-    return number * 1E3;
-    /* giga */
-  case 'G':
-    return number * 1E9;
-    /* tera */
-  case 'T':
-    return number * 1E12;
-    /* auto modifier */
-  case 'E':
-    return std::stod(value);
-  default:
-    return number;
+      /* mega or milli */
+    case 'M':
+      /* mega */
+      if (value.substr(sz)[1] == 'E' && value.substr(sz)[2] == 'G')
+        return number * 1E6;
+      /* milli */
+      else
+        return number * 1E-3;
+      /* micro */
+    case 'U':
+      return number * 1E-6;
+      /* nano */
+    case 'N':
+      return number * 1E-9;
+      /* pico */
+    case 'P':
+      return number * 1E-12;
+      /* femto */
+    case 'F':
+      return number * 1E-15;
+      /* kilo */
+    case 'K':
+      return number * 1E3;
+      /* giga */
+    case 'G':
+      return number * 1E9;
+      /* tera */
+    case 'T':
+      return number * 1E12;
+      /* auto modifier */
+    case 'E':
+      return std::stod(value);
+    default:
+      return number;
   }
 }
 
 void Misc::unique_push(std::vector<std::string>& vector,
-  const std::string& string) {
+                       const std::string& string) {
   if (std::find(vector.begin(), vector.end(), string) == vector.end()) {
     vector.push_back(string);
   }
 }
 
 int64_t Misc::index_of(const std::vector<std::string>& vector,
-  const std::string& value) {
+                       const std::string& value) {
   int64_t counter = 0;
   for (const auto& i : vector) {
     /* Value found, return counter */
-    if (value == vector.at(counter))
-      return counter;
+    if (value == vector.at(counter)) return counter;
     counter++;
   }
   /* Value was not found, set counter equal to -1 and return */
@@ -212,7 +220,7 @@ int64_t Misc::index_of(const std::vector<std::string>& vector,
 }
 
 std::string Misc::substring_after(const std::string& str,
-  const std::string& whatpart) {
+                                  const std::string& whatpart) {
   std::size_t pos = 0;
   std::string substring;
   if (str.find(whatpart) != std::string::npos)
@@ -222,7 +230,7 @@ std::string Misc::substring_after(const std::string& str,
 }
 
 std::string Misc::substring_before(const std::string& str,
-  const std::string& whatpart) {
+                                   const std::string& whatpart) {
   std::string substring;
   if (str.find(whatpart) != std::string::npos) {
     std::size_t pos = str.find(whatpart);
@@ -232,9 +240,8 @@ std::string Misc::substring_before(const std::string& str,
     return str;
 }
 
-bool Misc::findX(const std::vector<std::string>& segment,
-  std::string& theLine,
-  int64_t& linePos) {
+bool Misc::findX(const std::vector<std::string>& segment, std::string& theLine,
+                 int64_t& linePos) {
   for (int64_t i = linePos; i < segment.size(); ++i) {
     if (segment.at(i).at(0) == 'X') {
       theLine = segment.at(i);
@@ -250,8 +257,7 @@ bool Misc::findX(const std::vector<std::string>& segment,
 
 int64_t Misc::numDigits(int64_t number) {
   int64_t digits = 0;
-  if (number <= 0)
-    digits = 1;
+  if (number <= 0) digits = 1;
   while (number) {
     number /= 10;
     digits++;
@@ -262,10 +268,9 @@ int64_t Misc::numDigits(int64_t number) {
 double Misc::grand() {
   double r, u1, u2, lt;
   double scale = 1.0 / 1024.0 / 1024.0 / 1024.0 / 2.0;
-  u1 = (static_cast<double>(rand()) + 1) /
-    (static_cast<double>(RAND_MAX) + 1);
+  u1 = (static_cast<double>(rand()) + 1) / (static_cast<double>(RAND_MAX) + 1);
   u2 = static_cast<double>(rand()) * 2 * Constants::PI /
-    static_cast<double>(RAND_MAX);
+       static_cast<double>(RAND_MAX);
   lt = sqrt(-2.0 * log(u1));
   r = cos(u2) * lt;
   return r;

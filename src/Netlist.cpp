@@ -2,20 +2,21 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Netlist.hpp"
+
+#include <thread>
+
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/ProgressBar.hpp"
 
-#include <thread>
-
 using namespace JoSIM;
 
 void Netlist::id_io_subc_label(
-  const tokens_t& lineTokens, tokens_t& io, s_map& params,
-  std::string& subcktName, std::string& label,
-  const std::unordered_map<std::string, Subcircuit>& subcircuits) {
-  // Id the label 
+    const tokens_t& lineTokens, tokens_t& io, s_map& params,
+    std::string& subcktName, std::string& label,
+    const std::unordered_map<std::string, Subcircuit>& subcircuits) {
+  // Id the label
   label = lineTokens.front();
   // Found flag
   bool found = false;
@@ -36,14 +37,14 @@ void Netlist::id_io_subc_label(
     }
   }
   if (!found) {
-    Errors::input_errors(
-      InputErrors::UNKNOWN_SUBCKT, Misc::vector_to_string(lineTokens));
+    Errors::input_errors(InputErrors::UNKNOWN_SUBCKT,
+                         Misc::vector_to_string(lineTokens));
   }
 }
 
-bool Netlist::rename_io_nodes(
-  std::string& node, const tokens_t& subIO, const tokens_t& parentIO) {
-  // If the subcircuit IO contains the first node 
+bool Netlist::rename_io_nodes(std::string& node, const tokens_t& subIO,
+                              const tokens_t& parentIO) {
+  // If the subcircuit IO contains the first node
   if (std::count(subIO.begin(), subIO.end(), node) != 0) {
     // Loop through the subcircuit IO
     for (int64_t l = 0; l < subIO.size(); ++l) {
@@ -60,8 +61,8 @@ bool Netlist::rename_io_nodes(
   return false;
 }
 
-void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, 
-  const std::string& label) {
+void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io,
+                        const std::string& label) {
   // Sanity check
   if (io.size() != subc.io.size()) {
     Errors::input_errors(InputErrors::IO_MISMATCH, label);
@@ -169,8 +170,8 @@ void Netlist::expand_subcircuits() {
           // Variable to store io and parameters
           tokens_t io;
           s_map params;
-          id_io_subc_label(
-            subcCurrentLine, io, params, subcktName, label, subcircuits);
+          id_io_subc_label(subcCurrentLine, io, params, subcktName, label,
+                           subcircuits);
           // Create a copy of the subircuit for this instance
           Subcircuit subc = subcircuits.at(subcktName);
           // If not nested
@@ -181,7 +182,7 @@ void Netlist::expand_subcircuits() {
             subcircuit.lines.erase(subcircuit.lines.begin() + j);
             // Insert the subcircuit token lines at the erased line position
             subcircuit.lines.insert(subcircuit.lines.begin() + j,
-              subc.lines.begin(), subc.lines.end());
+                                    subc.lines.begin(), subc.lines.end());
             // Reduce the total amound of subcircuits in this subcircuit by 1
             --subcircuit.subcktCounter;
             ++cc;
@@ -227,16 +228,15 @@ void Netlist::expand_maindesign() {
       // Variable to store io and parameters
       tokens_t io;
       s_map params;
-      id_io_subc_label(maindesign.at(i), io, params, 
-        subcktName, label, subcircuits);
+      id_io_subc_label(maindesign.at(i), io, params, subcktName, label,
+                       subcircuits);
       // Copy of subcircuit for this instance
       Subcircuit subc = subcircuits.at(subcktName);
       // Expand the appropriate IO nodes of the subcircuit for this instance
       expand_io(subc, params, io, label);
       // Add the expanded subcircuit lines to the expanded netlist
-      expNetlist.insert(expNetlist.end(), subc.lines.begin(),
-        subc.lines.end());
-      // If the line is not a subcircuit 
+      expNetlist.insert(expNetlist.end(), subc.lines.begin(), subc.lines.end());
+      // If the line is not a subcircuit
     } else {
       // Add the line tokens to the expanded netlist
       expNetlist.push_back(std::make_pair(maindesign.at(i), std::nullopt));
