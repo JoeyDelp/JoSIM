@@ -93,7 +93,7 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | RN              | 0, $\infty$         | 5               | Junction normal resistance                                   |
 | R0              | 0, $\infty$         | 30              | Junction subgap resistance                                   |
 | C or CAP        | 0, $\infty$         | 2.5E-12         | Junction capacitance                                         |
-| T               | 0, $\infty$         | 4.2             | Boiling point of liquid coolant                              |
+| T               | 0, $\infty$         | 4.2             | Junction temperature in K                                    |
 | TC              | 0, $\infty$         | 9.1             | Critical temperature of superconducting material             |
 | DELV            | 0, $\infty$         | 0.1E-3          | Transitional voltage from subgap to normal                   |
 | D               | 0.0, 1              | 0.0             | Point of contact transparency affecting current phase relationship |
@@ -107,7 +107,7 @@ The **AREA** and **IC** parameters act as modifiers to the model parameters. **A
 
 By setting the **PHI** parameter of the model, the phase value is persistantly subtracted from the phase ($\phi$) in the $\sin(\phi)$ part of the JJ current. This allows elements such as the $\pi$-junction to be modeled. 
 
-Setting **CPR** changes the coefficient of the supercurrent phase relationship. Default is 1 relating to $I_S=I_C\sin(\phi)$. Setting this to 2 would change this relationship to $I_S=I_C\sin(2\phi)$ which allows the use of $\pi$-junctions by enabling only the second harmonic of the supercurrent and suppressing the first.[^1][^2]
+Setting **CPR** changes the coefficient of the supercurrent phase relationship. Default is 1 relating to $I_S=I_C\sin(\phi)$. Setting this to 2 would change this relationship to $I_S=I_C\sin(2\phi)$ which allows the use of $2\phi$-junctions by enabling only the second harmonic of the supercurrent and suppressing the first.[^1][^2]
 
 ### Transmission Line
 
