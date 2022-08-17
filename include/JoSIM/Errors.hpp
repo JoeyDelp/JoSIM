@@ -105,6 +105,7 @@ enum class ControlErrors : int64_t {
 
 enum class ModelErrors : int64_t {
   PARAM_TYPE_ERROR,
+  PARAM_PARENTHESIS,
   UNKNOWN_MODEL_TYPE,
   BAD_MODEL_DEFINITION
 };

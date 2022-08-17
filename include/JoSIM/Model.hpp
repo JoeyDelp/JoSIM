@@ -13,7 +13,7 @@ class Model {
   std::string modelName_;
   double vg_;
   double ic_;
-  double cpr_;
+  std::vector<double> cpr_;
   int64_t rtype_;
   double rn_;
   double r0_;
@@ -30,7 +30,7 @@ class Model {
   Model()
       : vg_(2.8E-3),
         ic_(1E-3),
-        cpr_(1.0),
+        cpr_({1.0}),
         rtype_(1),
         rn_(5),
         r0_(30),
@@ -49,8 +49,8 @@ class Model {
   void vg(const double& v) { vg_ = v; }
   double ic() const { return ic_; }
   void ic(const double& i) { ic_ = i; }
-  double cpr() const { return cpr_; }
-  void cpr(const double& i) { cpr_ = i; }
+  std::vector<double> cpr() const { return cpr_; }
+  void cpr(const std::vector<double>& i) { cpr_ = i; }
   int64_t rtype() const { return rtype_; }
   void rtype(const int64_t& r) { rtype_ = r; }
   double rn() const { return rn_; }

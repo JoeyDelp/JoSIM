@@ -31,6 +31,10 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.5
+- Updated the CPR specification in the JJ model to allow multiple simulataneos harmonics.
+- Added a Notepad++ UDL syntax highlighting script to the scripts folder.
+
 ### v2.6.4
 - Added the ability to specify CPR in the JJ model to enable non-sinusoidal CPRs needed for pi-junctions.
 
