@@ -961,16 +961,16 @@
 </tr>
 <tr>
 <td>CPR</td>
-<td>0, <span class="arithmatex">\(\infty\)</span></td>
-<td>1</td>
-<td>Sets the Current Phase Relationship constant.</td>
+<td>{<span class="arithmatex">\(-\infty\)</span>, <span class="arithmatex">\(\infty\)</span>}</td>
+<td>{1}</td>
+<td>Sets the Current Phase Relationship harmonic amplitudes.</td>
 </tr>
 </tbody>
 </table>
 <p>The <em>.model</em> line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.</p>
 <p>The <strong>AREA</strong> and <strong>IC</strong> parameters act as modifiers to the model parameters. <strong>AREA</strong> is a critical current multiplier, where if <strong>IC</strong> is specified it replaces the <strong>AREA</strong> value by <span class="arithmatex">\(AREA=\frac{IC_{jj}}{IC_{model}}\)</span>. </p>
 <p>By setting the <strong>PHI</strong> parameter of the model, the phase value is persistantly subtracted from the phase (<span class="arithmatex">\(\phi\)</span>) in the <span class="arithmatex">\(\sin(\phi)\)</span> part of the JJ current. This allows elements such as the <span class="arithmatex">\(\pi\)</span>-junction to be modeled. </p>
-<p>Setting <strong>CPR</strong> changes the coefficient of the supercurrent phase relationship. Default is 1 relating to <span class="arithmatex">\(I_S=I_C\sin(\phi)\)</span>. Setting this to 2 would change this relationship to <span class="arithmatex">\(I_S=I_C\sin(2\phi)\)</span> which allows the use of <span class="arithmatex">\(2\phi\)</span>-junctions by enabling only the second harmonic of the supercurrent and suppressing the first.<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></p>
+<p>The <strong>CPR</strong> parameter alters each individual harmonic of the junction supercurrent. It can either be a singular value or an array of <em>n</em> values encapsulated with curly braces. i.e <em>CPR={0.9, 0.1}</em> to set the current phase relationship to the following <span class="arithmatex">\(I = I_C(0.9\sin(\phi) + 0.1\sin(2\phi))\)</span>. </p>
 <h3 id="transmission-line">Transmission Line</h3>
 <p><strong>T</strong>Label&emsp;<span class="arithmatex">\(N^{+}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{+}_{2}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{2}\)</span>&emsp;<strong>TD=VALUE</strong>&emsp;<strong>Z0=VALUE</strong></p>
 <p><strong>TD</strong> is the time delay in seconds.</p>

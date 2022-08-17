@@ -963,16 +963,16 @@
 </tr>
 <tr>
 <td>CPR</td>
-<td>0,<span class="arithmatex">\(\infty\)</span></td>
-<td>1</td>
-<td>電流の位相関係定数を設定します。</td>
+<td>{<span class="arithmatex">\(-\infty\)</span>, <span class="arithmatex">\(\infty\)</span>)</td>
+<td>{1}</td>
+<td>現在の位相関係の高調波振幅を設定します。</td>
 </tr>
 </tbody>
 </table>
 <p><em>.model</em> の行はサブサーキット固有であるため同じ名前の異なるモデルを分離されたサブサーキット下にそれぞれ置くことができます。サブサーキット下にモデルが見つからなかった場合グローバルなものを探すことになり、それでも見つからない場合はデフォルトの値（デフォルトのモデル）が使用されます。</p>
 <p><strong>AREA</strong>と<strong>IC</strong>パラメータはモデルパラメータの修飾子としてはたらきます。<strong>IC</strong>が指定されると<strong>AREA</strong>の値は<span class="arithmatex">\(AREA=\frac{IC_{jj}}{IC_{model}}\)</span>によって置き換えられる、臨界電流でかけられた値となります。</p>
 <p>モデルの<strong>PHI</strong>パラメータを設定することで、JJ電流の<span class="arithmatex">\(\sin(\phi)\)</span>部分の中にある位相(<span class="arithmatex">\(\phi\)</span>)から常に引いたものが位相の値になります。これによって<span class="arithmatex">\(\pi\)</span>-junctionのような素子をモデル化可能です。</p>
-<p><strong><em>CPR</em></strong>を設定すると、超電流位相関係の係数が変更されます。デフォルトは<span class="arithmatex">\(I_S=I_C\sin(\phi)\)</span>に関連する1です。これを2に設定すると、この関係が<span class="arithmatex">\(I_S = I_C\sin(2\phi)\)</span>に変更され、超電流の2次高調波のみを有効にして、最初の高調波を抑制することにより、<span class="arithmatex">\(2\phi\)</span>-junctionを使用できるようになります。<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></p>
+<p>CPR パラメータは、ジャンクション超電流の個々の高調波を変更します。 単一の値、または中括弧でカプセル化された n 個の値の配列のいずれかです。 つまり、<em>CPR={0.9, 0.1}</em> は、現在の位相関係を次の <span class="arithmatex">\(I = I_C(0.9\sin(\phi) + 0.1\sin(2\phi))\)</span> に設定します。<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup></p>
 <h3 id="transmission-line">Transmission Line</h3>
 <p><strong>T</strong>Label&emsp;<span class="arithmatex">\(N^{+}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{1}\)</span>&emsp;<span class="arithmatex">\(N^{+}_{2}\)</span>&emsp;<span class="arithmatex">\(N^{-}_{2}\)</span>&emsp;<strong>TD=VALUE</strong>&emsp;<strong>Z0=VALUE</strong></p>
 <p><strong>TD</strong>は単位時間あたりの遅延時間です。</p>
