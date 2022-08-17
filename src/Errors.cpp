@@ -493,6 +493,10 @@ void Errors::model_errors(ModelErrors errorCode, string_o message) {
           "Please consult the syntax guide for more information.";
       warning_message(formattedMessage);
       break;
+    case ModelErrors::PARAM_PARENTHESIS:
+      formattedMessage += "Model parameter has non-closing parenthesis.\n";
+      formattedMessage += "Model line: " + message.value_or("");
+      throw std::runtime_error(formattedMessage);
     case ModelErrors::UNKNOWN_MODEL_TYPE:
       formattedMessage += "Unknown model type specified.\n";
       formattedMessage += "Model line: " + message.value_or("");
