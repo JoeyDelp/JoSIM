@@ -395,10 +395,9 @@ void Simulation::handle_jj(Matrix &mObj, int64_t &i, double &step,
     }
     // Ic * sin (phi * (φ0 - φ))
     double ic_sin_phi = 0.0;
-    auto &cpr = temp.model_.cpr();
-    for (int harm = 0; harm < cpr.size(); ++harm) {
+    for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
       ic_sin_phi += temp.model_.ic() *
-                    (cpr.at(harm) *
+                    (temp.model_.cpr().at(harm) *
                      sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff())));
     }
     if (!temp.model_.tDep()) {
@@ -409,15 +408,15 @@ void Simulation::handle_jj(Matrix &mObj, int64_t &i, double &step,
            ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + temp.it_);
     } else {
       double sin2_half_phi = 0.0;
-      for (int harm = 0; harm < cpr.size(); ++harm) {
+      for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
         sin2_half_phi +=
-            cpr.at(harm) *
+            temp.model_.cpr().at(harm) *
             sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()) / 2);
       }
       sin2_half_phi = sin2_half_phi * sin2_half_phi;
       double sin_phi = 0.0;
-      for (int harm = 0; harm < cpr.size(); ++harm) {
-        sin_phi += cpr.at(harm) *
+      for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
+        sin_phi += temp.model_.cpr().at(harm) *
                    sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
       }
       double sqrt_part = sqrt(1 - model.d() * sin2_half_phi);
