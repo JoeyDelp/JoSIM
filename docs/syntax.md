@@ -85,21 +85,21 @@ This model control has the following syntax
 
 The only junction model currently supported by JoSIM is the RCSJ model and thus the only available ModelType is **jj** with the following tunable parameters:
 
-| Parameter       | Range               | Default         | Description                                                  |
-| --------------- | ------------------- | --------------- | ------------------------------------------------------------ |
-| RTYPE           | 0, 1                | 1               | Linearization model used                                     |
-| VG or VGAP      | -$\infty$, $\infty$ | 2.8E-3          | Junction gap voltage                                         |
-| IC or ICRIT     | -$\infty$, $\infty$ | 1E-3            | Junction critical current                                    |
-| RN              | 0, $\infty$         | 5               | Junction normal resistance                                   |
-| R0              | 0, $\infty$         | 30              | Junction subgap resistance                                   |
-| C or CAP        | 0, $\infty$         | 2.5E-12         | Junction capacitance                                         |
-| T               | 0, $\infty$         | 4.2             | Junction temperature in K                                    |
-| TC              | 0, $\infty$         | 9.1             | Critical temperature of superconducting material             |
-| DELV            | 0, $\infty$         | 0.1E-3          | Transitional voltage from subgap to normal                   |
-| D               | 0.0, 1              | 0.0             | Point of contact transparency affecting current phase relationship |
-| ICFCT or ICFACT | 0, 1                | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
-| PHI             | 0, $2\pi$           | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
-| CPR             | 0, $\infty$         | 1               | Sets the Current Phase Relationship constant.                |
+| Parameter       | Range                 | Default         | Description                                                  |
+| --------------- | --------------------- | --------------- | ------------------------------------------------------------ |
+| RTYPE           | 0, 1                  | 1               | Linearization model used                                     |
+| VG or VGAP      | -$\infty$, $\infty$   | 2.8E-3          | Junction gap voltage                                         |
+| IC or ICRIT     | -$\infty$, $\infty$   | 1E-3            | Junction critical current                                    |
+| RN              | 0, $\infty$           | 5               | Junction normal resistance                                   |
+| R0              | 0, $\infty$           | 30              | Junction subgap resistance                                   |
+| C or CAP        | 0, $\infty$           | 2.5E-12         | Junction capacitance                                         |
+| T               | 0, $\infty$           | 4.2             | Junction temperature in K                                    |
+| TC              | 0, $\infty$           | 9.1             | Critical temperature of superconducting material             |
+| DELV            | 0, $\infty$           | 0.1E-3          | Transitional voltage from subgap to normal                   |
+| D               | 0.0, 1                | 0.0             | Point of contact transparency affecting current phase relationship |
+| ICFCT or ICFACT | 0, 1                  | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
+| PHI             | 0, $2\pi$             | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
+| CPR             | {$-\infty$, $\infty$} | {1}             | Sets the Current Phase Relationship harmonic amplitudes.     |
 
 The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
 
@@ -107,7 +107,7 @@ The **AREA** and **IC** parameters act as modifiers to the model parameters. **A
 
 By setting the **PHI** parameter of the model, the phase value is persistantly subtracted from the phase ($\phi$) in the $\sin(\phi)$ part of the JJ current. This allows elements such as the $\pi$-junction to be modeled. 
 
-Setting **CPR** changes the coefficient of the supercurrent phase relationship. Default is 1 relating to $I_S=I_C\sin(\phi)$. Setting this to 2 would change this relationship to $I_S=I_C\sin(2\phi)$ which allows the use of $2\phi$-junctions by enabling only the second harmonic of the supercurrent and suppressing the first.[^1][^2]
+The **CPR** parameter alters each individual harmonic of the junction supercurrent. It can either be a singular value or an array of *n* values encapsulated with curly braces. i.e *CPR={0.9, 0.1}* to set the current phase relationship to the following $I = I_C(0.9\sin(\phi) + 0.1\sin(2\phi))$. 
 
 ### Transmission Line
 

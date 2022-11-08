@@ -17,6 +17,7 @@ def main():
   # Add possible parser arguments
   parser.add_argument("input", help="the CSV input file")
   parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, webp, svg, eps, pdf")
+  parser.add_argument("-d", "--dimensions", help="the dimensions of the output file")
   parser.add_argument("-x", "--html", help="save the output as an html file for later viewing")
   parser.add_argument("-t", "--type", help="type of plot: grid, stacked, combined, square, sep_comb. Default: grid", default="grid")
   parser.add_argument("-s", "--subset", nargs='+', help="subset of traces to plot. specify list of column names (as shown in csv file header), ie. \"V(1)\" \"V(2)\". Default: None")
@@ -104,7 +105,8 @@ def main():
   elif(args.html != None and args.output == None):
     fig.write_html(args.html)
   elif(args.html == None and os.path.splitext(args.output)[1] in outformats):
-    fig.write_image(args.output, width=3508, height=2480)
+    w, h = args.dimensions.split("x")
+    fig.write_image(args.output, width=w, height=h)
   else:
     print("Unknown file format for output file specified.")
     print("Please use: png, jpeg, webp, svg, eps or pdf")  

@@ -31,6 +31,11 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.6
+- Fixed a bug in noise source generation when noise step is less than or equal to the simulation step.
+- Reduced aggressiveness of timestep scale down when close to transmission line step delay size. Now only scales down if TX delay is less than 1 step (previously 4)
+- Added output dimensions option to josim-plot script when writing directly to PDF, SVG, EPS, etc.
+
 ### v2.6.5
 - Updated the CPR specification in the JJ model to allow multiple simulataneos harmonics.
 - Added a Notepad++ UDL syntax highlighting script to the scripts folder.

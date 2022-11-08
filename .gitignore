@@ -321,3 +321,5 @@ doc/*
 # site folder
 site/
 Screenshot 2020-09-18 at 15.17.27.png
+/scripts/dist
+*.spec

@@ -210,7 +210,7 @@ void Matrix::create_components(Input& iObj) {
             i, nodeConfig.at(cc), nodeConfig2.at(cc), nm, lm, nc,
             iObj.parameters, iObj.argAnal, iObj.transSim.tstep(), branchIndex));
         if (std::get<TransmissionLine>(components.devices.back())
-                .timestepDelay_ <= 4) {
+                .timestepDelay_ < 1) {
           needsTR_ = true;
           return;
         }

@@ -417,7 +417,9 @@ double Function::return_noise(double& x) {
       miscValues_.at(1) =
           ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back());
       miscValues_.at(2) = miscValues_.at(3);
-      miscValues_.at(3) = miscValues_.at(2) + timeValues_.back();
+      if (x == miscValues_.at(3))
+        miscValues_.at(3) = miscValues_.at(2) + timeValues_.back();
+      if (x > miscValues_.at(3)) miscValues_.at(3) = x;
     }
     double& y2 = miscValues_.at(1);
     double& y1 = miscValues_.at(0);
