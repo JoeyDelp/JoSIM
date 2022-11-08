@@ -37,7 +37,7 @@ Referencing:
 - Added output dimensions option to josim-plot script when writing directly to PDF, SVG, EPS, etc.
 
 ### v2.6.5
-- Updated the CPR specification in the JJ model to allow multiple simulataneos harmonics.
+- Updated the CPR specification in the JJ model to allow multiple simulataneous harmonics.
 - Added a Notepad++ UDL syntax highlighting script to the scripts folder.
 
 ### v2.6.4
