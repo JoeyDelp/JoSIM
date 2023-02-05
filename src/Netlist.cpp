@@ -3,6 +3,7 @@
 
 #include "JoSIM/Netlist.hpp"
 
+#include <cstring> // for strcmp
 #include <thread>
 
 #include "JoSIM/AnalysisType.hpp"
