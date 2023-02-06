@@ -4,6 +4,7 @@
 #include "JoSIM/TransmissionLine.hpp"
 
 #include <algorithm>
+#include <cstring> // for memcmp
 #include <functional>
 #include <iostream>
 #include <locale>
