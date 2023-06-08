@@ -1,5 +1,6 @@
 // Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
+#ifdef SLU
 #ifndef JOSIM_LUSOLVE_H
 #define JOSIM_LUSOLVE_H
 
@@ -43,4 +44,5 @@ class LUSolve {
 
 }  // namespace JoSIM
 
+#endif
 #endif

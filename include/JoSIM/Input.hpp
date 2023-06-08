@@ -34,17 +34,15 @@ class Input {
   AnalysisType argAnal;
   int64_t argVerb;
   bool argMin;
-  bool SLU;
 
   Input(AnalysisType at = AnalysisType::Phase, int64_t verb = 0,
-        bool min = false, bool slu = false)
-      : argAnal(at), argVerb(verb), argMin(min), SLU(slu){};
+        bool min = false)
+      : argAnal(at), argVerb(verb), argMin(min){};
   Input(CliOptions& cli_options) {
     argAnal = cli_options.analysis_type;
     argVerb = cli_options.verbose;
     argMin = cli_options.minimal;
     cli_output_file = cli_options.output_file;
-    SLU = cli_options.SLU;
   }
 
   std::vector<tokens_t> read_input(LineInput& input,

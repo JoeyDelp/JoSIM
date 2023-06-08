@@ -31,7 +31,11 @@ class Matrix {
   std::unordered_set<std::string> lm;
   int64_t branchIndex = 0;
   std::vector<double> nz;
+#ifdef SLU
   std::vector<long long> ci, rp;
+#else
+  std::vector<int64_t> ci, rp;
+#endif
   std::vector<RelevantTrace> relevantTraces;
   std::vector<int64_t> relevantIndices;
 

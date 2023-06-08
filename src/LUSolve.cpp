@@ -1,6 +1,7 @@
 // Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
+#ifdef SLU
 #include "JoSIM/LUSolve.hpp"
 
 using namespace JoSIM;
@@ -92,3 +93,4 @@ void LUSolve::free() {
     Destroy_CompCol_Matrix(&U);
   }
 }
+#endif

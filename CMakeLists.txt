@@ -13,6 +13,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
 
 add_definitions(-DVERSION="${CMAKE_PROJECT_VERSION}")
+option(SLU "Enable SuperLU instead of KLU")
 
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)

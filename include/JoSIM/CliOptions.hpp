@@ -25,7 +25,6 @@ struct CliOptions {
   AnalysisType analysis_type = AnalysisType::Phase;
 
   int64_t verbose = 0;
-  bool SLU = false;
   bool minimal = false;
   bool parallel = false;
 
