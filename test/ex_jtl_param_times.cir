@@ -1,0 +1,41 @@
+* Example JTL Basic
+.param tstep=0.25p
+.param tstop=1n
+.param pstart=0
+.param pstep=0.25p
+
+.param tpsep=300p
+.param trise=2.5p
+.param tfall=trise
+
+.param tp1=0+tpsep
+.param tp1_p=tp1+trise
+.param tp1_f=tp1_p+tfall
+
+.param tp2=tp1+tpsep
+.param tp2_p=tp2+trise
+.param tp2_f=tp2_p+tfall
+
+B01        3          7          jmitll     area=2.16
+B02        6          8          jmitll     area=2.16
+IB01       0          1          pwl(0      0 5p 280u)
+L01        4          3          2p        
+L02        3          2          2.425p    
+L03        2          6          2.425p    
+L04        6          5          2.031p    
+LP01       0          7          0.086p    
+LP02       0          8          0.096p    
+LPR01      2          1          0.278p    
+LRB01      7          9          0.086p    
+LRB02      8          10         0.086p    
+RB01       9          3          5.23      
+RB02       10         6          5.23      
+ROUT       5          0          2         
+VIN        4          0          pwl(0 0 tp1 0 tp1_p 827.13u tp1_f 0 tp2 0 tp2_p 827.13u tp2_f 0)
+.model jmitll jj(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rN=16, icrit=0.1mA)
+.tran tstep tstop pstart pstep
+.print DEVV VIN
+.print DEVI ROUT
+.print PHASE B01
+.print PHASE B02
+.end

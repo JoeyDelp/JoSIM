@@ -31,6 +31,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.7
+- Added ability to parameterize time points specified for `.tran` and `pwl` commands.
+
 ### v2.6.6
 - Fixed a bug in noise source generation when noise step is less than or equal to the simulation step.
 - Reduced aggressiveness of timestep scale down when close to transmission line step delay size. Now only scales down if TX delay is less than 1 step (previously 4)

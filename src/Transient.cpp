@@ -11,7 +11,7 @@
 using namespace JoSIM;
 
 void Transient::identify_simulation(std::vector<tokens_t>& controls,
-                                    Transient& tObj) {
+                                    Transient& tObj, param_map& params) {
   // Flag to store that a transient simulation was found
   bool transFound = false;
   // Loop through all the controls
@@ -39,16 +39,16 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls,
         // If there are more than 2 tokens
       } else {
         // Set the step size
-        tObj.tstep(Misc::modifier(i.at(1)));
+        tObj.tstep(parse_param(i.at(1), params));
         if (i.size() > 2) {
           // Set the simulation stop time
-          tObj.tstop(Misc::modifier(i.at(2)));
+          tObj.tstop(parse_param(i.at(2), params));
           if (i.size() > 3) {
             // Set the print start time
-            tObj.prstart(Misc::modifier(i.at(3)));
+            tObj.prstart(parse_param(i.at(3), params));
             if (i.size() > 4) {
               // Set the print step size
-              tObj.prstep(Misc::modifier(i.at(4)));
+              tObj.prstep(parse_param(i.at(4), params));
             } else
               // Set default
               tObj.prstep(tObj.tstep());

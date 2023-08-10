@@ -84,7 +84,7 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj,
     values.push_back(0.0);
   }
   for (int64_t i = 0; i < t.size(); i = i + 2) {
-    timesteps.push_back(Misc::modifier(t.at(i)));
+    timesteps.push_back(parse_param(t.at(i), iObj.parameters, s));
   }
   for (int64_t i = 1; i < t.size(); i = i + 2) {
     values.push_back(parse_param(t.at(i), iObj.parameters, s));

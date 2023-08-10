@@ -43,7 +43,8 @@ int main(int argc, const char** argv) {
     // Simulate IV curves if need be
     IV ivObj(iObj);
     // Identify the simulation parameters
-    Transient::identify_simulation(iObj.controls, iObj.transSim);
+    Transient::identify_simulation(iObj.controls, iObj.transSim,
+                                   iObj.parameters);
     // Create matrix object
     Matrix mObj;
     // Create the matrix in csr format

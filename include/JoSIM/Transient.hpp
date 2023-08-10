@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "JoSIM/TypeDefines.hpp"
+#include "JoSIM/Parameters.hpp"
 
 namespace JoSIM {
 class Transient {
@@ -39,7 +40,7 @@ class Transient {
   void startup(bool value) { startup_ = value; }
 
   static void identify_simulation(std::vector<tokens_t>& controls,
-                                  Transient& tObj);
+                                  Transient& tObj, param_map& params);
 };
 }  // namespace JoSIM
 
