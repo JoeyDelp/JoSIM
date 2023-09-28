@@ -109,8 +109,13 @@ std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
         if (tokens.at(0).at(0) == '+') {
           // Remove the '+'
           tokens.at(0) = tokens.at(0).substr(1);
-          fileLines.back().insert(fileLines.back().end(), tokens.begin(),
-                                  tokens.end());
+          if (tokens.at(0).empty()) {
+            fileLines.back().insert(fileLines.back().end(), tokens.begin() + 1,
+                                    tokens.end());
+          } else {
+            fileLines.back().insert(fileLines.back().end(), tokens.begin(),
+                                    tokens.end());
+          }
           // Add the line to the read in lines variable
         } else {
           fileLines.emplace_back(tokens);
