@@ -187,6 +187,12 @@ void Input::parse_input(string_o fileName) {
           if (fileLines.at(i).size() > 2) {
             // Set the subcircuit name the second token
             subckt = fileLines.at(i).at(1);
+            if (netlist.subcircuits.count(subckt.value()) != 0) {
+              Errors::input_errors(InputErrors::DUPLICATE_SUBCIRCUIT,
+                                   subckt.value());
+              netlist.subcircuits[subckt.value()].io.clear();
+              netlist.subcircuits[subckt.value()].lines.clear();
+            }
             // Populate the a subcircuit at given name with its IO nodes
             for (int64_t j = 2; j < fileLines.at(i).size(); ++j) {
               netlist.subcircuits[subckt.value()].io.push_back(

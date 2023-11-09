@@ -142,6 +142,13 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
       formattedMessage += "These controls will be ignored.";
       warning_message(formattedMessage);
       break;
+    case InputErrors::DUPLICATE_SUBCIRCUIT:
+      formattedMessage +=
+          "Subcircuit " + message.value_or("") + " already exist.\n";
+      formattedMessage += "Overwriting the existing definition.\n";
+      formattedMessage += "Please avoid subcircuit redefinitions.";
+      warning_message(formattedMessage);
+      break;
     case InputErrors::MISSING_MAIN:
       formattedMessage += "Missing main design in netlist.\n";
       formattedMessage +=

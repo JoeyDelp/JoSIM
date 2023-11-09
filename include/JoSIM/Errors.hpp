@@ -36,7 +36,8 @@ enum class InputErrors : int64_t {
   UNKNOWN_SUBCKT,
   EMPTY_FILE,
   IO_MISMATCH,
-  UNKNOWN_CONTROL
+  UNKNOWN_CONTROL,
+  DUPLICATE_SUBCIRCUIT
 };
 
 enum class ComponentErrors : int64_t {

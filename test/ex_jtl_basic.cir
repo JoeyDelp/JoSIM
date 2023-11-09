@@ -17,6 +17,7 @@ ROUT       5          0          2
 VIN        4          0          pwl(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602.5p 827.13u 605p 0)
 .model jmitll jj(rtype=1, vg=2.8mV, cap=0.07pF, r0=160, rN=16, icrit=0.1mA)
 .tran 0.25p 1000p 0 0.25p
+.iv jmitll 300u iv.csv
 .print DEVV VIN
 .print DEVI ROUT
 .print PHASE B01
