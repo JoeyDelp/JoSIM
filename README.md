@@ -31,6 +31,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.8
+- Add a fix to warn of subcircuit redefenitions. Redefintions now overwrite the previous definition.
+
 ### v2.6.7
 - Added ability to parameterize time points specified for `.tran` and `pwl` commands.
 
