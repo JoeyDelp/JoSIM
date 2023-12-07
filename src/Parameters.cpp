@@ -99,7 +99,22 @@ double JoSIM::parse_param(const std::string& expr, const param_map& params,
         } else {
           Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
         }
-      }
+      } else
+        expToEval = Misc::precise_to_string(
+            params.at(ParameterName(expToEval, subc)).get_value().value());
+    } else if (params.count(ParameterName(expToEval, std::nullopt)) != 0) {
+      if (!params.at(ParameterName(expToEval, std::nullopt)).get_value()) {
+        if (!single) {
+          // Return NaN to indicate this ocurred
+          return std::numeric_limits<double>::quiet_NaN();
+        } else {
+          Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
+        }
+      } else
+        expToEval = Misc::precise_to_string(
+            params.at(ParameterName(expToEval, std::nullopt))
+                .get_value()
+                .value());
     }
     // Find the position of the first operator
     int64_t opLoc = expToEval.find_first_of("/*-+(){}[]^");
