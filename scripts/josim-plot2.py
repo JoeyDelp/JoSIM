@@ -1,9 +1,18 @@
 #!/usr/bin/env python
+
+# Plot output from JoSIM using the plotly package
+# Example call from a Python program:
+#   plotscript = /<path>/josim-plot2.py
+#   josim_output_file = /<path>/<name>.csv  # or .dat
+#   output = subprocess.run([plotscript, josim_output_file, "-t", "combined", "-c", "light", "-j", "2pi", "-w", caption], capture_output=False, text=False)
+# Note: Arguments must be provided separately, not as a combined string.
+
 # Import relevant packages
 import os, math, sys, argparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
+import numpy as np
 import plotly
 
 # Main function
@@ -24,6 +33,7 @@ def main():
   parser.add_argument("-c", "--color", help="set the output plot color scheme to one of the following: light, dark, presentation. Default: dark", default='dark')
   parser.add_argument("-w", "--title", help="set plot title to the provided string")
   parser.add_argument("-V", "--version", action='version', help="show script version", version=vers)
+  parser.add_argument("-j", "--jump", help="plot in phase jump units: 0.5pi, pi, 2pi", default="rad")
 
   # Read arguments from the command line
   args = parser.parse_args()
@@ -43,18 +53,18 @@ def main():
 
   # Determine the plot layout.
   if(args.type == "grid"):
-    fig = grid_layout(df, args.subset)
+    fig = grid_layout(df, args)
   elif(args.type == "stacked"):
-    fig = stacked_layout(df, args.subset)
+    fig = stacked_layout(df, args)
   elif(args.type == "combined"):
-    fig = combined_layout(df, args.subset)
+    fig = combined_layout(df, args)
   elif(args.type == "square"):
-    fig = square_layout(df, args.subset)
+    fig = square_layout(df, args)
   elif(args.type == "sep_comb"):
-    fig = seperate_combined_layout(df, args.subset)  
+    fig = seperate_combined_layout(df, args)  
   else:
     print("Invalid plot type specified: " + args.type)
-    print("Please provide either grid, stacked or combined as type")
+    print("Allowed plot type codes: grid, stacked, combined, square, sep_comb")
     sys.exit()
     
   # Determine the theme to plot with.
@@ -111,20 +121,44 @@ def main():
     print("Unknown file format for output file specified.")
     print("Please use: png, jpeg, webp, svg, eps or pdf")  
 
-# Function that sets the Y-axis title relevant to the data
-def y_axis_title(figLabel):
+# Function to provide the appropriate Y-axis title
+def y_axis_title(figLabel, args):
   if figLabel[0] == 'V':
     return "Voltage (V)"
   elif figLabel[0] == 'I':
-    return "Current (A)"
+    return "Current (I)"
   elif figLabel[0] == 'P':
-    return "Phase (rad)"
+    # Phase or phase jumps
+    if args.jump == 'rad':
+      y_label_P = "Phase (rad)"
+    elif args.jump == '0.5pi':
+      y_label_P = "Phase jumps (rad/0.5pi)"
+    elif args.jump == 'pi':
+      y_label_P = "Phase jumps (rad/pi)"
+    elif args.jump == '2pi':
+      y_label_P = "Phase jumps (rad/2pi)"
+    else:
+      y_label_P = "Phase (rad)"
+    return y_label_P
   else:
     return "Unknown"
 
+# Function: Phase factor to plot phase or phase jumps
+def pfact(jump):
+  if jump == 'rad':
+    return 1.0
+  elif jump == '0.5pi':
+    return 1/(0.5*np.pi)
+  elif jump == 'pi':
+    return 1/(1.0*np.pi)
+  elif jump == '2pi':
+    return 1/(2.0*np.pi)
+  else:
+    return 1.0
+  
 # Return a grid of plots
-def grid_layout(df, subset):
-  plots = df.columns[1:].tolist() if subset == None else subset
+def grid_layout(df, args):
+  plots = df.columns[1:].tolist() if args.subset == None else args.subset
   fig = make_subplots(
     rows=math.ceil(len(plots)/2), 
     cols= 2 if len(plots) > 1 else 1,
@@ -145,14 +179,14 @@ def grid_layout(df, subset):
     )
     fig.layout.annotations[i].x = 0.45 if (i%2 == 0) else 0.985
     if i == 0:
-      fig['layout']['yaxis']['title']=y_axis_title(plots[i])
+      fig['layout']['yaxis']['title']=y_axis_title(plots[i], args)
     else:
-      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i])
+      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i], args)
   return fig
 
 # Return a square of plots
-def square_layout(df, subset):
-  plots = df.columns[1:].tolist() if subset == None else subset
+def square_layout(df, args):
+  plots = df.columns[1:].tolist() if args.subset == None else args.subset
   square = math.sqrt(len(plots))
   row = int(round(square))
   col = int(math.ceil(square))
@@ -184,15 +218,15 @@ def square_layout(df, subset):
     fig.update_yaxes(row=row_counter, col=col_counter, title_standoff=0, ticks="")
     fig.update_layout()
     if i == 0:
-      fig['layout']['yaxis']['title']=y_axis_title(plots[i])
+      fig['layout']['yaxis']['title']=y_axis_title(plots[i], args)
     else:
-      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i])
+      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i], args)
     col_counter += 1
   return fig
 
 # Return a stack of plots
-def stacked_layout(df, subset):
-  plots = df.columns[1:].tolist() if subset == None else subset
+def stacked_layout(df, args):
+  plots = df.columns[1:].tolist() if args.subset == None else args.subset
   fig = make_subplots(
     rows=len(plots), 
     cols=1,
@@ -210,14 +244,14 @@ def stacked_layout(df, subset):
     )
     fig.layout.annotations[i].x = 0.985
     if i == 0:
-      fig['layout']['yaxis']['title']=y_axis_title(plots[i])
+      fig['layout']['yaxis']['title']=y_axis_title(plots[i], args)
     else:
-      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i])
+      fig['layout']['yaxis' + str(i+1)]['title']=y_axis_title(plots[i], args)
   return fig
 
 # Seperate and Combine like plots
-def seperate_combined_layout(df, subset):
-  plots = df.columns[1:].tolist() if subset == None else subset
+def seperate_combined_layout(df, args):
+  plots = df.columns[1:].tolist() if args.subset == None else args.subset
   V = []
   P = []
   I = []
@@ -233,13 +267,13 @@ def seperate_combined_layout(df, subset):
         U.append(i)
   fig_count = 0
   if len(V) != 0:
-      fig_count = fig_count + 1;
+      fig_count = fig_count + 1
   if len(P) != 0:
-      fig_count = fig_count + 1;
+      fig_count = fig_count + 1
   if len(I) != 0:
-      fig_count = fig_count + 1;
+      fig_count = fig_count + 1
   if len(U) != 0:
-      fig_count = fig_count + 1;  
+      fig_count = fig_count + 1 
   fig = make_subplots(
     rows=fig_count, 
     cols=1,
@@ -248,7 +282,7 @@ def seperate_combined_layout(df, subset):
   # Add the traces
   fig_count = 0
   if len(U) != 0:
-    fig_count = fig_count + 1;
+    fig_count = fig_count + 1
     for i in U:
         fig.add_trace(go.Scatter(
             x=df.iloc[:,0], y=df.loc[:,plots[i]],
@@ -257,9 +291,9 @@ def seperate_combined_layout(df, subset):
             row=fig_count,
             col=1
         )
-    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i])
+    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i], args)
   if len(V) != 0:
-    fig_count = fig_count + 1;
+    fig_count = fig_count + 1
     for i in V:
         fig.add_trace(go.Scatter(
           x=df.iloc[:,0], y=df.loc[:,plots[i]],
@@ -268,20 +302,20 @@ def seperate_combined_layout(df, subset):
           row=fig_count,
           col=1
         )
-    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i])
+    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i], args)
   if len(P) != 0:
-    fig_count = fig_count + 1;
+    fig_count = fig_count + 1
     for i in P:
         fig.add_trace(go.Scatter(
-          x=df.iloc[:,0], y=df.loc[:,plots[i]],
+          x=df.iloc[:,0], y=df.loc[:,plots[i]]*pfact(args.jump),
           mode='lines',
           name=plots[i]),
           row=fig_count,
           col=1
         )
-    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i])
+    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i], args)
   if len(I) != 0:
-    fig_count = fig_count + 1;
+    fig_count = fig_count + 1
     for i in I:
         fig.add_trace(go.Scatter(
           x=df.iloc[:,0], y=df.loc[:,plots[i]],
@@ -290,20 +324,61 @@ def seperate_combined_layout(df, subset):
           row=fig_count,
           col=1
         )
-    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i])
+    fig['layout']['yaxis' + str(fig_count)]['title']=y_axis_title(plots[i], args)
   return fig
 
 # Combine all the plots
-def combined_layout(df, subset):
-  plots = df.columns[1:].tolist() if subset == None else subset
+def combined_layout(df, args):
+  plots = df.columns[1:].tolist() if args.subset == None else args.subset
   fig = go.Figure()
+
+  fig['layout']['xaxis']['title']= 'Time (seconds)'
+  # Y-axis label for combined plot
+  count_V = 0
+  count_P = 0
+  count_I = 0
+  count_U = 0
+  y_title = ""
+  for i in range(0, len(plots)):
+    add_title = ""
+    if plots[i][0] == 'V':
+        if count_V == 0:
+          add_title = y_axis_title(plots[i], args)          
+          count_V = count_V + 1
+    elif plots[i][0] == 'I':
+        if count_I == 0:
+          add_title = y_axis_title(plots[i], args)
+          count_I = count_I + 1
+    elif plots[i][0] == 'P':
+        if count_P == 0:
+          add_title = y_axis_title(plots[i], args)
+          count_P = count_P + 1
+    else:
+        if count_U == 0:
+          add_title = y_axis_title(plots[i], args)
+          count_U = count_U + 1
+    if len(add_title) > 0:
+      if len(y_title) == 0:
+        y_title = add_title
+      else:
+        y_title = y_title + " ; " + add_title
+  fig['layout']['yaxis']['title']=y_title
+
   # Add the traces
   for i in range(0, len(plots)):
-    fig.add_trace(go.Scatter(
-      x=df.iloc[:,0], y=df.loc[:,plots[i]],
-      mode='lines',
-      name=plots[i])
-    )
+    if plots[i][0] == 'P':
+      fig.add_trace(go.Scatter(
+        # Use phase factor: pfact(args.jump)
+        x=df.iloc[:,0], y=df.loc[:,plots[i]]*pfact(args.jump),
+        mode='lines',
+        name=plots[i])
+      )
+    else:
+      fig.add_trace(go.Scatter(
+        x=df.iloc[:,0], y=df.loc[:,plots[i]],
+        mode='lines',
+        name=plots[i])
+      )
   return fig
 
 if __name__ == '__main__':
