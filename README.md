@@ -31,6 +31,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.9
+- Fixed a bug resulting in bad optional access when shorting transmission line components.
+
 ### v2.6.8
 - Add a fix to warn of subcircuit redefenitions. Redefintions now overwrite the previous definition.
 - Add a fix when parameters are used in subcircuits but defined within the global scope.
