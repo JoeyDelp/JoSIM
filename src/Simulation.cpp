@@ -569,7 +569,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           temp.nk_1_ = results.xVector.at(posInd.value()).value().at(i - k);
         } else if (nc == NodeConfig::GNDNEG) {
           temp.nk_1_ = -results.xVector.at(negInd.value()).value().at(i - k);
-        } else {
+        } else if (nc == NodeConfig::POSNEG) {
           temp.nk_1_ = results.xVector.at(posInd.value()).value().at(i - k) -
                        results.xVector.at(negInd.value()).value().at(i - k);
         }
@@ -578,7 +578,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           temp.nk_2_ = results.xVector.at(posInd2.value()).value().at(i - k);
         } else if (nc2 == NodeConfig::GNDNEG) {
           temp.nk_2_ = -results.xVector.at(negInd2.value()).value().at(i - k);
-        } else {
+        } else if (nc2 == NodeConfig::POSNEG) {
           temp.nk_2_ = results.xVector.at(posInd2.value()).value().at(i - k) -
                        results.xVector.at(negInd2.value()).value().at(i - k);
         }
@@ -600,7 +600,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           temp.n1_1_ = (x_.at(posInd.value()));
         } else if (nc == NodeConfig::GNDNEG) {
           temp.n1_1_ = (-x_.at(negInd.value()));
-        } else {
+        } else if (nc == NodeConfig::POSNEG) {
           temp.n1_1_ = (x_.at(posInd.value()) - x_.at(negInd.value()));
         }
         // φ2n-1
@@ -608,7 +608,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           temp.n1_2_ = (x_.at(posInd2.value()));
         } else if (nc2 == NodeConfig::GNDNEG) {
           temp.n1_2_ = (-x_.at(negInd2.value()));
-        } else {
+        } else if (nc2 == NodeConfig::POSNEG) {
           temp.n1_2_ = (x_.at(posInd2.value()) - x_.at(negInd2.value()));
         }
       }
@@ -618,7 +618,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           temp.nk_1_ = results.xVector.at(posInd.value()).value().at(i - k);
         } else if (nc == NodeConfig::GNDNEG) {
           temp.nk_1_ = -results.xVector.at(negInd.value()).value().at(i - k);
-        } else {
+        } else if (nc == NodeConfig::POSNEG) {
           temp.nk_1_ = results.xVector.at(posInd.value()).value().at(i - k) -
                        results.xVector.at(negInd.value()).value().at(i - k);
         }
@@ -627,7 +627,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           temp.nk_2_ = results.xVector.at(posInd2.value()).value().at(i - k);
         } else if (nc2 == NodeConfig::GNDNEG) {
           temp.nk_2_ = -results.xVector.at(negInd2.value()).value().at(i - k);
-        } else {
+        } else if (nc2 == NodeConfig::POSNEG) {
           temp.nk_2_ = results.xVector.at(posInd2.value()).value().at(i - k) -
                        results.xVector.at(negInd2.value()).value().at(i - k);
         }
@@ -654,7 +654,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           } else if (nc == NodeConfig::GNDNEG) {
             temp.nk1_1_ =
                 -results.xVector.at(negInd.value()).value().at(i - k - 1);
-          } else {
+          } else if (nc == NodeConfig::POSNEG) {
             temp.nk1_1_ =
                 results.xVector.at(posInd.value()).value().at(i - k - 1) -
                 results.xVector.at(negInd.value()).value().at(i - k - 1);
@@ -666,7 +666,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           } else if (nc2 == NodeConfig::GNDNEG) {
             temp.nk1_2_ =
                 -results.xVector.at(negInd2.value()).value().at(i - k - 1);
-          } else {
+          } else if (nc2 == NodeConfig::POSNEG) {
             temp.nk1_2_ =
                 results.xVector.at(posInd2.value()).value().at(i - k - 1) -
                 results.xVector.at(negInd2.value()).value().at(i - k - 1);
@@ -691,7 +691,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           } else if (nc == NodeConfig::GNDNEG) {
             temp.nk1_1_ =
                 -results.xVector.at(negInd.value()).value().at(i - k - 1);
-          } else {
+          } else if (nc == NodeConfig::POSNEG) {
             temp.nk1_1_ =
                 results.xVector.at(posInd.value()).value().at(i - k - 1) -
                 results.xVector.at(negInd.value()).value().at(i - k - 1);
@@ -703,7 +703,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           } else if (nc2 == NodeConfig::GNDNEG) {
             temp.nk1_2_ =
                 -results.xVector.at(negInd2.value()).value().at(i - k - 1);
-          } else {
+          } else if (nc2 == NodeConfig::POSNEG) {
             temp.nk1_2_ =
                 results.xVector.at(posInd2.value()).value().at(i - k - 1) -
                 results.xVector.at(negInd2.value()).value().at(i - k - 1);
@@ -715,7 +715,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           } else if (nc == NodeConfig::GNDNEG) {
             temp.nk2_1_ =
                 -results.xVector.at(negInd.value()).value().at(i - k - 2);
-          } else {
+          } else if (nc == NodeConfig::POSNEG) {
             temp.nk2_1_ =
                 results.xVector.at(posInd.value()).value().at(i - k - 2) -
                 results.xVector.at(negInd.value()).value().at(i - k - 2);
@@ -727,7 +727,7 @@ void Simulation::handle_tx(Matrix &mObj, const int64_t &i, double &step,
           } else if (nc2 == NodeConfig::GNDNEG) {
             temp.nk2_2_ =
                 -results.xVector.at(negInd2.value()).value().at(i - k - 2);
-          } else {
+          } else if (nc2 == NodeConfig::POSNEG) {
             temp.nk2_2_ =
                 results.xVector.at(posInd2.value()).value().at(i - k - 2) -
                 results.xVector.at(negInd2.value()).value().at(i - k - 2);
