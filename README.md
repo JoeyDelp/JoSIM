@@ -31,6 +31,9 @@ Referencing:
 ---
 
 ## Changelog
+### v2.6.10
+- Fixed a bug resulting in sub optimal performance in the custom function.
+
 ### v2.6.9
 - Fixed a bug resulting in bad optional access when shorting transmission line components.
 

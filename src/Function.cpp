@@ -386,13 +386,7 @@ double Function::return_cus(double& x) {
     double norm_x = (x - td);
     if (per) norm_x = (x - td) - (std::floor(x / region) * region);
     if (norm_x > region) return 0.0;
-    int idx = ampValues_.size() - 1;
-    for (int i = 0; i < ampValues_.size() - 1; ++i) {
-      if (norm_x >= i * ts && norm_x < (i + 1) * ts) {
-        idx = i;
-        break;
-      }
-    }
+    int idx = std::min(static_cast<int>(norm_x / ts), static_cast<int>(ampValues_.size() - 1));
     if (im == 0) {
       return ampValues_.at(idx);
     } else if (im == 1) {
