@@ -231,6 +231,7 @@ void Netlist::expand_maindesign() {
       s_map params;
       id_io_subc_label(maindesign.at(i), io, params, subcktName, label,
                        subcircuits);
+      for (auto node: io) increment_maindesign_node_count(node);
       // Copy of subcircuit for this instance
       Subcircuit subc = subcircuits.at(subcktName);
       // Expand the appropriate IO nodes of the subcircuit for this instance
@@ -250,4 +251,33 @@ void Netlist::expand_maindesign() {
   }
   subcktTotal = subcircuits.size();
   subcircuits.clear();
+}
+
+void Netlist::increment_maindesign_node_count(std::string node) {
+  if (node == "0" or node == "GND") return;
+  if (mainNodeCounts.count(node) == 0) {
+    mainNodeCounts[node] = 1;
+  } else {
+    mainNodeCounts.at(node)++;
+  }
+}
+
+void Netlist::sanity_check_maindesign() {
+  std::cout << "Sanity check results of main design:" << std::endl;
+  bool is_clean = true;
+  for (auto kv: mainNodeCounts) {
+    if (kv.second < 2) {
+      is_clean = false;
+      std::cout << "Node '" << kv.first
+        << "' looks either undefined or unused." << std::endl;
+    } else if (kv.second > 2) {
+      is_clean = false;
+      std::cout << "Node '" << kv.first
+        << "' looks overused (" << kv.second << ")." << std::endl;
+    }
+  }
+  if (is_clean) {
+    std::cout << "Everything looks fine." << std::endl;
+  }
+  std::cout << std::endl;
 }

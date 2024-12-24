@@ -27,6 +27,7 @@ struct CliOptions {
   int64_t verbose = 0;
   bool minimal = false;
   bool parallel = false;
+  bool sanity_check = false;
 
   // helper functions
   static CliOptions parse(int64_t argc, const char** argv);

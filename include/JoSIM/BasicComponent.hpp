@@ -40,9 +40,11 @@ class BasicComponent {
   NetlistInfo netlistInfo;
   IndexInfo indexInfo;
   MatrixInfo matrixInfo;
+  tokens_t nodes;
 
   void set_node_indices(const tokens_t& t, const nodemap& nm,
                         nodeconnections& nc) {
+    nodes = t;
     switch (indexInfo.nodeConfig_) {
       case NodeConfig::POSGND:
         indexInfo.posIndex_ = nm.at(t.at(0));

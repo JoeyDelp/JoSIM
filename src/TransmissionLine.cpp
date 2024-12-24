@@ -132,6 +132,7 @@ TransmissionLine::TransmissionLine(
 void TransmissionLine::set_secondary_node_indices(const tokens_t& t,
                                                   const nodemap& nm,
                                                   nodeconnections& nc) {
+  nodes.insert(nodes.end(), t.begin(), t.end());
   // Transmission lines have 4 nodes, this sets the 2nd pair of the 4
   switch (nodeConfig2_) {
     case NodeConfig::POSGND:

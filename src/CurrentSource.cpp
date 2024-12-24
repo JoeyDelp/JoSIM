@@ -37,6 +37,7 @@ CurrentSource::CurrentSource(const std::pair<tokens_t, string_o>& s,
 }
 
 void CurrentSource::set_node_indices(const tokens_t& t, const nodemap& nm) {
+  nodes = t;
   switch (indexInfo.nodeConfig_) {
     case NodeConfig::POSGND:
       indexInfo.posIndex_ = nm.at(t.at(0));

@@ -49,6 +49,11 @@ int main(int argc, const char** argv) {
     Matrix mObj;
     // Create the matrix in csr format
     mObj.create_matrix(iObj);
+    // Do sanity check
+    if (cli_options.sanity_check) {
+      mObj.update_maindesign_node_counts(iObj.netlist);
+      iObj.netlist.sanity_check_maindesign();
+    }
     // Do verbosity
     Verbose::handle_verbosity(iObj.argVerb, iObj, mObj);
     //  Find the relevant traces to store

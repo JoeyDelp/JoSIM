@@ -150,6 +150,11 @@ CliOptions CliOptions::parse(int64_t argc, const char** argv) {
           std::cout << "Parallelization is DISABLED" << std::endl;
 #endif
           break;
+          // Sanity check input circuit netlist
+        case 's':
+          std::cout << "Sanity check ENABLED" << std::endl;
+          out.sanity_check = true;
+          break;
           // Enable verbose mode
         case 'V':
           try {
@@ -280,6 +285,23 @@ void CliOptions::display_help() {
   std::cout
       << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
       << "Threshold applies, overhead on small circuits negates performance."
+      << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+            << "|" << std::endl;
+  // Sanity check switch
+  // ---------------------------------------------------------------------------
+  std::cout << std::setw(16) << std::left << "-s" << std::setw(3) << std::left
+            << "|"
+            << "(EXPERIMENTAL) Sanity check input circuit netlist."
+            << std::endl;
+  std::cout << std::setw(16) << std::left << "--sanitycheck" << std::setw(3)
+            << std::left << "|"
+            << "Checks that every superconducting circuit cell node "
+            << "connects to exactly one other node." << std::endl;
+  std::cout
+      << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
+      << "Assumes the circuit uses superconducting circuit cells and "
+      << "the main design specifies high-level connections of those cells."
       << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;
