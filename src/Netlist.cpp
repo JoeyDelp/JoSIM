@@ -268,16 +268,16 @@ void Netlist::sanity_check_maindesign() {
   for (auto kv: mainNodeCounts) {
     if (kv.second < 2) {
       is_clean = false;
-      std::cout << "Node '" << kv.first
+      std::cout << "- Node '" << kv.first
         << "' looks either undefined or unused." << std::endl;
     } else if (kv.second > 2) {
       is_clean = false;
-      std::cout << "Node '" << kv.first
+      std::cout << "- Node '" << kv.first
         << "' looks overused (" << kv.second << ")." << std::endl;
     }
   }
   if (is_clean) {
-    std::cout << "Everything looks fine." << std::endl;
+    std::cout << "Everything looks fine!" << std::endl;
   }
   std::cout << std::endl;
 }
