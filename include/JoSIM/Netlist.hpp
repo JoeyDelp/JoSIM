@@ -5,6 +5,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "JoSIM/Model.hpp"
@@ -60,6 +61,10 @@ class Netlist {
   std::unordered_map<std::string, Subcircuit> subcircuits;
   std::unordered_map<std::string, int64_t> subcktLookup;
   std::vector<tokens_t> maindesign;
+  bool sanityCheck;
+  std::unordered_set<std::string> sanityCheckSubckts;
+  std::unordered_map<std::string, std::unordered_map<std::string, int32_t>>
+      subcktNodeCounts;
   std::unordered_map<std::string, int32_t> mainNodeCounts;
   tokens_t subckts;
   std::vector<std::pair<tokens_t, string_o>> expNetlist;
@@ -74,7 +79,10 @@ class Netlist {
   void expand_subcircuits();
   void expand_maindesign();
   void increment_maindesign_node_count(std::string node);
+  void increment_subcircuit_node_count(std::string subcktName, std::string node);
   void sanity_check_maindesign();
+  void sanity_check_subcircuits();
+  void sanity_check();
 };
 
 }  // namespace JoSIM

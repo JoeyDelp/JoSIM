@@ -161,6 +161,11 @@ void Netlist::expand_subcircuits() {
     }
     // Loop through subcircuits
     for (const auto& i : subcircuits) {
+      if (sanityCheck and sanityCheckSubckts.count(i.first) != 0) {
+        for (auto node: i.second.io) {
+          increment_subcircuit_node_count(i.first, node);
+        }
+      }
       for (int64_t j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
         // Shorthand for the current subcircuit
         Subcircuit& subcircuit = subcircuits.at(i.first);
@@ -173,6 +178,9 @@ void Netlist::expand_subcircuits() {
           s_map params;
           id_io_subc_label(subcCurrentLine, io, params, subcktName, label,
                            subcircuits);
+          if (sanityCheck and sanityCheckSubckts.count(i.first) != 0) {
+            for (auto node: io) increment_subcircuit_node_count(i.first, node);
+          }
           // Create a copy of the subircuit for this instance
           Subcircuit subc = subcircuits.at(subcktName);
           // If not nested
@@ -231,7 +239,9 @@ void Netlist::expand_maindesign() {
       s_map params;
       id_io_subc_label(maindesign.at(i), io, params, subcktName, label,
                        subcircuits);
-      for (auto node: io) increment_maindesign_node_count(node);
+      if (sanityCheck) {
+        for (auto node: io) increment_maindesign_node_count(node);
+      }
       // Copy of subcircuit for this instance
       Subcircuit subc = subcircuits.at(subcktName);
       // Expand the appropriate IO nodes of the subcircuit for this instance
@@ -262,22 +272,66 @@ void Netlist::increment_maindesign_node_count(std::string node) {
   }
 }
 
+void Netlist::increment_subcircuit_node_count(std::string subcktName, std::string node) {
+  if (node == "0" or node == "GND") return;
+  if (subcktNodeCounts.count(subcktName) == 0) {
+    subcktNodeCounts[subcktName];
+  }
+  if (subcktNodeCounts.at(subcktName).count(node) == 0) {
+    subcktNodeCounts.at(subcktName)[node] = 1;
+  } else {
+    subcktNodeCounts.at(subcktName).at(node)++;
+  }
+}
+
+void sanity_check_node(std::string node, int32_t count, bool& is_clean) {
+  if (count < 2) {
+    is_clean = false;
+    std::cout << "  - Node '" << node
+      << "' looks either undefined or unused." << std::endl;
+  } else if (count > 2) {
+    is_clean = false;
+    std::cout << "  - Node '" << node
+      << "' looks overused (" << count << ")." << std::endl;
+  }
+}
+
 void Netlist::sanity_check_maindesign() {
-  std::cout << "Sanity check results of main design:" << std::endl;
+  std::cout << "main design:" << std::endl;
   bool is_clean = true;
   for (auto kv: mainNodeCounts) {
-    if (kv.second < 2) {
-      is_clean = false;
-      std::cout << "- Node '" << kv.first
-        << "' looks either undefined or unused." << std::endl;
-    } else if (kv.second > 2) {
-      is_clean = false;
-      std::cout << "- Node '" << kv.first
-        << "' looks overused (" << kv.second << ")." << std::endl;
-    }
+    sanity_check_node(kv.first, kv.second, is_clean);
   }
   if (is_clean) {
-    std::cout << "Everything looks fine!" << std::endl;
+    std::cout << "  Everything looks fine! (Checked "
+      << mainNodeCounts.size() << " nodes.)" << std::endl;
   }
+}
+
+void Netlist::sanity_check_subcircuits() {
+  for (auto subcktName: sanityCheckSubckts) {
+    if (subcktNodeCounts.count(subcktName) == 0) {
+      std::cout << "Subcircuit '" << subcktName << "' does not exist. Skip."
+        << std::endl;
+      continue;
+    }
+    std::cout << "'" << subcktName << "':" << std::endl;
+    bool is_clean = true;
+    for (auto kv: subcktNodeCounts.at(subcktName)) {
+      sanity_check_node(kv.first, kv.second, is_clean);
+    }
+    if (is_clean) {
+      std::cout << "  Everything looks fine! (Checked "
+        << subcktNodeCounts.at(subcktName).size() << " nodes.)" << std::endl;
+    }
+  }
+}
+
+void Netlist::sanity_check() {
+  if (not sanityCheck) return;
+
+  std::cout << "\nSanity check results:" << std::endl;
+  sanity_check_maindesign();
+  sanity_check_subcircuits();
   std::cout << std::endl;
 }
