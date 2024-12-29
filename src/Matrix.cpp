@@ -450,31 +450,3 @@ void Matrix::create_rp() {
     }
   }
 }
-
-void Matrix::update_maindesign_node_counts(Netlist& netlist) {
-  for (auto device: components.devices) {
-    // If device belongs to a subcircuit
-    if (std::visit([](const auto device){
-          return device.netlistInfo.label_.find("|") != std::string::npos;
-        }, device)
-    ) {
-      continue;
-    }
-    // Only consider nodes in maindesign (top)
-    auto nodes = std::visit(
-        [](const auto device){return device.nodes;}, device);
-    for (auto node: nodes) {
-      netlist.increment_maindesign_node_count(node);
-    }
-  }
-  for (auto source: components.currentsources) {
-    // If device belongs to a subcircuit
-    if (source.netlistInfo.label_.find("|") != std::string::npos) {
-      continue;
-    }
-    // Only consider nodes in maindesign (top)
-    for (auto node: source.nodes) {
-      netlist.increment_maindesign_node_count(node);
-    }
-  }
-}

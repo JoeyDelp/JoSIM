@@ -49,7 +49,6 @@ class Matrix {
   void create_nz();
   void create_ci();
   void create_rp();
-  void update_maindesign_node_counts(Netlist& netlist);
 };
 }  // namespace JoSIM
 #endif

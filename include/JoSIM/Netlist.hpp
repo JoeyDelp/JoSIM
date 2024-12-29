@@ -40,6 +40,7 @@ class Subcircuit {
         };
 };
 
+class Components;
 class Input;
 
 class Netlist {
@@ -54,6 +55,14 @@ class Netlist {
                  const std::string& label);
   void insert_parameter(tokens_t& t, s_map& params);
 
+  std::unordered_map<std::string, std::unordered_map<std::string, int32_t>>
+      subcktNodeCounts;
+  std::unordered_map<std::string, int32_t> mainNodeCounts;
+  void increment_maindesign_node_count(std::string node);
+  void increment_subcircuit_node_count(std::string subcktName, std::string node);
+  void sanity_check_maindesign();
+  void sanity_check_subcircuits();
+
  public:
   std::unordered_map<std::pair<std::string, string_o>, tokens_t, pair_hash>
       models;
@@ -63,9 +72,6 @@ class Netlist {
   std::vector<tokens_t> maindesign;
   bool sanityCheck;
   std::unordered_set<std::string> sanityCheckSubckts;
-  std::unordered_map<std::string, std::unordered_map<std::string, int32_t>>
-      subcktNodeCounts;
-  std::unordered_map<std::string, int32_t> mainNodeCounts;
   tokens_t subckts;
   std::vector<std::pair<tokens_t, string_o>> expNetlist;
   int64_t jjCount, compCount, subcktCounter, nestedSubcktCount, subcktTotal = 0;
@@ -78,11 +84,7 @@ class Netlist {
         containsSubckt(false){};
   void expand_subcircuits();
   void expand_maindesign();
-  void increment_maindesign_node_count(std::string node);
-  void increment_subcircuit_node_count(std::string subcktName, std::string node);
-  void sanity_check_maindesign();
-  void sanity_check_subcircuits();
-  void sanity_check();
+  void sanity_check(Components components);
 };
 
 }  // namespace JoSIM

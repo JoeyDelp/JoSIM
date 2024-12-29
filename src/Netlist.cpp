@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "JoSIM/AnalysisType.hpp"
+#include "JoSIM/Components.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/ProgressBar.hpp"
@@ -327,8 +328,35 @@ void Netlist::sanity_check_subcircuits() {
   }
 }
 
-void Netlist::sanity_check() {
+void Netlist::sanity_check(Components components) {
   if (not sanityCheck) return;
+
+  // Update node counts in main design
+  for (auto device: components.devices) {
+    // If device belongs to a subcircuit
+    if (std::visit([](const auto device){
+          return device.netlistInfo.label_.find("|") != std::string::npos;
+        }, device)
+    ) {
+      continue;
+    }
+    // Only consider nodes in maindesign (top)
+    auto nodes = std::visit(
+        [](const auto device){return device.nodes;}, device);
+    for (auto node: nodes) {
+      increment_maindesign_node_count(node);
+    }
+  }
+  for (auto source: components.currentsources) {
+    // If device belongs to a subcircuit
+    if (source.netlistInfo.label_.find("|") != std::string::npos) {
+      continue;
+    }
+    // Only consider nodes in maindesign (top)
+    for (auto node: source.nodes) {
+      increment_maindesign_node_count(node);
+    }
+  }
 
   std::cout << "\nSanity check results:" << std::endl;
   sanity_check_maindesign();
