@@ -162,7 +162,7 @@ void Netlist::expand_subcircuits() {
     }
     // Loop through subcircuits
     for (const auto& i : subcircuits) {
-      if (sanityCheck and sanityCheckSubckts.count(i.first) != 0) {
+      if (sanityCheck && sanityCheckSubckts.count(i.first) != 0) {
         for (auto node: i.second.io) {
           increment_subcircuit_node_count(i.first, node);
         }
@@ -179,7 +179,7 @@ void Netlist::expand_subcircuits() {
           s_map params;
           id_io_subc_label(subcCurrentLine, io, params, subcktName, label,
                            subcircuits);
-          if (sanityCheck and sanityCheckSubckts.count(i.first) != 0) {
+          if (sanityCheck && sanityCheckSubckts.count(i.first) != 0) {
             for (auto node: io) increment_subcircuit_node_count(i.first, node);
           }
           // Create a copy of the subircuit for this instance
@@ -265,7 +265,7 @@ void Netlist::expand_maindesign() {
 }
 
 void Netlist::increment_maindesign_node_count(std::string node) {
-  if (node == "0" or node == "GND") return;
+  if (node == "0" || node == "GND") return;
   if (mainNodeCounts.count(node) == 0) {
     mainNodeCounts[node] = 1;
   } else {
@@ -274,7 +274,7 @@ void Netlist::increment_maindesign_node_count(std::string node) {
 }
 
 void Netlist::increment_subcircuit_node_count(std::string subcktName, std::string node) {
-  if (node == "0" or node == "GND") return;
+  if (node == "0" || node == "GND") return;
   if (subcktNodeCounts.count(subcktName) == 0) {
     subcktNodeCounts[subcktName];
   }
@@ -329,7 +329,7 @@ void Netlist::sanity_check_subcircuits() {
 }
 
 void Netlist::sanity_check(Components components) {
-  if (not sanityCheck) return;
+  if (!sanityCheck) return;
 
   // Update node counts in main design
   for (auto device: components.devices) {
