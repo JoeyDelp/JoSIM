@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <optional>
 #include <string>
+#include <unordered_set>
 
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/FileOutputType.hpp"
@@ -27,6 +28,8 @@ struct CliOptions {
   int64_t verbose = 0;
   bool minimal = false;
   bool parallel = false;
+  bool sanityCheck = false;
+  std::unordered_set<std::string> sanityCheckSubckts;
 
   // helper functions
   static CliOptions parse(int64_t argc, const char** argv);

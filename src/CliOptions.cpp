@@ -150,6 +150,15 @@ CliOptions CliOptions::parse(int64_t argc, const char** argv) {
           std::cout << "Parallelization is DISABLED" << std::endl;
 #endif
           break;
+          // Sanity check input circuit netlist
+        case 's':
+          out.sanityCheck = true;
+          if (i.second) {
+            std::transform(i.second.value().begin(), i.second.value().end(),
+                           i.second.value().begin(), toupper);
+            out.sanityCheckSubckts.insert(i.second.value());
+          }
+          break;
           // Enable verbose mode
         case 'V':
           try {
@@ -280,6 +289,24 @@ void CliOptions::display_help() {
   std::cout
       << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
       << "Threshold applies, overhead on small circuits negates performance."
+      << std::endl;
+  std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
+            << "|" << std::endl;
+  // Sanity check switch
+  // ---------------------------------------------------------------------------
+  std::cout << std::setw(16) << std::left << "-s" << std::setw(3) << std::left
+            << "|"
+            << "(EXPERIMENTAL) Sanity check circuit netlist (main design). "
+            << "Subcircuits can also be checked if specified."
+            << std::endl;
+  std::cout << std::setw(16) << std::left << "--sanitycheck" << std::setw(3)
+            << std::left << "|"
+            << "Multiple subcircuits can be specified by providing CLI option "
+            << "multiple times. (e.g. -s SUBCKT1 -s SUBCKT2)" << std::endl;
+  std::cout
+      << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
+      << "Checks every superconductor circuit cell node connects to exactly "
+      << "one other node, assuming the design denotes high-level connections."
       << std::endl;
   std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left
             << "|" << std::endl;

@@ -43,6 +43,8 @@ class Input {
     argVerb = cli_options.verbose;
     argMin = cli_options.minimal;
     cli_output_file = cli_options.output_file;
+    netlist.sanityCheck = cli_options.sanityCheck;
+    netlist.sanityCheckSubckts = cli_options.sanityCheckSubckts;
   }
 
   std::vector<tokens_t> read_input(LineInput& input,

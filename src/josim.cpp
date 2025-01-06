@@ -49,6 +49,8 @@ int main(int argc, const char** argv) {
     Matrix mObj;
     // Create the matrix in csr format
     mObj.create_matrix(iObj);
+    // Do sanity check
+    iObj.netlist.sanity_check(mObj.components);
     // Do verbosity
     Verbose::handle_verbosity(iObj.argVerb, iObj, mObj);
     //  Find the relevant traces to store
