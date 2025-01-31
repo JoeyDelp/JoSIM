@@ -25,44 +25,43 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls,
         tObj.startup(false);
         i.pop_back();
       }
-      // If there are less than 2 tokens
-      if (i.size() < 2) {
+      // Initialize the numerical parameters to default values
+      tObj.tstep(0.25E-12);
+      tObj.tstop(1E-9);
+      tObj.prstep(tObj.tstep());
+      tObj.prstart(0);
+      tObj.prfirwindow(0);
+      // If there are less than 3 tokens (documentation requires both Tstart and Tstop parameters)
+      if (i.size() < 3) {
         // Complain of invalid transient analysis specification
         Errors::control_errors(
             ControlErrors::TRANS_ERROR,
             "Too few parameters: " + Misc::vector_to_string(i));
-        // Set the parameters to default values and continue
-        tObj.tstep(0.25E-12);
-        tObj.prstep(1E-12);
-        tObj.tstop(1E-9);
-        tObj.prstart(0);
-        // If there are more than 2 tokens
-      } else {
+        // Continue with default parameters where none were given
+      }
+      // Interpret all given parameters
+      if (i.size() >= 2) {
         // Set the step size
         tObj.tstep(parse_param(i.at(1), params));
-        if (i.size() > 2) {
-          // Set the simulation stop time
-          tObj.tstop(parse_param(i.at(2), params));
-          if (i.size() > 3) {
-            // Set the print start time
-            tObj.prstart(parse_param(i.at(3), params));
-            if (i.size() > 4) {
-              // Set the print step size
-              tObj.prstep(parse_param(i.at(4), params));
-            } else
-              // Set default
-              tObj.prstep(tObj.tstep());
-          } else {
-            // Set default
-            tObj.prstart(0);
-            tObj.prstep(tObj.tstep());
-          }
-        } else {
-          // Set default
-          tObj.tstop(1E-9);
-          tObj.prstart(0);
-          tObj.prstep(tObj.tstep());
-        }
+        tObj.prstep(tObj.tstep());// tstep doubles as prstep default, might be changed later
+      }
+      if (i.size() >= 3) {
+        // Set the simulation stop time
+        tObj.tstop(parse_param(i.at(2), params));
+      }
+      if (i.size() >= 4) {
+        // Set the print start time
+        tObj.prstart(parse_param(i.at(3), params));
+      }
+      if (i.size() >= 5) {
+        // Set the print step size
+        tObj.prstep(parse_param(i.at(4), params));
+      }
+      if (i.size() >= 6) {
+        // Set the print FIR window size in seconds (default 0 means no FIR filtering)
+        tObj.prfirwindow(parse_param(i.at(5), params));
+        // Sanitize. Negative values are caught in write_output.
+        if (tObj.prfirwindow() >= tObj.tstop()) tObj.prfirwindow(tObj.tstop());
       }
       // If either the step size or stop time is 0
       if (tObj.tstep() == 0 || tObj.tstop() == 0) {
@@ -71,9 +70,10 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls,
                                Misc::vector_to_string(i));
         // Set defaults and continue
         tObj.tstep(0.25E-12);
-        tObj.prstep(tObj.tstep());
         tObj.tstop(1E-9);
+        tObj.prstep(tObj.tstep());
         tObj.prstart(0);
+        tObj.prfirwindow(0);
       }
       //// If user provided time step is larger than 0.25ps junction will fail
       // if (tObj.tstep() > 0.25E-12) {

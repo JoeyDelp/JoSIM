@@ -55,6 +55,23 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
   auto& x = sObj.results.xVector;
   auto& t = sObj.results.timeAxis;
   auto& tran = iObj.transSim;
+  // Create downsampling FIR window, use Hanning function with odd number of taps.
+  // The FIR filter is centered around the requested point in time, i. e. looks into the past and future.
+  int64_t halffirsize = tran.prfirwindow() <= 0. ? 0 : .5 * tran.prfirwindow() / tran.tstep();
+  int64_t firsize = halffirsize * 2 + 1;// Guarantees odd number of taps or 1 in case of disabled filter.
+  std::vector<double> firwindow;
+  firwindow.reserve(firsize);
+  // Calculate Hanning function 1 - cos(x) with x in ]0; 2*pi[.
+  // For firsize == 1 (filter disabled), this results in a firwindow = {1.0},
+  //   i. e. a convolution with delta(x), which has no effect.
+  double firsum = 0.0;
+  for (int64_t k = 0; k < firsize; k++) {
+    double hanning = 1. - cos(((double)k + 0.5) * (2. * M_PI / (double)firsize));
+    firsum += hanning;
+    firwindow.emplace_back(hanning);
+  }
+  double firscale = 1. / firsum;// Normalize Hanning function to sum(firwindow) = 1
+  for (auto &hanning : firwindow) hanning = firscale * hanning;
   // Indices to print
   std::vector<int64_t> result_indices;
   for (auto i = 0; i < t.size(); ++i) {
@@ -73,6 +90,7 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
   // Create the time trace
   traces.emplace_back("time");
   traces.back().type_ = 'T';
+  traces.back().data_.reserve(result_indices.size());
   for (auto i : result_indices) {
     traces.back().data_.emplace_back(t.at(i));
   }
@@ -101,103 +119,168 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
       auto i2 = i.index2.has_value() ? i.index2.value() : -1;
       auto si = i.sourceIndex.has_value() ? i.sourceIndex.value() : -1;
       auto vi = i.variableIndex.has_value() ? i.variableIndex.value() : -1;
+      // Size of original data vectors available to FIR filter
+      auto xsize = t.size();
+      if (i1 != -1 && x.at(i1).value().size() < xsize) xsize = x.at(i1).value().size();
+      if (i2 != -1 && x.at(i2).value().size() < xsize) xsize = x.at(i2).value().size();
+      if (vi != -1 && x.at(vi).value().size() < xsize) xsize = x.at(vi).value().size();
       // If this is a voltage we are storing
       if (st == StorageType::Voltage) {
         // Set the label for the plot
         traces.emplace_back(i.deviceLabel.value());
         traces.back().fileIndex = i.fIndex;
-        // Temporary values used for lookback
-        double valin1n1, valin1n2;
-        double valin2n1, valin2n2;
-        double voltN1 = 0;
-        // Add the values for each value on the time axis
-        for (auto j : result_indices) {
-          double value;
-          // Shorthand values
-          auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
-          auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
-          auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
-          if (j == 1) {
-            valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
-            valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
-          } else if (j >= 2) {
-            valin1n2 = i1 != -1 ? x.at(i1).value().at(j - 2) : 0;
-            valin1n1 = i1 != -1 ? x.at(i1).value().at(j - 1) : 0;
-            valin2n2 = i2 != -1 ? x.at(i2).value().at(j - 2) : 0;
-            valin2n1 = i2 != -1 ? x.at(i2).value().at(j - 1) : 0;
-          } else {
-            valin1n2 = valin1n1 = valin1;
-            valin2n2 = valin2n1 = valin2;
-          }
-          // If the analysis method was voltage
-          if (iObj.argAnal == AnalysisType::Voltage) {
-            value = valin1 - valin2;
+        traces.back().type_ = 'V';
+        traces.back().data_.reserve(result_indices.size());
+        // Push the FIR filtered values for each value on the time axis
+        for (auto j : result_indices) {// j: Index of window center
+          // FIR filter voltage
+          double accumulator = 0.;
+          for (int64_t k = 0; k < firsize; k++) {// k: Index used for the window
+            int64_t jk = j + halffirsize - k;// jk: Index used for the data
+            // Sample only valid indices
+            if (jk < 0) jk = 0;
+            else if (jk >= xsize) jk = xsize - 1;
+            // Calculate individual voltage sample
+            double value;
+            // Shorthand values
+            auto valin1 = i1 != -1 ? x.at(i1).value().at(jk) : 0;
+            auto valin2 = i2 != -1 ? x.at(i2).value().at(jk) : 0;
+            // If the analysis method was voltage
+            if (iObj.argAnal == AnalysisType::Voltage) {
+              value = valin1 - valin2;
             // Else calculate the voltage from the phase value
-          } else {
-            if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
-              value = valvi;
             } else {
-              value =
-                  ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep())) *
-                  ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1) +
-                   (1.0 / 3.0) * (valin1n2 - valin2n2));
-              valin1n2 = valin1n1;
-              valin1n1 = valin1;
-              valin2n2 = valin2n1;
-              valin2n1 = valin2;
+              if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
+                value = x.at(vi).value().at(jk);
+              } else {
+                double valin1n1, valin1n2;
+                double valin2n1, valin2n2;
+                if (jk >= 2) {
+                  valin1n2 = i1 != -1 ? x.at(i1).value().at(jk - 2) : 0;
+                  valin1n1 = i1 != -1 ? x.at(i1).value().at(jk - 1) : 0;
+                  valin2n2 = i2 != -1 ? x.at(i2).value().at(jk - 2) : 0;
+                  valin2n1 = i2 != -1 ? x.at(i2).value().at(jk - 1) : 0;
+                } else if (jk == 1) {
+                  valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(jk - 1) : 0;
+                  valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(jk - 1) : 0;
+                } else {
+                  valin1n2 = valin1n1 = valin1;
+                  valin2n2 = valin2n1 = valin2;
+                }
+                value =
+                    ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep())) *
+                    ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1) +
+                    (1.0 / 3.0) * (valin1n2 - valin2n2));
+              }
             }
+            accumulator += firwindow.at(k) * value;
           }
-          traces.back().type_ = 'V';
-          traces.back().data_.emplace_back(value);
+          traces.back().data_.emplace_back(accumulator);
         }
       } else if (st == StorageType::Phase) {
         // Set the label for the plot
         traces.emplace_back(i.deviceLabel.value());
         traces.back().fileIndex = i.fIndex;
-        // Temporary values for lookback
-        double phaseN1 = 0, phaseN2 = phaseN1;
-        // Add the values for each value on the time axis
-        for (auto j : result_indices) {
-          double value;
-          // Shorthand values
-          auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
-          auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
-          auto valvi = vi != -1 ? x.at(vi).value().at(j) : 0;
-          // If the analysis type is phase
-          if (iObj.argAnal == AnalysisType::Phase) {
-            value = valin1 - valin2;
-            // Else if the analysis type was voltage
+        traces.back().type_ = 'P';
+        traces.back().data_.reserve(result_indices.size());
+        // If the analysis type is phase
+        if (iObj.argAnal == AnalysisType::Phase) {
+          // Push the FIR filtered values for each value on the time axis
+          for (auto j : result_indices) {// j: Index of window center
+            // FIR filter phase
+            double accumulator = 0.;
+            for (int64_t k = 0; k < firsize; k++) {// k: Index used for the window
+              int64_t jk = j + halffirsize - k;// jk: Index used for the data
+              // Sample only valid indices
+              if (jk < 0) jk = 0;
+              else if (jk >= xsize) jk = xsize - 1;
+              // Calculate individual phase sample
+              auto valin1 = i1 != -1 ? x.at(i1).value().at(jk) : 0;
+              auto valin2 = i2 != -1 ? x.at(i2).value().at(jk) : 0;
+              auto value = valin1 - valin2;
+              accumulator += firwindow.at(k) * value;
+            }
+            traces.back().data_.emplace_back(accumulator);
+          }
+        // Else if the analysis type was voltage
+        } else {
+          if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
+            // Push the FIR filtered values for each value on the time axis
+            for (auto j : result_indices) {// j: Index of window center
+              // FIR filter phase
+              double accumulator = 0.;
+              for (int64_t k = 0; k < firsize; k++) {// k: Index used for the window
+                int64_t jk = j + halffirsize - k;// jk: Index used for the data
+                // Sample only valid indices
+                if (jk < 0) jk = 0;
+                else if (jk >= xsize) jk = xsize - 1;
+                // Get individual phase sample
+                auto value = x.at(vi).value().at(jk);
+                accumulator += firwindow.at(k) * value;
+              }
+              traces.back().data_.emplace_back(accumulator);
+            }
           } else {
-            if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
-              value = valvi;
-            } else {
-              value =
+            // Calculate the phase for all points in time.
+            // This is required for proper integration in case of voltage analysis.
+            // It takes extra memory and time, so do it only if necessary.
+            std::vector<double> vectphase;
+            vectphase.reserve(xsize);
+            double phaseN1 = 0., phaseN2 = phaseN1;
+            for (int64_t j = 0; j < xsize; j++)
+            {
+              auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
+              auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
+              auto value =
                   ((2.0 * iObj.transSim.tstep()) / (3.0 * Constants::SIGMA)) *
                       (valin1 - valin2) +
                   (4.0 / 3.0) * (phaseN1) - (1.0 / 3.0) * (phaseN2);
               phaseN2 = phaseN1;
               phaseN1 = value;
+              vectphase.emplace_back(value);
+            }
+            // Push the FIR filtered values for each value on the time axis
+            for (auto j : result_indices) {// j: Index of window center
+              // FIR filter phase
+              double accumulator = 0.;
+              for (int64_t k = 0; k < firsize; k++) {// k: Index used for the window
+                int64_t jk = j + halffirsize - k;// jk: Index used for the data
+                // Sample only valid indices
+                if (jk < 0) jk = 0;
+                else if (jk >= xsize) jk = xsize - 1;
+                // Get individual phase sample
+                auto value = vectphase.at(jk);
+                accumulator += firwindow.at(k) * value;
+              }
+              traces.back().data_.emplace_back(accumulator);
             }
           }
-          traces.back().type_ = 'P';
-          traces.back().data_.emplace_back(value);
         }
       } else if (st == StorageType::Current) {
         traces.emplace_back(i.deviceLabel.value());
         traces.back().fileIndex = i.fIndex;
-        if (i.deviceLabel.value().at(3) != 'I') {
-          for (auto j : result_indices) {
-            double value = x.at(i.index1.value()).value().at(j);
-            traces.back().type_ = 'I';
-            traces.back().data_.emplace_back(value);
+        traces.back().type_ = 'I';
+        traces.back().data_.reserve(result_indices.size());
+        // Push the FIR filtered values for each value on the time axis
+        for (auto j : result_indices) {// j: Index of window center
+          // FIR filter current
+          double accumulator = 0.;
+          for (int64_t k = 0; k < firsize; k++) {// k: Index used for the window
+            int64_t jk = j + halffirsize - k;// jk: Index used for the data
+            // Sample only valid indices
+            // Also apply index clipping to sourcegen in order to filter everything the same.
+            if (jk < 0) jk = 0;
+            else if (jk >= xsize) jk = xsize - 1;
+            // Get individual current sample
+            double value;
+            if (i.deviceLabel.value().at(3) != 'I') {
+              value = x.at(i1).value().at(jk);
+            } else {
+              value = mObj.sourcegen.at(i.sourceIndex.value()).value(t.at(jk));
+            }
+            accumulator += firwindow.at(k) * value;
           }
-        } else {
-          for (auto j : result_indices) {
-            double value = mObj.sourcegen.at(i.sourceIndex.value())
-                               .value(sObj.results.timeAxis.at(j));
-            traces.back().type_ = 'I';
-            traces.back().data_.emplace_back(value);
-          }
+          traces.back().data_.emplace_back(accumulator);
         }
       }
       ++cc;
@@ -228,8 +311,18 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
         traces.emplace_back("P(" + i.first + ")");
         traces.back().type_ = 'P';
       }
+      // FIR filter, then push into trace
+      auto xsize = x.at(i.second).value().size();
       for (auto j : result_indices) {
-        traces.back().data_.emplace_back(x.at(i.second).value().at(j));
+        double accumulator = 0.;
+        for (int64_t k = 0; k < firsize; k++) {
+          int64_t jk = j + halffirsize - k;
+          // Sample only valid indices
+          if (jk < 0) jk = 0;
+          else if (jk >= xsize) jk = xsize - 1;
+          accumulator += firwindow.at(k) * x.at(i.second).value().at(jk);
+        }
+        traces.back().data_.emplace_back(accumulator);
       }
       ++cc;
     }

@@ -254,11 +254,13 @@ The most important of these control commands is the transient simulation command
 
 ### Transient Analysis
 
-**.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$]]&emsp;DST
+**.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$&emsp;[$P_{WINDOW}$]]]&emsp;DST
 
 This generates a simulation that runs from 0 until $T_{STOP}$. The amount simulation steps that will be performed is $n=\frac{T_{STOP}}{T_{STEP}}$.
 
 $P_{START}$ indicates at what point output will start printing. $P_{STEP}$ sets the size of the print steps. This has to be larger or equal to $T_{STEP}$.
+
+If $P_{WINDOW}$ is specified and not 0, a Hanning FIR filter with a window width of $P_{WINDOW}$ seconds is applied to the output data before decimating as a post-processing step. This can be used to low-pass filter the output to prevent aliasing when decimating with $P_{STEP}$, e. g. to create an IV curve of the whole circuit.
 
 DST disables the start-up time. The start-up time is a period calculated internally by the simulator in which components settle. This is equivalent to the few picoseconds from when a circuit initially receives power (power switch flipped).
 

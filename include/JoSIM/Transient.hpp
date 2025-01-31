@@ -16,6 +16,7 @@ class Transient {
   double tstop_;
   double prstart_;
   double prstep_;
+  double prfirwindow_;
   bool startup_;
 
  public:
@@ -24,12 +25,14 @@ class Transient {
         tstop_(0.0),
         prstart_(0.0),
         prstep_(1E-12),
+        prfirwindow_(0.0),
         startup_(true){};
 
   double tstep() const { return tstep_; }
   double tstop() const { return tstop_; }
   double prstart() const { return prstart_; }
   double prstep() const { return prstep_; }
+  double prfirwindow() const { return prfirwindow_; }
   int64_t simsize() const { return static_cast<int64_t>(tstop_ / tstep_); }
   bool startup() const { return startup_; }
 
@@ -37,6 +40,7 @@ class Transient {
   void tstop(double value) { tstop_ = value; }
   void prstart(double value) { prstart_ = value; }
   void prstep(double value) { prstep_ = value; }
+  void prfirwindow(double value) { prfirwindow_ = value; }
   void startup(bool value) { startup_ = value; }
 
   static void identify_simulation(std::vector<tokens_t>& controls,
