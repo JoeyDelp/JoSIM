@@ -185,9 +185,9 @@ CliOptions CliOptions::parse(int64_t argc, const char** argv) {
     // Complain and assume standard input
     Errors::cli_errors(CLIErrors::NO_INPUT);
   }
-  // If an output file name was specified
-  if (out.output_file) {
-    // But this matches the input file name
+  // If an output file and an input file name were specified
+  if (out.output_file && out.cir_file_name) {
+    // But they match each other
     if (out.output_file.value().name() == out.cir_file_name.value()) {
       // Complain and exit since continuing will overwrite input file
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
