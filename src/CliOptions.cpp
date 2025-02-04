@@ -88,6 +88,7 @@ vector_pair_t<char_o, string_o> CliOptions::argument_pairs(
 CliOptions CliOptions::parse(int64_t argc, const char** argv) {
   // Variable where all the CLI options will be stored
   CliOptions out;
+  bool explicit_stdin_input = false;// Only used to suppress warning
   // Parse and generate argument pairs from tokens
   vector_pair_t<char_o, string_o> ap =
       out.argument_pairs(out.argv_to_tokens(argc, argv));
@@ -121,6 +122,7 @@ CliOptions CliOptions::parse(int64_t argc, const char** argv) {
           // Set input to standard input
         case 'i':
           out.cir_file_name = std::nullopt;
+          explicit_stdin_input = true;
           break;
           // Enable minimal reporting
         case 'm':
@@ -181,13 +183,14 @@ CliOptions CliOptions::parse(int64_t argc, const char** argv) {
   }
   // Do a few sanity checks
   // If the input was not specified
-  if (!out.cir_file_name) {
+  if (!out.cir_file_name && !(out.minimal && explicit_stdin_input)) {
     // Complain and assume standard input
+    // Suppress warning if -i AND -m options were given
     Errors::cli_errors(CLIErrors::NO_INPUT);
   }
-  // If an output file name was specified
-  if (out.output_file) {
-    // But this matches the input file name
+  // If an output file and an input file name were specified
+  if (out.output_file && out.cir_file_name) {
+    // But they match each other
     if (out.output_file.value().name() == out.cir_file_name.value()) {
       // Complain and exit since continuing will overwrite input file
       Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT);
