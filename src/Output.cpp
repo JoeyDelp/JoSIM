@@ -66,7 +66,7 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
   //   i. e. a convolution with delta(x), which has no effect.
   double firsum = 0.0;
   for (int64_t k = 0; k < firsize; k++) {
-    double hanning = 1. - cos(((double)k + 0.5) * (2. * M_PI / (double)firsize));
+    double hanning = 1. - cos(((double)k + 0.5) * (2. * Constants::PI / (double)firsize));
     firsum += hanning;
     firwindow.emplace_back(hanning);
   }

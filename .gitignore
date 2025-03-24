@@ -323,3 +323,6 @@ site/
 Screenshot 2020-09-18 at 15.17.27.png
 /scripts/dist
 *.spec
+/test/comp/jj.csv
+/test/dcsfq.svg
+/test/jtl.svg
