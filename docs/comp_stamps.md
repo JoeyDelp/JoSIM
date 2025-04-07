@@ -755,7 +755,7 @@ I_{out} = \beta I_{in}
 $$
 
 $$
-V_{1} - V_{2} = 0
+V_{3} - V_{4} = 0
 $$
 
 $$
@@ -764,11 +764,11 @@ $$
 
 $$
 \begin{bmatrix}
-	0 & 0 & 0 & 0 & \frac{1}{\beta} \\
-	0 & 0 & 0 & 0 & -\frac{1}{\beta} \\	
 	0 & 0 & 0 & 0 & 1 \\
 	0 & 0 & 0 & 0 & -1 \\
-	1 & -1 & 0 & 0 & 0
+	0 & 0 & 0 & 0 & \frac{1}{\beta} \\
+	0 & 0 & 0 & 0 & -\frac{1}{\beta} \\
+	0 & 0 & 1 & -1 & 0
 	\end{bmatrix}
 	\begin{bmatrix}
 	V_{1}\\
@@ -795,21 +795,21 @@ $$
 Current controlled voltage source allows the modulation of a voltage node through a remote current.
 
 $$
-V_{1} - V_{2} = 0
+V_{3} - V_{4} = 0
 $$
 
 $$
-V_{3} - V_{4} = \mu I_{in}
+V_{1} - V_{2} = \mu I_{in}
 $$
 
 $$
 \begin{bmatrix}
-0 & 0 & 0 & 0 & 1 & 0\\
-0 & 0 & 0 & 0 & -1 & 0\\
 0 & 0 & 0 & 0 & 0 & 1\\
 0 & 0 & 0 & 0 & 0 & -1\\
-0 & 0 & 1 & -1 & -\mu & 0\\
-1 & -1 & 0 & 0 & 0 & -\mu
+0 & 0 & 0 & 0 & 1 & 0\\
+0 & 0 & 0 & 0 & -1 & 0\\
+1 & -1 & 0 & 0 & -\mu & 0\\
+0 & 0 & 1 & -1 & 0 & 0
 \end{bmatrix}
 \begin{bmatrix}
 V_{1}\\
@@ -837,16 +837,16 @@ $$
 Voltage controlled current source allows the modulation of a current in a branch through a remote voltage.
 
 $$
-\alpha(V_{1} - V_{2}) = I_{out}
+\alpha(V_{3} - V_{4}) = I_{out}
 $$
 
 $$
 \begin{bmatrix}
-0 & 0 & 0 & 0 & 0\\
-0 & 0 & 0 & 0 & 0\\
 0 & 0 & 0 & 0 & 1\\
 0 & 0 & 0 & 0 & -1\\
-1 & -1 & 0 & 0 & -\frac{1}{\alpha}
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 1 & -1 & -\frac{1}{\alpha}
 \end{bmatrix}
 \begin{bmatrix}
 V_{1}\\
@@ -873,16 +873,16 @@ $$
 Voltage controlled current source allows the modulation of a current in a branch through a remote voltage.
 
 $$
-A(V_{1} - V_{2}) = V_{3}-V_{4}
+A(V_{3} - V_{4}) = V_{1}-V_{2}
 $$
 
 $$
 \begin{bmatrix}
-0 & 0 & 0 & 0 & 0\\
-0 & 0 & 0 & 0 & 0\\
 0 & 0 & 0 & 0 & 1\\
 0 & 0 & 0 & 0 & -1\\
-G & -G & 1 & -1 & 0
+0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 0\\
+-1 & 1 & A & -A & 0
 \end{bmatrix}
 \begin{bmatrix}
 V_{1}\\

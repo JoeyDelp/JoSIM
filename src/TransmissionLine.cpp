@@ -146,8 +146,10 @@ void TransmissionLine::set_secondary_node_indices(const tokens_t& t,
     case NodeConfig::POSNEG:
       posIndex2_ = nm.at(t.at(0));
       negIndex2_ = nm.at(t.at(1));
-      nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
-      nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
+      if (posIndex2_.value() != negIndex2_.value()) {
+        nc.at(nm.at(t.at(0))).emplace_back(std::make_pair(1, currentIndex2_));
+        nc.at(nm.at(t.at(1))).emplace_back(std::make_pair(-1, currentIndex2_));
+      }
       break;
     case NodeConfig::GND:
       break;
@@ -168,11 +170,15 @@ void TransmissionLine::set_secondary_matrix_info() {
       matrixInfo.rowPointer_.emplace_back(2);
       break;
     case NodeConfig::POSNEG:
-      matrixInfo.nonZeros_.emplace_back(1);
-      matrixInfo.nonZeros_.emplace_back(-1);
-      matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
-      matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
-      matrixInfo.rowPointer_.emplace_back(3);
+      if (posIndex2_.value() != negIndex2_.value()) {
+        matrixInfo.nonZeros_.emplace_back(1);
+        matrixInfo.nonZeros_.emplace_back(-1);
+        matrixInfo.columnIndex_.emplace_back(posIndex2_.value());
+        matrixInfo.columnIndex_.emplace_back(negIndex2_.value());
+        matrixInfo.rowPointer_.emplace_back(3);
+      } else {
+        matrixInfo.rowPointer_.emplace_back(1);
+      }
       break;
     case NodeConfig::GND:
       matrixInfo.rowPointer_.emplace_back(1);
