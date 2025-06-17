@@ -1,6 +1,6 @@
-// Copyright (c) 2021 Johannes Delport
+﻿// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
-
+#include <locale>
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/CliOptions.hpp"
 #include "JoSIM/Errors.hpp"
@@ -19,6 +19,8 @@ using namespace JoSIM;
 
 int main(int argc, const char** argv) {
   try {
+    std::locale loc("C");
+    std::locale::global(loc);
     // Before anything. Display versioning info.
     CliOptions::version_info();
     // Parse input arguments for command line interface

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Johannes Delport
+﻿// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/JJ.hpp"
@@ -42,9 +42,18 @@ using namespace JoSIM;
 JJ::JJ(const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
        const nodemap& nm, std::unordered_set<std::string>& lm,
        nodeconnections& nc, Input& iObj, Spread& spread, int64_t& bi) {
+  // Determine if the JJ has a 3rd node for Gate Tunable JJ
+  if (s.first.size() >= 4 && s.first[3].find('=') == std::string::npos) {
+    try {
+      gateIndex_ = nm.at(s.first[3]);
+    } catch (std::out_of_range& e) {
+    
+    }
+  }
   double spr = 1.0;
   tokens_t t;
-  for (int64_t i = 3; i < s.first.size(); ++i) {
+  size_t attrStart = gateIndex_ ? 4 : 3;
+  for (int64_t i = attrStart; i < s.first.size(); ++i) {
     auto& ti = s.first.at(i);
     if (ti.rfind("SPREAD=", 0) == 0) {
       spr = parse_param(ti.substr(7), iObj.parameters, s.second);
@@ -56,6 +65,11 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
       area_ = spread.spread_value(
           parse_param(ti.substr(5), iObj.parameters, s.second), Spread::JJ,
           spr);
+    } else if (ti.rfind("GC=", 0) == 0) {
+      try {
+        gateIndex_ = nm.at(ti.substr(3));
+      } catch (std::out_of_range& e) {
+      };
     } else if (ti.rfind("IC=", 0) == 0) {
       Ic_ = spread.spread_value(
           parse_param(ti.substr(3), iObj.parameters, s.second), Spread::JJ,
@@ -176,10 +190,9 @@ void JJ::set_matrix_info() {
   }
 }
 
-void JJ::set_model(const tokens_t& t,
-                   const vector_pair_t<Model, string_o>& models,
-                   const string_o& subc) {
-  bool found = false;
+bool JJ::find_model(const tokens_t& t,
+                    const vector_pair_t<Model, string_o>& models,
+                    const string_o& subc) {
   // Loop through all models
   for (auto& i : models) {
     // If the model name matches that of an identified model
@@ -188,17 +201,22 @@ void JJ::set_model(const tokens_t& t,
       if ((i.second && subc) && (subc.value() == i.second.value())) {
         // Set the model to the exact identified model
         model_ = i.first;
-        found = true;
-        break;
+        return true;
         // JJ might be in a subcircuit but model in global scope6
       } else if (!i.second) {
         // Set the model to the globally identified model
         model_ = i.first;
-        found = true;
-        break;
+        return true;
       }
     }
   }
+  return false;
+}
+
+void JJ::set_model(const tokens_t& t,
+                   const vector_pair_t<Model, string_o>& models,
+                   const string_o& subc) {
+  bool found = find_model(t, models, subc);
   // If no model was found
   if (!found) {
     // Complain about it

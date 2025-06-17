@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Johannes Delport
+﻿// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_MODEL_HPP
 #define JOSIM_MODEL_HPP
@@ -24,6 +24,7 @@ class Model {
   double d_;
   double icFct_;
   double phiOff_;
+  double gwidth_;
   bool tDep_;
 
  public:
@@ -38,6 +39,7 @@ class Model {
         t_(4.2),
         tc_(9.1),
         deltaV_(0.1E-3),
+        gwidth_(0.1E-3),
         d_(0),
         icFct_(Constants::PI / 4),
         phiOff_(0),
@@ -65,6 +67,8 @@ class Model {
   void tc(const double& t) { tc_ = t; }
   double deltaV() const { return deltaV_; }
   void deltaV(const double& d) { deltaV_ = d; }
+  double gwidth() const { return gwidth_; }
+  void gwidth(const double& d) { gwidth_ = d; }
   double d() const { return d_; }
   void d(const double& t) { d_ = t; }
   double icFct() const { return icFct_; }

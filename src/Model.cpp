@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Johannes Delport
+﻿// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Model.hpp"
@@ -91,6 +91,8 @@ void Model::parse_model(const std::pair<tokens_t, string_o>& s,
         temp.tDep(true);
       } else if (tokens.at(i) == "DELV") {
         temp.deltaV(value);
+      } else if (tokens.at(i) == "GWIDTH") {
+        temp.gwidth(value);
       } else if (tokens.at(i) == "D") {
         temp.d(value);
         temp.tDep(true);

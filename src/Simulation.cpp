@@ -43,12 +43,12 @@ Simulation::Simulation(Input &iObj, Matrix &mObj) {
 
     // Do solver cleanup
 #ifdef SLU
-      // SLU cleanup
-      lu.free();
+    // SLU cleanup
+    lu.free();
 #else
-      // KLU cleanup
-      klu_l_free_symbolic(&Symbolic_, &Common_);
-      klu_l_free_numeric(&Numeric_, &Common_);
+    // KLU cleanup
+    klu_l_free_symbolic(&Symbolic_, &Common_);
+    klu_l_free_numeric(&Numeric_, &Common_);
 #endif
   }
 }
@@ -103,13 +103,12 @@ void Simulation::trans_sim(Matrix &mObj) {
       x_ = b_;
       // Solve Ax=b, storing the results in x_
 #ifdef SLU
-        lu.solve(x_);
+      lu.solve(x_);
 #else
-        simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1,
-                              &x_.front(), &Common_);
-        // If anything is a amiss, complain about it
-        if (!simOK_)
-          Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+      simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1,
+                            &x_.front(), &Common_);
+      // If anything is a amiss, complain about it
+      if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
 #endif
     }
   }
@@ -127,12 +126,12 @@ void Simulation::trans_sim(Matrix &mObj) {
     x_ = b_;
     // Solve Ax=b, storing the results in x_
 #ifdef SLU
-      lu.solve(x_);
+    lu.solve(x_);
 #else
-      simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1,
-                            &x_.front(), &Common_);
-      // If anything is a amiss, complain about it
-      if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+    simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1,
+                          &x_.front(), &Common_);
+    // If anything is a amiss, complain about it
+    if (!simOK_) Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
 #endif
     // Store results (only requested, to prevent massive memory usage)
     for (int64_t j = 0; j < results.xVector.size(); ++j) {
@@ -180,11 +179,11 @@ void Simulation::setup_b(Matrix &mObj, int64_t i, double step, double factor) {
   if (needsLU_) {
     mObj.create_nz();
 #ifdef SLU
-      lu.factorize(true);
+    lu.factorize(true);
 #else
-      klu_l_free_numeric(&Numeric_, &Common_);
-      Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(),
-                              &mObj.nz.front(), Symbolic_, &Common_);
+    klu_l_free_numeric(&Numeric_, &Common_);
+    Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(),
+                            &mObj.nz.front(), Symbolic_, &Common_);
 #endif
     needsLU_ = false;
   }
@@ -385,6 +384,11 @@ void Simulation::handle_jj(Matrix &mObj, int64_t &i, double &step,
     temp.vn5_ = temp.vn4_;
     temp.vn4_ = temp.vn3_;
     temp.vn3_ = temp.vn2_;
+
+    // 1) read dynamic gate voltage (fallback to static model.vg if no gate)
+    double Vg_dyn =
+        temp.gateIndex_ ? x_.at(temp.gateIndex_.value()) : temp.model_.vg();
+
     // Update junction transition
     if (model.rtype() == 1) {
       auto testLU = temp.update_value(v0);
@@ -394,10 +398,16 @@ void Simulation::handle_jj(Matrix &mObj, int64_t &i, double &step,
     }
     // Ic * sin (phi * (φ0 - φ))
     double ic_sin_phi = 0.0;
+    double ic_eff = temp.model_.ic();
+    // Adjust for phenomenological ramp‐off beyond a threshold Vth:
+    double gateFactor =
+        std::clamp(1.0 - std::fabs(Vg_dyn) / temp.model_.gwidth(), 0.0, 1.0);
+    ic_eff *= gateFactor;
     for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
-      ic_sin_phi += temp.model_.ic() *
-                    (temp.model_.cpr().at(harm) *
-                     sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff())));
+      // ic_sin_phi += temp.model_.ic() *
+      ic_sin_phi +=
+          ic_eff * (temp.model_.cpr().at(harm) *
+                    sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff())));
     }
     if (!temp.model_.tDep()) {
       // -(hR / h + 2RC) * (Ic sin (φ0) - 2C / h Vp1 + C/2h Vp2 + It)

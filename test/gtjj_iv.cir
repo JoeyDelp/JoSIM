@@ -1,0 +1,7 @@
+B01     1       0   jjmodel   AREA=1	GC=GTVG
+IB01    0       1   DC	2.5u
+VG      GTVG    0   DC  2.8m
+.model jjmodel jj(rtype=0, ic=100u, gwidth=10m)
+.tran 0.05p 500p
+.iv jjmodel 200u iv_2.8m.csv gtjj=2.8m
+.print DEVI(B01) DEVV(B01) DEVP(B01)

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Johannes Delport
+﻿// Copyright (c) 2021 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_JJ_HPP
 #define JOSIM_JJ_HPP
@@ -55,6 +55,7 @@ class JJ : public BasicComponent {
 
  public:
   int64_t variableIndex_ = 0;
+  std::optional<int64_t> gateIndex_;
   double area_ = 1.0;
   std::optional<double> Ic_, temp_, neb_, spAmp_;
   Model model_;
@@ -77,6 +78,9 @@ class JJ : public BasicComponent {
   double normal_impedance();
 
   void set_matrix_info();
+  bool find_model(const tokens_t& t,
+                  const vector_pair_t<Model, string_o>& models,
+                  const string_o& subc);
 
   void set_model(const tokens_t& t,
                  const vector_pair_t<Model, string_o>& models,
