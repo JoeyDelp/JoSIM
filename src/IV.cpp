@@ -51,7 +51,8 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
   ivInp.controls.clear();
   if (gtjj) {
     tokens_t jj = {"B01", "1", "0", model, "AREA=1", "GC=GTVG"};
-    tokens_t ib = {"IB01", "0", "1", "DC", "2.5U"};
+    //tokens_t ib = {"IB01", "0", "1", "DC", "2.5U"};
+    tokens_t ib = {"IB01", "0", "1", "PWL(0", "0", "10P", "0", "50P", "2.5U)"};
     std::stringstream gtjj_value;
     gtjj_value << std::scientific << std::uppercase << gtjj.value();
     tokens_t vgc = {"VGTC", "GTVG", "0", "DC", gtjj_value.str()};
@@ -60,7 +61,8 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
                                 std::make_pair(ib, std::nullopt)};
   } else {
     tokens_t jj = {"B01", "1", "0", model, "AREA=1"};
-    tokens_t ib = {"IB01", "0", "1", "DC", "2.5U"};
+    //tokens_t ib = {"IB01", "0", "1", "DC", "2.5U"};
+    tokens_t ib = {"IB01", "0", "1", "PWL(0", "0", "10P", "0", "50P", "2.5U)"};
     ivInp.netlist.expNetlist = {std::make_pair(jj, subc),
                                 std::make_pair(ib, std::nullopt)};
   }
@@ -83,22 +85,37 @@ std::vector<std::pair<double, double>> IV::generate_iv(double maxC,
                                                        Input ivInp) {
   std::vector<std::pair<double, double>> iv_data;
   double currentIncrement = 25E-7;
-  double currentCurr = -maxC;
-
+  double currentCurr = 0.0;
   Matrix ivMat;
   ivMat.create_matrix(ivInp);
-
-  // Sweep from -maxC to maxC
-  for (; currentCurr <= maxC; currentCurr += currentIncrement) {
-    ivMat.sourcegen.back().ampValues({currentCurr});
+  while (currentCurr <= maxC) {
+    // Create a matrix object using the input object
+    currentCurr += currentIncrement;
+    ivMat.sourcegen.back().ampValues({0, 0, currentCurr});
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
   }
-
-  for (currentCurr = maxC; currentCurr >= -maxC; currentCurr -=
-  currentIncrement) { ivMat.sourcegen.back().ampValues({currentCurr});
+  while (currentCurr >= 0) {
+    // Create a matrix object using the input object
+    currentCurr -= currentIncrement;
+    ivMat.sourcegen.back().ampValues({0, maxC, currentCurr});
     iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
   }
-
+  while (currentCurr >= -maxC) {
+    // Create a matrix object using the input object
+    currentCurr -= currentIncrement;
+    ivMat.sourcegen.back().ampValues({0, 0, currentCurr});
+    iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
+  }
+  while (currentCurr <= 0) {
+    // Create a matrix object using the input object
+    currentCurr += currentIncrement;
+    ivMat.sourcegen.back().ampValues({0, -maxC, currentCurr});
+    iv_data.emplace_back(do_simulate(ivInp, ivMat));
+    ivInp.transSim.tstep(0.05E-12);
+  }
   return iv_data;
 }
 
@@ -106,7 +123,7 @@ std::pair<double, double> IV::do_simulate(Input& ivInp, Matrix& ivMat) {
   // Simulate the iv curve
   Simulation ivSim(ivInp, ivMat);
   // Add the results to the stack
-  double& current = ivSim.results.xVector.at(3).value().back();
+  double current = ivMat.sourcegen.back().ampValues().back();
   auto& voltVect = ivSim.results.xVector.front().value();
   double voltage = 0;
   for (int64_t i = voltVect.size() / 2; i < voltVect.size(); ++i) {

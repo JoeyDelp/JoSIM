@@ -386,8 +386,10 @@ void Simulation::handle_jj(Matrix &mObj, int64_t &i, double &step,
     temp.vn3_ = temp.vn2_;
 
     // 1) read dynamic gate voltage (fallback to static model.vg if no gate)
-    double Vg_dyn =
-        temp.gateIndex_ ? x_.at(temp.gateIndex_.value()) : temp.model_.vg();
+    std::optional<double> Vg_dyn;
+    if (temp.gateIndex_) {
+      x_.at(temp.gateIndex_.value());
+    }
 
     // Update junction transition
     if (model.rtype() == 1) {
@@ -400,9 +402,11 @@ void Simulation::handle_jj(Matrix &mObj, int64_t &i, double &step,
     double ic_sin_phi = 0.0;
     double ic_eff = temp.model_.ic();
     // Adjust for phenomenological ramp‐off beyond a threshold Vth:
-    double gateFactor =
-        std::clamp(1.0 - std::fabs(Vg_dyn) / temp.model_.gwidth(), 0.0, 1.0);
-    ic_eff *= gateFactor;
+    if (Vg_dyn) {
+      double gateFactor = std::clamp(
+          1.0 - std::fabs(Vg_dyn.value()) / temp.model_.gwidth(), 0.0, 1.0);
+      ic_eff *= gateFactor;
+    }
     for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
       // ic_sin_phi += temp.model_.ic() *
       ic_sin_phi +=
