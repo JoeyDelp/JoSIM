@@ -28,7 +28,10 @@ Referencing:
 
 [JoSIM — Superconductor SPICE Simulator](https://ieeexplore.ieee.org/document/8633946/)
 
-If you find this tool useful, you can help keep it alive by [buying me a coffee ☕](https://buymeacoffee.com/joeydelp), or via [GitHub Sponsors](https://github.com/sponsors/JoeyDelp).
+If you find this tool useful, you can help keep it alive by \
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/joeydelp) \
+or via \
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/JoeyDelp)
 
 ---
 
