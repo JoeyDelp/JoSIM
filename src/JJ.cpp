@@ -144,11 +144,15 @@ void JJ::set_matrix_info() {
       matrixInfo.rowPointer_.emplace_back(2);
       break;
     case NodeConfig::POSNEG:
-      matrixInfo.nonZeros_.emplace_back(1);
-      matrixInfo.nonZeros_.emplace_back(-1);
-      matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
-      matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
-      matrixInfo.rowPointer_.emplace_back(3);
+      if (indexInfo.posIndex_.value() != indexInfo.negIndex_.value()) {
+        matrixInfo.nonZeros_.emplace_back(1);
+        matrixInfo.nonZeros_.emplace_back(-1);
+        matrixInfo.columnIndex_.emplace_back(indexInfo.posIndex_.value());
+        matrixInfo.columnIndex_.emplace_back(indexInfo.negIndex_.value());
+        matrixInfo.rowPointer_.emplace_back(3);
+      } else {
+        matrixInfo.rowPointer_.emplace_back(1);
+      }
       break;
     case NodeConfig::GND:
       matrixInfo.rowPointer_.emplace_back(1);
