@@ -12,25 +12,25 @@
 using namespace JoSIM;
 
 /*
- Glabel Vo⁺ Vo⁻ Vc⁺ Vc⁻ G
-
- Io = GVc
-
- ⎡ 0  0  0  0    1⎤ ⎡Vo⁺⎤   ⎡ 0⎤
- ⎜ 0  0  0  0   -1⎟ ⎜Vo⁻⎟   ⎜ 0⎟
- ⎜ 0  0  0  0    0⎟ ⎜Vc⁺⎟ = ⎜ 0⎟
- ⎜ 0  0  0  0    0⎟ ⎜Vc⁻⎟   ⎜ 0⎟
- ⎣ 0  0  1 -1 -1/G⎦ ⎣Io ⎦   ⎣ 0⎦
-
- (PHASE)
- φ - (2e/hbar)(2h/3G)Io = (4/3)φn-1 - (1/3)φn-2
-
- ⎡ 0  0  0  0                 1⎤ ⎡φo⁺⎤   ⎡                     0⎤
- ⎜ 0  0  0  0                -1⎟ ⎜φo⁻⎟   ⎜                     0⎟
- ⎜ 0  0  0  0                 0⎟ ⎜φc⁺⎟ = ⎜                     0⎟
- ⎜ 0  0  0  0                 0⎟ ⎜φc⁻⎟   ⎜                     0⎟
- ⎣ 0  0  1 -1 -(2e/hbar)(2h/3G)⎦ ⎣Io ⎦   ⎣ (4/3)φn-1 - (1/3)φn-2⎦
-*/
+ * Glabel: Vo+  Vo-  Vc+  Vc-  G
+ *
+ * Io = G*Vc
+ *
+ * [ 0  0  0  0    1 ] [ Vo+ ]   [ 0 ]
+ * [ 0  0  0  0   -1 ] [ Vo- ]   [ 0 ]
+ * [ 0  0  0  0    0 ] [ Vc+ ] = [ 0 ]
+ * [ 0  0  0  0    0 ] [ Vc- ]   [ 0 ]
+ * [ 0  0  1 -1 -1/G ] [ Io  ]   [ 0 ]
+ *
+ * (PHASE)
+ * phi - (2e/hbar)*(2h/3G)*Io = (4/3)*phi(n-1) - (1/3)*phi(n-2)
+ *
+ * [ 0  0  0  0                 1 ] [ phio+ ]   [ 0                           ]
+ * [ 0  0  0  0                -1 ] [ phio- ] = [ 0                           ]
+ * [ 0  0  0  0                 0 ] [ phic+ ]   [ 0                           ]
+ * [ 0  0  0  0                 0 ] [ phic- ]   [ 0                           ]
+ * [ 0  0  1 -1 -(2e/hbar)*(2h/3G) ] [ Io   ]   [ (4/3)*phi(n-1) - (1/3)*phi(n-2) ]
+ */
 
 VCCS::VCCS(const std::pair<tokens_t, string_o>& s, const NodeConfig& ncon,
            const std::optional<NodeConfig>& ncon2, const nodemap& nm,

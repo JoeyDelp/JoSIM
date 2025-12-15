@@ -11,15 +11,14 @@
 namespace JoSIM {
 
 class IV {
- public:
-  IV(const Input iObj);
-  void setup_iv(const tokens_t& i, const Input& iObj);
-  std::vector<std::pair<double, double>> generate_iv(double maxC, Input ivInp);
-  std::pair<double, double> do_simulate(Input& ivInp, Matrix& ivMat);
-  void write_iv(std::vector<std::pair<double, double>>& iv_data,
-                const std::string& output_path);
+  public:
+    IV::IV(const Input& iObj);
+    void                                   setup_iv(const tokens_t& i, const Input& iObj);
+    std::vector<std::pair<double, double>> IV::generate_iv(double maxC, double currentIncrement, Input ivInp);
+    std::pair<double, double>              do_simulate(Input& ivInp, Matrix& ivMat);
+    void write_iv(const std::vector<std::pair<double, double>>& iv_data, const std::string& output_path);
 };
 
-}  // namespace JoSIM
+} // namespace JoSIM
 
-#endif  // JOSIM_IV_HPP
+#endif // JOSIM_IV_HPP
