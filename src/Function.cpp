@@ -76,31 +76,66 @@ void Function::parse_function(const std::string& str, const Input& iObj,
 void Function::parse_pwl(const tokens_t& t, const Input& iObj,
                          const string_o& s) {
   /* PWL(0 V0 T1 V1 T2 V2 ... TN VN) */
-  std::vector<double> timesteps, values;
-  if (std::stod(t.at(0)) != 0.0) {
+
+  std::vector<double> timesteps;
+  std::vector<double> values;
+
+  // Must have pairs
+  if (t.size() < 2 || (t.size() % 2) != 0) {
+    Errors::function_errors(FunctionErrors::TOO_FEW_VALUES,
+                            "Expected time/value pairs, got " +
+                                std::to_string(t.size()) + " tokens");
+    timeValues_.clear();
+    ampValues_.clear();
+    return;
+  }
+
+  // Parse first pair using parse_param (NOT stod)
+  double t0 = parse_param(t.at(0), iObj.parameters, s);
+  double v0 = parse_param(t.at(1), iObj.parameters, s);
+
+  // If first time isn't 0, prepend (0, v0) instead of (0,0)
+  if (t0 != 0.0) {
     Errors::function_errors(FunctionErrors::INITIAL_VALUES,
                             t.at(0) + " & " + t.at(1));
     timesteps.push_back(0.0);
-    values.push_back(0.0);
+    values.push_back(v0);
   }
-  for (int64_t i = 0; i < t.size(); i = i + 2) {
-    timesteps.push_back(parse_param(t.at(i), iObj.parameters, s));
+
+  // Add the actual first point
+  timesteps.push_back(t0);
+  values.push_back(v0);
+
+  // Parse remaining pairs
+  for (size_t i = 2; i < t.size(); i += 2) {
+    double ti = parse_param(t.at(i), iObj.parameters, s);
+    double vi = parse_param(t.at(i + 1), iObj.parameters, s);
+
+    // Enforce strictly increasing time
+    if (ti <= timesteps.back()) {
+      Errors::function_errors(FunctionErrors::TOO_FEW_TIMESTEPS,
+                              "Time values must be strictly increasing. Got " +
+                                  std::to_string(ti) + " after " +
+                                  std::to_string(timesteps.back()));
+      // You can choose to return/throw; returning prevents undefined behavior later
+      timeValues_.clear();
+      ampValues_.clear();
+      return;
+    }
+
+    timesteps.push_back(ti);
+    values.push_back(vi);
   }
-  for (int64_t i = 1; i < t.size(); i = i + 2) {
-    values.push_back(parse_param(t.at(i), iObj.parameters, s));
-  }
-  if (timesteps.size() < values.size()) {
-    Errors::function_errors(FunctionErrors::TOO_FEW_TIMESTEPS,
-                            std::to_string(timesteps.size()) + " timesteps & " +
-                                std::to_string(timesteps.size()) + " values");
-  }
-  if (timesteps.size() > values.size()) {
+
+  // Final sanity (should always match now)
+  if (timesteps.size() != values.size()) {
     Errors::function_errors(FunctionErrors::TOO_FEW_VALUES,
                             std::to_string(timesteps.size()) + " timesteps & " +
-                                std::to_string(timesteps.size()) + " values");
+                                std::to_string(values.size()) + " values");
   }
-  timeValues_ = timesteps;
-  ampValues_ = values;
+
+  timeValues_ = std::move(timesteps);
+  ampValues_ = std::move(values);
 }
 
 void Function::parse_pulse(const tokens_t& t, const Input& iObj,
@@ -425,36 +460,35 @@ double Function::return_noise(double& x) {
 }
 
 double Function::return_pws(double& x) {
-  // If x larger than the last timestep then assume last amplitude value
-  if (x >= timeValues_.back()) {
-    return ampValues_.back();
-    // Else check within which range x falls
-  } else {
-    for (int64_t i = 0; i < timeValues_.size() - 1; ++i) {
-      if (x >= timeValues_.at(i) && x < timeValues_.at(i + 1)) {
-        double& y2 = ampValues_.at(i + 1);
-        double& y1 = ampValues_.at(i);
-        double& x2 = timeValues_.at(i + 1);
-        double& x1 = timeValues_.at(i);
-        double period = (x2 - x1) * 2;
-        double ba;
-        if (y1 < y2) {
-          ba = (y2 - y1) / 2;
-          return y1 +
-                 ba * sin((2 * Constants::PI * (x - (period / 4))) / period) +
-                 ba;
-        } else if (y1 > y2) {
-          ba = (y1 - y2) / 2;
-          return y1 -
-                 ba * sin((2 * Constants::PI * (x + (period / 4))) / period) -
-                 ba;
-        } else if (y1 == y2) {
-          return y1;
-        }
-      }
+  if (timeValues_.empty() || ampValues_.empty()) return 0.0;
+
+  // Clamp before first point (optional but usually correct)
+  if (x <= timeValues_.front()) return ampValues_.front();
+
+  // Hold last value after last time (your original behavior)
+  if (x >= timeValues_.back()) return ampValues_.back();
+
+  // Find the segment [x1, x2)
+  for (size_t i = 0; i + 1 < timeValues_.size(); ++i) {
+    double x1 = timeValues_[i];
+    double x2 = timeValues_[i + 1];
+
+    if (x >= x1 && x < x2) {
+      double y1 = ampValues_[i];
+      double y2 = ampValues_[i + 1];
+
+      double dx = x2 - x1;
+      if (dx <= 0.0) return y2; // should never happen if parse validated
+
+      double u = (x - x1) / dx; // 0..1
+
+      // sinusoidal spline (half-cosine)
+      return y1 + (y2 - y1) * 0.5 * (1.0 - std::cos(Constants::PI * u));
     }
   }
-  return 0.0;
+
+  // Should be unreachable if x is within range
+  return ampValues_.back();
 }
 
 double Function::return_dc() { return ampValues_.back(); }
