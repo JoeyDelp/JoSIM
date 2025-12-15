@@ -10,8 +10,18 @@
         <meta name="author" content="Johannes Delport">
       
       
+      
+        <link rel="prev" href="../ex_usage/">
+      
+      
+        <link rel="next" href="../syntax/">
+      
+      
+        
+      
+      
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.3.9">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
       
@@ -19,18 +29,17 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.1d29e8d0.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#000000">
-        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
+
+
     
+    
+      
     
     
       
@@ -42,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -56,9 +65,8 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="black" data-md-color-accent="">
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="black" data-md-color-accent="indigo">
   
-    
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -78,7 +86,9 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="JoSIM Documentation" class="md-header__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
       
@@ -86,7 +96,8 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -105,47 +116,57 @@
       </div>
     </div>
     
+      
     
     
-      <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
         <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
   </div>
   <div class="md-source__repository">
     JoeyDelp/JoSIM
@@ -175,6 +196,7 @@
                     
 
 
+
   
 
 <nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
@@ -191,7 +213,7 @@
       <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
   </div>
   <div class="md-source__repository">
     JoeyDelp/JoSIM
@@ -203,14 +225,26 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href=".." class="md-nav__link">
-        Home
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
@@ -218,14 +252,26 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../tech_disc/" class="md-nav__link">
-        Technical Discussion
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Discussion
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
@@ -233,14 +279,26 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
-        Example Usage
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Usage
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
@@ -248,28 +306,53 @@
     
       
       
-      
-
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Component Stamps
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Stamps
+  
+
+    
+  </span>
+  
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Component Stamps
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Stamps
+  
+
+    
+  </span>
+  
+  
+
       </a>
       
         
@@ -289,84 +372,132 @@
       
         <li class="md-nav__item">
   <a href="#resistor" class="md-nav__link">
-    Resistor
+    <span class="md-ellipsis">
+      
+        Resistor
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#inductor" class="md-nav__link">
-    Inductor
+    <span class="md-ellipsis">
+      
+        Inductor
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#josephson-junction" class="md-nav__link">
-    Josephson Junction
+    <span class="md-ellipsis">
+      
+        Josephson Junction
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#voltage-source" class="md-nav__link">
-    Voltage Source
+    <span class="md-ellipsis">
+      
+        Voltage Source
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#current-source" class="md-nav__link">
-    Current Source
+    <span class="md-ellipsis">
+      
+        Current Source
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#phase-source" class="md-nav__link">
-    Phase Source
+    <span class="md-ellipsis">
+      
+        Phase Source
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#transmission-line" class="md-nav__link">
-    Transmission Line
+    <span class="md-ellipsis">
+      
+        Transmission Line
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#mutual-inductance" class="md-nav__link">
-    Mutual inductance
+    <span class="md-ellipsis">
+      
+        Mutual inductance
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#current-controlled-current-source" class="md-nav__link">
-    Current Controlled Current Source
+    <span class="md-ellipsis">
+      
+        Current Controlled Current Source
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#current-controlled-voltage-source" class="md-nav__link">
-    Current Controlled Voltage Source
+    <span class="md-ellipsis">
+      
+        Current Controlled Voltage Source
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#voltage-controlled-current-source" class="md-nav__link">
-    Voltage Controlled Current Source
+    <span class="md-ellipsis">
+      
+        Voltage Controlled Current Source
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#voltage-controlled-voltage-source" class="md-nav__link">
-    Voltage Controlled Voltage Source
+    <span class="md-ellipsis">
+      
+        Voltage Controlled Voltage Source
+      
+    </span>
   </a>
   
 </li>
@@ -381,14 +512,26 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../syntax/" class="md-nav__link">
-        Syntax Guide
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Syntax Guide
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
@@ -396,14 +539,26 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../bugs/" class="md-nav__link">
-        Development Schedule and Bugs
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Schedule and Bugs
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
@@ -411,118 +566,222 @@
     
       
       
-      
-
+  
   
   
   
     
+    
+    
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_7">
-          Japanese 日本語版
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Japanese 日本語版" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
-          <span class="md-nav__icon md-icon"></span>
-          Japanese 日本語版
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
           
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Japanese 日本語版
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Japanese 日本語版
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../jp/index_jp/" class="md-nav__link">
-        Home
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../jp/tech_disc_jp/" class="md-nav__link">
-        技術的な議論
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    技術的な議論
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../jp/ex_usage_jp/" class="md-nav__link">
-        使用例
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用例
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../jp/comp_stamps_jp/" class="md-nav__link">
-        素子のスタンプ
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    素子のスタンプ
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../jp/syntax_jp/" class="md-nav__link">
-        文法ガイド
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文法ガイド
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../jp/bugs_jp/" class="md-nav__link">
-        開発スケジュール・バグ報告
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発スケジュール・バグ報告
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -535,17 +794,21 @@
             
             
           
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
+          
+            <div class="md-content" data-md-component="content">
               
+              <article class="md-content__inner md-typeset">
                 
+                  
+
 
 
 <h1 id="component-stamps">Component Stamps</h1>
 <p>In this section we will explore each of the available component stamps found in JoSIM. This will serve as insight into how BDF2 method is applied to produce time dependent voltage or phase equations for each component.</p>
 <p>This will serve as a continuation of what was shown in the <a href="../tech_disc/">Technical Discussion</a> section for the Capacitor.</p>
 <h3 id="resistor">Resistor</h3>
-<p><center><img src="../img/josim_resistor.svg" alt="Basic Resistor Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_resistor.svg" alt="Basic Resistor Element" style="width:400px;" /></center>
+
 <p>A resistor is a passive circuit element for which the voltage dependent equation is defined through Ohm's law:</p>
 <div class="arithmatex">\[
 v(t) = i_{R_{1}}(t) R_{1}
@@ -602,7 +865,8 @@ I_{R_{1}}
 \end{bmatrix}
 \]</div>
 <h3 id="inductor">Inductor</h3>
-<p><center><img src="../img/josim_inductor.svg" alt="Basic Inductor Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_inductor.svg" alt="Basic Inductor Element" style="width:400px;" /></center>
+
 <p>A inductor is defined in terms of voltage and current as:</p>
 <div class="arithmatex">\[
 v(t)=L_{1}\frac{di}{dt}
@@ -667,7 +931,8 @@ I_{L_{1}}
 \end{bmatrix}
 \]</div>
 <h3 id="josephson-junction">Josephson Junction</h3>
-<p><center><img src="../img/josim_jj.svg" alt="Basic JJ Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_jj.svg" alt="Basic JJ Element" style="width:400px;" /></center>
+
 <p>The Josephson junction above is a simplification of the resistively and capacitively shunted junction (RCSJ) model implemented in JoSIM. This model sums the current through the 3 parallel branches and is represented by the following equation:</p>
 <div class="arithmatex">\[
 I_{B_{1}} = I_c \sin{\phi} + \frac{V_{n}}{R_{B_{1}}} + C_{B_{1}}\frac{dV_{n}}{dt}
@@ -769,7 +1034,8 @@ I_{s}
 \end{bmatrix}
 \]</div>
 <h3 id="voltage-source">Voltage Source</h3>
-<p><center><img src="../img/josim_vs.svg" alt="Basic Voltage Source Element" style="Width:400px;" /></center></p>
+<center><img src="../img/josim_vs.svg" alt="Basic Voltage Source Element" style="Width:400px;" /></center>
+
 <p>A voltage source is nothing more than is implied. It is a source of voltage, this indicates that the voltage at any time step is known. We can therefore easily create a component stamp matrix in the form:</p>
 <div class="arithmatex">\[
 \begin{bmatrix}
@@ -809,7 +1075,8 @@ I_{V_{1}}
 \end{bmatrix}
 \]</div>
 <h3 id="current-source">Current Source</h3>
-<p><center><img src="../img/josim_cs.svg" alt="Basic Current Source Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_cs.svg" alt="Basic Current Source Element" style="width:400px;" /></center>
+
 <p>A current source is, as implied, a current that is known at every time step in the simulation. It can therefore simply be applied where needed on the RHS.</p>
 <div class="arithmatex">\[
 \begin{bmatrix}
@@ -866,7 +1133,8 @@ I_{\phi}
 \end{bmatrix}
 \]</div>
 <h3 id="transmission-line">Transmission Line</h3>
-<p><center><img src="../img/josim_tx.svg" alt="Basic Ideal Transmission Line Element" style="width:400px" /></center></p>
+<center><img src="../img/josim_tx.svg" alt="Basic Ideal Transmission Line Element" style="width:400px" /></center>
+
 <p>A transmission line is, at present, simply a delay element where the delay (<span class="arithmatex">\(T_{D}\)</span>) and impedance (<span class="arithmatex">\(Z_{0}\)</span>) define the length of the transmission line.</p>
 <p>At present we model the transmission line as an ideal element without any losses. We will in future implement a more accurate model of the transmission line.</p>
 <p>The equations that govern this lossless transmission line are:</p>
@@ -968,7 +1236,8 @@ Z_{0}(I_{T_{1}})_{n-k} + (V_{1})_{n-k}
 \]</div>
 <p>With <span class="arithmatex">\(V_{T_{1}}\)</span> and <span class="arithmatex">\(V_{T_{2}}\)</span> the RHS of the expanded equations above.</p>
 <h3 id="mutual-inductance">Mutual inductance</h3>
-<p><center><img src="../img/josim_mutual.svg" alt="Basic Mutual Inductance Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_mutual.svg" alt="Basic Mutual Inductance Element" style="width:400px;" /></center>
+
 <p>Mutual inductance allows simulation of coupling between inductors. This coupling adds an additional term to the inductor equation:</p>
 <div class="arithmatex">\[
 v_{L_{1}}(t) = L1 \frac{di_{1}(t)}{dt} + M\frac{di_{2}(t)}{dt}
@@ -1058,24 +1327,25 @@ I_{L_{2}}
 \end{bmatrix}
 \]</div>
 <h3 id="current-controlled-current-source">Current Controlled Current Source</h3>
-<p><center><img src="../img/josim_cccs.svg" alt="Basic Current Controlled Current Source Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_cccs.svg" alt="Basic Current Controlled Current Source Element" style="width:400px;" /></center>
+
 <p>Current controlled current source allows modulation of current in a particular branch through the current in a remote branch.</p>
 <div class="arithmatex">\[
 I_{out} = \beta I_{in}
 \]</div>
 <div class="arithmatex">\[
-V_{1} - V_{2} = 0
+V_{3} - V_{4} = 0
 \]</div>
 <div class="arithmatex">\[
 \beta = value
 \]</div>
 <div class="arithmatex">\[
 \begin{bmatrix}
-    0 &amp; 0 &amp; 0 &amp; 0 &amp; \frac{1}{\beta} \\
-    0 &amp; 0 &amp; 0 &amp; 0 &amp; -\frac{1}{\beta} \\ 
     0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\
     0 &amp; 0 &amp; 0 &amp; 0 &amp; -1 \\
-    1 &amp; -1 &amp; 0 &amp; 0 &amp; 0
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; \frac{1}{\beta} \\
+    0 &amp; 0 &amp; 0 &amp; 0 &amp; -\frac{1}{\beta} \\
+    0 &amp; 0 &amp; 1 &amp; -1 &amp; 0
     \end{bmatrix}
     \begin{bmatrix}
     V_{1}\\
@@ -1094,22 +1364,23 @@ V_{1} - V_{2} = 0
     \end{bmatrix}
 \]</div>
 <h3 id="current-controlled-voltage-source">Current Controlled Voltage Source</h3>
-<p><center><img src="../img/josim_ccvs.svg" alt="Basic Current Controlled Voltage Source Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_ccvs.svg" alt="Basic Current Controlled Voltage Source Element" style="width:400px;" /></center>
+
 <p>Current controlled voltage source allows the modulation of a voltage node through a remote current.</p>
 <div class="arithmatex">\[
-V_{1} - V_{2} = 0
+V_{3} - V_{4} = 0
 \]</div>
 <div class="arithmatex">\[
-V_{3} - V_{4} = \mu I_{in}
+V_{1} - V_{2} = \mu I_{in}
 \]</div>
 <div class="arithmatex">\[
 \begin{bmatrix}
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0\\
-0 &amp; 0 &amp; 0 &amp; 0 &amp; -1 &amp; 0\\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1\\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; -1\\
-0 &amp; 0 &amp; 1 &amp; -1 &amp; -\mu &amp; 0\\
-1 &amp; -1 &amp; 0 &amp; 0 &amp; 0 &amp; -\mu
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0\\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; -1 &amp; 0\\
+1 &amp; -1 &amp; 0 &amp; 0 &amp; -\mu &amp; 0\\
+0 &amp; 0 &amp; 1 &amp; -1 &amp; 0 &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
 V_{1}\\
@@ -1129,18 +1400,19 @@ I_{out}\end{bmatrix}
 \end{bmatrix}
 \]</div>
 <h3 id="voltage-controlled-current-source">Voltage Controlled Current Source</h3>
-<p><center><img src="../img/josim_vccs.svg" alt="Basic Voltage Controlled Current Source Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_vccs.svg" alt="Basic Voltage Controlled Current Source Element" style="width:400px;" /></center>
+
 <p>Voltage controlled current source allows the modulation of a current in a branch through a remote voltage.</p>
 <div class="arithmatex">\[
-\alpha(V_{1} - V_{2}) = I_{out}
+\alpha(V_{3} - V_{4}) = I_{out}
 \]</div>
 <div class="arithmatex">\[
 \begin{bmatrix}
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1\\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; -1\\
-1 &amp; -1 &amp; 0 &amp; 0 &amp; -\frac{1}{\alpha}
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+0 &amp; 0 &amp; 1 &amp; -1 &amp; -\frac{1}{\alpha}
 \end{bmatrix}
 \begin{bmatrix}
 V_{1}\\
@@ -1159,18 +1431,19 @@ I_{in}
 \end{bmatrix}
 \]</div>
 <h3 id="voltage-controlled-voltage-source">Voltage Controlled Voltage Source</h3>
-<p><center><img src="../img/josim_vcvs.svg" alt="Basic Voltage Controlled Voltage Source Element" style="width:400px;" /></center></p>
+<center><img src="../img/josim_vcvs.svg" alt="Basic Voltage Controlled Voltage Source Element" style="width:400px;" /></center>
+
 <p>Voltage controlled current source allows the modulation of a current in a branch through a remote voltage.</p>
 <div class="arithmatex">\[
-A(V_{1} - V_{2}) = V_{3}-V_{4}
+A(V_{3} - V_{4}) = V_{1}-V_{2}
 \]</div>
 <div class="arithmatex">\[
 \begin{bmatrix}
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
-0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1\\
 0 &amp; 0 &amp; 0 &amp; 0 &amp; -1\\
-G &amp; -G &amp; 1 &amp; -1 &amp; 0
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0\\
+-1 &amp; 1 &amp; A &amp; -A &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
 V_{1}\\
@@ -1197,58 +1470,35 @@ I_{out}
 </ol>
 </div>
 
-              
-            </article>
-            
-          </div>
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
       </main>
       
         <footer class="md-footer">
   
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="../ex_usage/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Example Usage" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Example Usage
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../syntax/" class="md-footer__link md-footer__link--next" aria-label="Next: Syntax Guide" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Syntax Guide
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
-  
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2022 Johannes Delport
+      Copyright &copy; 2025 Johannes Delport
     </div>
   
   
@@ -1259,12 +1509,15 @@ I_{out}
   
 </div>
       
-        <div class="md-social">
+        
+<div class="md-social">
   
     
     
+    
+    
     <a href="https://github.com/JoeyDelp" target="_blank" rel="noopener" title="JoeyDelp on GitHub" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
     </a>
   
 </div>
@@ -1277,12 +1530,15 @@ I_{out}
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": ["toc.integrate", "header.autohide"], "search": "../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.6c7ad80a.min.js"></script>
+    
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.integrate", "header.autohide"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
         <script src="../javascripts/config.js"></script>
       
