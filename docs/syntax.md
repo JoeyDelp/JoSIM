@@ -22,8 +22,6 @@ In most cases the **VALUE** of a component can be replaced by a variable name or
 
 Values in JoSIM can be modified with engineering notation or through suffixes. A list of the available suffixes is found below:
 
-<center>
-
 | Suffix | Meaning | Engineering Notation Equivalent |
 | ------ | ------- | ------------------------------- |
 | F      | Femto   | 1E-15                           |
@@ -36,8 +34,6 @@ Values in JoSIM can be modified with engineering notation or through suffixes. A
 | X      | Mega    | 1E6                             |
 | G      | Giga    | 1E9                             |
 | T      | Tera    | 1E12                            |
-
-</center>
 
 ## Basic Components
 
@@ -179,15 +175,36 @@ This source allows the continuous generation of a pulse at a set frequency.
 
 #### Sinusoidal
 
-**sin(**$A_{O}$&emsp;$A$&emsp;[$f$&emsp;[$T_{D}$&emsp;[$\theta$]]] **)**
+**sin(**$A_{O}$&emsp;$A$&emsp;[$f$&emsp;[$T_{D}$&emsp;[$\theta$&emsp;[$\phi$&emsp;[$N_{C}$]]]]] **)**
 
-A source that generates a sinusoidal signal with $A_{O}$ offset and $A$ amplitude at a frequency of $f$ which defaults to $\frac{1}{T_{STOP}}$.
+A source that generates a (optionally damped) sinusoidal signal with DC offset $A_{O}$ and amplitude $A$ at frequency $f$ (Hz). If omitted, $f$ defaults to $\frac{1}{T_{STOP}}$.
 
-$T_{D}$ sets the stop time and $\theta$ modulates the signal amplitude.
+$T_{D}$ is a start delay: for $t<T_{D}$ the output is held at $A_{O}$.
 
-The function generates a data point for each step in the transient simulation based on the following equation:
+$\theta$ is an exponential damping factor (units $s^{-1}$). When $\theta=0$, no damping is applied.
 
-$f(t)=A_{O}+A\sin(2\pi f(t-T_{D}))e^{-\theta(t-T_{D})}$
+$\phi$ is a phase shift applied to the sine term. Internally it is treated as radians; if specified in degrees it is converted via $\phi=\phi_{\deg}\pi/180$.
+
+If $N_{C}$ is provided and $N_{C}$ $>0$, the sinusoid runs for that many cycles and then stops, returning to the offset $A_{O}$ for all subsequent times.
+
+The function generates a data point for each step in the transient simulation based on the following piecewise definition (let $\tau=t-T_{D}$):
+
+$$
+f(t)=
+\begin{cases}
+A_{O}, & t < T_{D}\\[4pt]
+A_{O} + A\,e^{-\theta \tau}\,\sin\!\big(2\pi f\,\tau + \phi\big), &
+T_{D} \le t < T_{D}+\dfrac{\text{$N_{C}$}}{f}\quad(\text{when $N_{C}$}>0)\\[10pt]
+A_{O}, & t \ge T_{D}+\dfrac{\text{$N_{C}$}}{f}\quad(\text{when $N_{C}$}>0)\\[6pt]
+A_{O} + A\,e^{-\theta \tau}\,\sin\!\big(2\pi f\,\tau + \phi\big), &
+t \ge T_{D}\quad(\text{when $N_{C}$}\le 0\ \text{or omitted})
+\end{cases}
+$$
+
+Notes:
+
+- If $N_{C}$ is omitted (or $\le 0$), the sinusoid continues for the full simulation duration.
+- If $N_{C}$ $>0$, $f$ must be positive to define the stop time.
 
 #### Custom Waveform
 
@@ -221,7 +238,6 @@ $GRAND()$ is a Gaussian random number generating function.
 
 **exp(** $A_{1}$&emsp;$A_{2}$&emsp;$T_{D1}$&emsp;$\tau_{1}$&emsp;$T_{D2}$&emsp;$\tau_{2}$**)**
 
-<center>
 
 | Parameter  | Default           |
 | ---------- | ----------------- |
@@ -230,7 +246,6 @@ $GRAND()$ is a Gaussian random number generating function.
 | $\tau_{1}$ | $T_{D1}+T_{STEP}$ |
 | $\tau_{2}$ | $T_{STEP}$        |
 
-</center>
 
 Returns different values for the 3 different time segments.
 
@@ -245,6 +260,33 @@ $f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})$
 For $T_{D2} \le t$:
 
 $f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{\frac{t - T_{D2}}{\tau_{2}}})$
+
+#### Piecewise Sinusoidal (PWS)
+
+**pws(**$T_{0}$&emsp;$V_{0}$&emsp;$T_{1}$&emsp;$V_{1}$&emsp;...&emsp;$T_{N}$&emsp;$V_{N}$ **)**
+
+A source that generates a smooth, sinusoidally-interpolated waveform through a series of user-defined time/value points, similar to **pwl(...)** but using a sinusoidal spline between each adjacent pair of points instead of linear interpolation.
+
+Each point is specified as a time/value pair \((T_i, V_i)\). Time values **must be strictly increasing**.
+
+- For \(t < T_0\), the output is held at \(V_0\).
+- For \(t \ge T_N\), the output is held at \(V_N\).
+- For \(T_i \le t < T_{i+1}\), the output transitions smoothly from \(V_i\) to \(V_{i+1}\) using a half-cosine (sinusoidal easing) segment.
+
+Let \(u=\dfrac{t-T_i}{T_{i+1}-T_i}\) for the segment \(i\), where \(0 \le u < 1\). The output is:
+
+\[
+f(t)=V_i + (V_{i+1}-V_i)\,\frac{1-\cos(\pi u)}{2},
+\qquad T_i \le t < T_{i+1}
+\]
+
+This interpolation is continuous and has zero slope at each specified point, producing smooth joins at breakpoints.
+
+Notes:
+
+- The final value is held constant after the last timestep \(T_N\).
+- Duplicate or non-increasing time values are invalid and may result in errors.
+
 
 ## Control Commands
 
