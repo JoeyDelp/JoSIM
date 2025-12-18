@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Johannes Delport
+// Copyright (c) 2025 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 
 #include "JoSIM/Function.hpp"
@@ -256,7 +256,7 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
     }
     wffile.close();
     WF = Misc::tokenize(line, " ,;");
-    for (int64_t i = 0; i < WF.size(); ++i) { ampValues_.emplace_back(Misc::modifier(WF.at(i)) * miscValues_.at(1)); }
+    for (auto i = 0; i < WF.size(); ++i) { ampValues_.emplace_back(Misc::modifier(WF.at(i)) * miscValues_.at(1)); }
     if (miscValues_.at(0) < tstep) { miscValues_.at(0) = tstep; }
     for (int i = 0; i < ampValues_.size(); ++i) { timeValues_.emplace_back(miscValues_.at(3) + i * miscValues_.at(0)); }
     // Store the stop time
@@ -316,7 +316,7 @@ double Function::return_pwl(double& x) {
         return ampValues_.back();
         // Else check within which range x falls
     } else {
-        for (int64_t i = 0; i < timeValues_.size() - 1; ++i) {
+        for (auto i = 0; i < timeValues_.size() - 1; ++i) {
             if (x >= timeValues_.at(i) && x < timeValues_.at(i + 1)) {
                 double& y2 = ampValues_.at(i + 1);
                 double& y1 = ampValues_.at(i);
@@ -342,7 +342,7 @@ double Function::return_pulse(double& x) {
     double& ahigh = ampValues_.at(1);
     auto    val   = alow;
     if (x < td) { return (val); }
-    int64_t index = (x - td) / per;
+    int64_t index = static_cast<int64_t>((x - td) / per);
     auto    time  = x - td - index * per;
     if (time < tr) {
         val = alow + (ahigh - alow) * time / tr;
@@ -358,30 +358,30 @@ double Function::return_pulse(double& x) {
 }
 
 double Function::return_sin(double& x) {
-  const double vo = ampValues_.at(0);
-  const double va = ampValues_.at(1);
+    const double vo      = ampValues_.at(0);
+    const double va      = ampValues_.at(1);
 
-  const double freq  = timeValues_.at(0);
-  const double td    = timeValues_.at(1);
-  const double theta = timeValues_.at(2);
-  const double phase = timeValues_.at(3); // radians
-  const double ncycles = timeValues_.at(4);
+    const double freq    = timeValues_.at(0);
+    const double td      = timeValues_.at(1);
+    const double theta   = timeValues_.at(2);
+    const double phase   = timeValues_.at(3); // radians
+    const double ncycles = timeValues_.at(4);
 
-  // Before delay: DC offset only
-  if (x < td) return vo;
+    // Before delay: DC offset only
+    if (x < td) { return vo; }
 
-  const double t = x - td;
+    const double t = x - td;
 
-  // Stop after N cycles (if requested)
-  if (ncycles > 0.0 && freq > 0.0) {
-    const double t_end = ncycles / freq;
-    if (t >= t_end) return vo;   // "stops" at offset
-  }
+    // Stop after N cycles (if requested)
+    if (ncycles > 0.0 && freq > 0.0) {
+        const double t_end = ncycles / freq;
+        if (t >= t_end) {
+            return vo; // "stops" at offset
+        }
+    }
 
-  // Damped sine: VO + VA * exp(-theta*t) * sin(2*pi*freq*t + phase)
-  return vo +
-         va * std::sin(2.0 * Constants::PI * freq * t + phase) *
-         std::exp(-theta * t);
+    // Damped sine: VO + VA * exp(-theta*t) * sin(2*pi*freq*t + phase)
+    return vo + va * std::sin(2.0 * Constants::PI * freq * t + phase) * std::exp(-theta * t);
 }
 
 double Function::return_cus(double& x) {

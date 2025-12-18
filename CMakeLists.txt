@@ -6,13 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
 
 add_definitions(-DVERSION="${CMAKE_PROJECT_VERSION}")
+if(MSVC)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 option(SLU "Enable SuperLU instead of KLU")
 
 # Default to release
@@ -31,45 +33,47 @@ endif()
 # JoSIM library
 # -------------
 
-add_library(josim
-            src/Capacitor.cpp
-            src/CCCS.cpp
-            src/CCVS.cpp
-            src/CliOptions.cpp
-            src/CurrentSource.cpp
-            src/Errors.cpp
-            src/Function.cpp
-            src/Inductor.cpp
-            src/Input.cpp
-            src/JJ.cpp
-            src/Matrix.cpp
-            src/Misc.cpp
-            src/Model.cpp
-            src/Netlist.cpp
-            src/Output.cpp
-            src/Parameters.cpp
-            src/PhaseSource.cpp
-            src/RelevantTrace.cpp
-            src/Resistor.cpp
-            src/Simulation.cpp
-            src/Transient.cpp
-            src/TransmissionLine.cpp
-            src/VCCS.cpp
-            src/VCVS.cpp
-            src/Verbose.cpp
-            src/VoltageSource.cpp 
-            src/Noise.cpp
-            src/Spread.cpp
-            src/IV.cpp
-            src/LUSolve.cpp)
+add_library(
+  josim
+  src/Capacitor.cpp
+  src/CCCS.cpp
+  src/CCVS.cpp
+  src/CliOptions.cpp
+  src/CurrentSource.cpp
+  src/Errors.cpp
+  src/Function.cpp
+  src/Inductor.cpp
+  src/Input.cpp
+  src/JJ.cpp
+  src/Matrix.cpp
+  src/Misc.cpp
+  src/Model.cpp
+  src/Netlist.cpp
+  src/Output.cpp
+  src/Parameters.cpp
+  src/PhaseSource.cpp
+  src/RelevantTrace.cpp
+  src/Resistor.cpp
+  src/Rng.cpp
+  src/Simulation.cpp
+  src/Transient.cpp
+  src/TransmissionLine.cpp
+  src/VCCS.cpp
+  src/VCVS.cpp
+  src/Verbose.cpp
+  src/VoltageSource.cpp
+  src/Noise.cpp
+  src/Spread.cpp
+  src/IV.cpp
+  src/LUSolve.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)
 
 # Include directories
-target_include_directories(josim PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+target_include_directories(
+  josim PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+               $<INSTALL_INTERFACE:include>)
 
 # Dependencies
 target_link_libraries(josim PRIVATE suitesparse::klu)
@@ -83,9 +87,7 @@ if(NOT MSVC AND NOT APPLE)
 endif()
 
 # Properties
-set_target_properties(josim
-                      PROPERTIES POSITION_INDEPENDENT_CODE
-                                 ON)
+set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON)
 make_target_static(josim)
 target_add_warnings(josim)
 # target_compile_features(josim PUBLIC cxx_std_20)
@@ -131,21 +133,21 @@ add_subdirectory(test)
 include(GNUInstallDirs)
 
 # Install headers
-install(DIRECTORY include/JoSIM/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM/")
+install(DIRECTORY include/JoSIM/
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM/")
 
 # Install targets
-install(TARGETS
-    josim
-    josim-cli
+install(
+  TARGETS josim josim-cli
   EXPORT josim-targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
+  INCLUDES
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(EXPORT josim-targets
+install(
+  EXPORT josim-targets
   FILE josim-config.cmake
   NAMESPACE josim::
-  DESTINATION share/josim/
-)
+  DESTINATION share/josim/)

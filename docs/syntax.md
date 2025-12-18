@@ -354,6 +354,15 @@ An example:
 
 If an inductor has a value of *2pH*, this is its nominal value. If a local spread of *0.2* is specified this means a random value can be chosen anywhere between *1.6pH* and *2.4pH*. If global inductor specific spread is specified as *0.3* and the local spread is not defined, the value can be anything within the range *1.4pH -  2.6pH*. Similarly if the global spread is defined as *0.5* then the value each time the simulation is run can be anywhere between *1pH* and *3pH*.
 
+### Reproducibility
+
+For both **noise** and **spread** a random number generator is seeded upon creation of the input object. This is done to enable non-deterministic noise/spread. However, in some cases the user might wish to produce deterministic noise/spread between runs. To enable this a **.option seed=** has been added. An integer seed value can be specified to obtain deterministic noise/spread. Additionally, the current auto-seeded run's seed can be obtained using verbose mode (**-V 1**). 
+
+An example:
+```cir
+.option seed=4190754512324517577
+```
+
 ### IV Curve
 
 JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:

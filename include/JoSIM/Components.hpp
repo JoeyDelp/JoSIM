@@ -1,9 +1,7 @@
-// Copyright (c) 2021 Johannes Delport
+// Copyright (c) 2025 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #ifndef JOSIM_COMPONENTS_HPP
 #define JOSIM_COMPONENTS_HPP
-
-#include <variant>
 
 #include "JoSIM/CCCS.hpp"
 #include "JoSIM/CCVS.hpp"
@@ -22,20 +20,30 @@
 #include "JoSIM/VCCS.hpp"
 #include "JoSIM/VCVS.hpp"
 #include "JoSIM/VoltageSource.hpp"
+
+#include <variant>
+
 namespace JoSIM {
 
 class Components {
- public:
-  std::vector<
-      std::variant<Resistor, Inductor, Capacitor, JJ, VoltageSource,
-                   PhaseSource, TransmissionLine, VCCS, CCCS, VCVS, CCVS>>
-      devices;
-  std::vector<CurrentSource> currentsources;
-  std::vector<int64_t> junctionIndices, resistorIndices, inductorIndices,
-      capacitorIndices, vsIndices, psIndices, txIndices, vccsIndices,
-      cccsIndices, vcvsIndices, ccvsIndices;
-  std::vector<std::pair<tokens_t, string_o>> mutualinductances;
-};  // class Components
+  public:
+    std::vector<std::variant<Resistor,
+                             Inductor,
+                             Capacitor,
+                             JJ,
+                             VoltageSource,
+                             PhaseSource,
+                             TransmissionLine,
+                             VCCS,
+                             CCCS,
+                             VCVS,
+                             CCVS>>
+                               devices;
+    std::vector<CurrentSource> currentsources;
+    std::vector<int64_t> junctionIndices, resistorIndices, inductorIndices, capacitorIndices, vsIndices, psIndices,
+            txIndices, vccsIndices, cccsIndices, vcvsIndices, ccvsIndices;
+    std::vector<std::pair<tokens_t, string_o>> mutualinductances;
+}; // class Components
 
-}  // namespace JoSIM
-#endif
+} // namespace JoSIM
+#endif // JOSIM_COMPONENTS_HPP
