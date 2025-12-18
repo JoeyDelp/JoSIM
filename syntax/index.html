@@ -798,6 +798,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproducibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#iv-curve" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1514,6 +1525,11 @@ f(t)=V_i + (V_{i+1}-V_i)\,\frac{1-\cos(\pi u)}{2},
 <p>The order of precedence is taken as local, specific global and then global. This means that if a global spread exists but  a global inductor specific spread also exists and the inductor being added has a local spread then the local spread will take precedence.</p>
 <p>An example:</p>
 <p>If an inductor has a value of <em>2pH</em>, this is its nominal value. If a local spread of <em>0.2</em> is specified this means a random value can be chosen anywhere between <em>1.6pH</em> and <em>2.4pH</em>. If global inductor specific spread is specified as <em>0.3</em> and the local spread is not defined, the value can be anything within the range <em>1.4pH -  2.6pH</em>. Similarly if the global spread is defined as <em>0.5</em> then the value each time the simulation is run can be anywhere between <em>1pH</em> and <em>3pH</em>.</p>
+<h3 id="reproducibility">Reproducibility</h3>
+<p>For both <strong>noise</strong> and <strong>spread</strong> a random number generator is seeded upon creation of the input object. This is done to enable non-deterministic noise/spread. However, in some cases the user might wish to produce deterministic noise/spread between runs. To enable this a <strong>.option seed=</strong> has been added. An integer seed value can be specified to obtain deterministic noise/spread. Additionally, the current auto-seeded run's seed can be obtained using verbose mode (<strong>-V 1</strong>). </p>
+<p>An example:
+<div class="highlight"><pre><span></span><code>.option seed=4190754512324517577
+</code></pre></div></p>
 <h3 id="iv-curve">IV Curve</h3>
 <p>JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:</p>
 <p><strong>.iv</strong>&emsp;<em>modelname</em>&emsp;<em>max_current</em>&emsp;<em>filepath</em></p>
