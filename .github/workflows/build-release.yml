@@ -9,7 +9,7 @@ on:
 
 jobs:
   # ---------------------------
-  # Linux builds: RHEL7/CentOS7 baseline (glibc 2.17) using manylinux2014
+  # Linux builds (RHEL7 baseline) via docker run (NOT job.container)
   # ---------------------------
   build_linux:
     name: Build (${{ matrix.name }})
@@ -21,24 +21,28 @@ jobs:
         include:
           - name: linux-x64-rhel7
             runs_on: ubuntu-24.04
-            container_image: quay.io/pypa/manylinux2014_x86_64
-            glibc_max: "2.17"
-
-          # NOTE: ubuntu-24.04-arm is available on PUBLIC repos; private repos need self-hosted / org arm runners :contentReference[oaicite:3]{index=3}
+            image: quay.io/pypa/manylinux2014_x86_64
           - name: linux-arm64-rhel7
             runs_on: ubuntu-24.04-arm
-            container_image: quay.io/pypa/manylinux2014_aarch64
-            glibc_max: "2.17"
-
-    # manylinux2014 is CentOS 7 based (glibc 2.17) and lists RHEL 7+ compatibility :contentReference[oaicite:4]{index=4}
-    container:
-      image: ${{ matrix.container_image }}
+            image: quay.io/pypa/manylinux2014_aarch64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Cache CMake deps (best-effort)
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps
+            .cpm-cache
+            ~/.cache
+          key: linux-${{ matrix.name }}-${{ hashFiles('**/CMakeLists.txt','**/*.cmake') }}
+          restore-keys: |
+            linux-${{ matrix.name }}-
+            linux-
 
       - name: Compute version label
         shell: bash
@@ -49,81 +53,73 @@ jobs:
             echo "VERSION=master-${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
           fi
 
-      - name: Install build tools (CentOS 7)
+      - name: Build inside manylinux2014 (RHEL7/glibc 2.17)
         shell: bash
+        env:
+          CPM_SOURCE_CACHE: ${{ github.workspace }}/.cpm-cache
         run: |
           set -euxo pipefail
-          yum -y install git make which tar gzip
-          yum -y install cmake3 || true
 
-      - name: Enable devtoolset (newer GCC for C++17)
-        shell: bash
-        run: |
-          set -euxo pipefail
-          if ls /opt/rh/devtoolset-*/enable >/dev/null 2>&1; then
-            source "$(ls /opt/rh/devtoolset-*/enable | sort -V | tail -1)"
-          fi
-          gcc --version
-          g++ --version
+          HOST_UID="$(id -u)"
+          HOST_GID="$(id -g)"
+          IMAGE="${{ matrix.image }}"
 
-      - name: Configure
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cmake_cmd=cmake
-          command -v cmake3 >/dev/null 2>&1 && cmake_cmd=cmake3
+          docker pull "$IMAGE"
 
-          $cmake_cmd -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=stage \
-            -DMAKING_STATIC_BUILD=ON \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DUSING_OPENMP=OFF \
-            -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc"
+          docker run --rm \
+            -e HOST_UID="$HOST_UID" \
+            -e HOST_GID="$HOST_GID" \
+            -e CPM_SOURCE_CACHE="/work/.cpm-cache" \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -w /work \
+            "$IMAGE" \
+            bash -lc '
+              set -euxo pipefail
 
-      - name: Build
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cmake_cmd=cmake
-          command -v cmake3 >/dev/null 2>&1 && cmake_cmd=cmake3
-          $cmake_cmd --build build --config Release --parallel
+              # Ensure tools exist (manylinux images usually have these; install if missing)
+              command -v objdump >/dev/null 2>&1 || yum -y install binutils
+              command -v git >/dev/null 2>&1 || yum -y install git
+              command -v make >/dev/null 2>&1 || yum -y install make
+              command -v cmake >/dev/null 2>&1 || (yum -y install cmake3 || true)
 
-      - name: Test
-        shell: bash
-        run: |
-          set -euxo pipefail
-          ctest --test-dir build -C Release --output-on-failure
+              CMAKE=cmake
+              command -v cmake3 >/dev/null 2>&1 && CMAKE=cmake3
 
-      - name: Install to staging folder
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cmake_cmd=cmake
-          command -v cmake3 >/dev/null 2>&1 && cmake_cmd=cmake3
-          $cmake_cmd --install build --config Release
-          cp -f LICENSE stage/ || true
-          cp -f README.md stage/ || true
+              # Clean any previous outputs (optional)
+              rm -rf build stage
 
-      - name: Verify max required GLIBC version (must be <= ${{ matrix.glibc_max }})
-        shell: bash
-        run: |
-          set -euxo pipefail
-          bin="stage/bin/josim-cli"
+              $CMAKE -S . -B build \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX=stage \
+                -DMAKING_STATIC_BUILD=ON \
+                -DBUILD_SHARED_LIBS=OFF \
+                -DUSING_OPENMP=OFF \
+                -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc"
 
-          max_ver=$(objdump -T "$bin" 2>/dev/null \
-            | sed -n 's/.*GLIBC_\([0-9.]\+\).*/\1/p' \
-            | sort -V | tail -1 || true)
+              $CMAKE --build build --config Release --parallel
+              ctest --test-dir build -C Release --output-on-failure
+              $CMAKE --install build --config Release
 
-          echo "Max GLIBC required: ${max_ver:-<none found>}"
+              cp -f LICENSE stage/ || true
+              cp -f README.md stage/ || true
 
-          if [[ -n "$max_ver" ]]; then
-            highest=$(printf "${{ matrix.glibc_max }}\n%s\n" "$max_ver" | sort -V | tail -1)
-            if [[ "$highest" != "${{ matrix.glibc_max }}" ]]; then
-              echo "ERROR: binary requires GLIBC_$max_ver (newer than ${{ matrix.glibc_max }})"
-              exit 1
-            fi
-          fi
+              # Sanity check: ensure we did not accidentally require newer than glibc 2.17 (RHEL7)
+              bin="stage/bin/josim-cli"
+              max_ver=$(objdump -T "$bin" 2>/dev/null \
+                | sed -n "s/.*GLIBC_\\([0-9.]*\\).*/\\1/p" \
+                | sort -V | tail -1 || true)
+              echo "Max GLIBC required: ${max_ver:-<none found>}"
+              if [[ -n "$max_ver" ]]; then
+                highest=$(printf "2.17\n%s\n" "$max_ver" | sort -V | tail -1)
+                if [[ "$highest" != "2.17" ]]; then
+                  echo "ERROR: binary requires GLIBC_$max_ver (newer than 2.17) => not RHEL7 compatible"
+                  exit 1
+                fi
+              fi
+
+              # Fix ownership so the runner can package/clean the workspace
+              chown -R "$HOST_UID:$HOST_GID" /work/build /work/stage /work/.cpm-cache || true
+            '
 
       - name: Package (tar.gz)
         shell: bash
@@ -138,7 +134,7 @@ jobs:
           path: JoSIM-${{ env.VERSION }}-${{ matrix.name }}.tar.gz
 
   # ---------------------------
-  # macOS builds: arm64 + x64 (separate runners)
+  # macOS builds: arm64 + x64
   # ---------------------------
   build_macos:
     name: Build (${{ matrix.name }})
@@ -179,15 +175,11 @@ jobs:
 
       - name: Build
         shell: bash
-        run: |
-          set -euxo pipefail
-          cmake --build build --config Release --parallel
+        run: cmake --build build --config Release --parallel
 
       - name: Test
         shell: bash
-        run: |
-          set -euxo pipefail
-          ctest --test-dir build -C Release --output-on-failure
+        run: ctest --test-dir build -C Release --output-on-failure
 
       - name: Install to staging folder
         shell: bash
@@ -199,9 +191,7 @@ jobs:
 
       - name: Package (tar.gz)
         shell: bash
-        run: |
-          set -euxo pipefail
-          tar -czf "JoSIM-${VERSION}-${{ matrix.name }}.tar.gz" -C stage .
+        run: tar -czf "JoSIM-${VERSION}-${{ matrix.name }}.tar.gz" -C stage .
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
