@@ -53,7 +53,7 @@ class Input {
     void                  syntax_check_controls(std::vector<tokens_t>& controls);
 
   private:
-    std::optional<uint64_t> Input::find_seed_option() const;
+    std::optional<uint64_t> find_seed_option() const;
 };
 } // namespace JoSIM
 

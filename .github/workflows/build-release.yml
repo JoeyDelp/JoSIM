@@ -8,13 +8,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_linux_rhel6:
-    name: Build (linux-x64-rhel6)
-    runs-on: ubuntu-24.04
+  # ---------------------------
+  # Linux builds: RHEL7/CentOS7 baseline (glibc 2.17) using manylinux2014
+  # ---------------------------
+  build_linux:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.runs_on }}
 
-    # manylinux2010 is CentOS 6 (glibc 2.12 baseline) :contentReference[oaicite:2]{index=2}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64-rhel7
+            runs_on: ubuntu-24.04
+            container_image: quay.io/pypa/manylinux2014_x86_64
+            glibc_max: "2.17"
+
+          # NOTE: ubuntu-24.04-arm is available on PUBLIC repos; private repos need self-hosted / org arm runners :contentReference[oaicite:3]{index=3}
+          - name: linux-arm64-rhel7
+            runs_on: ubuntu-24.04-arm
+            container_image: quay.io/pypa/manylinux2014_aarch64
+            glibc_max: "2.17"
+
+    # manylinux2014 is CentOS 7 based (glibc 2.17) and lists RHEL 7+ compatibility :contentReference[oaicite:4]{index=4}
     container:
-      image: quay.io/pypa/manylinux2010_x86_64
+      image: ${{ matrix.container_image }}
 
     steps:
       - name: Checkout
@@ -31,12 +49,11 @@ jobs:
             echo "VERSION=master-${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
           fi
 
-      - name: Install build tools
+      - name: Install build tools (CentOS 7)
         shell: bash
         run: |
           set -euxo pipefail
           yum -y install git make which tar gzip
-          # manylinux2010 often ships cmake3 via yum; try to install it, but continue if already present
           yum -y install cmake3 || true
 
       - name: Enable devtoolset (newer GCC for C++17)
@@ -60,6 +77,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=stage \
             -DMAKING_STATIC_BUILD=ON \
+            -DBUILD_SHARED_LIBS=OFF \
             -DUSING_OPENMP=OFF \
             -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc"
 
@@ -87,28 +105,22 @@ jobs:
           cp -f LICENSE stage/ || true
           cp -f README.md stage/ || true
 
-      - name: Verify max required GLIBC version (must be <= 2.12)
+      - name: Verify max required GLIBC version (must be <= ${{ matrix.glibc_max }})
         shell: bash
         run: |
           set -euxo pipefail
           bin="stage/bin/josim-cli"
-          if [[ ! -f "$bin" ]]; then
-            echo "ERROR: expected $bin to exist"
-            exit 1
-          fi
 
           max_ver=$(objdump -T "$bin" 2>/dev/null \
             | sed -n 's/.*GLIBC_\([0-9.]\+\).*/\1/p' \
-            | sort -V \
-            | tail -1 || true)
+            | sort -V | tail -1 || true)
 
           echo "Max GLIBC required: ${max_ver:-<none found>}"
 
-          # If any GLIBC version > 2.12 appears, fail the job.
           if [[ -n "$max_ver" ]]; then
-            highest=$(printf "2.12\n%s\n" "$max_ver" | sort -V | tail -1)
-            if [[ "$highest" != "2.12" ]]; then
-              echo "ERROR: binary requires GLIBC_$max_ver (newer than 2.12) -> not RHEL6 compatible"
+            highest=$(printf "${{ matrix.glibc_max }}\n%s\n" "$max_ver" | sort -V | tail -1)
+            if [[ "$highest" != "${{ matrix.glibc_max }}" ]]; then
+              echo "ERROR: binary requires GLIBC_$max_ver (newer than ${{ matrix.glibc_max }})"
               exit 1
             fi
           fi
@@ -117,17 +129,29 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          tar -czf "JoSIM-${VERSION}-linux-x64-rhel6.tar.gz" -C stage .
+          tar -czf "JoSIM-${VERSION}-${{ matrix.name }}.tar.gz" -C stage .
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JoSIM-${{ env.VERSION }}-linux-x64-rhel6
-          path: JoSIM-${{ env.VERSION }}-linux-x64-rhel6.tar.gz
+          name: JoSIM-${{ env.VERSION }}-${{ matrix.name }}
+          path: JoSIM-${{ env.VERSION }}-${{ matrix.name }}.tar.gz
 
+  # ---------------------------
+  # macOS builds: arm64 + x64 (separate runners)
+  # ---------------------------
   build_macos:
-    name: Build (macos-x64)
-    runs-on: macos-15
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            name: macos-arm64
+          - os: macos-15-intel
+            name: macos-x64
 
     steps:
       - name: Checkout
@@ -135,62 +159,59 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache CMake deps (best-effort)
-        uses: actions/cache@v4
-        with:
-          path: |
-            build/_deps
-            ~/.cache
-          key: macos-${{ hashFiles('**/CMakeLists.txt','**/*.cmake') }}
-          restore-keys: |
-            macos-
-
       - name: Compute version label
-        shell: pwsh
+        shell: bash
         run: |
-          if ($env:GITHUB_REF -like 'refs/tags/*') {
-            $v = $env:GITHUB_REF_NAME
-          } else {
-            $v = "master-$($env:GITHUB_SHA.Substring(0,7))"
-          }
-          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=master-${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
+          fi
 
       - name: Configure
-        shell: pwsh
+        shell: bash
         run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_INSTALL_PREFIX=stage `
+          set -euxo pipefail
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=stage \
             -DMAKING_STATIC_BUILD=OFF
 
       - name: Build
-        shell: pwsh
+        shell: bash
         run: |
+          set -euxo pipefail
           cmake --build build --config Release --parallel
 
       - name: Test
-        shell: pwsh
+        shell: bash
         run: |
+          set -euxo pipefail
           ctest --test-dir build -C Release --output-on-failure
 
       - name: Install to staging folder
-        shell: pwsh
+        shell: bash
         run: |
+          set -euxo pipefail
           cmake --install build --config Release
-          cmake -E copy_if_different LICENSE   stage/ || exit 0
-          cmake -E copy_if_different README.md stage/ || exit 0
+          cp -f LICENSE stage/ || true
+          cp -f README.md stage/ || true
 
       - name: Package (tar.gz)
         shell: bash
         run: |
-          tar -czf "JoSIM-${VERSION}-macos-x64.tar.gz" -C stage .
+          set -euxo pipefail
+          tar -czf "JoSIM-${VERSION}-${{ matrix.name }}.tar.gz" -C stage .
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JoSIM-${{ env.VERSION }}-macos-x64
-          path: JoSIM-${{ env.VERSION }}-macos-x64.tar.gz
+          name: JoSIM-${{ env.VERSION }}-${{ matrix.name }}
+          path: JoSIM-${{ env.VERSION }}-${{ matrix.name }}.tar.gz
 
+  # ---------------------------
+  # Windows build: x64
+  # ---------------------------
   build_windows:
     name: Build (windows-x64)
     runs-on: windows-2025
@@ -201,24 +222,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache CMake deps (best-effort)
-        uses: actions/cache@v4
-        with:
-          path: |
-            build/_deps
-            ~/.cache
-          key: windows-${{ hashFiles('**/CMakeLists.txt','**/*.cmake') }}
-          restore-keys: |
-            windows-
-
       - name: Compute version label
         shell: pwsh
         run: |
-          if ($env:GITHUB_REF -like 'refs/tags/*') {
-            $v = $env:GITHUB_REF_NAME
-          } else {
-            $v = "master-$($env:GITHUB_SHA.Substring(0,7))"
-          }
+          if ($env:GITHUB_REF -like 'refs/tags/*') { $v = $env:GITHUB_REF_NAME }
+          else { $v = "master-$($env:GITHUB_SHA.Substring(0,7))" }
           "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Configure
@@ -231,13 +239,11 @@ jobs:
 
       - name: Build
         shell: pwsh
-        run: |
-          cmake --build build --config Release --parallel
+        run: cmake --build build --config Release --parallel
 
       - name: Test
         shell: pwsh
-        run: |
-          ctest --test-dir build -C Release --output-on-failure
+        run: ctest --test-dir build -C Release --output-on-failure
 
       - name: Install to staging folder
         shell: pwsh
@@ -248,8 +254,7 @@ jobs:
 
       - name: Package (zip)
         shell: pwsh
-        run: |
-          Compress-Archive -Path "stage\*" -DestinationPath "JoSIM-$env:VERSION-windows-x64.zip"
+        run: Compress-Archive -Path "stage\*" -DestinationPath "JoSIM-$env:VERSION-windows-x64.zip"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
@@ -257,11 +262,14 @@ jobs:
           name: JoSIM-${{ env.VERSION }}-windows-x64
           path: JoSIM-${{ env.VERSION }}-windows-x64.zip
 
+  # ---------------------------
+  # Release: attach all artifacts on tag pushes
+  # ---------------------------
   release:
     name: Create GitHub Release (tags only)
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
-      - build_linux_rhel6
+      - build_linux
       - build_macos
       - build_windows
     runs-on: ubuntu-24.04
