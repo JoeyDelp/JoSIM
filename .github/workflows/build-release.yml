@@ -1,0 +1,281 @@
+name: Build binaries (Win/macOS/Linux) + Release assets
+
+on:
+  push:
+    branches: [ "master" ]
+    tags:     [ "v*" ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_linux_rhel6:
+    name: Build (linux-x64-rhel6)
+    runs-on: ubuntu-24.04
+
+    # manylinux2010 is CentOS 6 (glibc 2.12 baseline) :contentReference[oaicite:2]{index=2}
+    container:
+      image: quay.io/pypa/manylinux2010_x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute version label
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=master-${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install build tools
+        shell: bash
+        run: |
+          set -euxo pipefail
+          yum -y install git make which tar gzip
+          # manylinux2010 often ships cmake3 via yum; try to install it, but continue if already present
+          yum -y install cmake3 || true
+
+      - name: Enable devtoolset (newer GCC for C++17)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if ls /opt/rh/devtoolset-*/enable >/dev/null 2>&1; then
+            source "$(ls /opt/rh/devtoolset-*/enable | sort -V | tail -1)"
+          fi
+          gcc --version
+          g++ --version
+
+      - name: Configure
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cmake_cmd=cmake
+          command -v cmake3 >/dev/null 2>&1 && cmake_cmd=cmake3
+
+          $cmake_cmd -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=stage \
+            -DMAKING_STATIC_BUILD=ON \
+            -DUSING_OPENMP=OFF \
+            -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc"
+
+      - name: Build
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cmake_cmd=cmake
+          command -v cmake3 >/dev/null 2>&1 && cmake_cmd=cmake3
+          $cmake_cmd --build build --config Release --parallel
+
+      - name: Test
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Install to staging folder
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cmake_cmd=cmake
+          command -v cmake3 >/dev/null 2>&1 && cmake_cmd=cmake3
+          $cmake_cmd --install build --config Release
+          cp -f LICENSE stage/ || true
+          cp -f README.md stage/ || true
+
+      - name: Verify max required GLIBC version (must be <= 2.12)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          bin="stage/bin/josim-cli"
+          if [[ ! -f "$bin" ]]; then
+            echo "ERROR: expected $bin to exist"
+            exit 1
+          fi
+
+          max_ver=$(objdump -T "$bin" 2>/dev/null \
+            | sed -n 's/.*GLIBC_\([0-9.]\+\).*/\1/p' \
+            | sort -V \
+            | tail -1 || true)
+
+          echo "Max GLIBC required: ${max_ver:-<none found>}"
+
+          # If any GLIBC version > 2.12 appears, fail the job.
+          if [[ -n "$max_ver" ]]; then
+            highest=$(printf "2.12\n%s\n" "$max_ver" | sort -V | tail -1)
+            if [[ "$highest" != "2.12" ]]; then
+              echo "ERROR: binary requires GLIBC_$max_ver (newer than 2.12) -> not RHEL6 compatible"
+              exit 1
+            fi
+          fi
+
+      - name: Package (tar.gz)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          tar -czf "JoSIM-${VERSION}-linux-x64-rhel6.tar.gz" -C stage .
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JoSIM-${{ env.VERSION }}-linux-x64-rhel6
+          path: JoSIM-${{ env.VERSION }}-linux-x64-rhel6.tar.gz
+
+  build_macos:
+    name: Build (macos-x64)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache CMake deps (best-effort)
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps
+            ~/.cache
+          key: macos-${{ hashFiles('**/CMakeLists.txt','**/*.cmake') }}
+          restore-keys: |
+            macos-
+
+      - name: Compute version label
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $v = $env:GITHUB_REF_NAME
+          } else {
+            $v = "master-$($env:GITHUB_SHA.Substring(0,7))"
+          }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INSTALL_PREFIX=stage `
+            -DMAKING_STATIC_BUILD=OFF
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Test
+        shell: pwsh
+        run: |
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Install to staging folder
+        shell: pwsh
+        run: |
+          cmake --install build --config Release
+          cmake -E copy_if_different LICENSE   stage/ || exit 0
+          cmake -E copy_if_different README.md stage/ || exit 0
+
+      - name: Package (tar.gz)
+        shell: bash
+        run: |
+          tar -czf "JoSIM-${VERSION}-macos-x64.tar.gz" -C stage .
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JoSIM-${{ env.VERSION }}-macos-x64
+          path: JoSIM-${{ env.VERSION }}-macos-x64.tar.gz
+
+  build_windows:
+    name: Build (windows-x64)
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache CMake deps (best-effort)
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps
+            ~/.cache
+          key: windows-${{ hashFiles('**/CMakeLists.txt','**/*.cmake') }}
+          restore-keys: |
+            windows-
+
+      - name: Compute version label
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $v = $env:GITHUB_REF_NAME
+          } else {
+            $v = "master-$($env:GITHUB_SHA.Substring(0,7))"
+          }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INSTALL_PREFIX=stage `
+            -DMAKING_STATIC_BUILD=ON
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Test
+        shell: pwsh
+        run: |
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Install to staging folder
+        shell: pwsh
+        run: |
+          cmake --install build --config Release
+          cmake -E copy_if_different LICENSE   stage/ || exit 0
+          cmake -E copy_if_different README.md stage/ || exit 0
+
+      - name: Package (zip)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "stage\*" -DestinationPath "JoSIM-$env:VERSION-windows-x64.zip"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JoSIM-${{ env.VERSION }}-windows-x64
+          path: JoSIM-${{ env.VERSION }}-windows-x64.zip
+
+  release:
+    name: Create GitHub Release (tags only)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - build_linux_rhel6
+      - build_macos
+      - build_windows
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish release + attach binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**

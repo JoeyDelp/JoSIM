@@ -294,7 +294,7 @@ test/*.dat
 
 # CMake build directories
 release_build
-build*
+build/
 
 # Internal testing directories
 testint

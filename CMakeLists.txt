@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(JoSIM VERSION 2.6.10)
+project(JoSIM VERSION 2.7)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -135,6 +135,8 @@ include(GNUInstallDirs)
 # Install headers
 install(DIRECTORY include/JoSIM/
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM/")
+
+install(FILES LICENSE README.md DESTINATION .)
 
 # Install targets
 install(

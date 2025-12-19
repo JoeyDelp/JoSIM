@@ -36,6 +36,14 @@ or via \
 ---
 
 ## Changelog
+### v2.7
+- Added ability to specify seed for RNG through `.option seed=` command.
+- Current run seed can be shown using verbose command.
+- Added piece-wise sinusoidal (PWS) syntax to syntax guide documentation.
+- Expanded sinusoid parameters to include phase offset and number of cycles. Now allows non-continuous sinusoid.
+- Collection of bug fixes, code & code cleanup.
+- Cleaned up warnings during compilation.
+
 ### v2.6.10
 - Fixed a bug resulting in sub optimal performance in the custom function.
 
