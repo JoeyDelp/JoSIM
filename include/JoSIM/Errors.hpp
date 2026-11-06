@@ -136,7 +136,8 @@ enum class FunctionErrors : int64_t {
     EXP_TOO_FEW_ARGUMENTS,
     PARENTHESIS,
     UNKNOWN_FUNCTION,
-    INVALID_NOISE_PARAMETERS
+    INVALID_NOISE_PARAMETERS,
+    INVALID_CUS_PARAMETERS
 };
 
 enum class SimulationErrors : int64_t {

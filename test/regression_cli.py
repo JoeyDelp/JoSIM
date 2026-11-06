@@ -12,19 +12,31 @@ BINARY = pathlib.Path(sys.argv.pop(1)).resolve()
 
 
 class CliRegression(unittest.TestCase):
-    def run_deck(self, deck, timeout=5):
+    def run_deck(self, deck, timeout=5, files=None, extra=(), stdin=False):
         with tempfile.TemporaryDirectory(prefix="cli-", dir=pathlib.Path.cwd()) as tmp:
             root = pathlib.Path(tmp)
             (root / "input.cir").write_text(deck)
+            for name, contents in (files or {}).items():
+                (root / name).write_text(contents)
             result = subprocess.run(
-                [str(BINARY), "-m", "1", "-o", "output.csv", "input.cir"],
-                cwd=root, capture_output=True, text=True, timeout=timeout,
+                [str(BINARY), "-m", "1", *extra, "-o", "output.csv", *([] if stdin else ["input.cir"])],
+                input=deck if stdin else None, cwd=root, capture_output=True, text=True, timeout=timeout,
             )
             rows = None
             if (root / "output.csv").exists():
                 with (root / "output.csv").open() as stream:
                     rows = list(csv.reader(stream))
             return result, rows
+
+    def test_custom_waveform_relative_path_and_stdin(self):
+        deck = "V1 1 0 CUS(wave.dat 1p)\nR1 1 0 1k\n.tran 0.25p 2p DST\n.print V(1)\n.end\n"
+        for stdin in (False, True):
+            with self.subTest(stdin=stdin):
+                result, rows = self.run_deck(deck, files={"wave.dat": "1 1 1 1\n"}, extra=("-a", "0"), stdin=stdin)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertGreater(len(rows), 1)
+                for row in rows[1:]:
+                    self.assertAlmostEqual(float(row[1]), 1.0, delta=1e-9)
 
     def test_invalid_transient(self):
         for parameters in ("-1p 5p", "0 5p", "1p -5p", "1p", "1p 5p 0 -1p",

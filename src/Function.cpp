@@ -258,13 +258,16 @@ void Function::parse_sin(const tokens_t& t, const Input& iObj, const string_o& s
 }
 
 void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* CUS(WaveFile.dat TS[TSTEP] SF[1.0] IM[1] TD[0.0] PER[0]) */
+    /* CUS(WaveFile.dat TS SF[1.0] IM[1] TD[0.0] PER[0]) */
     if (t.size() < 2) { Errors::function_errors(FunctionErrors::CUS_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
+    if (t.size() > 6) { Errors::function_errors(FunctionErrors::CUS_TOO_MANY_ARGUMENTS, std::to_string(t.size())); }
+    timeValues_.clear();
+    ampValues_.clear();
+    miscValues_.clear();
     // First argument is required and is the wave file name
     std::filesystem::path WFline(t.at(0));
-    if (!WFline.has_parent_path()) {
-        WFline = std::filesystem::path(iObj.fileParentPath.value());
-        WFline.append(t.at(0));
+    if (WFline.is_relative()) {
+        WFline = std::filesystem::path(iObj.fileParentPath.value_or(".")) / WFline;
     }
     if (!std::filesystem::exists(WFline)) {
         auto pp   = WFline.parent_path();
@@ -273,27 +276,29 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
         WFline = std::filesystem::path(pp.append(stem));
         if (!std::filesystem::exists(WFline)) { Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, t.at(0)); }
     }
-    std::vector<std::string> WF;
-    const double&            tstep = iObj.transSim.tstep();
     // Default values for the arguments
-    miscValues_.emplace_back(tstep);
+    miscValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
     miscValues_.emplace_back(1.0);
     miscValues_.emplace_back(1);
     miscValues_.emplace_back(0.0);
     miscValues_.emplace_back(0);
     // Test if optional values exist
-    if (t.size() >= 2) { miscValues_.at(0) = parse_param(t.at(1), iObj.parameters, s); }
     if (t.size() >= 3) { miscValues_.at(1) = parse_param(t.at(2), iObj.parameters, s); }
     if (t.size() >= 4) { miscValues_.at(2) = parse_param(t.at(3), iObj.parameters, s); }
     if (t.size() >= 5) { miscValues_.at(3) = parse_param(t.at(4), iObj.parameters, s); }
     if (t.size() >= 6) { miscValues_.at(4) = parse_param(t.at(5), iObj.parameters, s); }
 
-    if (iObj.argVerb) {
-        if (miscValues_.at(1) == 0.0) { Errors::function_errors(FunctionErrors::CUS_SF_ZERO, t.at(1)); }
+    const double ts = miscValues_.at(0), scale = miscValues_.at(1);
+    const double method = miscValues_.at(2), delay = miscValues_.at(3), periodic = miscValues_.at(4);
+    if (!std::isfinite(ts) || ts <= 0.0 || !std::isfinite(scale) || !std::isfinite(delay) || delay < 0.0
+        || !(delay + ts > delay) || !std::isfinite(periodic) || (periodic != 0.0 && periodic != 1.0)) {
+        Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS,
+                                "TS must be finite and positive, SF finite, TD finite and non-negative, and PER either 0 or 1");
     }
-    if (miscValues_.at(2) > 2 || miscValues_.at(2) < 0) {
+    if (!std::isfinite(method) || std::floor(method) != method || method > 2.0 || method < 0.0) {
         Errors::function_errors(FunctionErrors::CUS_UNKNOWN_IM, Misc::vector_to_string(t));
     }
+    if (iObj.argVerb && scale == 0.0) { Errors::function_errors(FunctionErrors::CUS_SF_ZERO, "0"); }
     std::ifstream wffile(std::filesystem::absolute(WFline));
     std::string   line;
     if (wffile.good()) {
@@ -301,13 +306,23 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
     } else {
         Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, line);
     }
-    wffile.close();
-    WF = Misc::tokenize(line, " ,;");
-    for (auto i = 0; i < WF.size(); ++i) { ampValues_.emplace_back(Misc::modifier(WF.at(i)) * miscValues_.at(1)); }
-    if (miscValues_.at(0) < tstep) { miscValues_.at(0) = tstep; }
-    for (int i = 0; i < ampValues_.size(); ++i) { timeValues_.emplace_back(miscValues_.at(3) + i * miscValues_.at(0)); }
-    // Store the stop time
-    miscValues_.emplace_back(iObj.transSim.tstop());
+    const auto values = Misc::tokenize(line, " ,;\t\r\n");
+    if (values.empty() || (method == 2.0 && values.size() < 3)) {
+        Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS,
+                                "Waveform " + t.at(0) + " needs at least one sample, or three samples for cubic interpolation");
+    }
+    const double duration = values.size() * ts;
+    if (!std::isfinite(duration) || !std::isfinite(delay + duration)) {
+        Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS, "Waveform duration is not finite: " + t.at(0));
+    }
+    for (size_t i = 0; i < values.size(); ++i) {
+        const double value = Misc::modifier(values.at(i)) * scale;
+        if (!std::isfinite(value)) {
+            Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS, "Waveform samples must be finite: " + t.at(0));
+        }
+        ampValues_.emplace_back(value);
+        timeValues_.emplace_back(i * ts);
+    }
 }
 
 void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o& s) {
@@ -815,31 +830,22 @@ double Function::return_sin(double& x) {
 }
 
 double Function::return_cus(double& x) {
-    auto&   ts    = miscValues_.at(0);
-    auto&   sf    = miscValues_.at(1);
-    int     im    = static_cast<int>(std::round(miscValues_.at(2)));
-    auto&   td    = miscValues_.at(3);
-    bool    per   = static_cast<bool>(std::round(miscValues_.at(4)));
-    double& tstop = miscValues_.at(5);
-    if (x < td) {
-        return 0.0;
-    } else {
-        double region = ampValues_.size() * ts;
-        double norm_x = (x - td);
-        if (per) { norm_x = (x - td) - (std::floor(x / region) * region); }
-        if (norm_x > region) { return 0.0; }
-        int idx = std::min(static_cast<int>(norm_x / ts), static_cast<int>(ampValues_.size() - 1));
-        if (im == 0) {
-            return ampValues_.at(idx);
-        } else if (im == 1) {
-            double& y2 = ampValues_.at(idx);
-            double  y1 = 0.0;
-            if (idx != 0) { y1 = ampValues_.at(idx - 1); }
-            return y1 + ((y2 - y1) / ts) * (norm_x - (idx * ts));
-        } else if (im == 2) {
-            tk::spline s(timeValues_, ampValues_);
-            return s(norm_x);
-        }
+    const double ts = miscValues_.at(0), delay = miscValues_.at(3);
+    const int method = static_cast<int>(miscValues_.at(2));
+    if (x < delay) { return 0.0; }
+    const double duration = ampValues_.size() * ts;
+    double local = x - delay;
+    if (miscValues_.at(4) != 0.0) { local = std::fmod(local, duration); }
+    else if (local >= duration) { return 0.0; }
+    const size_t index = std::min(static_cast<size_t>(local / ts), ampValues_.size() - 1);
+    if (method == 0 || index == ampValues_.size() - 1) { return ampValues_.at(index); }
+    if (method == 1) {
+        const double fraction = (local - timeValues_.at(index)) / ts;
+        return ampValues_.at(index) + fraction * (ampValues_.at(index + 1) - ampValues_.at(index));
+    }
+    if (method == 2) {
+        tk::spline spline(timeValues_, ampValues_);
+        return spline(local);
     }
     return 0.0;
 }

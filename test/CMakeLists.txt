@@ -133,6 +133,11 @@ add_integration_test(
 )
 
 if(BUILD_TESTING)
+  add_executable(josim-function-regression function_regression.cpp)
+  target_link_libraries(josim-function-regression PRIVATE josim)
+  josim_instrument_target(josim-function-regression)
+  add_test(NAME regression::functions COMMAND josim-function-regression)
+  set_tests_properties(regression::functions PROPERTIES TIMEOUT 30)
   add_executable(josim-noise-regression noise_regression.cpp)
   josim_instrument_target(josim-noise-regression)
   target_link_libraries(josim-noise-regression PRIVATE josim suitesparse::klu)

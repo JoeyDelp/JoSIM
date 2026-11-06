@@ -16,6 +16,11 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Custom waveforms resolve relative files without an optional-path crash, align
+  linear/cubic interpolation to the stored samples and delay, and repeat from the
+  delayed start. Their sample interval no longer stretches with the simulation
+  step. Invalid timing, flags and waveform data now fail with useful errors.
+
 - Invalid gate nodes, duplicate gate controls, non-positive gate widths and
   invalid IV sweep options now produce errors instead of being ignored.
 - Noise update intervals advance correctly when a caller crosses several update

@@ -208,13 +208,23 @@ Notes:
 
 #### Custom Waveform
 
-**cus(** *wavefile*&emsp;$T_{S}$&emsp;*SF*&emsp;*IM*&emsp;[$T_{D}$&emsp;*PER]* **)**
+**cus(** *wavefile*&emsp;$T_S$&emsp;[*SF*&emsp;*IM*&emsp;$T_D$&emsp;*PER*] **)**
 
-This source allows the generates a function based on the points inside the plain text wave file. This file should contain a single line of space separated numbers. E.g 0 2 3 6 2 1 0
+The file contains one line of finite, space-separated amplitude samples. Relative
+paths use the input netlist's directory, or the current directory for a bare
+filename or standard input. Samples are multiplied by *SF* (default 1).
 
-Each number in this line represents an amplitude separated by time step $T_{S}$ and scaled using scale factor *SF*. The values between the points are interpolated using either no interpolation (0), linear (1) or cubic (2). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.
+Sample $k$ occurs at $T_D+kT_S$. $T_S$ must be finite and positive; it is not
+stretched when the simulation uses a coarser step. Choose a simulation step small
+enough to resolve the input waveform. Before $T_D$ (default 0), the output is zero.
 
-The waveform only starts of $T_{D}$.
+*IM* selects a hold (0), linear interpolation (1, default), or a natural cubic
+spline (2, requiring at least three samples). Linear and cubic methods pass
+through the stored samples. The last sample is held for one final interval.
+For $N$ samples the duration is $NT_S$: at its end the waveform returns to zero,
+or repeats from its first sample when *PER*=1. Repetition is measured from $T_D$;
+it does not enforce derivative continuity at a period boundary. *PER* must be 0
+(default) or 1, and $T_D$ must be finite and non-negative.
 
 #### DC
 

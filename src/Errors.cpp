@@ -558,16 +558,14 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "Total arguments specified do not match the required for CUS.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the CUS definition:\n";
-            formattedMessage += "CUS(WaveFile.dat TS SF IM <TD PER>)";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "CUS(WaveFile.dat TS [SF [IM [TD [PER]]]])";
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::CUS_TOO_MANY_ARGUMENTS:
             formattedMessage += "Total arguments specified do not match the required for CUS.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the CUS definition:\n";
-            formattedMessage += "CUS(WaveFile.dat TS SF IM <TD PER>)";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "CUS(WaveFile.dat TS [SF [IM [TD [PER]]]])";
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::CUS_SF_ZERO:
             formattedMessage += "CUS scale factor is 0.0, this renders the function redundant.\n";
             formattedMessage += "Program will continue but SIN command is redundant.";
@@ -582,6 +580,10 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "CUS waveform has unknown interpolation method.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Program will terminate.";
+            throw std::runtime_error(formattedMessage);
+        case FunctionErrors::INVALID_CUS_PARAMETERS:
+            formattedMessage += "Invalid CUS waveform.\n";
+            formattedMessage += message.value_or("");
             throw std::runtime_error(formattedMessage);
         case FunctionErrors::NOISE_TOO_FEW_ARGUMENTS:
             formattedMessage += "Total arguments specified do not match the required for NOISE.\n";

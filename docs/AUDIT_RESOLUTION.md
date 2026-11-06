@@ -293,3 +293,38 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Implementation/owner:** src/Output.cpp; src/Input.cpp; src/CliOptions.cpp.
 - **Verification:** bounded malformed-input/output-preservation regression corpus.
 - **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+
+## F01 — CUS waveform path, alignment and malformed data
+
+- **Classification:** confirmed supported-behaviour defects uncovered by D03/D11.
+- **Reproduction:** all six initial direct regressions failed: no-parent relative
+  path, linear grid, delayed cubic, delayed repetition, fixed sample interval and
+  empty/invalid definitions. The delayed-period case indexed a negative element.
+- **Required outcome:** sample k at TD+k*TS; interpolation passes through samples;
+  final sample holds to N*TS, then stops/repeats. Reject invalid inputs cleanly.
+- **Implementation:** Function::parse_cus / return_cus; Errors CUS diagnostics.
+  Existing enum values and Function object layout are preserved. Correcting the
+  delayed/stretched waveform is an intentional bug fix, documented in syntax.md.
+- **Verification:** regression::functions plus relative-file/stdin CLI tests;
+  independent linear formula and natural-cubic midpoint 0.6875 for samples 0,1,0.
+  Absolute tolerance 1e-11 bounds floating rounding in direct evaluations; CLI
+  constant-voltage checks allow 1e-9 for CSV formatting.
+- **Evidence:** build/audit-resolution/cus-red-test.log and cus-green-tests.xml;
+  Full Clang Release suite passes 28/28; focused ASan/UBSan+leak checks pass
+  functions and CLI. Final supported-platform results remain to be recorded.
+
+## F02 — Engineering suffixes in raw library inputs
+
+- **Classification:** newly reproduced numerical parsing defect, still open.
+- **Reproduction/result:** direct Function::parse_function with CUS TS=1p and
+  TD=2.5p interpreted those values as 1 and 2.5 seconds; uppercase/scientific
+  values isolate F01 correctly. CLI normalization masks this in normal decks,
+  but raw waveform file samples and direct library calls reach Misc::modifier.
+- **Required outcome:** case-consistent engineering suffixes and scientific
+  exponents with independent numerical assertions; retain parameter-name scope.
+- **Owner:** src/Misc.cpp modifier; src/Parameters.cpp numeric tokenization.
+- **Verification/evidence:** bounded direct numerical parser regressions are
+  next. F01 uses explicit 1E-12 / 2.5E-12 to test cubic timing independently.
+  units-probe.cpp / units-probe.log preserve direct results: 1P=1e-12, 1p=1,
+  1E-3=0.001, but 1e-3=-2 and 1.E-3=-2. The last case also reaches CLI
+  inputs despite its uppercase normalization. No resolution is claimed yet.

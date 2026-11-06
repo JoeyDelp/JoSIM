@@ -81,9 +81,9 @@ def main():
     profile = output / "coverage.profdata"
     run([args.llvm_profdata, "merge", "-sparse", *raw, "-o", profile], "merge.log")
     executable = build / "josim-cli"
-    regression = build / "test/josim-noise-regression"
+    regressions = sorted(path for path in (build / "test").glob("josim-*-regression") if path.is_file())
     files = sorted((source / "src").glob("*.cpp")) + sorted((source / "include/JoSIM").glob("*.hpp"))
-    options = [executable, "-object=" + str(regression), "-instr-profile=" + str(profile)]
+    options = [executable, *["-object=" + str(path) for path in regressions], "-instr-profile=" + str(profile)]
     run([args.llvm_cov, "export", *options, *files], "coverage.json")
     run([args.llvm_cov, "report", *options, *files], "coverage.txt")
     run([args.llvm_cov, "show", *options, "-format=html", "-output-dir=" + str(output / "html"),
