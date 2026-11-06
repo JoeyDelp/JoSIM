@@ -289,10 +289,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
     switch (errorCode) {
         case ControlErrors::TRANS_ERROR:
             formattedMessage += "Invalid transient analysis specified. " + message.value_or("") + "\n";
-            formattedMessage += "Substituting default parameters.\n";
-            formattedMessage += "Defaults: TSTEP=1PS TSTOP=1000PS prstart=0PS PRSTEP=1PS";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::PRINT_TOO_MANY_ARGS:
             formattedMessage += "Print request for device current has too many arguments.\n";
             formattedMessage += "Line: " + message.value_or("") + "\n";

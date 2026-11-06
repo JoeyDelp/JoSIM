@@ -5,6 +5,8 @@
 
 #include "JoSIM/Misc.hpp"
 
+#include <cmath>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -19,9 +21,9 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls, Transient& 
         if (i.front().find("TRAN") != std::string::npos) {
             // Set the flag as true
             transFound = true;
-            // Check for disable startup flag
-            if (i.back() == "DST") {
-                tObj.startup(false);
+            // UIC is retained as a legacy SPICE token; DST controls JoSIM startup.
+            while (i.size() > 1 && (i.back() == "DST" || i.back() == "UIC")) {
+                if (i.back() == "DST") { tObj.startup(false); }
                 i.pop_back();
             }
             // Initialize the numerical parameters to default values
@@ -31,10 +33,9 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls, Transient& 
             tObj.prstart(0);
             tObj.prfirwindow(0);
             // If there are less than 3 tokens (documentation requires both Tstart and Tstop parameters)
-            if (i.size() < 3) {
+            if (i.size() < 3 || i.size() > 6) {
                 // Complain of invalid transient analysis specification
-                Errors::control_errors(ControlErrors::TRANS_ERROR, "Too few parameters: " + Misc::vector_to_string(i));
-                // Continue with default parameters where none were given
+                Errors::control_errors(ControlErrors::TRANS_ERROR, "Expected TSTEP TSTOP [PRSTART [PRSTEP [FIRWINDOW]]]: " + Misc::vector_to_string(i));
             }
             // Interpret all given parameters
             if (i.size() >= 2) {
@@ -57,28 +58,25 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls, Transient& 
             if (i.size() >= 6) {
                 // Set the print FIR window size in seconds (default 0 means no FIR filtering)
                 tObj.prfirwindow(parse_param(i.at(5), params));
-                // Sanitize. Negative values are caught in write_output.
-                if (tObj.prfirwindow() >= tObj.tstop()) { tObj.prfirwindow(tObj.tstop()); }
             }
-            // If either the step size or stop time is 0
-            if (tObj.tstep() == 0 || tObj.tstop() == 0) {
-                // Complain
-                Errors::control_errors(ControlErrors::TRANS_ERROR, Misc::vector_to_string(i));
-                // Set defaults and continue
-                tObj.tstep(0.25E-12);
-                tObj.tstop(1E-9);
-                tObj.prstep(tObj.tstep());
-                tObj.prstart(0);
-                tObj.prfirwindow(0);
+            if (!std::isfinite(tObj.tstep()) || tObj.tstep() <= 0.0
+                || !std::isfinite(tObj.tstop()) || tObj.tstop() <= 0.0
+                || !std::isfinite(tObj.prstep()) || tObj.prstep() <= 0.0
+                || !std::isfinite(tObj.prstart()) || tObj.prstart() < 0.0 || tObj.prstart() >= tObj.tstop()
+                || !std::isfinite(tObj.prfirwindow()) || tObj.prfirwindow() < 0.0) {
+                Errors::control_errors(ControlErrors::TRANS_ERROR,
+                                       "Steps and stop time must be finite and positive; the print window must lie within the run");
             }
-            //// If user provided time step is larger than 0.25ps junction will fail
-            // if (tObj.tstep() > 0.25E-12) {
-            //   tObj.tstep(0.25E-12);
-            // }
+            if (tObj.prfirwindow() > tObj.tstop()) { tObj.prfirwindow(tObj.tstop()); }
             //  Also if PSTEP is smaller than TSTEP
             if (tObj.tstep() > tObj.prstep()) {
                 // Reduce TSTEP to match PRSTEP
                 tObj.tstep(tObj.prstep());
+            }
+            const double points = tObj.tstop() / tObj.tstep();
+            if (!std::isfinite(points) || points < 1.0
+                || points >= static_cast<double>(std::numeric_limits<int64_t>::max())) {
+                Errors::control_errors(ControlErrors::TRANS_ERROR, "Simulation point count is outside the supported range");
             }
         }
     }

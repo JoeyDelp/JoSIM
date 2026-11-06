@@ -28,6 +28,8 @@ work prepared for the next release, not binaries already available on GitHub.
   RHEL6-compatible builds.
 - Bundled C solvers use a compatible C standard with current GCC. Linux timing
   functions link correctly on systems with glibc older than 2.17.
+- Invalid transient times, print intervals and unsupported point counts now
+  produce errors instead of crashing or silently substituting another run.
 
 ## 2.7 — 2025-12-19
 

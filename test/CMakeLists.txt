@@ -142,4 +142,8 @@ if(BUILD_TESTING)
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_gate.py
                    $<TARGET_FILE:josim-cli>)
   set_tests_properties(regression::gate PROPERTIES TIMEOUT 90)
+  add_test(NAME regression::cli
+           COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_cli.py
+                   $<TARGET_FILE:josim-cli>)
+  set_tests_properties(regression::cli PROPERTIES TIMEOUT 90)
 endif()
