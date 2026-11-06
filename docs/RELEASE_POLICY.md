@@ -42,7 +42,7 @@ A current Linux distribution cannot establish the older glibc baseline.
 
 Each successful run must:
 
-1. Pass CTest, including all four regression groups and a fresh installed-library
+1. Pass CTest, including every required regression group and a fresh installed-library
    consumer. Skipped tests fail qualification.
 2. Match the requested architecture and runtime baseline.
 3. Install into a clean staging directory and hash every payload file.

@@ -417,7 +417,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
             formattedMessage += "The requested model was not found.\n";
             formattedMessage += message.value_or("") + "\n";
             formattedMessage += "Please ensure the model exists in the netlist.\n";
-            error_message(formattedMessage);
+            throw std::runtime_error(formattedMessage);
         default:
             formattedMessage += "Unknown control error: " + message.value_or("") + "\n";
             formattedMessage += "Please contact the developer.";
@@ -661,8 +661,12 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
         case SimulationErrors::MATRIX_SINGULAR:
             formattedMessage += "Matrix is singular. Matrix will have no solution.\n";
             formattedMessage += "Please check the components in the netlist.\n";
-            formattedMessage += "The program will abort.";
+            formattedMessage += "Simulation stopped.";
             throw std::runtime_error(formattedMessage);
+        case SimulationErrors::INVALID_MATRIX:
+            throw std::runtime_error(formattedMessage + "Invalid sparse matrix. " + message.value_or(""));
+        case SimulationErrors::SOLVER_FAILURE:
+            throw std::runtime_error(formattedMessage + "KLU solver failed. " + message.value_or(""));
         case SimulationErrors::PHASEGUESS_TOO_LARGE:
             formattedMessage += "Junction " + message.value_or("") + " has gone too far.\n";
             formattedMessage += "This is a result of integration error.\n";

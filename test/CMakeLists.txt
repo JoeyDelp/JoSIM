@@ -133,6 +133,11 @@ add_integration_test(
 )
 
 if(BUILD_TESTING)
+  add_executable(josim-library-regression library_regression.cpp)
+  target_link_libraries(josim-library-regression PRIVATE josim)
+  josim_instrument_target(josim-library-regression)
+  add_test(NAME regression::library COMMAND josim-library-regression)
+  set_tests_properties(regression::library PROPERTIES TIMEOUT 30)
   add_test(NAME regression::build_options
     COMMAND ${CMAKE_COMMAND}
       "-DTEST_SOURCE_DIR=${PROJECT_SOURCE_DIR}"

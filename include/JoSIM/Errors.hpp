@@ -146,7 +146,9 @@ enum class SimulationErrors : int64_t {
     JJPHASE_NODE_NOT_FOUND,
     INDUCTOR_CURRENT_NOT_FOUND,
     MATRIX_SINGULAR,
-    PHASEGUESS_TOO_LARGE
+    PHASEGUESS_TOO_LARGE,
+    INVALID_MATRIX,
+    SOLVER_FAILURE
 };
 
 enum class ParsingErrors : int64_t {

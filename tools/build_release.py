@@ -271,7 +271,7 @@ def main():
             label += ".dirty"
     tests = ET.parse(junit).getroot()
     cases = tests.findall(".//testcase")
-    required = {"regression::noise", "regression::gate", "regression::cli", "regression::functions", "regression::build_options", "regression::installed_package"}
+    required = {"regression::noise", "regression::gate", "regression::cli", "regression::functions", "regression::build_options", "regression::library", "regression::installed_package"}
     if not required.issubset({case.attrib.get("name") for case in cases}):
         raise RuntimeError("Required numerical, CLI or installed-package regressions did not run")
     if any(case.find("skipped") is not None or case.find("failure") is not None or case.find("error") is not None for case in cases):

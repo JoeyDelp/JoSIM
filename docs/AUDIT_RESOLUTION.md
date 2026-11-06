@@ -237,11 +237,25 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## D04 — Library recovery and RNG ownership
 
 - **Classification:** embedding/API concern.
-- **Current reproduction/result:** Open: Errors::error_message still exits; RNG engines are process-global.
+- **Current reproduction/result:** Missing `.iv` model terminated an embedding
+  process (exit 255). Fixed to throw; repeated missing-model, singular and
+  malformed-matrix failures recover and permit a fresh analytic 1 V run.
+  RNG engines remain process-global, with an explicit single designated thread,
+  sequential-run boundary; process parallelism is the supported alternative.
 - **Required outcome:** Recoverable supported library errors; explicit reentrancy/concurrency boundaries with API/ABI review.
-- **Implementation/owner:** src/Errors.cpp; src/josim.cpp; include/JoSIM/Rng.hpp.
-- **Verification:** same-process error/recovery and independent-run tests.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Implementation/owner:** src/Errors.cpp and Simulation.cpp; docs/API.md.
+  Constructor-local KLU ownership releases symbolic/numeric allocations on
+  failure/retry. Check sparse dimensions/indices/finite coefficients before KLU
+  and check allocation/factorization results. Class layout is unchanged;
+  new diagnostic enum values are appended. CLI termination helpers remain
+  explicitly CLI-only. C++ ABI across versions/toolchains is not promised.
+- **Verification:** regression::library exercises eight successive failure and
+  valid-run cycles; GCC16/Clang23 Release pass 30/30. The expected DC result is
+  1 V with 1e-12 absolute tolerance (linear solve rounding allowance).
+- **Evidence:** build/audit-resolution/library-red.json, library-green-tests.xml
+  and library-gcc-tests.xml. Full ASan/UBSan with leak detection passes 30/30
+  (131.47 s); library-sanitizer-tests.xml. Final native-platform and RNG
+  retry/replay qualification remain required.
 
 ## D05 — Maintained Python utilities
 

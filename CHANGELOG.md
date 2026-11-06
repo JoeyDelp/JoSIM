@@ -51,6 +51,11 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Build and distribution
 
+- Library `.iv` model lookup now throws instead of exiting the host process.
+  Check KLU setup/factorization failures and sparse-array validity; release
+  solver allocations on exceptions and timestep retries. Added repeated
+  failure/recovery tests and explicit embedding/random-state guidance.
+
 - Retired the non-functional SuperLU selection. `SLU=ON` and manual `SLU` macro
   definitions now fail explicitly instead of implying that another solver runs.
   KLU remains the supported solver. Removed the unused SuperLU/CBLAS dependency

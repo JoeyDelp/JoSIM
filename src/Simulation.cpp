@@ -16,26 +16,66 @@
 
 using namespace JoSIM;
 
+namespace {
+// Local ownership also covers exceptions and retries during construction.
+struct KluResources {
+    klu_l_symbolic*& symbolic;
+    klu_l_numeric*& numeric;
+    klu_l_common& common;
+    ~KluResources() {
+        klu_l_free_numeric(&numeric, &common);
+        klu_l_free_symbolic(&symbolic, &common);
+    }
+};
+
+[[noreturn]] void solver_failure(const klu_l_common& common) {
+    if (common.status == KLU_SINGULAR) {
+        Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+    }
+    Errors::simulation_errors(SimulationErrors::SOLVER_FAILURE,
+                              "Status " + std::to_string(common.status));
+}
+
+void validate_matrix(const Matrix& matrix) {
+    const auto n = matrix.branchIndex;
+    if (n <= 0 || matrix.rp.size() != static_cast<size_t>(n) + 1
+        || matrix.ci.empty() || matrix.ci.size() != matrix.nz.size()
+        || matrix.rp.front() != 0 || matrix.rp.back() != static_cast<int64_t>(matrix.nz.size())) {
+        Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Inconsistent dimensions or empty circuit.");
+    }
+    for (size_t i = 1; i < matrix.rp.size(); ++i) {
+        if (matrix.rp[i] < matrix.rp[i - 1] || matrix.rp[i] > matrix.rp.back()) {
+            Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Invalid row offsets.");
+        }
+    }
+    for (size_t i = 0; i < matrix.ci.size(); ++i) {
+        if (matrix.ci[i] < 0 || matrix.ci[i] >= n || !std::isfinite(matrix.nz[i])) {
+            Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Invalid column index or non-finite coefficient.");
+        }
+    }
+}
+} // namespace
+
 Simulation::Simulation(Input& iObj, Matrix& mObj) {
     while (needsTR_) {
+        validate_matrix(mObj);
         // Do generic simulation setup for given step size
         setup(iObj, mObj);
         // Do solver setup
         // KLU setup
         simOK_ = klu_l_defaults(&Common_);
-        assert(simOK_);
+        if (!simOK_) { solver_failure(Common_); }
+        KluResources resources{Symbolic_, Numeric_, Common_};
         Symbolic_ = klu_l_analyze(mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
+        if (!Symbolic_) { solver_failure(Common_); }
         Numeric_  = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
+        if (!Numeric_) { solver_failure(Common_); }
 
         // Run transient simulation
         trans_sim(mObj);
         // If step size is too large, reduce and try again
         if (needsTR_) { reduce_step(iObj, mObj); }
 
-        // Do solver cleanup
-        // KLU cleanup
-        klu_l_free_symbolic(&Symbolic_, &Common_);
-        klu_l_free_numeric(&Numeric_, &Common_);
     }
 }
 
@@ -79,7 +119,6 @@ void Simulation::trans_sim(Matrix& mObj) {
         int64_t startup = static_cast<int64_t>(2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1));
         if (startup > 1000) { startup = 1000; }
         for (int64_t i = -startup; i < 0; ++i) {
-            double step = i * stepSize_;
             // Setup the b matrix
             setup_b(mObj, i, i * stepSize_);
             if (needsTR_) { return; }
@@ -149,6 +188,7 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
         mObj.create_nz();
         klu_l_free_numeric(&Numeric_, &Common_);
         Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
+        if (!Numeric_) { solver_failure(Common_); }
         needsLU_ = false;
     }
     // Handle current sources

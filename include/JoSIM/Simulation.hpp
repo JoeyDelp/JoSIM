@@ -38,9 +38,9 @@ class Simulation {
     bool                startup_;
     double              stepSize_, prstep_, prstart_;
     int64_t         simOK_;
-    klu_l_symbolic* Symbolic_;
-    klu_l_common    Common_;
-    klu_l_numeric*  Numeric_;
+    klu_l_symbolic* Symbolic_ = nullptr;
+    klu_l_common    Common_{};
+    klu_l_numeric*  Numeric_ = nullptr;
 
     void setup(Input& iObj, Matrix& mObj);
     void trans_sim(Matrix& mObj);

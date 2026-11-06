@@ -34,12 +34,15 @@ the dependency directory to another machine or mount point.
 
 ## Regression coverage
 
-CTest runs the existing circuit examples and four additional groups:
+CTest runs the existing circuit examples and focused regression groups:
 
 - `regression::gate`: gate units, both analysis modes, subcircuits and IV sweeps.
 - `regression::noise`: seeded replay, white-noise variance, colored spectra,
   flux units, fractional critical-current noise and phase-step reduction.
 - `regression::cli`: invalid transient settings and recursive subcircuits.
+- `regression::functions`: waveform alignment, interpolation and expressions.
+- `regression::build_options`: retired solver configuration/macro rejection.
+- `regression::library`: repeated recoverable errors followed by valid runs.
 - `regression::installed_package`: installs the library, then builds and runs a
   fresh external C++ consumer using `find_package(josim 2.7 CONFIG REQUIRED)`.
 
@@ -100,6 +103,7 @@ cmake --install build/dev --config Release --prefix build/install
 Consumers set `CMAKE_PREFIX_PATH` to that prefix, call
 `find_package(josim 2.7 CONFIG REQUIRED)`, and link `josim::josim`. The package
 loads its solver dependencies and propagates C++17 and public headers.
+See [embedding guidance](API.md) for error recovery and random-state ownership.
 
 Keep fixes focused and add regression checks for non-trivial defects. Record
 user-visible behavior in [CHANGELOG.md](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md).
