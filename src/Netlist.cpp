@@ -161,6 +161,7 @@ void Netlist::expand_subcircuits() {
     int64_t cc = 0;
     // While we are nested (depth not zero)
     while (nestedSubcktCount != 0) {
+        const auto previousCount = nestedSubcktCount;
         // If not minimal printing
         if (!argMin) {
             // Report progress
@@ -208,6 +209,13 @@ void Netlist::expand_subcircuits() {
                     }
                 }
             }
+        }
+        if (nestedSubcktCount == previousCount) {
+            tokens_t unresolved;
+            for (const auto& subcircuit : subcircuits) {
+                if (subcircuit.second.containsSubckt) { unresolved.push_back(subcircuit.first); }
+            }
+            Errors::netlist_errors(NetlistErrors::RECURSIVE_SUBCIRCUIT, Misc::vector_to_string(unresolved));
         }
     }
     // Let the user know subcircuit expansion is complete

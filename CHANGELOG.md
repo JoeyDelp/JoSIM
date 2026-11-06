@@ -30,6 +30,8 @@ work prepared for the next release, not binaries already available on GitHub.
   functions link correctly on systems with glibc older than 2.17.
 - Invalid transient times, print intervals and unsupported point counts now
   produce errors instead of crashing or silently substituting another run.
+- Recursive subcircuit dependencies now report the unresolved subcircuits
+  instead of hanging during expansion.
 
 ## 2.7 — 2025-12-19
 

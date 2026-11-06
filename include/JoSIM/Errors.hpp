@@ -158,7 +158,7 @@ enum class ParsingErrors : int64_t {
 
 enum class OutputErrors : int64_t { CANNOT_OPEN_FILE, NOTHING_SPECIFIED };
 
-enum class NetlistErrors : int64_t { NO_SUCH_NODE, MISSING_IO };
+enum class NetlistErrors : int64_t { NO_SUCH_NODE, MISSING_IO, RECURSIVE_SUBCIRCUIT };
 
 enum class VerbosityErrors : int64_t { NO_SUCH_LEVEL, INVALID_VERBOSITY_LEVEL };
 

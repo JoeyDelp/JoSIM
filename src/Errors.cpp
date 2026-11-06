@@ -711,6 +711,10 @@ void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
 [[noreturn]] void Errors::netlist_errors(NetlistErrors errorCode, string_o message) {
     std::string formattedMessage = "Netlist\n";
     switch (errorCode) {
+        case NetlistErrors::RECURSIVE_SUBCIRCUIT:
+            formattedMessage += "Recursive subcircuit dependency detected.\n";
+            formattedMessage += "Unresolved subcircuits: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case NetlistErrors::NO_SUCH_NODE:
             formattedMessage += "Node \"" + message.value_or("") + "\" was not found in the netlist\n";
             formattedMessage += "Please check for any disconnections in the netlist";

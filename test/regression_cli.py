@@ -46,6 +46,28 @@ class CliRegression(unittest.TestCase):
         result, _ = self.run_deck("V1 1 0 DC 1\nR1 1 0 1k\n.tran 1p 5p 0 1p 0 UIC\n.print V(1)\n.end\n")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_recursive_subcircuits(self):
+        for definitions in (
+            ".subckt LOOP P N\nX2 LOOP P N\n.ends\n",
+            ".subckt LOOP P N\nX2 OTHER P N\n.ends\n.subckt OTHER P N\nX3 LOOP P N\n.ends\n",
+        ):
+            with self.subTest(definitions=definitions):
+                result, _ = self.run_deck(
+                    "X1 LOOP 1 0\n" + definitions + ".tran 1p 5p DST\n.print V(1)\n.end\n", timeout=2
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Recursive subcircuit", result.stdout + result.stderr)
+
+    def test_valid_nested_subcircuits(self):
+        result, rows = self.run_deck(
+            "V1 1 0 DC 1\nX1 OUTER 1 0\n"
+            ".subckt OUTER P N\nX2 INNER P N\n.ends\n"
+            ".subckt INNER P N\nR1 P N 1k\n.ends\n"
+            ".tran 1p 5p DST\n.print V(1)\n.end\n"
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertAlmostEqual(float(rows[-1][1]), 1.0, delta=1e-6)
+
 
 if __name__ == "__main__":
     unittest.main()
