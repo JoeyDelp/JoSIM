@@ -236,15 +236,15 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I091 — Long-run JJ artifacts #91
 
-- **Classification:** confirmed numerical cause identified; repair under qualification.
+- **Classification:** confirmed numerical cause repaired and native-qualified.
 - **Result:** a controlled raw-precision study reproduces growing voltage-mode
   phase drift over four lengths, with mode/step/polarity comparisons. An
   independent 70-digit prediction establishes inconsistent matrix/history
   constants as the cause, rather than an inference from a single run.
 - **Implementation:** use the existing SIGMA consistently in JJ::phaseConst_.
   See F09 for red/green measurements, tolerances and completed local checks.
-- **Required outcome:** Finish native qualification of the additional current-driven
-  RSJ checks (local checks pass; see D01). The original report has no circuit; do not
+- **Scope:** Constant-voltage and independent current-driven RSJ checks pass
+  native qualification (see F09/D01). The original report has no circuit; do not
   claim to have reconstructed that undocumented case or explained all artifacts.
 - **Evidence:** [phase accumulation study](qualification/2026-11-06-junction-phase.md);
   regression::junction_numerics. Other #101/thermal/noise studies remain separate.
@@ -292,7 +292,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   within 0.092 ppm. See the [RSJ study](qualification/2026-11-06-rsj.md) for
   independent derivation, tolerances and explicit scope. All four compiler/config
   checks pass; ASan/UBSan/leaks passes all 36 junction cases in 33.58 s. Native
-  qualification remains pending for the RSJ addition.
+  qualification passes all ten native jobs for 04ef05788e7a in CI 42235902594.
 - **Required outcome:** Complete finite-capacitance switching, clocked pulse
   counts, nonzero precharge and #101. These bounded studies do not establish
   general scientific correctness.
@@ -655,3 +655,31 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence/tolerances:** [junction phase study](qualification/2026-11-06-junction-phase.md)
   derives the cause and rounding allowance, identifies the physical-constant
   precision separately, and points to preserved red/green measurements.
+
+## F10 — Junction history during negative startup
+
+- **Classification:** confirmed numerical startup defect; repaired locally,
+  full qualification pending.
+- **Reproduction:** a zero-voltage, biased JJ/inductor loop settles in warm
+  voltage mode to zero junction phases and IL2=-20uA. An independent KCL/flux
+  equilibrium requires phi1=-0.00245600306rad, phi2=0.003274673rad and
+  IL2=-15.088uA. The old state violates zero applied flux by 0.00759634rad.
+  Cold voltage mode and both phase-mode startup choices agree with the reference.
+- **Cause/repair:** handle_jj read its solved phase/voltage histories only for
+  i>0. During negative startup and at i=0, voltage mode treated node volts as
+  phase and held voltage history at zero. Read the previous solved values on
+  every step; fresh cold-state vectors are already zero.
+- **Verification:** eight independent static-loop cases cover both modes,
+  startup choices and two steps. Expected values follow a scalar bisection of
+  KCL plus flux linkage, using exact SI sigma. Phase/current/flux tolerances
+  are 1e-8rad/2e-11A/1e-8rad, including CSV and legacy-constant rounding.
+  Focused noise/gate/raw-junction/numerics groups pass. Independent #101
+  transient probes now agree between modes and improve with refinement.
+- **Evidence:** build/audit-resolution/jj-startup-red.log; issue-101/
+  quiet-flux-red.json, startup-comparison.json, pre-startup-fix.json and probe.log.
+  Original bulky transient CSV attempts were regenerated; compact red evidence
+  and the original source/deck remain. GCC16/Clang23 Debug and Release pass
+  32/32; full ASan/UBSan/leaks passes 32/32 in 182.98 s. Native checks pending.
+  [Startup study](qualification/2026-11-06-junction-startup.md) gives the derivation,
+  compatibility scope, values and tolerances. Green measurements:
+  artifacts/audit-resolution/jj-startup.json.

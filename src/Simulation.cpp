@@ -373,15 +373,14 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
             temp.pn1_ = 0.0;
         }
 
-        // ---- History bookkeeping for vn/pn depending on analysis mode ----
-        if (i > 0) {
-            if (atyp_ == AnalysisType::Voltage) {
-                temp.vn1_ = temp.pn1_;
-                temp.pn1_ = x_.at(temp.variableIndex_);
-            } else if (atyp_ == AnalysisType::Phase) {
-                temp.vn1_ = x_.at(temp.variableIndex_);
-                // temp.pn1_ already holds the node phase difference
-            }
+        // Use the previous solved phase/voltage during startup and at t=0,
+        // as well as later samples. Zero-state runs already start with x_=0.
+        if (atyp_ == AnalysisType::Voltage) {
+            temp.vn1_ = temp.pn1_;
+            temp.pn1_ = x_.at(temp.variableIndex_);
+        } else if (atyp_ == AnalysisType::Phase) {
+            temp.vn1_ = x_.at(temp.variableIndex_);
+            // temp.pn1_ already holds the node phase difference
         }
 
         // ---- Guess voltage (V0) and phase (phi0) ----

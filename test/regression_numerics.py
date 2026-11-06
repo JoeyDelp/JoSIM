@@ -1,4 +1,4 @@
-"""Independent linear-circuit references, conservation and mesh refinement."""
+"""Independent circuit references, conservation and mesh refinement."""
 
 import argparse
 import cmath
@@ -94,6 +94,56 @@ class NumericalRegression(unittest.TestCase):
                              "maximum_KVL_residual_V": kvl, "deck": deck})
         return rows, error_v, error_i
 
+    def test_biased_junction_inductor_equilibrium(self):
+        # KCL: J2=s, J1=-s, IL2=s-Igate. Zero applied flux requires
+        # sigma*(asin(-s/Ic1)-asin(s/Ic2)) = L2*(s-Igate).
+        sigma = 6.62607015e-34 / (4 * math.pi * 1.602176634e-19)
+        low, high = 0.0, 20e-6
+        for _ in range(80):
+            current = (low + high) / 2
+            residual = (math.asin(-current / 2e-3) - math.asin(current / 1.5e-3)
+                        - 0.125e-12 * (current - 20e-6) / sigma)
+            if residual > 0:
+                low = current
+            else:
+                high = current
+        expected_phase1 = math.asin(-current / 2e-3)
+        expected_phase2 = math.asin(current / 1.5e-3)
+        expected_inductor = current - 20e-6
+        for mode in (0, 1):
+            for startup in (False, True):
+                for h in (0.02, 0.01):
+                    with self.subTest(mode=mode, startup=startup, h=h):
+                        deck = ("L1 N1 N2 0.125p\nB01 N2 0 JM1\nB02 N2 N3 JM2\n"
+                                ".model JM1 JJ(RTYPE=1 VG=2.8m CAP=0.007p R0=160m RN=16m ICRIT=2m)\n"
+                                ".model JM2 JJ(RTYPE=1 VG=2.8m CAP=0.007p R0=160m RN=16m ICRIT=1.5m)\n"
+                                "L2 N3 N4 0.125p\nRout N1 0 2\nIgate N3 0 20u\nVIN N4 0 DC 0\n"
+                                f".tran {h}p 100p{' DST' if not startup else ''}\n"
+                                ".print P(B01) P(B02) I(L2) V(Rout) I(B01) I(B02)\n.end\n")
+                        with tempfile.TemporaryDirectory(prefix="jj-startup-", dir=pathlib.Path.cwd()) as tmp:
+                            directory = pathlib.Path(tmp)
+                            (directory / "input.cir").write_text(deck)
+                            result = subprocess.run([str(BINARY), "-m", "1", "-a", str(mode), "-o", "output.csv", "input.cir"],
+                                                    cwd=directory, capture_output=True, text=True, timeout=15)
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            with (directory / "output.csv").open() as stream:
+                                rows = [[float(v) for v in row] for row in list(csv.reader(stream))[1:]]
+                        self.assertGreater(len(rows), 100)
+                        for row in rows[-10:]:
+                            _, phase1, phase2, inductor, output, j1, j2 = row
+                            self.assertTrue(all(math.isfinite(v) for v in row))
+                            self.assertAlmostEqual(phase1, expected_phase1, delta=1e-8)
+                            self.assertAlmostEqual(phase2, expected_phase2, delta=1e-8)
+                            self.assertAlmostEqual(inductor, expected_inductor, delta=2e-11)
+                            self.assertAlmostEqual(j1, -current, delta=2e-11)
+                            self.assertAlmostEqual(j2, current, delta=2e-11)
+                            self.assertLess(abs(output), 1e-10)
+                            self.assertLess(abs(phase1 - phase2 - .125e-12 * inductor / sigma), 1e-8)
+                        MEASUREMENTS.append({"kind": "JJ_L_DC", "mode": mode, "startup": startup,
+                                             "h_ps": h, "deck": deck, "last_sample": rows[-1],
+                                             "expected_phase1_rad": expected_phase1, "expected_phase2_rad": expected_phase2,
+                                             "expected_inductor_A": expected_inductor})
+
     def test_analytic_responses_conservation_and_convergence(self):
         for kind in ("RC", "RL", "RLC"):
             for startup in (False, True):
@@ -121,8 +171,8 @@ if __name__ == "__main__":
         options.report.write_text(json.dumps({
             "passed": result.wasSuccessful(), "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
             "test_sha256": hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
-            "reference": "Closed-form zero-state R/L/C responses to a linear voltage ramp; SI units",
-            "scope": "Linear circuits; no conclusion about junction switching or long-run artifacts",
+            "reference": "Closed-form R/L/C ramps and KCL/zero-flux JJ/L equilibrium; SI units",
+            "scope": "Linear dynamics and static JJ/L equilibrium; switching and long-run studies have separate owners",
             "cases": MEASUREMENTS,
         }, indent=2) + "\n")
     sys.exit(not result.wasSuccessful())

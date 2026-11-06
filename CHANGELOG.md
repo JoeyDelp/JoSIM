@@ -22,6 +22,11 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Read actual JJ phase/voltage histories during negative-time startup and at
+  t=0. Voltage mode previously used node volts as phase history, creating a
+  persistent wrong flux state in biased junction/inductor loops. Add an
+  independent equilibrium regression for both modes and startup choices.
+
 - Use one Josephson phase scale in JJ matrix and history equations. Separately
   rounded constants previously caused growing voltage-mode phase error during
   long runs (#91). Keep all physical constant values and unwrapped phase.

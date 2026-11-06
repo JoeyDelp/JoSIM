@@ -48,7 +48,8 @@ CTest runs the existing circuit examples and focused regression groups:
   current-driven RSJ equilibrium, periods and averaged pulse areas.
   See [the phase study](qualification/2026-11-06-junction-phase.md).
 - `regression::numerics`: independent analytic RC/RL/RLC responses, KCL/KVL,
-  timestep refinement and comparison of both modes with warm/cold startup.
+  timestep refinement and comparison of both modes with warm/cold startup;
+  an independently derived biased JJ/inductor equilibrium checks flux history.
   See [the linear-circuit study](qualification/2026-11-06-linear-circuits.md).
 - `regression::build_options`: retired solver/parallel configuration and macro rejection.
 - `regression::library`: repeated recoverable errors followed by valid runs.
