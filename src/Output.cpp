@@ -291,10 +291,10 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                         }
                         // Get individual current sample
                         double value;
-                        if (i.deviceLabel.value().at(3) != 'I') {
+                        if (!i.sourceIndex) {
                             value = x.at(i1).value().at(jk);
                         } else {
-                            value = mObj.sourcegen.at(i.sourceIndex.value()).value(t.at(jk));
+                            value = sObj.results.sourceCurrents.at(i.sourceIndex.value()).value().at(jk);
                         }
                         accumulator += firwindow.at(k) * value;
                     }

@@ -217,12 +217,39 @@ static void full_cycle_step_guard() {
     model.modelName("JM");
     model.rtype(0);
     input.netlist.models_new.emplace_back(model, std::nullopt);
-    input.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1M"}, std::nullopt}, {{"B1", "N", "0", "JM"}, std::nullopt}};
+    input.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1M"}, std::nullopt},
+                               {{"B1", "N", "0", "JM"}, std::nullopt},
+                               {{"I1", "0", "R", "NOISE(1P", "0", "1P)"}, std::nullopt},
+                               {{"R1", "R", "0", "10"}, std::nullopt}};
+    input.controls = {{"PRINT", "I(I1)", "I(R1)"}};
     const double requested   = input.transSim.tstep();
+    Rng::start_run(7654);
     Matrix       matrix;
     matrix.create_matrix(input);
+    find_relevant_traces(input, matrix);
     Simulation simulation(input, matrix);
     require(input.transSim.tstep() < requested / 2.0, "A full Josephson cycle bypassed timestep reduction");
+    const auto source_index = matrix.components.currentsources.front().sourceIndex_;
+    const auto& captured = simulation.results.sourceCurrents.at(source_index).value();
+    require(captured.size() == simulation.results.timeAxis.size(), "Retry retained samples from an abandoned run");
+    const auto resistor_index = std::get<Resistor>(matrix.components.devices.at(matrix.components.resistorIndices.front()))
+                                  .indexInfo.currentIndex_.value();
+    const auto& resistor = simulation.results.xVector.at(resistor_index).value();
+    for (size_t i = 0; i < captured.size(); ++i) {
+        require(std::abs(captured[i] - resistor[i]) <= 1e-12 * std::abs(captured[i]) + 1e-20,
+                "Captured retry source violates resistor KCL");
+    }
+    // Same-process explicit final-step run must replay the restarted stream.
+    Input fine = input;
+    Rng::start_run(7654);
+    Matrix fine_matrix;
+    fine_matrix.create_matrix(fine);
+    find_relevant_traces(fine, fine_matrix);
+    Simulation fine_simulation(fine, fine_matrix);
+    require(simulation.results.timeAxis == fine_simulation.results.timeAxis, "Retry changed the final time grid");
+    const auto fine_index = fine_matrix.components.currentsources.front().sourceIndex_;
+    require(captured == fine_simulation.results.sourceCurrents.at(fine_index).value(),
+            "Same-process final-step run did not replay the retry noise samples");
 }
 
 int main() {

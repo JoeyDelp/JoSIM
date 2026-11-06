@@ -92,6 +92,17 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
     startup_  = iObj.transSim.startup();
     x_.clear();
     x_.resize(mObj.branchIndex, 0.0);
+    results.sourceCurrents.clear();
+    const auto capture_source = [&](const RelevantTrace& trace) {
+        if (trace.storageType == StorageType::Current && trace.sourceIndex) {
+            if (results.sourceCurrents.empty()) { results.sourceCurrents.resize(mObj.sourcegen.size()); }
+            results.sourceCurrents.at(trace.sourceIndex.value()).emplace();
+        }
+    };
+    for (const auto& trace : mObj.relevantTraces) {
+        capture_source(trace);
+        if (trace.subtract) { capture_source(*trace.subtract); }
+    }
     if (!mObj.relevantTraces.empty()) {
         results.xVector.resize(mObj.branchIndex);
         for (const auto& i : mObj.relevantIndices) { results.xVector.at(i).emplace(); }
@@ -173,6 +184,7 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
     // iObj.netlist.expNetlist.shrink_to_fit();
     if (!tempMinOut) { iObj.argMin = tempMinOut; }
     results.xVector.clear();
+    results.sourceCurrents.clear();
     results.timeAxis.clear();
 }
 
@@ -213,13 +225,17 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
 
 void Simulation::handle_cs(Matrix& mObj, double& step, const int64_t& i) {
     for (const auto& j : mObj.components.currentsources) {
+        const double value = mObj.sourcegen.at(j.sourceIndex_).value(step);
+        if (i >= 0 && !results.sourceCurrents.empty() && results.sourceCurrents.at(j.sourceIndex_)) {
+            results.sourceCurrents.at(j.sourceIndex_).value().emplace_back(value);
+        }
         if (j.indexInfo.nodeConfig_ == NodeConfig::POSGND) {
-            b_.at(j.indexInfo.posIndex_.value()) -= (mObj.sourcegen.at(j.sourceIndex_).value(step));
+            b_.at(j.indexInfo.posIndex_.value()) -= value;
         } else if (j.indexInfo.nodeConfig_ == NodeConfig::GNDNEG) {
-            b_.at(j.indexInfo.negIndex_.value()) += (mObj.sourcegen.at(j.sourceIndex_).value(step));
+            b_.at(j.indexInfo.negIndex_.value()) += value;
         } else if (j.indexInfo.nodeConfig_ == NodeConfig::POSNEG) {
-            b_.at(j.indexInfo.posIndex_.value()) -= (mObj.sourcegen.at(j.sourceIndex_).value(step));
-            b_.at(j.indexInfo.negIndex_.value()) += (mObj.sourcegen.at(j.sourceIndex_).value(step));
+            b_.at(j.indexInfo.posIndex_.value()) -= value;
+            b_.at(j.indexInfo.negIndex_.value()) += value;
         }
     }
 }

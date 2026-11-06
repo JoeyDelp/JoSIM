@@ -104,6 +104,18 @@ void invalid_transient() {
     JoSIM::Matrix matrix;
     must_throw([&] { matrix.create_matrix(run); }, "Invalid transient analysis");
 }
+
+void unrequested_source_history() {
+    auto run = input();
+    run.netlist.expNetlist = {{{"I1", "0", "N", "NOISE(1P", "0", "1P)"}, std::nullopt},
+                             {{"R1", "N", "0", "10"}, std::nullopt}};
+    JoSIM::Matrix matrix;
+    matrix.create_matrix(run);
+    JoSIM::Simulation simulation(run, matrix);
+    if (!simulation.results.sourceCurrents.empty()) {
+        throw std::runtime_error("Unrequested source histories were retained");
+    }
+}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -117,6 +129,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "invalid") { invalid_matrix(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
+            if (selected == "all" || selected == "source") { unrequested_source_history(); }
             valid_simulation();
         }
     } catch (const std::exception& error) {

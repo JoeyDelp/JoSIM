@@ -23,6 +23,8 @@ class Results {
   public:
     std::vector<std::optional<std::vector<double>>> xVector;
     std::vector<double>                             timeAxis;
+    // Requested applied current-source samples, indexed by sourcegen index.
+    std::vector<std::optional<std::vector<double>>> sourceCurrents;
 };
 
 class Simulation {

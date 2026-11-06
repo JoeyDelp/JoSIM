@@ -29,6 +29,11 @@ differences add a second primitive to `RelevantTrace`. Recompile consumers of
 these public C++ types as well. Existing trace-handler function signatures are
 retained.
 
+`Results::sourceCurrents` contains only requested applied current-source
+histories, indexed by the matrix's `sourcegen` index. Each retained vector has
+the same length as `timeAxis`. Unrequested histories remain absent. This
+appended result state requires consumers of `Results`/`Simulation` to recompile.
+
 The command-line helpers `CliOptions::parse`, `display_help`, `Errors::oor` and
 `Errors::error_message` retain process-exit behaviour for the executable.
 Embedding applications should construct `Input` directly and handle exceptions,

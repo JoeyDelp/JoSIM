@@ -20,6 +20,12 @@ interpolation changes the spectrum near the update frequency; the waveform is
 not ideal white noise with a rectangular frequency cutoff. Match the timestep
 and bandwidth to the circuit and check convergence when measuring noise.
 
+`I(source)` output uses the samples actually applied by the simulator. Printing
+does not re-evaluate a noise generator at past times. Source differences and
+output FIR filtering use the same captured history. Histories are retained
+only when requested, at about 8 bytes per internal sample per source, plus
+vector metadata. Output decimation does not reduce that retained internal data.
+
 Automatic resistor and junction thermal noise use the same update interval
 convention. Junction thermal-noise amplitude follows its resistive state.
 

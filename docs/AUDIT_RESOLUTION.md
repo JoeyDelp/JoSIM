@@ -505,14 +505,14 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   empty print windows, exact final-sample output (4 ps, tolerance 1e-20 s), and
   huge finite FIR width preserving a 1 V constant (1e-9 V rounding allowance).
   GCC16/Clang23 Release pass 30/30; all seven sanitizer/leak regression groups
-  pass in 5.23 s. Native qualification still required for the committed repair.
+  pass in 5.23 s. CI 42221323012 for c5dc995e6c passes all ten native jobs.
 - **Evidence:** build/audit-resolution/transient-library-red.json,
   transient-window-red.json, transient-{gcc-,}tests.xml and
   transient-sanitizer-tests.xml.
 
-## F07 — Stateful current-source output history (open)
+## F07 — Stateful current-source output history
 
-- **Classification:** confirmed numerical output defect; unresolved.
+- **Classification:** confirmed numerical output defect; locally repaired, native rerun pending.
 - **Reproduction:** seeded NOISE current into a single 10 ohm resistor prints
   source and resistor currents differing by up to 7.406399e-6 A. KCL requires
   equality. Output re-evaluates the source at past times after its generator
@@ -520,9 +520,30 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Required outcome:** output the samples actually applied during simulation;
   capture only requested source histories, include difference operands, retain
   timestep-retry/RNG behaviour, and test both orientations/modes/filtering.
+- **Implementation:** capture requested applied current-source samples during
+  handle_cs and consume Results::sourceCurrents in Output. Include both operands
+  of differences; clear histories on retries. Each source is evaluated once per
+  step, independent of orientation/output selection, including both-ground
+  sources. The latter previously skipped evaluation and can therefore change
+  the global noise stream when such a source exists. Results state is appended;
+  existing field offsets remain, but consumers must recompile for its new size.
+- **Verification:** 16 seeded white/power-law, orientation, mode and FIR/decimation
+  cases have zero KCL residual at CSV resolution. Two non-ground terminal cases
+  check differential-only source requests. Tolerance is 2e-6 relative +1e-20 A
+  for CSV/linear-solve rounding. Requesting source output preserves the same
+  resistor samples; unrequested histories stay absent. A forced full-cycle
+  timestep retry retains exactly one final-run history and replays bit-for-bit
+  against a same-process explicit final-step run. Raw retry KCL tolerance is
+  1e-12 relative +1e-20 A (double solve rounding).
+- **Results:** GCC16/Clang23 Release pass 30/30; all seven sanitizer/leak
+  regression groups pass in 5.53 s. Broader PSD/amplitude qualification remains
+  open; this item establishes applied current-sample provenance.
 - **Owners:** Simulation::handle_cs, Results and Output::write_output.
 - **Evidence:** build/audit-resolution/output-history-red.json, exact seed/deck
-  and binary hash. This is separate from the previously repaired Gaussian cache.
+  and binary hash. Green measurements: artifacts/audit-resolution/current-source-history.json;
+  source-history-{gcc-,}tests.xml and source-history-sanitizer-tests.xml. This is
+  separate from the previously repaired Gaussian cache; the retry test now also
+  protects that fix in a full same-process simulation.
 
 ## F08 — Initial phase-to-voltage output history (open)
 

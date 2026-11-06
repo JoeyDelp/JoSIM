@@ -16,6 +16,13 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Current-source output now uses the samples applied during simulation, fixing
+  incorrect NOISE/PNOISE traces from re-evaluating an advanced generator at past
+  times. Capture only requested histories, including difference operands, and
+  clear them on timestep retries. Evaluate each declared source once per step;
+  this includes sources whose two terminals share ground. Appended result state
+  requires C++ consumers to recompile.
+
 - Validate direct-library transient point counts before integer conversion and
   matrix construction. Print windows after the last computed sample now fail
   with a transient diagnostic. Bound direct-library FIR windows consistently

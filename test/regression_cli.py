@@ -287,6 +287,48 @@ class CliRegression(unittest.TestCase):
         for value, expected in zip(map(float, rows[-1][1:]), (0.9, 0.9, -0.9)):
             self.assertAlmostEqual(value, expected, delta=2e-6)
 
+    def test_noisy_current_output_obeys_kcl(self):
+        waves = ("NOISE(1p 0 1p)", "PNOISE(1p 1 0 1p 100p 16)")
+        for waveform in waves:
+            for mode in (0, 1):
+                for terminal, sign in (("0 N", 1), ("N 0", -1)):
+                    for filtering in ("0 1p", "0 3p 4p"):
+                        with self.subTest(waveform=waveform, mode=mode, terminal=terminal, filtering=filtering):
+                            deck = (f"I1 {terminal} {waveform}\nR1 N 0 10\n.option SEED=123\n"
+                                    f".tran 1p 100p {filtering} DST\n.print I(I1) I(R1) I(I1,R1)\n.end\n")
+                            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            self.assertGreater(len(rows), 2)
+                            for row in rows[1:]:
+                                source, resistor, difference = map(float, row[1:])
+                                tolerance = 2e-6 * max(abs(source), abs(resistor)) + 1e-20
+                                self.assertAlmostEqual(resistor, sign * source, delta=tolerance)
+                                self.assertAlmostEqual(difference, source - resistor, delta=tolerance)
+
+    def test_differential_source_history_without_single_source_trace(self):
+        deck = ("I1 P N NOISE(1p 0 1p)\nRP P 0 10\nRN N 0 20\n.option SEED=321\n"
+                ".tran 1p 100p 0 1p DST\n.print I(RP) I(RN) I(RP,I1) I(RN,I1)\n.end\n")
+        for mode in (0, 1):
+            with self.subTest(mode=mode):
+                result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                for row in rows[1:]:
+                    positive, negative, first, second = map(float, row[1:])
+                    tolerance = 2e-6 * max(abs(positive), abs(negative)) + 1e-20
+                    self.assertAlmostEqual(positive + negative, 0, delta=tolerance)
+                    self.assertAlmostEqual(first, 2 * positive, delta=tolerance)
+                    self.assertAlmostEqual(second, 0, delta=tolerance)
+
+    def test_requesting_source_history_does_not_change_simulation(self):
+        base = ("I1 0 N NOISE(1p 0 1p)\nR1 N 0 10\nI2 0 0 NOISE(2p 0 1p)\n"
+                ".option SEED=991\n.tran 1p 100p 0 1p DST\n.print I(R1){}\n.end\n")
+        result, plain = self.run_deck(base.format(""), extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        result, captured = self.run_deck(base.format(" I(I1) I(I2)"), extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual([row[:2] for row in plain], [row[:2] for row in captured])
+        self.assertGreater(len({row[3] for row in captured[1:]}), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
