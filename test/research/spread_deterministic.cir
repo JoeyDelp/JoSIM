@@ -1,0 +1,5 @@
+I01 0 1 PWL(0 0 5p 50u)
+R01 1 0 2 spread=0.5
+.tran 0.25p 1n
+.option seed=4190754512324517577
+.print V(R01)

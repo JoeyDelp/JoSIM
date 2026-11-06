@@ -1,0 +1,40 @@
+* DC SQUID switching histogram demo (JoSIM / JoSIM-Pro)
+* Minimal 0-loop-inductance DC SQUID: two JJs share top node; phase source imposes flux-phase bias.
+* Switching detected when |V(n_top)| crosses threshold during I-bias ramp.
+
+.option SEED=__SEED__
+
+* ---- Junction model ----
+.model JJMOD JJ(IC=20u RN=10 R0=500 C=0.2p VG=2.8m DELV=0.1m RTYPE=1)
+
+* ---- Bias current ramp ----
+.param I_MAX  = 55u
+.param T_RAMP = 20n
+.param T_STOP = 30n
+
+I_BIAS n_top 0 PWL(0 0  T_RAMP I_MAX  T_STOP I_MAX)
+
+* ---- Flux bias (phase bias) ----
+* PHI_DC is in units of Phi0 (fraction of a flux quantum).
+.param PHI_DC  = __PHI_DC__
+
+* For “quasi-static per trial” 1/f: update once per run; long TCORR keeps 1 Hz in-band.
+.param DTNOISE = T_STOP
+.param TCORR   = 10
+
+* Flux noise (units: Phi0/sqrt(Hz) at 1 Hz), exponent alpha:
+P_FLUX n_phi 0 FNOISE(2e-6  1.0  PHI_DC  0  DTNOISE  TCORR  64)
+
+* ---- Two junction arms ----
+* Add ICNOISE as fractional 1/f (PNOISE) to each JJ (per your Sec VI convention).
+B1 n_top 0     JJMOD TEMP=0.020 ICNOISE=PNOISE(2e-6 1.0  0  DTNOISE  TCORR  64)
+B2 n_top n_phi JJMOD TEMP=0.020 ICNOISE=PNOISE(2e-6 1.0  0  DTNOISE  TCORR  64)
+
+* ---- Transient ----
+.tran 5e-13 T_STOP
+
+* ---- Output ----
+.file out.csv
+.print V(n_top) P(B1) P(B2)
+
+.end

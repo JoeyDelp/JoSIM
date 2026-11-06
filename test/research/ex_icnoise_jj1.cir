@@ -1,0 +1,22 @@
+* ex_icnoise_phaseclamp.cir
+* Goal: verify S_I(f) ~ A1^2 / f^alpha (when φ = π/2 and CPR=1)
+
+.tran 1e-4 20
+
+* Example numbers (adjust as you like)
+.param A1=1e-6
+.param ALPHA=1
+.param TD=0
+.param DT=1e-4
+.param TCORR=2
+.param N=64
+
+.model JJMOD JJ(IC=1e-3 RN=5 R0=30 C=2.5e-12 VG=2.8e-3 DELV=0.1e-3 RTYPE=1 CPR={1.0})
+
+* Clamp phase across JJ to pi/2 (max dI/dIc sensitivity)
+PCLAMP n 0 DC 1.5707963267948966
+
+B1 n 0 JJMOD AREA=1 ICNOISE=PNOISE(A1, ALPHA, TD, DT, TCORR, N)
+
+.print I(B1)
+.end

@@ -40,6 +40,7 @@ add_library(
   src/CCVS.cpp
   src/CliOptions.cpp
   src/CurrentSource.cpp
+  src/Debug.cpp
   src/Errors.cpp
   src/Function.cpp
   src/Inductor.cpp

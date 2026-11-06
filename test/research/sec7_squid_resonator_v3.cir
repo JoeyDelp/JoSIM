@@ -1,0 +1,76 @@
+* ============================================================================
+* Section VII (v3): SQUID‑tunable resonator (slow, JJ‑stable) + injected flux noise
+*
+* Goal: produce a clean under‑damped resonance where f0(t) can be tracked for a long time
+* without tripping the JJ phase-step rejection in Simulation::handle_jj().
+*
+* Key design constraints imposed by JoSIM’s fixed-step JJ integrator:
+* - Large timesteps are only OK if junction voltages are in the nV–pV range, otherwise dφ/dt
+*   (Josephson relation) becomes too fast and the predictor error trips the 0.4π phase check.
+*
+* Therefore this netlist is intentionally "slow + gentle":
+* - VERY small Ic (tens of pA) so Josephson inductance is in the ~10 µH range
+* - CAPJ = 0 so no stiff plasma mode
+* - tiny excitation currents (pA) and slow edges (ms-scale) so voltages stay tiny
+* - resonance in the few 100 kHz range so dt=2e-7 gives ~10–15 pts/cycle
+* ============================================================================
+
+.option seed=123456789
+
+* ---- Bias ----
+.param PHI_BIAS_FRAC=0.25
+.param PHASE_BIAS=(2*PI*PHI_BIAS_FRAC)
+
+* ---- Junction model (macro-ish, low-frequency) ----
+.param IC=2.3e-11
+.param RN=1.0e9
+.param CAPJ=0.0
+.model JJMOD jj(ic=IC r0=RN cap=CAPJ)
+
+* ---- Loop inductance ----
+.param L_LOOP=2.0e-10
+
+* ---- Resonator (target f0 ~ 300–500 kHz) ----
+.param L0=1.0e-5
+.param C_RES=1.0e-8
+.param R_DAMP=5.0e6
+
+* ---- Gentle excitation ----
+.param I_PULSE=1.0e-12
+.param T_DELAY=5.0e-3
+.param T_RISE =2.0e-3
+.param T_FALL =2.0e-3
+.param T_WIDTH=1.0e-2
+.param T_PERIOD=1.0
+
+* ---- Flux noise (phase noise) ----
+.param A_PHI1 =2.0e-6
+.param ALPHA  =1.0
+.param TD     =0.0
+.param DTNOISE =2.0e-7
+.param TCORR  =1.0e-3
+.param N_OU   =48
+
+* ---- Circuit ----
+CRES  NRES 0    C_RES
+RDMP  NRES 0    R_DAMP
+
+L0SER NRES NSQ  L0
+
+* DC SQUID
+BJJ1  NSQ 0     NSQ JJMOD
+BJJ2  NSQ NLOOP NSQ JJMOD
+
+PBIAS  0     NPHI   DC  PHASE_BIAS
+PNFLUX NPHI  NPHI2  FNOISE(A_PHI1 ALPHA TD DTNOISE TCORR N_OU)
+LLOOP  NPHI2 NLOOP  L_LOOP
+
+IDRV  NRES 0 PULSE(0 I_PULSE T_DELAY T_RISE T_FALL T_WIDTH T_PERIOD)
+
+* ---- Transient ----
+.tran 2.0e-7 0.1 0 2.0e-7 0
+
+.file sec7_v3_traces.csv
+.print v(NRES) p(PBIAS) p(PNFLUX)
+
+.end

@@ -1,0 +1,84 @@
+* ============================================================================
+* Section VII (Deliverable): SQUID‑tunable resonator with injected flux noise
+* Target: demonstrate frequency‑jitter PSD and linewidth broadening from flux noise
+*
+* Notes:
+* - This uses JoSIM SPICE‑like syntax and output controls (.tran, .file, .print) per JoSIM docs. citeturn15view0turn18view0
+* - Flux noise is injected via a Phase Source whose SOURCETYPE is your new FNOISE(...) (JoSIM‑Pro).
+* - DC bias + noise are implemented as TWO phase sources in series so we don't need expression support inside devices.
+* - Adjust parameters to your preferred operating point and simulation runtime.
+* ============================================================================
+
+* ---------- Global parameters (all expressions must be in .param) ----------
+.option seed=123456789
+
+* Bias point (choose a smooth point away from half‑flux singularities)
+* PHI_BIAS_FRAC is Φbias / Φ0 (dimensionless fraction of a flux quantum)
+.param PHI_BIAS_FRAC=0.25
+.param PHI0=PHI_ZERO
+
+* Convert Φbias to an equivalent PHASE source value (radians): φbias = 2π * Φbias/Φ0
+.param PHASE_BIAS= (2*PI*PHI_BIAS_FRAC)
+
+* Josephson junction model parameters (scaled example; tune to taste)
+* For a numerically friendly demo (lower resonator frequency), you may pick very small Ic to enlarge Lj.
+.param IC=1.0e-8
+.param RN=10.0
+.param CAPJ=2.0e-13
+
+* DC SQUID loop inductance (keep small for βL << 1 if you want the simple analytic comparator)
+.param L_LOOP=2.0e-10
+
+* Resonator (choose values so f0 is manageable for long transient runs)
+.param C_RES=1.0e-10
+.param R_DAMP=2.0e3
+
+* Excitation: a short current impulse to start ring‑down
+.param I_PULSE=2.0e-6
+.param T_RISE =1.0e-10
+.param T_FALL =1.0e-10
+.param T_WIDTH=3.0e-9
+
+* Flux noise (FNOISE) parameters
+* A_PHI1 is ASD at 1 Hz in units of Φ0/sqrt(Hz) (as used in your paper)
+.param A_PHI1 =2.0e-6
+.param ALPHA  =1.0
+.param TD     =1.0e-6
+.param DTNOISE =1.0e-8
+.param TCORR  =1.0e-6
+.param N_OU   =48
+
+* ---------- JJ model ----------
+.model JJMOD jj(ic=IC r0=RN cap=CAPJ)
+
+* ---------- Circuit ----------
+* Resonator node
+* SQUID sits from NRES to ground, made of two JJs whose lower electrodes are split (0 and NLOOP)
+* with a superconducting link (L_LOOP) and an imposed external phase (bias + noise).
+
+* Resonator tank
+CRES  NRES 0    C_RES
+RDMP  NRES 0    R_DAMP
+
+* SQUID junctions
+* JoSIM JJ syntax: B<label> N+ N- PhaseNode MODEL citeturn1view1
+BJJ1  NRES 0     NRES JJMOD
+BJJ2  NRES NLOOP NRES JJMOD
+
+* External flux implemented as phase (φ = 2π Φ/Φ0) in series with loop inductance.
+PBIAS  0     NPHI   DC  PHASE_BIAS
+PNFLUX NPHI  NPHI2  FNOISE(A_PHI1 ALPHA TD DTNOISE TCORR N_OU)
+LLOOP  NPHI2 NLOOP  L_LOOP
+
+* Kick the resonator (current pulse)
+IKICK NRES 0 PULSE(0 I_PULSE 0 T_RISE T_FALL T_WIDTH)
+
+* ---------- Transient + output ----------
+* .tran TSTEP TSTOP [PSTART [PSTEP [PWINDOW]]] [DST] citeturn15view0
+* Choose TSTEP small enough to resolve the resonator; PSTEP can decimate output if needed.
+.tran 5.0e-11 2.0e-3 0 5.0e-11 0
+
+.file sec7_traces.csv
+.print v(NRES) p(PBIAS) p(PNFLUX)
+
+.end

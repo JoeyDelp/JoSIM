@@ -3,6 +3,9 @@
 
 #include "JoSIM/AnalysisType.hpp"
 #include "JoSIM/CliOptions.hpp"
+#ifndef NDEBUG
+#include "JoSIM/Debug.hpp"
+#endif
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/IV.hpp"
 #include "JoSIM/Input.hpp"
@@ -19,6 +22,21 @@ using namespace JoSIM;
 
 int main(int argc, const char** argv) {
     try {
+        // Run self-tests
+#ifndef NDEBUG
+        if (const char* e = std::getenv("JOSIM_SELFTEST_NOISE"); e && std::string(e) == "1") {
+            return josim_debug_selftest_noise_rms();
+        }
+        if (const char* e = std::getenv("JOSIM_SELFTEST_PNOISE"); e && std::string(e) == "1") {
+            return josim_debug_selftest_pnoise();
+        }
+        if (const char* e = std::getenv("JOSIM_SELFTEST_FNOISE"); e && std::string(e) == "1") {
+            return josim_debug_selftest_fnoise();
+        }
+        if (const char* e = std::getenv("JOSIM_SELFTEST_ICNOISE"); e && std::string(e) == "1") {
+            return josim_debug_selftest_icnoise() ? 0 : 2;
+        }
+#endif
         // Before anything. Display versioning info.
         CliOptions::version_info();
         // Parse input arguments for command line interface

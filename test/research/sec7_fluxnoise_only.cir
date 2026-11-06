@@ -1,0 +1,48 @@
+* ============================================================================
+* Section VII (new approach): Flux-noise time series generation (NO junctions)
+*
+* Purpose:
+*   Generate δφ(t) (phase) produced by FNOISE(...) with a large, user-chosen timestep
+*   without triggering the JJ timestep reduction logic.
+*
+* How to interpret:
+*   External flux is represented as phase:
+*       φ(t) = 2π Φ(t) / Φ0
+*   The source PNFLUX below outputs a phase waveform δφ(t). Convert to flux:
+*       δΦ(t) = (Φ0/2π) δφ(t)
+*
+* Output columns (CSV):
+*   time, P(PNFLUX)
+* ============================================================================
+
+.option seed=123456789
+
+* ---- Flux noise parameters (edit these) ----
+.param A_PHI1  = 2.0e-6
+.param ALPHA   = 1.0
+.param TD      = 0.0   
+.param DTNOISE = 1.0e-4
+.param TCORR   = 0.0   
+.param N_OU    = 48
+
+* ---- Flux bias as phase (optional, set to 0 if you only want noise) ----
+.param PHI_BIAS_FRAC = 0.25
+.param PHASE_BIAS = (2*PI*PHI_BIAS_FRAC)
+
+* Bias + noise in series so they sum cleanly
+PBIAS  0    NPHI   DC    PHASE_BIAS
+PNFLUX NPHI NPHI2  FNOISE(A_PHI1 ALPHA TD DTNOISE TCORR N_OU)
+
+* tiny shunt just to keep the matrix well-behaved (phase node not totally floating)
+RSHUNT NPHI2 0 1e12
+
+* ---- Transient ----
+* Choose a timestep suited to the lowest Fourier frequency you care about:
+*   df_min ~ 1/Tsim  ;  Nyquist ~ 1/(2*DT)
+* Example below: DT=1e-4 over 200 s -> df_min=5 mHz, Nyquist=5 kHz
+.tran 1.0e-4 200 0 1.0e-4 0
+
+.file sec7_fluxnoise.csv
+.print p(PNFLUX)
+
+.end

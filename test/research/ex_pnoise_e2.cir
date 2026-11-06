@@ -1,0 +1,9 @@
+* PNOISE external test E2: current 1/f noise into R||C
+I1   n   0   PNOISE(1E-12, 1.0, 0, 1E-4, 2.0, 64)
+R1   n   0   10K
+C1   n   0   330N
+
+.TRAN 1E-4 20 0 1E-4 0
+.PRINT V(n)
+
+.END

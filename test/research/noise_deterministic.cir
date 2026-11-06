@@ -1,0 +1,6 @@
+I01 0 1 PWL(0 0 5p 50u)
+R01 1 0 2
+.temp 3000
+.tran 0.25p 1n
+.option seed=14932776593048328696
+.print V(R01)

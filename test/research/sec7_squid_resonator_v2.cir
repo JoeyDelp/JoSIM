@@ -1,0 +1,78 @@
+* ============================================================================
+* Section VII (v2): SQUID‑tunable resonator with flux noise → measurable f0(t)
+*
+* This version fixes the two practical problems you hit:
+*   1) The SQUID branch was overdamped by RN=10 Ω, killing the resonance.
+*   2) The ringdown at ~100 MHz dies in < 1 µs, so skipping to 1e‑6 leaves no carrier.
+*
+* Strategy:
+* - Make the SQUID behave as a (mostly) lossless tunable inductance: RN very large.
+* - Add a geometric inductance L0 in SERIES with the SQUID to set a low f0 (~ few 100 kHz).
+* - Pick a large parallel loss resistor to get a long ringdown (tens of ms).
+* - Use a print step comparable to carrier resolution so the CSV stays small.
+* ============================================================================
+
+.option seed=123456789
+
+* ---- Bias ----
+.param PHI_BIAS_FRAC=0.25
+.param PHASE_BIAS=(2*PI*PHI_BIAS_FRAC)
+
+* ---- SQUID junctions (choose Ic so Lsquid ~ µH range) ----
+.param IC=1.0e-9
+.param RN=1.0e9
+.param CAPJ=2.0e-13
+.model JJMOD jj(ic=IC r0=RN cap=CAPJ)
+
+* ---- Loop inductance (keep small for βL<<1 comparator) ----
+.param L_LOOP=2.0e-10
+
+* ---- Resonator ----
+.param L0=1.0e-5
+.param C_RES=1.0e-8
+.param R_DAMP=5.0e6
+
+* ---- Kick (start after a short settling time) ----
+.param I_PULSE=5.0e-6
+.param T_DELAY=1.0e-4
+.param T_RISE =2.0e-7
+.param T_FALL =2.0e-7
+.param T_WIDTH=4.0e-5
+.param T_PERIOD=2.0e-1
+
+* ---- Flux noise ----
+* Start noise at t=0 in this demo (so it’s present during ringdown).
+.param A_PHI1 =2.0e-6
+.param ALPHA  =1.0
+.param TD     =0.0
+.param DTNOISE =2.0e-6
+.param TCORR  =1.0e-3
+.param N_OU   =48
+
+* ---- Circuit ----
+* Resonator node
+CRES  NRES 0    C_RES
+RDMP  NRES 0    R_DAMP
+
+* Fixed series inductance + SQUID branch to ground
+L0SER NRES NSQ  L0
+
+* DC SQUID (two JJs) from NSQ to ground with loop inductance and imposed external phase.
+BJJ1  NSQ 0     NSQ JJMOD
+BJJ2  NSQ NLOOP NSQ JJMOD
+
+PBIAS  0     NPHI   DC  PHASE_BIAS
+PNFLUX NPHI  NPHI2  FNOISE(A_PHI1 ALPHA TD DTNOISE TCORR N_OU)
+LLOOP  NPHI2 NLOOP  L_LOOP
+
+* Excite resonator then stop -> ringdown carries the natural frequency
+IDRV  NRES 0 PULSE(0 I_PULSE T_DELAY T_RISE T_FALL T_WIDTH T_PERIOD)
+
+* ---- Transient ----
+* Choose print/max step to resolve ~0.5 MHz carrier. dt=2e-7 -> fs=5 MHz (~10 pts/cycle)
+.tran 2.0e-7 0.2 0 2.0e-7 0
+
+.file sec7_v2_traces.csv
+.print v(NRES) p(PBIAS) p(PNFLUX)
+
+.end

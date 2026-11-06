@@ -1,0 +1,11 @@
+* --- FNOISE external verification: flux noise -> phase -> inductor current ---
+* FNOISE(Aphi0, alpha, PHIDC, TD, dt, tcorr, N)
+
+.TRAN 1E-4 20 0 1E-4 0
+
+PFLUX n1 0 FNOISE(1E-6, 1.0, 0.0, 0.0, 1E-4, 2.0, 64)
+
+L1 n1 0 1E-9
+
+.PRINT I(L1)
+.END

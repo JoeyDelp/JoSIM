@@ -12,6 +12,69 @@
 
 using namespace JoSIM;
 
+namespace {
+
+// Collects a function-valued parameter that may be split across tokens,
+// e.g. ICNOISE=PNOISE(1, 1, 0, 1E-4, 2, 64)
+// might arrive as multiple whitespace-split tokens.
+//
+// On success:
+//   - outExpr gets the RHS expression (e.g. "PNOISE(1, 1, ...)")
+//   - idx is advanced to the last token consumed
+static bool collect_kv_function_expr(const tokens_t&    tokens,
+                                     size_t&            idx,
+                                     const std::string& keyEq, // e.g. "ICNOISE="
+                                     std::string&       outExpr) {
+    if (idx >= tokens.size()) { return false; }
+    const std::string& t0 = tokens[idx];
+    if (t0.rfind(keyEq, 0) != 0) { return false; }
+
+    outExpr = t0.substr(keyEq.size());
+
+    // If the RHS begins in the *next* token (rare but possible): "ICNOISE=" "PNOISE(...)"
+    if (outExpr.empty() && idx + 1 < tokens.size()) {
+        ++idx;
+        outExpr = tokens[idx];
+    }
+
+    // Count parentheses to know when we’re complete.
+    auto update_depth = [](const std::string& s, int& depth) {
+        for (char c : s) {
+            if (c == '(') {
+                ++depth;
+            } else if (c == ')') {
+                --depth;
+            }
+        }
+    };
+
+    int depth = 0;
+    update_depth(outExpr, depth);
+
+    // If we haven't even seen an opening paren yet, keep appending until we do.
+    // (Allows cases like ICNOISE=PNOISE to still work if someone writes weird spacing.)
+    while (depth <= 0 && outExpr.find('(') == std::string::npos && idx + 1 < tokens.size()) {
+        ++idx;
+        outExpr += " " + tokens[idx];
+        update_depth(tokens[idx], depth);
+    }
+
+    // Now, if we’re inside parens, keep consuming tokens until balanced.
+    while (depth > 0 && idx + 1 < tokens.size()) {
+        ++idx;
+        outExpr += " " + tokens[idx];
+        update_depth(tokens[idx], depth);
+    }
+
+    // Balanced means depth == 0 (and we’ve seen at least one ')')
+    if (depth != 0) { return false; }
+
+    return true;
+}
+
+} // namespace
+
+
 /*
   Blabel V+ V- jjmodel area=value
 
@@ -62,6 +125,18 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
             area_ = spread.spread_value(parse_param(ti.substr(5), iObj.parameters, s.second), Spread::JJ, spr);
         } else if (ti.rfind("IC=", 0) == 0) {
             Ic_ = spread.spread_value(parse_param(ti.substr(3), iObj.parameters, s.second), Spread::JJ, spr);
+        } else if (ti.rfind("ICNOISE=", 0) == 0) {
+            std::string expr;
+            size_t      j = i;
+            if (!collect_kv_function_expr(s.first, j, "ICNOISE=", expr)) {
+                Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION);
+            } else {
+                Function f;
+                f.parse_function(expr, iObj, s.second);
+                icNoise = f; // std::optional<Function> icNoise; (in JJ.hpp)
+                i       = j; // skip consumed tokens
+            }
+
         } else {
             t.emplace_back(ti);
         }
@@ -105,7 +180,7 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
         spAmp_ = Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
         Function tnoise;
         tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) + ", 0.0, "
-                                      + Misc::precise_to_string(1.0 / neb_.value()) + ")",
+                                      + Misc::precise_to_string(1.0 / (2 * neb_.value())) + ")",
                               iObj,
                               s.second);
         thermalNoise = tnoise;
@@ -235,7 +310,7 @@ bool JJ::update_value(const double& v) {
     if (fabs(v) < lowerB_) {
         // Set temperature resistance
         if (this->temp_) {
-            thermalNoise.value().ampValues().at(0)
+            thermalNoise.value().ampValuesRef().at(0)
                     = Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
         }
         // Set the transition current to 0
@@ -274,7 +349,7 @@ bool JJ::update_value(const double& v) {
     } else {
         // Set temperature resistance
         if (this->temp_) {
-            thermalNoise.value().ampValues().at(0)
+            thermalNoise.value().ampValuesRef().at(0)
                     = Noise::determine_spectral_amplitude(this->model_.rn(), temp_.value());
         }
         // Reset the transition current, transition has passed.

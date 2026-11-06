@@ -14,59 +14,89 @@
 
 using namespace JoSIM;
 
-void Function::parse_function(const std::string& str, const Input& iObj, const string_o& subckt) {
-    auto        first = str.find('(') + 1;
-    auto        last  = str.find(')');
-    std::string p     = str.substr(first, last - first);
-    tokens_t    t     = Misc::tokenize(p, " ,");
-    /* PWL(0 V0 T1 V1 T2 V2 ... TN VN) */
-    if (str.find("PWL") != std::string::npos) {
-        fType_ = FunctionType::PWL;
-        parse_pwl(t, iObj, subckt);
+static inline std::string trim_copy(std::string s) {
+    auto is_ws = [](unsigned char c) { return std::isspace(c); };
+    while (!s.empty() && is_ws((unsigned char) s.front())) { s.erase(s.begin()); }
+    while (!s.empty() && is_ws((unsigned char) s.back())) { s.pop_back(); }
+    return s;
+}
+
+static inline std::string upper_copy(std::string s) {
+    for (auto& c : s) { c = (char) std::toupper((unsigned char) c); }
+    return s;
+}
+
+void Function::parse_function(const std::string& str_in, const Input& iObj, const string_o& subckt) {
+    const std::string str = trim_copy(str_in);
+    const std::string u   = upper_copy(str);
+
+    const size_t      lp  = u.find('(');
+
+    // ---- Only attempt DC / bare-number parsing when there is NO '(' ----
+    if (lp == std::string::npos) {
+        // "DC <value>" or bare numeric
+        tokens_t w = Misc::tokenize(str, " \t,");
+        if (!w.empty() && u.rfind("DC", 0) == 0) {
+            if (!std::isnan(parse_param(w.back(), iObj.parameters, subckt))) {
+                fType_ = FunctionType::DC;
+                parse_dc(w, iObj, subckt);
+                return;
+            }
+        }
+
+        if (!w.empty() && !std::isnan(parse_param(w.back(), iObj.parameters, subckt))) {
+            fType_ = FunctionType::DC;
+            parse_dc(w, iObj, subckt);
+            return;
+        }
+
+        Errors::function_errors(FunctionErrors::UNKNOWN_FUNCTION, str);
+        return;
     }
-    /* PULSE(A1 A2 TD[0.0] TR[TSTEP] TF[TSTEP] PW[TSTOP] PER[TSTOP])*/
-    else if (str.find("PULSE") != std::string::npos) {
-        fType_ = FunctionType::PULSE;
-        parse_pulse(t, iObj, subckt);
+
+    // ---- Parenthesized function path ----
+    const size_t rp = u.rfind(')');
+    if (rp == std::string::npos || rp <= lp + 1) {
+        Errors::function_errors(FunctionErrors::PARENTHESIS, str);
+        return;
     }
-    /* SIN(VO VA FREQ[1/TSTOP] TD[0.0] THETA[0.0]) */
-    else if (str.find("SIN") != std::string::npos) {
-        fType_ = FunctionType::SINUSOID;
-        parse_sin(t, iObj, subckt);
-    }
-    /* CUS(WaveFile.dat TS[TSTEP] SF[1.0] IM[1] TD[0.0] PER[0]) */
-    else if (str.find("CUS") != std::string::npos) {
-        fType_ = FunctionType::CUS;
-        parse_cus(t, iObj, subckt);
-    }
-    /* NOISE(VA TD TSTEP) */
-    else if (str.find("NOISE") != std::string::npos) {
+
+    const std::string name   = Misc::tokenize(trim_copy(u.substr(0, lp))).back();
+    const std::string inside = str.substr(lp + 1, rp - lp - 1);
+    tokens_t          t      = Misc::tokenize(inside, " ,");
+
+    if (name == "PNOISE") {
+        fType_ = FunctionType::PNOISE;
+        parse_pnoise(t, iObj, subckt);
+    } else if (name == "FNOISE") {
+        fType_ = FunctionType::FNOISE;
+        parse_fnoise(t, iObj, subckt);
+    } else if (name == "ICNOISE") {
+        fType_ = FunctionType::ICNOISE;
+        parse_icnoise(t, iObj, subckt);
+    } else if (name == "NOISE") {
         fType_ = FunctionType::NOISE;
         parse_noise(t, iObj, subckt);
-    }
-    /* PWS(0 0 T1 V1 T2 V2 .. TN VN) */
-    else if (str.find("PWS") != std::string::npos) {
+    } else if (name == "PWL") {
+        fType_ = FunctionType::PWL;
+        parse_pwl(t, iObj, subckt);
+    } else if (name == "PULSE") {
+        fType_ = FunctionType::PULSE;
+        parse_pulse(t, iObj, subckt);
+    } else if (name == "SIN") {
+        fType_ = FunctionType::SINUSOID;
+        parse_sin(t, iObj, subckt);
+    } else if (name == "CUS") {
+        fType_ = FunctionType::CUS;
+        parse_cus(t, iObj, subckt);
+    } else if (name == "PWS") {
         fType_ = FunctionType::PWS;
         parse_pwl(t, iObj, subckt);
-    }
-    /* EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TD1+TSTEP] TAU2[TSTEP]) */
-    else if (str.find("EXP") != std::string::npos) {
+    } else if (name == "EXP") {
         fType_ = FunctionType::EXP;
         parse_exp(t, iObj, subckt);
-    }
-    /* DC VALUE */
-    else if (str.find("DC") != std::string::npos) {
-        if (!std::isnan(parse_param(Misc::tokenize(str).back(), iObj.parameters, subckt))) {
-            fType_ = FunctionType::DC;
-            parse_dc(t, iObj, subckt);
-        }
-    }
-    /* Only a value was provided? Assume user is trying to make a DC source */
-    else if (!std::isnan(parse_param(Misc::tokenize(str).back(), iObj.parameters, subckt))) {
-        fType_ = FunctionType::DC;
-        parse_dc(t, iObj, subckt);
     } else {
-        // Assume DC
+        Errors::function_errors(FunctionErrors::UNKNOWN_FUNCTION, str);
     }
 }
 
@@ -264,25 +294,393 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
 }
 
 void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* NOISE(VA TD[0.0] TSTEP[TSTEP]) */
-    if (t.size() < 2) { Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
-    const double& tstep = iObj.transSim.tstep();
-    // Set amplitudes
-    ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
-    ampValues_.emplace_back(0.0);
-    // Default values for the arguments
-    timeValues_.emplace_back(0.0);
-    timeValues_.emplace_back(tstep);
-    // Test if optional values exist
-    if (t.size() >= 2) { timeValues_.at(0) = parse_param(t.at(1), iObj.parameters, s); }
-    if (t.size() >= 3) { timeValues_.at(1) = parse_param(t.at(2), iObj.parameters, s); }
-    miscValues_.emplace_back(0.0);
-    miscValues_.emplace_back(ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back()));
-    miscValues_.emplace_back(timeValues_.at(0));
-    miscValues_.emplace_back(timeValues_.at(0) + timeValues_.at(1));
-    if (iObj.argVerb) {
-        if (ampValues_.at(0) == 0.0) { Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, t.at(1)); }
+    /* NOISE(VA TD[0.0] TSTEP[1/(2*NEB) or sim tstep]) */
+
+    if (t.size() < 1) { Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
+
+    const double tstep_sim = iObj.transSim.tstep();
+
+    const double VA        = parse_param(t.at(0), iObj.parameters, s);
+    double       td        = 0.0;
+    if (t.size() >= 2) { td = parse_param(t.at(1), iObj.parameters, s); }
+
+    // Default TSTEP: prefer NEB if available, otherwise fall back to sim timestep
+    double tstep_noise = tstep_sim;
+    if (t.size() >= 3) {
+        tstep_noise = parse_param(t.at(2), iObj.parameters, s);
+    } else if (iObj.neB && iObj.neB > 0.0) {
+        tstep_noise = 1.0 / (2.0 * iObj.neB);
     }
+
+    // You cannot realize bandwidth above Nyquist of the simulation step; clamp.
+    if (tstep_noise < tstep_sim) { tstep_noise = tstep_sim; }
+
+    // Store
+    ampValues_.clear();
+    timeValues_.clear();
+    miscValues_.clear();
+
+    ampValues_.emplace_back(VA);  // VA (one-sided ASD)
+    ampValues_.emplace_back(0.0); // pre-TD output
+
+    timeValues_.emplace_back(td);
+    timeValues_.emplace_back(tstep_noise);
+
+    // misc: y1, y2, x1, x2
+    miscValues_.emplace_back(0.0);
+    miscValues_.emplace_back(VA * Misc::grand() / sqrt(2.0 * tstep_noise));
+    miscValues_.emplace_back(td);
+    miscValues_.emplace_back(td + tstep_noise);
+
+    if (iObj.argVerb) {
+        if (VA == 0.0) { Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, t.at(0)); }
+    }
+}
+
+void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
+    // PNOISE(A1, ALPHA, TD[0], TSTEP[iObj.transSim.tstep()], TCORR[iObj.transSim.tstop()], N[48])
+    // A1: ASD at 1 Hz, one-sided, units/sqrt(Hz)
+    // ALPHA: exponent in 1/f^alpha
+    // TD: start delay (before TD -> 0)
+    // TSTEP: noise update interval dt (fH ~= 1/(2*dt))
+    // TCORR: correlation time (fL ~= 1/TCORR)
+    // N: number of OU processes (log-spaced)
+
+    ampValues_.clear();
+    timeValues_.clear();
+    miscValues_.clear();
+    pnoise_.reset();
+
+    if (t.size() < 2) {
+        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
+        return;
+    }
+
+    PNoiseState st;
+
+    st.A1    = parse_param(t.at(0), iObj.parameters, s);
+    st.alpha = parse_param(t.at(1), iObj.parameters, s);
+
+    // Defaults
+    st.td    = 0.0;
+    st.dt    = iObj.transSim.tstep();
+    st.tcorr = iObj.transSim.tstop();
+    st.N     = 48;
+
+    if (t.size() >= 3) { st.td = parse_param(t.at(2), iObj.parameters, s); }
+    if (t.size() >= 4) { st.dt = parse_param(t.at(3), iObj.parameters, s); }
+    if (t.size() >= 5) { st.tcorr = parse_param(t.at(4), iObj.parameters, s); }
+    if (t.size() >= 6) {
+        const double Nd = parse_param(t.at(5), iObj.parameters, s);
+        st.N            = static_cast<int>(std::llround(Nd));
+    }
+
+    // Sanity / clamps
+    const double dt_sim = iObj.transSim.tstep();
+    if (st.dt < dt_sim) { st.dt = dt_sim; }
+    if (st.tcorr <= 0.0) { st.tcorr = iObj.transSim.tstop(); }
+    if (st.td < 0.0) { st.td = 0.0; }
+
+    if (st.N < 4) { st.N = 4; }
+    if (st.N > 512) { st.N = 512; }
+
+    // Band edges
+    st.fL = 1.0 / st.tcorr;
+    st.fH = 1.0 / (2.0 * st.dt);
+
+    if (!(st.fL > 0.0) || !(st.fH > st.fL)) {
+        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
+                                "PNOISE invalid band: fL=" + std::to_string(st.fL) + " fH=" + std::to_string(st.fH));
+        return;
+    }
+
+    double fref = 1.0;
+    if (fref < st.fL) { fref = st.fL; }
+    if (fref > st.fH) { fref = st.fH; }
+
+    // Optional warning
+    if (iObj.argVerb && std::abs(fref - 1.0) > 0.0) {
+        std::cerr << "Warning: PNOISE normalization: 1 Hz is outside band [" << st.fL << ", " << st.fH << "] Hz. "
+                  << "Interpreting A1 as ASD at fref=" << fref << " Hz.\n";
+    }
+
+    // Store for debug/inspection
+    ampValues_.push_back(st.A1);
+    ampValues_.push_back(st.alpha);
+    timeValues_.push_back(st.td);
+    timeValues_.push_back(st.dt);
+    timeValues_.push_back(st.tcorr);
+
+    // Build OU bank
+    st.tau.resize(st.N);
+    st.a.resize(st.N);
+    st.b.resize(st.N);
+    st.var.resize(st.N);
+    st.y.resize(st.N);
+
+    const double        logfL = std::log(st.fL);
+    const double        logfH = std::log(st.fH);
+
+    // Base (unscaled) variances ~ tau^(alpha-1)
+    // Then scale all variances so Sx(1Hz) == A1^2 (one-sided).
+    std::vector<double> baseVar(st.N);
+
+    for (int k = 0; k < st.N; ++k) {
+        const double frac = (static_cast<double>(k) + 0.5) / static_cast<double>(st.N); // midpoints
+        const double fk   = std::exp(logfL + frac * (logfH - logfL));
+        st.tau.at(k)      = 1.0 / (2.0 * Constants::PI * fk);
+
+        // baseVar ~ tau^(alpha-1)
+        baseVar.at(k)     = std::pow(st.tau.at(k), st.alpha - 1.0);
+        if (!std::isfinite(baseVar.at(k)) || baseVar.at(k) < 0.0) { baseVar.at(k) = 0.0; }
+    }
+
+    // Analytic one-sided PSD at 1 Hz of the OU sum:
+    // Sx(f) = sum_k 4*var_k*tau_k / (1 + (2*pi*f*tau_k)^2)
+    auto Sx_analytic = [&](double f, const std::vector<double>& v) -> double {
+        const double w = 2.0 * Constants::PI * f;
+        double       S = 0.0;
+        for (int k = 0; k < st.N; ++k) {
+            const double tau    = st.tau.at(k);
+            const double denom  = 1.0 + (w * tau) * (w * tau);
+            S                  += (4.0 * v.at(k) * tau) / denom;
+        }
+        return S;
+    };
+
+    const double targetS1 = st.A1 * st.A1; // one-sided PSD at 1 Hz
+
+    const double S1_base  = Sx_analytic(fref, baseVar);
+    if (!(S1_base > 0.0) || !std::isfinite(S1_base)) {
+        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, "PNOISE scaling failed (S1_base)");
+        return;
+    }
+
+    st.scale = targetS1 / S1_base;
+
+    for (int k = 0; k < st.N; ++k) {
+        st.var.at(k)              = st.scale * baseVar.at(k);
+
+        const double tau          = st.tau.at(k);
+        const double ak           = std::exp(-st.dt / tau);
+        st.a.at(k)                = ak;
+
+        const double one_minus_a2 = 1.0 - ak * ak;
+        st.b.at(k)                = (one_minus_a2 > 0.0) ? std::sqrt(st.var.at(k) * one_minus_a2) : 0.0;
+
+        // Start in stationarity to avoid long burn-in
+        st.y.at(k)                = std::sqrt(st.var.at(k)) * Misc::grand();
+    }
+
+    st.S1Hz        = Sx_analytic(1.0, st.var);
+
+    // Initialize interpolation state (miscValues_ = {y1,y2,x1,x2})
+    auto step_once = [&]() -> double {
+        double sum = 0.0;
+        for (int k = 0; k < st.N; ++k) {
+            st.y.at(k)  = st.a.at(k) * st.y.at(k) + st.b.at(k) * Misc::grand();
+            sum        += st.y.at(k);
+        }
+        return sum;
+    };
+
+    const double x1 = st.td;
+    const double x2 = st.td + st.dt;
+
+    const double y1 = [&]() {
+        double sum = 0.0;
+        for (int k = 0; k < st.N; ++k) { sum += st.y.at(k); }
+        return sum;
+    }();
+
+    const double y2 = step_once();
+
+    miscValues_.push_back(y1);
+    miscValues_.push_back(y2);
+    miscValues_.push_back(x1);
+    miscValues_.push_back(x2);
+
+    pnoise_ = std::move(st);
+}
+
+void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
+    // FNOISE(Aphi0, ALPHA, PHIDC[0], TD[0], TSTEP[iObj.transSim.tstep()], TCORR[iObj.transSim.tstop()], N[48])
+    //
+    // Aphi0 : ASD at 1 Hz in Phi0/sqrt(Hz)
+    // ALPHA : exponent
+    // PHIDC : DC flux bias in Phi0
+    // returns phase in radians: phi(t) = 2*pi*(PHIDC + dPhi(t))  with dPhi shaped as 1/f^alpha in-band
+
+    ampValues_.clear();
+    timeValues_.clear();
+    miscValues_.clear();
+    pnoise_.reset();
+
+    if (t.size() < 2) {
+        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
+        return;
+    }
+
+    const double Aphi0 = parse_param(t.at(0), iObj.parameters, s);
+    const double alpha = parse_param(t.at(1), iObj.parameters, s);
+
+    double       PHIDC = 0.0;
+    double       td    = 0.0;
+    double       dt    = iObj.transSim.tstep();
+    double       tcorr = iObj.transSim.tstop();
+    int          N     = 48;
+
+    if (t.size() >= 3) { PHIDC = parse_param(t.at(2), iObj.parameters, s); }
+    if (t.size() >= 4) { td = parse_param(t.at(3), iObj.parameters, s); }
+    if (t.size() >= 5) { dt = parse_param(t.at(4), iObj.parameters, s); }
+    if (t.size() >= 6) { tcorr = parse_param(t.at(5), iObj.parameters, s); }
+    if (t.size() >= 7) {
+        const double Nd = parse_param(t.at(6), iObj.parameters, s);
+        N               = static_cast<int>(std::llround(Nd));
+    }
+
+    // Convert to phase units (radians)
+    const double Aphi  = 2.0 * Constants::PI * Aphi0; // [rad/sqrt(Hz)] at 1 Hz
+    const double phiDC = 2.0 * Constants::PI * PHIDC; // [rad]
+
+    // Build state exactly like PNOISE, but in phase units
+    PNoiseState  st;
+    st.A1               = Aphi;
+    st.alpha            = alpha;
+    st.td               = td;
+    st.dt               = dt;
+    st.tcorr            = tcorr;
+    st.N                = N;
+
+    // Sanity / clamps (same as PNOISE)
+    const double dt_sim = iObj.transSim.tstep();
+    if (st.dt < dt_sim) { st.dt = dt_sim; }
+    if (st.tcorr <= 0.0) { st.tcorr = iObj.transSim.tstop(); }
+    if (st.td < 0.0) { st.td = 0.0; }
+
+    if (st.N < 4) { st.N = 4; }
+    if (st.N > 512) { st.N = 512; }
+
+    st.fL = 1.0 / st.tcorr;
+    st.fH = 1.0 / (2.0 * st.dt);
+
+    if (!(st.fL > 0.0) || !(st.fH > st.fL)) {
+        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
+                                "FNOISE invalid band: fL=" + std::to_string(st.fL) + " fH=" + std::to_string(st.fH));
+        return;
+    }
+
+    double fref = 1.0;
+    if (fref < st.fL) { fref = st.fL; }
+    if (fref > st.fH) { fref = st.fH; }
+
+    // Optional warning
+    if (iObj.argVerb && std::abs(fref - 1.0) > 0.0) {
+        std::cerr << "Warning: FNOISE normalization: 1 Hz is outside band [" << st.fL << ", " << st.fH << "] Hz. "
+                  << "Interpreting A1 as ASD at fref=" << fref << " Hz.\n";
+    }
+
+    // Store user-facing knobs for inspection/debug
+    // (Aphi0 in Phi0/sqrtHz, alpha, PHIDC in Phi0, plus timing)
+    ampValues_.push_back(Aphi0);
+    ampValues_.push_back(alpha);
+    ampValues_.push_back(phiDC); // store in radians for easy return
+
+    timeValues_.push_back(st.td);
+    timeValues_.push_back(st.dt);
+    timeValues_.push_back(st.tcorr);
+
+    // Build OU bank (identical to parse_pnoise)
+    st.tau.resize(st.N);
+    st.a.resize(st.N);
+    st.b.resize(st.N);
+    st.var.resize(st.N);
+    st.y.resize(st.N);
+
+    const double        logfL = std::log(st.fL);
+    const double        logfH = std::log(st.fH);
+
+    std::vector<double> baseVar(st.N);
+
+    for (int k = 0; k < st.N; ++k) {
+        const double frac = (static_cast<double>(k) + 0.5) / static_cast<double>(st.N);
+        const double fk   = std::exp(logfL + frac * (logfH - logfL));
+        st.tau.at(k)      = 1.0 / (2.0 * Constants::PI * fk);
+
+        baseVar.at(k)     = std::pow(st.tau.at(k), st.alpha - 1.0);
+        if (!std::isfinite(baseVar.at(k)) || baseVar.at(k) < 0.0) { baseVar.at(k) = 0.0; }
+    }
+
+    auto Sx_analytic = [&](double f, const std::vector<double>& v) -> double {
+        const double w = 2.0 * Constants::PI * f;
+        double       S = 0.0;
+        for (int k = 0; k < st.N; ++k) {
+            const double tau    = st.tau.at(k);
+            const double denom  = 1.0 + (w * tau) * (w * tau);
+            S                  += (4.0 * v.at(k) * tau) / denom; // one-sided
+        }
+        return S;
+    };
+
+    const double targetS1 = st.A1 * st.A1;
+    const double S1_base  = Sx_analytic(fref, baseVar);
+
+    if (!(S1_base > 0.0) || !std::isfinite(S1_base)) {
+        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, "FNOISE scaling failed (S1_base)");
+        return;
+    }
+
+    st.scale = targetS1 / S1_base;
+
+    for (int k = 0; k < st.N; ++k) {
+        st.var.at(k)              = st.scale * baseVar.at(k);
+
+        const double tau          = st.tau.at(k);
+        const double ak           = std::exp(-st.dt / tau);
+        st.a.at(k)                = ak;
+
+        const double one_minus_a2 = 1.0 - ak * ak;
+        st.b.at(k)                = (one_minus_a2 > 0.0) ? std::sqrt(st.var.at(k) * one_minus_a2) : 0.0;
+
+        st.y.at(k)                = std::sqrt(st.var.at(k)) * Misc::grand();
+    }
+
+    st.S1Hz        = Sx_analytic(1.0, st.var);
+
+    auto step_once = [&]() -> double {
+        double sum = 0.0;
+        for (int k = 0; k < st.N; ++k) {
+            st.y.at(k)  = st.a.at(k) * st.y.at(k) + st.b.at(k) * Misc::grand();
+            sum        += st.y.at(k);
+        }
+        return sum;
+    };
+
+    const double x1 = st.td;
+    const double x2 = st.td + st.dt;
+
+    const double y1 = [&]() {
+        double sum = 0.0;
+        for (int k = 0; k < st.N; ++k) { sum += st.y.at(k); }
+        return sum;
+    }();
+
+    const double y2 = step_once();
+
+    // Interpolation state: y1,y2,x1,x2
+    miscValues_.push_back(y1);
+    miscValues_.push_back(y2);
+    miscValues_.push_back(x1);
+    miscValues_.push_back(x2);
+
+    pnoise_ = std::move(st);
+}
+
+void Function::parse_icnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
+    // Same engine as PNOISE; ICNOISE is just a semantic wrapper for δ(t) (dimensionless).
+    parse_pnoise(t, iObj, s);
+    // (parse_pnoise() doesn't set fType_, but keep this explicit)
+    fType_ = FunctionType::ICNOISE;
 }
 
 void Function::parse_dc(const tokens_t& t, const Input& iObj, const string_o& s) {
@@ -415,23 +813,85 @@ double Function::return_cus(double& x) {
 }
 
 double Function::return_noise(double& x) {
-    if (x < timeValues_.front()) {
-        return ampValues_.at(1);
-    } else {
-        if (x >= miscValues_.at(3)) {
-            miscValues_.at(0) = miscValues_.at(1);
-            miscValues_.at(1) = ampValues_.at(0) * Misc::grand() / sqrt(2.0 * timeValues_.back());
-            miscValues_.at(2) = miscValues_.at(3);
-            if (x == miscValues_.at(3)) { miscValues_.at(3) = miscValues_.at(2) + timeValues_.back(); }
-            if (x > miscValues_.at(3)) { miscValues_.at(3) = x; }
-        }
-        double& y2 = miscValues_.at(1);
-        double& y1 = miscValues_.at(0);
-        double& x2 = miscValues_.at(3);
-        double& x1 = miscValues_.at(2);
-        // Calculate function value and return it
-        return y1 + ((y2 - y1) / (x2 - x1)) * (x - x1);
+    const double td = timeValues_.front();
+    const double T  = timeValues_.back();
+
+    if (x < td) { return ampValues_.at(1); }
+
+    double& y1 = miscValues_.at(0);
+    double& y2 = miscValues_.at(1);
+    double& x1 = miscValues_.at(2);
+    double& x2 = miscValues_.at(3);
+
+    // Ensure sane interval
+    if (x2 <= x1) { x2 = x1 + T; }
+
+    // Advance as many noise segments as needed (handles dt > T too)
+    while (x >= x2) {
+        y1 = y2;
+        y2 = ampValues_.at(0) * Misc::grand() / std::sqrt(2.0 * T);
+        x1 = x2;
+        x2 = x1 + T;
     }
+
+    // Linear interpolation within current segment
+    const double u = (x - x1) / (x2 - x1); // 0..1
+    return y1 + (y2 - y1) * u;
+}
+
+double Function::return_pnoise(double& x) {
+    // Before delay: return 0
+    if (!pnoise_) { return 0.0; }
+
+    const double td = pnoise_->td;
+    if (x < td) { return 0.0; }
+
+    // miscValues_: [0]=y1, [1]=y2, [2]=x1, [3]=x2
+    if (miscValues_.size() < 4) { return 0.0; }
+
+    auto step_once = [&]() -> double {
+        double sum = 0.0;
+        for (int k = 0; k < pnoise_->N; ++k) {
+            pnoise_->y.at(k)  = pnoise_->a.at(k) * pnoise_->y.at(k) + pnoise_->b.at(k) * Misc::grand();
+            sum              += pnoise_->y.at(k);
+        }
+        return sum;
+    };
+
+    double& y1 = miscValues_.at(0);
+    double& y2 = miscValues_.at(1);
+    double& x1 = miscValues_.at(2);
+    double& x2 = miscValues_.at(3);
+
+    // Advance noise ticks robustly (same fix as for NOISE)
+    while (x >= x2) {
+        y1 = y2;
+        y2 = step_once();
+        x1 = x2;
+        x2 = x1 + pnoise_->dt;
+    }
+
+    const double dx = x2 - x1;
+    if (dx <= 0.0) { return y2; }
+
+    const double u = (x - x1) / dx; // 0..1 in normal operation
+    return y1 + (y2 - y1) * u;
+}
+
+double Function::return_fnoise(double& x) {
+    // ampValues_: [0]=Aphi0 (Phi0/sqrtHz), [1]=alpha, [2]=phiDC (rad)
+    const double phiDC = (ampValues_.size() >= 3) ? ampValues_.at(2) : 0.0;
+
+    // Before TD, return DC only (keeps bias present from t=0)
+    if (!pnoise_) { return phiDC; }
+
+    // return_pnoise already returns 0 before td
+    return phiDC + return_pnoise(x);
+}
+
+double Function::return_icnoise(double& x) {
+    // Identical time-domain waveform to PNOISE
+    return return_pnoise(x);
 }
 
 double Function::return_pws(double& x) {
@@ -495,6 +955,9 @@ double Function::value(double x) {
         case FunctionType::SINUSOID: return return_sin(x);
         case FunctionType::CUS: return return_cus(x);
         case FunctionType::NOISE: return return_noise(x);
+        case FunctionType::PNOISE: return return_pnoise(x);
+        case FunctionType::FNOISE: return return_fnoise(x);
+        case FunctionType::ICNOISE: return return_icnoise(x);
         case FunctionType::PWS: return return_pws(x);
         case FunctionType::DC: return return_dc();
         case FunctionType::EXP: return return_exp(x);
