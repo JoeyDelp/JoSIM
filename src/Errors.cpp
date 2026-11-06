@@ -614,6 +614,20 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "Please refer to the NOISE definition:\n";
             formattedMessage += "EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TD1+TSTEP] TAU2[TSTEP])";
             throw std::runtime_error(formattedMessage);
+        case FunctionErrors::PARENTHESIS:
+            formattedMessage += "Function has unclosed parenthesis.\n";
+            formattedMessage += message.value_or("") + " specified.\n";
+            warning_message(formattedMessage);
+            break;
+        case FunctionErrors::INVALID_NOISE_PARAMETERS:
+            formattedMessage += "Invalid noise source parameters.\n";
+            formattedMessage += message.value_or("");
+            throw std::runtime_error(formattedMessage);
+        case FunctionErrors::UNKNOWN_FUNCTION:
+            formattedMessage += "Unknown function type found.\n";
+            formattedMessage += message.value_or("") + " specified.\n";
+            warning_message(formattedMessage);
+            break;
         default:
             formattedMessage += "Unknown function error: " + message.value_or("") + "\n";
             formattedMessage += "Please contact the developer.";

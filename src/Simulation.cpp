@@ -208,20 +208,24 @@ void Simulation::handle_cs(Matrix& mObj, double& step, const int64_t& i) {
 }
 
 void Simulation::handle_resistors(Matrix& mObj, double& step) {
+    double noiseVal;
     for (const auto& j : mObj.components.resistorIndices) {
         auto&       temp = std::get<Resistor>(mObj.components.devices.at(j));
+        if (temp.thermalNoise) {
+            noiseVal = temp.thermalNoise.value().value(step);
+        } else {
+            noiseVal = 0.0;
+        }
         NodeConfig& nc   = temp.indexInfo.nodeConfig_;
         if (nc == NodeConfig::POSGND) {
-            if (temp.thermalNoise) { b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step); }
+            b_.at(temp.indexInfo.posIndex_.value()) -= noiseVal;
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
         } else if (nc == NodeConfig::GNDNEG) {
-            if (temp.thermalNoise) { b_.at(temp.indexInfo.negIndex_.value()) += temp.thermalNoise.value().value(step); }
+            b_.at(temp.indexInfo.negIndex_.value()) += noiseVal;
             temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
         } else if (nc == NodeConfig::POSNEG) {
-            if (temp.thermalNoise) {
-                b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step);
-                b_.at(temp.indexInfo.negIndex_.value()) += temp.thermalNoise.value().value(step);
-            }
+            b_.at(temp.indexInfo.posIndex_.value()) -= noiseVal;
+            b_.at(temp.indexInfo.negIndex_.value()) += noiseVal;
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()) - x_.at(temp.indexInfo.negIndex_.value()));
         } else {
             temp.pn1_ = 0.0;
@@ -292,6 +296,8 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
     for (const auto& j : mObj.components.junctionIndices) {
         auto&       temp  = std::get<JJ>(mObj.components.devices.at(j));
         const auto& model = temp.model_;
+
+        // ---- Node voltage/phase "pn1_" and add thermal noise (as current injection) ----
         if (temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
             if (temp.thermalNoise) { b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step); }
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
@@ -307,47 +313,53 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
         } else {
             temp.pn1_ = 0.0;
         }
+
+        // ---- History bookkeeping for vn/pn depending on analysis mode ----
         if (i > 0) {
             if (atyp_ == AnalysisType::Voltage) {
                 temp.vn1_ = temp.pn1_;
                 temp.pn1_ = x_.at(temp.variableIndex_);
             } else if (atyp_ == AnalysisType::Phase) {
                 temp.vn1_ = x_.at(temp.variableIndex_);
-                temp.pn1_ = temp.pn1_;
+                // temp.pn1_ already holds the node phase difference
             }
         }
-        // Guess voltage (V0)
+
+        // ---- Guess voltage (V0) and phase (phi0) ----
         double v0  = (5.0 / 2.0) * temp.vn1_ - 2.0 * temp.vn2_ + (1.0 / 2.0) * temp.vn3_;
-        // Phase guess (P0)
         temp.phi0_ = (4.0 / 3.0) * temp.pn1_ - (1.0 / 3.0) * temp.pn2_
                      + ((1.0 / Constants::SIGMA) * ((2.0 * (stepSize_)) / 3.0)) * v0;
-        // Ensure timestep is not too large
+
+        // ---- Timestep stability check ----
+        const double dphi = temp.phi0_ - temp.pn1_;
         if ((double) i / (double) simSize_ > 0.01) {
-            if (abs(temp.phi0_ - temp.pn1_) > (0.20 * 2 * Constants::PI)) {
+            if (std::abs(dphi) > (0.20 * Constants::TWO_PI)) {
                 needsTR_ = true;
                 return;
-                /*Errors::simulation_errors(
-                  SimulationErrors::PHASEGUESS_TOO_LARGE, temp.netlistInfo.label_);*/
             }
         }
-        // (hbar / 2 * e) ( -(2 / h) φp1 + (1 / 2h) φp2 )
+
+        // ---- RHS1 (phase/voltage equation row) ----
         if (atyp_ == AnalysisType::Voltage) {
             b_.at(temp.variableIndex_)
                     = (Constants::SIGMA) * (-(2.0 / (stepSize_)) * temp.pn1_ + (1.0 / (2.0 * (stepSize_))) * temp.pn2_);
-            // (4 / 3) φp1 - (1/3) φp2
         } else if (atyp_ == AnalysisType::Phase) {
             b_.at(temp.variableIndex_) = (4.0 / 3.0) * temp.pn1_ - (1.0 / 3.0) * temp.pn2_;
         }
+
+        // ---- Shift history (phase + voltage) ----
         temp.pn4_ = temp.pn3_;
         temp.pn3_ = temp.pn2_;
         temp.pn2_ = temp.pn1_;
+
         temp.vn6_ = temp.vn5_;
         temp.vn5_ = temp.vn4_;
         temp.vn4_ = temp.vn3_;
         temp.vn3_ = temp.vn2_;
-        // Update junction transition
+
+        // ---- Update junction transition (may trigger LU refactor) ----
         if (model.rtype() == 1) {
-            auto testLU = temp.update_value(v0);
+            const bool testLU = temp.update_value(v0);
             if (testLU && !needsLU_) { needsLU_ = true; }
         }
         double gateFactor = 1.0;
@@ -362,46 +374,58 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
             }
             gateFactor = std::clamp(1.0 - std::abs(voltage) / model.gwidth(), 0.0, 1.0);
         }
-        // Ic * sin (phi * (φ0 - φ))
-        double ic_sin_phi = 0.0;
-        for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
-            ic_sin_phi += gateFactor * temp.model_.ic()
-                          * (temp.model_.cpr().at(harm) * sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff())));
-        }
+
+        // Fractional critical-current noise: δ(t) dimensionless, generated by ICNOISE(...)
+        double dIc = 0.0;
+        if (temp.icNoise) { dIc = temp.icNoise.value().value(step); }
+        if (dIc < -0.99) { dIc = -0.99; }
+        const double Ic_eff = gateFactor * temp.model_.ic() * (1.0 + dIc);
+
+        // ---- RHS2 (junction current equation row) ----
         if (!temp.model_.tDep()) {
-            // -(hR / h + 2RC) * (Ic sin (φ0) - 2C / h Vp1 + C/2h Vp2 + It)
+            // sum_h CPR_h * sin((h+1)*(phi0 - phiOff))
+            double s = 0.0;
+            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
+                s += temp.model_.cpr().at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
+            }
+
+            // Josephson current with fractional critical-current noise
+            const double Ij = Ic_eff * s;
+
+            // -(hR / (h + 2RC)) * ( Ij - 2C/h Vn-1 + C/2h Vn-2 + It )
             b_.at(temp.indexInfo.currentIndex_.value())
                     = (temp.matrixInfo.nonZeros_.back())
-                      * (ic_sin_phi - (((2 * model.c()) / (stepSize_)) * temp.vn1_)
+                      * (Ij - (((2.0 * model.c()) / (stepSize_)) * temp.vn1_)
                          + ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + temp.it_);
         } else {
             double sin2_half_phi = 0.0;
-            for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
-                sin2_half_phi += temp.model_.cpr().at(harm) * sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()) / 2);
+            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
+                sin2_half_phi += temp.model_.cpr().at(harm)
+                                 * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()) / 2.0);
             }
             sin2_half_phi  = sin2_half_phi * sin2_half_phi;
+
             double sin_phi = 0.0;
-            for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
-                sin_phi += temp.model_.cpr().at(harm) * sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
+            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
+                sin_phi += temp.model_.cpr().at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
             }
-            double sqrt_part = sqrt(1 - model.d() * sin2_half_phi);
-            b_.at(temp.indexInfo.currentIndex_.value()) =
-                    // -(hR / h + 2RC) *(
-                    (temp.matrixInfo.nonZeros_.back())
-                    * ((
-                               // (π * Δ / 2 * e * Rn)
-                               (gateFactor * (Constants::PI * temp.del_) / (2 * Constants::EV * temp.model_.rn()))
-                               // * (sin(φ0 - φ) / √(1 - D * sin²((φ0 - φ) / 2))
-                               * (sin_phi / sqrt_part)
-                               // * tanh(Δ / (2 * kB * T) * √(1 - D * sin²((φ0 - φ) / 2)))
-                               * tanh(temp.del_ / (2 * Constants::BOLTZMANN * model.t()) * sqrt_part))
-                       // - 2C / h Vp1
-                       - (((2 * model.c()) / stepSize_) * temp.vn1_)
-                       // + C/2h Vp2
-                       + ((model.c() / (2.0 * stepSize_)) * temp.vn2_)
-                       // + It)
-                       + temp.it_);
+
+            const double sqrt_part = std::sqrt(1.0 - model.d() * sin2_half_phi);
+
+            double pref = ((Constants::PI * temp.del_) / (2.0 * Constants::EV * temp.model_.rn())) * (1.0 / sqrt_part)
+                          * std::tanh(temp.del_ / (2.0 * Constants::BOLTZMANN * model.t()) * sqrt_part);
+
+            const double scale = gateFactor * (1.0 + dIc);
+
+            const double Ij    = scale * (pref * sin_phi);
+
+            b_.at(temp.indexInfo.currentIndex_.value())
+                    = (temp.matrixInfo.nonZeros_.back())
+                      * (Ij - (((2.0 * model.c()) / stepSize_) * temp.vn1_)
+                         + ((model.c() / (2.0 * stepSize_)) * temp.vn2_) + temp.it_);
         }
+
+        // ---- Final history update (as in your original code) ----
         temp.vn2_ = temp.vn1_;
     }
 }

@@ -1,0 +1,7 @@
+* Flux noise expressed as phase, measured through an inductor
+.option seed=123456
+P1 out 0 FNOISE(1u 1 0.25 0 1m 100 64)
+L1 out 0 1n
+.tran 1m 128 DST
+.print I(L1)
+.end

@@ -8,6 +8,7 @@
 namespace JoSIM {
 namespace Constants {
     static constexpr double PI        = 3.141592653589793238463;
+    static constexpr double TWO_PI    = 2.0 * PI;
     static constexpr double PHI_ZERO  = 2.067833831170082E-15;
     static constexpr double BOLTZMANN = 1.38064852E-23;
     static constexpr double EV        = 1.6021766208e-19;

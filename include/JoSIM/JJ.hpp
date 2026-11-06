@@ -68,6 +68,7 @@ class JJ : public BasicComponent {
     double                  it_ = 0.0;
     JoSIM::AnalysisType     at_;
     std::optional<Function> thermalNoise;
+    std::optional<Function> icNoise;
 
     JJ(const std::pair<tokens_t, string_o>& s,
        const NodeConfig&                    ncon,

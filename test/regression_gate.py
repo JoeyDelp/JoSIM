@@ -88,6 +88,11 @@ class GateRegression(unittest.TestCase):
             self.simulate(self.deck(junction=junction), success=False)
         self.simulate(self.deck(width="0"), success=False)
 
+    def test_model_assignment_whitespace(self):
+        deck = self.deck().replace("ic=100u", "ic = 100u").replace("cap=0.07p", "cap= 0.07p")
+        traces, _ = self.simulate(deck)
+        self.assertAlmostEqual(traces[-1][1], 50e-6, delta=1e-8)
+
     def test_iv_step_and_endpoints(self):
         for option in ("STEP=3u", "ISTEP=3u"):
             deck = self.deck().replace(".end\n", f".iv jm 5u iv.csv {option} GTJJ=5m\n.end\n")

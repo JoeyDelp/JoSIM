@@ -133,6 +133,10 @@ add_integration_test(
 )
 
 if(BUILD_TESTING)
+  add_executable(josim-noise-regression noise_regression.cpp)
+  target_link_libraries(josim-noise-regression PRIVATE josim suitesparse::klu)
+  add_test(NAME regression::noise COMMAND josim-noise-regression)
+  set_tests_properties(regression::noise PROPERTIES TIMEOUT 90)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_test(NAME regression::gate
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_gate.py

@@ -7,103 +7,182 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/TypeDefines.hpp"
 
+#include <regex>
+
 using namespace JoSIM;
 
-void Model::parse_model(const std::pair<tokens_t, string_o>& s,
-                        vector_pair_t<Model, string_o>&      models,
-                        const param_map&                     p) {
-    // Ensure the model conforms to correct syntax
+static inline std::string trim_copy(std::string s) {
+    auto is_ws = [](unsigned char c) { return std::isspace(c); };
+    while (!s.empty() && is_ws((unsigned char) s.front())) { s.erase(s.begin()); }
+    while (!s.empty() && is_ws((unsigned char) s.back())) { s.pop_back(); }
+    return s;
+}
+
+static std::vector<std::string> split_top_level_kv_items(const std::string& s) {
+    // Split by whitespace or commas, but ONLY at depth=0 (not inside (...) or {...})
+    std::vector<std::string> out;
+    std::string              cur;
+    int                      paren = 0;
+    int                      brace = 0;
+
+    auto                     flush = [&]() {
+        auto t = trim_copy(cur);
+        if (!t.empty()) { out.push_back(t); }
+        cur.clear();
+    };
+
+    for (size_t i = 0; i < s.size(); ++i) {
+        const char c = s[i];
+
+        if (c == '(') {
+            paren++;
+            cur.push_back(c);
+            continue;
+        }
+        if (c == ')') {
+            if (paren == 0) { Errors::model_errors(ModelErrors::PARAM_PARENTHESIS, s); }
+            --paren;
+            cur.push_back(c);
+            continue;
+        }
+        if (c == '{') {
+            brace++;
+            cur.push_back(c);
+            continue;
+        }
+        if (c == '}') {
+            if (brace == 0) { Errors::model_errors(ModelErrors::PARAM_PARENTHESIS, s); }
+            --brace;
+            cur.push_back(c);
+            continue;
+        }
+
+        const bool top = (paren == 0 && brace == 0);
+
+        if (top && (std::isspace((unsigned char) c) || c == ',')) {
+            flush();
+            continue;
+        }
+
+        cur.push_back(c);
+    }
+    if (paren != 0 || brace != 0) { Errors::model_errors(ModelErrors::PARAM_PARENTHESIS, s); }
+    flush();
+    return out;
+}
+
+static bool starts_with_ci(const std::string& s, const std::string& pfx) {
+    if (s.size() < pfx.size()) { return false; }
+    for (size_t i = 0; i < pfx.size(); ++i) {
+        if (std::toupper((unsigned char) s[i]) != std::toupper((unsigned char) pfx[i])) { return false; }
+    }
+    return true;
+}
+
+void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
+                               vector_pair_t<Model, string_o>&      models,
+                               const param_map&                     p) {
     if (s.first.size() < 3) {
         Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
     }
-    // Create a model that will be stored
+
     Model temp;
-    // The second token is the model label
     temp.modelName(s.first.at(1));
-    // The third token needs to start with "JJ" for this to be valid
-    if (s.first.at(2).compare(0, 2, "JJ") != 0) {
+
+    // Join everything from token[2:] back into one string (preserves any spaces inside lists/functions)
+    std::string spec;
+    {
+        tokens_t tail(s.first.begin() + 2, s.first.end());
+        spec = Misc::vector_to_string(tail);
+        spec = trim_copy(spec);
+    }
+
+    // Must be JJ...
+    if (!starts_with_ci(spec, "JJ")) {
         Errors::model_errors(ModelErrors::UNKNOWN_MODEL_TYPE, Misc::vector_to_string(s.first));
     }
-    // Create a temporary tokens variable containing the model parameters
-    tokens_t tokens(s.first.begin() + 2, s.first.end());
-    tokens       = Misc::tokenize(Misc::vector_to_string(tokens).substr(2), "=(), ");
-    // Add any tokens surrounded by curly braces to the same token
-    int par_open = -1;
-    for (int i = 0; i < tokens.size(); ++i) {
-        if (par_open != -1) {
-            tokens.at(par_open) += "," + tokens.at(i);
-            tokens.erase(tokens.begin() + i);
-            --i;
-            if (tokens.at(par_open).back() == '}') {
-                tokens.at(par_open).pop_back();
-                par_open = -1;
-            }
-        }
-        if (tokens.at(i).front() == '{') {
-            par_open     = i;
-            tokens.at(i) = tokens.at(i).substr(1);
-        }
+
+    const auto  lp = spec.find('(');
+    const auto  rp = spec.rfind(')');
+    std::string inside;
+    if (lp != std::string::npos && rp != std::string::npos && rp > lp) {
+        inside = spec.substr(lp + 1, rp - lp - 1);
+        if (!trim_copy(spec.substr(rp + 1)).empty()) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, spec); }
+    } else if (lp == std::string::npos && rp == std::string::npos) {
+        inside = spec.substr(2);
+    } else {
+        Errors::model_errors(ModelErrors::PARAM_PARENTHESIS, spec);
     }
-    if (par_open != -1) {
-        Errors::model_errors(JoSIM::ModelErrors::PARAM_PARENTHESIS, Misc::vector_to_string(s.first));
-    }
-    // Sanity check, there should be an even number of tokens (parameter=value)
-    if (tokens.size() % 2 != 0) {
-        Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
-    }
-    double value = 0.0;
-    // Loop through the parameter tokens
-    for (auto i = 0; i < tokens.size(); i += 2) {
-        if (tokens.at(i) == "CPR") {
+    inside           = std::regex_replace(inside, std::regex("\\s*=\\s*"), "=");
+
+    // Split into KEY=VALUE items at top-level only
+    const auto items = split_top_level_kv_items(inside);
+
+    for (const auto& kv : items) {
+        const auto eq = kv.find('=');
+        if (eq == std::string::npos) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, kv); }
+
+        std::string key = trim_copy(kv.substr(0, eq));
+        std::string val = trim_copy(kv.substr(eq + 1));
+        if (key.empty() || val.empty()) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, kv); }
+
+        // Normalize key to uppercase (consistent with your style)
+        std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) { return (char) std::toupper(c); });
+
+        if (key == "CPR") {
+            // Expect {a,b,c} or a,b,c
+            if (!val.empty() && val.front() == '{' && val.back() == '}') { val = val.substr(1, val.size() - 2); }
             std::vector<double> v;
-            tokens_t            t = Misc::tokenize(tokens.at(i + 1), ",");
-            for (auto& val : t) { v.emplace_back(parse_param(val, p, s.second)); }
+            tokens_t            tvals = Misc::tokenize(val, ",");
+            for (auto& tok : tvals) {
+                const double x = parse_param(trim_copy(tok), p, s.second);
+                if (std::isnan(x)) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, "CPR=" + val); }
+                v.emplace_back(x);
+            }
             temp.cpr(v);
+            continue;
+        }
+
+        // Numeric params
+        const double value = parse_param(val, p, s.second);
+        if (std::isnan(value)) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, key + "=" + val); }
+
+        if (key == "VG" || key == "VGAP") {
+            temp.vg(value);
+        } else if (key == "IC" || key == "ICRIT") {
+            temp.ic(value);
+        } else if (key == "RTYPE") {
+            temp.rtype((int64_t) value);
+        } else if (key == "RN") {
+            temp.rn(value);
+        } else if (key == "R0") {
+            temp.r0(value);
+        } else if (key == "CAP" || key == "C") {
+            temp.c(value);
+        } else if (key == "T") {
+            temp.t(value);
+            temp.tDep(true);
+        } else if (key == "TC") {
+            temp.tc(value);
+            temp.tDep(true);
+        } else if (key == "DELV") {
+            temp.deltaV(value);
+        } else if (key == "GWIDTH") {
+            if (!std::isfinite(value) || value <= 0.0) {
+                Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, "GWIDTH must be finite and positive");
+            }
+            temp.gwidth(value);
+        } else if (key == "D") {
+            temp.d(value);
+            temp.tDep(true);
+        } else if (key == "ICFACT" || key == "ICFCT") {
+            temp.icFct(value);
+        } else if (key == "PHI") {
+            temp.phiOff(value);
         } else {
-            // Every even odd token should be a value (otherwise complain)
-            value = parse_param(tokens.at(i + 1), p, s.second);
-            if (std::isnan(value)) {
-                Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, Misc::vector_to_string(s.first));
-            }
-            // Assign the relevant model parameters
-            if (tokens.at(i) == "VG" || tokens.at(i) == "VGAP") {
-                temp.vg(value);
-            } else if (tokens.at(i) == "IC" || tokens.at(i) == "ICRIT") {
-                temp.ic(value);
-            } else if (tokens.at(i) == "RTYPE") {
-                temp.rtype((int64_t) value);
-            } else if (tokens.at(i) == "RN") {
-                temp.rn(value);
-            } else if (tokens.at(i) == "R0") {
-                temp.r0(value);
-            } else if (tokens.at(i) == "CAP" || tokens.at(i) == "C") {
-                temp.c(value);
-            } else if (tokens.at(i) == "T") {
-                temp.t(value);
-                temp.tDep(true);
-            } else if (tokens.at(i) == "TC") {
-                temp.tc(value);
-                temp.tDep(true);
-            } else if (tokens.at(i) == "DELV") {
-                temp.deltaV(value);
-            } else if (tokens.at(i) == "GWIDTH") {
-                if (!std::isfinite(value) || value <= 0.0) {
-                    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, "GWIDTH must be finite and positive");
-                }
-                temp.gwidth(value);
-            } else if (tokens.at(i) == "D") {
-                temp.d(value);
-                temp.tDep(true);
-            } else if (tokens.at(i) == "ICFACT" || tokens.at(i) == "ICFCT") {
-                temp.icFct(value);
-            } else if (tokens.at(i) == "PHI") {
-                temp.phiOff(value);
-            } else {
-                // Incompatible parameter
-                Errors::model_errors(ModelErrors::PARAM_TYPE_ERROR,
-                                     Misc::vector_to_string(tokens_t{
-                                             Misc::vector_to_string(s.first), "\nThe parameter: ", tokens.at(i)}));
-            }
+            Errors::model_errors(
+                    ModelErrors::PARAM_TYPE_ERROR,
+                    Misc::vector_to_string(tokens_t{Misc::vector_to_string(s.first), "\nThe parameter: ", key}));
         }
     }
 

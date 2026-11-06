@@ -1,0 +1,7 @@
+* Power-law current noise into a resistor
+.option seed=123456
+I1 0 out PNOISE(1p 1 0 1m 100 64)
+R1 out 0 10k
+.tran 1m 128 DST
+.print V(out)
+.end

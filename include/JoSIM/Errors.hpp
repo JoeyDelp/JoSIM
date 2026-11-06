@@ -133,7 +133,10 @@ enum class FunctionErrors : int64_t {
     NOISE_TOO_MANY_ARGUMENTS,
     NOISE_VA_ZERO,
     NOISE_VO_ZERO,
-    EXP_TOO_FEW_ARGUMENTS
+    EXP_TOO_FEW_ARGUMENTS,
+    PARENTHESIS,
+    UNKNOWN_FUNCTION,
+    INVALID_NOISE_PARAMETERS
 };
 
 enum class SimulationErrors : int64_t {

@@ -84,7 +84,7 @@ Resistor::Resistor(const std::pair<tokens_t, string_o>& s,
         spAmp_ = Noise::determine_spectral_amplitude(netlistInfo.value_, temp_.value());
         Function tnoise;
         tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) + ", 0.0, "
-                                      + Misc::precise_to_string(1.0 / neb_.value()) + ")",
+                                      + Misc::precise_to_string(1.0 / (2 * neb_.value())) + ")",
                               iObj,
                               s.second);
         thermalNoise = tnoise;

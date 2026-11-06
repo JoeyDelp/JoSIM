@@ -1,0 +1,8 @@
+* Fractional critical-current noise at constant junction phase
+.option seed=123456
+P1 out 0 DC 1.5707963267948966
+B1 out 0 jm ICNOISE=PNOISE(1m 1 0 1m 100 64)
+.model jm jj(rtype=0, ic=1m, rn=5, cap=2.5p)
+.tran 1m 128 DST
+.print I(B1)
+.end
