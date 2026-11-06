@@ -164,7 +164,7 @@ enum class ParsingErrors : int64_t {
     INVALID_DECLARATION
 };
 
-enum class OutputErrors : int64_t { CANNOT_OPEN_FILE, NOTHING_SPECIFIED, WRITE_FAILED };
+enum class OutputErrors : int64_t { CANNOT_OPEN_FILE, NOTHING_SPECIFIED, WRITE_FAILED, NONFINITE_TRACE };
 
 enum class NetlistErrors : int64_t { NO_SUCH_NODE, MISSING_IO, RECURSIVE_SUBCIRCUIT };
 

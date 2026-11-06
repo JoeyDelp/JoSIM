@@ -44,6 +44,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Reject non-finite derived output before opening destinations. Finite solved
+  values could overflow during phase conversion or trace subtraction and still
+  produce `inf`/`nan` files with success status. Preserve existing output files
+  when this validation fails.
 - Rescale the self and every mutual-inductance coefficient in the legacy C++
   component timestep hook. It previously changed only the last coefficient.
   Normal simulation retries already rebuild the full matrix.

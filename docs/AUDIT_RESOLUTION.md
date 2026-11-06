@@ -1133,7 +1133,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [runtime study](qualification/2026-11-06-runtime-storage.md),
   artifacts/audit-resolution/performance/progress/{decision,source-sha256}.json,
   both campaign summaries/per-run receipts and header/lifetime red/green logs.
-  Native and final integrated checks remain separate requirements.
+  All ten native binary/library jobs and the utility job pass for 7ff6d8b in
+  CI42301997059. Final integrated checks remain a separate requirement.
 
 ## F25 — Coupled-inductor component timestep hook
 
@@ -1155,3 +1156,25 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** artifacts/audit-resolution/inductor-hook/ red/green receipts and
   test/library_regression.cpp::inductor_timestep_stamp. Final full/native checks
   remain required for the integrated source.
+
+## F26 — False success after derived-output overflow
+
+- **Classification:** confirmed output/numerical-boundary defect.
+- **Reproduction:** five finite solved voltage samples at 1e305 V overflow phase
+  conversion; subtraction of finite +/-1e308 V or radians overflows a difference.
+  All three old CLI cases returned 0 with inf/nan data. These controlled cases use
+  five samples and no resource pressure; they test representability, not physical
+  circuit validity.
+- **Repair:** validate every completed output trace before any normal destination
+  opens. Report NONFINITE_TRACE with label/sample index through the existing
+  recoverable exception path; append the enum without changing existing values.
+  Conversion equations, finite results and file layouts are unchanged.
+- **Verification:** three cases across CSV/DAT/RAW/stdout, preservation of existing
+  primary and .FILE destinations, repeated direct-library recovery followed by
+  valid 1 V runs, and a finite +/-1e307 V difference accepted at 2e307 V.
+  Its relative allowance 1e-6 follows the six-decimal scientific output format.
+- **Evidence:** artifacts/audit-resolution/output-overflow/ red/green source,
+  commands/CSV/log witnesses, test/regression_cli.py and library_regression.cpp.
+  All four local GCC/Clang Debug/Release suites pass 34/34; full Clang Debug
+  ASan/UBSan/leak detection passes 34/34 in 216.72 s. Native/final integration
+  checks remain required for this revision.

@@ -73,6 +73,24 @@ void output_flush_failure() {
     std::cout.clear();
 }
 
+void nonfinite_derived_output() {
+    for (bool phase : {false, true}) {
+        auto run = input();
+        const std::string amplitude = phase ? "1E305" : "1E308";
+        run.netlist.expNetlist = {{{"V1", "NP", "0", "DC", amplitude}, std::nullopt},
+                                 {{"V2", "NN", "0", "DC", "-" + amplitude}, std::nullopt},
+                                 {{"R1", "NP", "0", "1K"}, std::nullopt},
+                                 {{"R2", "NN", "0", "1K"}, std::nullopt}};
+        JoSIM::Matrix matrix;
+        matrix.create_matrix(run);
+        JoSIM::Simulation simulation(run, matrix);
+        run.controls = {{"PRINT", phase ? "P(NP)" : "V(NP,NN)"}};
+        JoSIM::find_relevant_traces(run, matrix);
+        JoSIM::Output output;
+        must_throw([&] { output.write_output(run, matrix, simulation); }, "Non-finite output sample");
+    }
+}
+
 void progress_worker_lifetime() {
     for (bool explicit_stop : {false, true}) {
         JoSIM::ProgressBar bar;
@@ -349,6 +367,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "storage") { result_storage_limit(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "output") { output_flush_failure(); }
+            if (selected == "all" || selected == "output") { nonfinite_derived_output(); }
             if (selected == "all" || selected == "progress") { progress_worker_lifetime(); }
             if (selected == "all" || selected == "inductor") { inductor_timestep_stamp(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }

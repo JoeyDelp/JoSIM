@@ -747,6 +747,9 @@ void Errors::output_errors(OutputErrors errorCode, string_o message) {
         case OutputErrors::WRITE_FAILED:
             formattedMessage += "Failed to write or close output: " + message.value_or("");
             throw std::runtime_error(formattedMessage);
+        case OutputErrors::NONFINITE_TRACE:
+            formattedMessage += "Non-finite output sample: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case OutputErrors::NOTHING_SPECIFIED:
             formattedMessage += "Nothing specified to output.\n";
             formattedMessage += "Cannot create empty RAW file.";

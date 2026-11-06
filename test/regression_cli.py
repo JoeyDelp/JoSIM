@@ -105,6 +105,39 @@ class CliRegression(unittest.TestCase):
                 for p, contents in before.items():
                     self.assertEqual(p.read_bytes(), contents, str(p))
 
+    def test_nonfinite_derived_output_preserves_destinations(self):
+        tail = ".tran 1p 5p 0 1p DST\n"
+        cases = [
+            (0, "V1 N 0 DC 1E305\nR1 N 0 1K\n" + tail + ".print P(N)\n", "P(N)"),
+            (0, "V1 NP 0 DC 1E308\nV2 NN 0 DC -1E308\nR1 NP 0 1K\nR2 NN 0 1K\n"
+             + tail + ".print V(NP,NN)\n", "V(NP,NN)"),
+            (1, "P1 NP 0 DC 1E308\nP2 NN 0 DC -1E308\nR1 NP 0 1K\nR2 NN 0 1K\n"
+             + tail + ".print P(NP,NN)\n", "P(NP,NN)"),
+        ]
+        for mode, deck, label in cases:
+            for extension in ("csv", "dat", "raw", "stdout"):
+                with self.subTest(mode=mode, label=label, extension=extension), \
+                        tempfile.TemporaryDirectory(prefix="finite-", dir=pathlib.Path.cwd()) as tmp:
+                    root = pathlib.Path(tmp)
+                    destination = "output." + extension
+                    (root / destination).write_text("preserved destination\n")
+                    (root / "extra.csv").write_text("preserved extra\n")
+                    (root / "input.cir").write_text(deck + ("" if extension == "stdout" else ".file extra.csv\n") + ".end\n")
+                    command = [str(BINARY), "-m", "1", "-a", str(mode)]
+                    if extension != "stdout":
+                        command += ["-o", destination]
+                    result = subprocess.run(command + ["input.cir"], cwd=root,
+                                            capture_output=True, text=True, timeout=5)
+                    self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                    self.assertIn('Non-finite output sample: "' + label + '"', result.stdout + result.stderr)
+                    self.assertEqual((root / destination).read_text(), "preserved destination\n")
+                    self.assertEqual((root / "extra.csv").read_text(), "preserved extra\n")
+        result, rows = self.run_deck(cases[1][1].replace("1E308", "1E307"), extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for row in rows[1:]:
+            self.assertTrue(math.isfinite(float(row[1])))
+            self.assertAlmostEqual(float(row[1]) / 1e307, 2.0, delta=2e-6)
+
     def test_recursive_includes(self):
         for files in ({"a.cir": ".include a.cir\n"},
                       {"a.cir": ".include b.cir\n", "b.cir": ".include a.cir\n"}):

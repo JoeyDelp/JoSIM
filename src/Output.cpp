@@ -361,6 +361,16 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
             std::cout << "\n";
         }
     }
+    // Finite solved unknowns can overflow during conversion, filtering or subtraction.
+    // Reject the complete result before any destination is opened or truncated.
+    for (const auto& trace : traces) {
+        for (size_t sample = 0; sample < trace.data_.size(); ++sample) {
+            if (!std::isfinite(trace.data_.at(sample))) {
+                Errors::output_errors(OutputErrors::NONFINITE_TRACE,
+                    trace.name_ + " at output sample " + std::to_string(sample));
+            }
+        }
+    }
 }
 
 void Output::format_csv_or_dat(const std::string& filename, const char& delimiter, bool argmin, int64_t fIndex) {

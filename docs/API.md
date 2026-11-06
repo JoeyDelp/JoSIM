@@ -52,6 +52,14 @@ appended to `OutputErrors`, preserving its existing values and method signatures
 If an embedding application redirects `std::cout` to a failing stream, it owns
 restoring that destination and clearing the stream's error state before reuse.
 
+`Output::write_output` also checks every completed trace for finite values.
+Finite solved unknowns can overflow in unit conversion, filtering or subtraction.
+Such a result throws `NONFINITE_TRACE` with its trace label and output-sample
+index before the normal Output constructor opens any destination. Existing files
+remain intact. This enum is appended; existing values/layouts/signatures remain.
+Discard the failed Output object. Applications that populate public `traces`
+themselves remain responsible for the data passed directly to formatters.
+
 Model-IV helpers operate on the generated single-junction testbench. Each point
 rebuilds fresh device state from its bias declaration; timestep retries rebuild
 from the same Input. Existing signatures/layouts remain. `do_simulate` honors
