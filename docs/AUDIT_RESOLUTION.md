@@ -412,11 +412,19 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## D03 — Sanitizers, warnings and static analysis
 
 - **Classification:** verification concern.
-- **Current reproduction/result:** Full ASan/UBSan+leak suite passed 27/27 outside the process-restricted sandbox. Nine-owner static analysis produced 49 distinct locations to triage.
-- **Required outcome:** ASan/UBSan representative runs; repair actionable findings and focused static-analysis warnings.
-- **Implementation/owner:** first-party implementation and solver interfaces.
-- **Verification:** instrumented suite and selected clang-tidy checks.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Result:** full Clang Debug ASan/UBSan/leak detection passes 34/34 through
+  F26 in 216.72 s. Solver dependencies are instrumented too; leak checks remain
+  enabled. Earlier failures and per-repair runs are retained separately.
+- **Static review:** all 49 initial locations have individual dispositions:
+  44 constructor/topology/immediate-guard invariants, one generated-IV helper
+  precondition, two repaired optional accesses and two removed dead stores.
+  Current ten-owner Clang-Tidy run has zero command errors and 45 reviewed
+  optional-access locations. No new suppression hides those warnings.
+- **Evidence:** [focused review](qualification/2026-11-07-static-analysis.md),
+  artifacts/audit-resolution/static-analysis/{initial-dispositions,review-summary,compiler-warnings}.json
+  and current/dispositions.json/raw logs. Existing compiler warning options
+  are recorded, including their unused/sign-compare suppressions. Final clean
+  compiler builds and integrated sanitizer/native checks remain separate gates.
 
 ## D04 — Library recovery and RNG ownership
 
