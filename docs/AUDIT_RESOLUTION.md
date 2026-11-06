@@ -232,21 +232,35 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I108b — Switching-dependent noise #108
 
-- **Classification:** physical-model/support investigation.
-- **Current reproduction/result:** Open scientific validation; distinct from finite-cycle sine.
-- **Required outcome:** Resolve A02 and quantify transition assumptions/noise measurement settings.
-- **Implementation/owner:** src/JJ.cpp; docs/noise_sources.md.
-- **Verification:** state-transition and validated SQUID/noise example.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** support/model question; state-amplitude defects repaired in F16.
+- **Disposition:** Classical local-slope FDT amplitude uses R0, transition slope
+  or RN as selected by the active resistive region; no microscopic gap/shot-noise
+  claim. Local temperature overrides global temperature. F16's transition and
+  actual-injection checks pass all ten native jobs. Finite-cycle sine is I108a.
+- **External flux/settings:** A finite-L mutually coupled loop and separate
+  weak-noise zero-L SQUID reduction now have independent references. The 61-run
+  study quantifies NEB/fJ, timestep, output sampling and physical limits.
+- **Evidence:** [worked guide](squid_noise.md), [study](qualification/2026-11-06-squid-noise.md),
+  tools/qualify_squid_noise.py and native numerical fixtures. Final implementing
+  revision's native qualification remains pending; no universal NEB>fP claim.
 
 ## I107 — Floating reference and SQUID noise #107
 
-- **Classification:** support/model validation.
-- **Current reproduction/result:** Open; no blanket bandwidth claim accepted.
-- **Required outcome:** Validated floating-reference/noise example with NEB, sampling, timestep and Josephson frequencies.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/107.
-- **Verification:** documented example with quantitative measurement.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** support/model question with validated bounded alternatives.
+- **Result:** Floating primary voltage source works; removing the island's
+  common-mode reference gives singular-matrix errors in both modes. Twenty-four
+  flux cases cover two h/two modes/two polarities/three reference resistances;
+  independent flux/KCL residual is <=3.713e-9 Phi0, below the 5e-7 budget.
+- **Noise result:** Sixteen seeds at each NEB=20/200/2000 MHz match an independent
+  weak-noise RSJ reference, with aggregate PSD ratios 1.020164/0.998104/0.992709.
+  Nominal family 99% intervals plus predeclared 5% model allowance accept all.
+  Halving h/print spacing changes PSD by <=0.1413%/0.0612%; both modes agree.
+- **Disposition/evidence:** [worked guide](squid_noise.md) and
+  [scientific study](qualification/2026-11-06-squid-noise.md) explain anchor
+  loading/noise, NEB/interpolation/output and Josephson/plasma frequencies.
+  Strongly overdamped classical example; no general bandwidth or quantum claim.
+  F15/F19 repair bandwidth/output defects encountered. Native checks of the
+  final example revision remain pending.
 
 ## I101 — JJ-buffer reverse response #101
 
@@ -908,4 +922,40 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [colored-noise study](qualification/2026-11-06-colored-noise.md),
   test/noise_regression.cpp; build/audit-resolution/colored-noise and compact
   artifacts/audit-resolution/colored-noise. GCC16/Clang23 Debug/Release pass
-  33/33; full ASan/UBSan/leaks pass 33/33 in 210.03 s. Native checks pending.
+  33/33; full ASan/UBSan/leaks pass 33/33 in 210.03 s. All ten native jobs
+  pass for cb594a34d5dd in CI 42270298099, including default/shared libraries.
+
+## F18 — Silently discarded noise-source arguments
+
+- **Classification:** confirmed malformed-input defect; separate diagnostic improvement.
+- **Reproduction:** All four NOISE/PNOISE/FNOISE/ICNOISE excess-argument cases
+  succeed and silently discard the extra field. Four CLI red subcases fail.
+- **Repair:** Enforce documented maxima of 3/6/7/6 arguments, using existing
+  recoverable noise diagnostics. Valid waveforms/signatures/layouts unchanged.
+- **Verification:** Direct function-domain rejection and clean CLI failure with
+  no output file. Verbose diagnostics additionally expose the effective final
+  timestep and computed count: 2 ps requested reduces to 0.25 ps/512 points
+  over 128 ps in both modes. The reporting improvement enables exact scientific
+  provenance; it does not alter solver settings.
+- **Evidence:** build/audit-resolution/noise-input/{red,green}-tests.log,
+  regression::noise/cli and [SQUID study](qualification/2026-11-06-squid-noise.md).
+  Full four compiler/configurations pass 33/33; full ASan/UBSan/leaks pass
+  33/33 in 209.52 s. Native final-revision qualification pending.
+
+## F19 — Roundoff jitter in decimated output timestamps
+
+- **Classification:** confirmed output-sampling defect uncovered in I107.
+- **Reproduction:** A 1 ps internal grid and 10 ps requested print interval
+  emit 9/10/11 ps gaps, up to 1 ps off target. Floating target accumulation
+  crosses exact internal-grid ties inconsistently. Actual recorded time/value
+  pairs are coherent, but the intended integer-ratio print grid is not uniform.
+- **Repair:** Form each target directly with fma and a few-ulp tie allowance;
+  preserve selection of actual internal samples and avoid duplicate first
+  indices. No output interpolation, device equation or column-format change.
+- **Verification:** Both modes/integer and fractional starts check all 1990
+  timestamps against independent integer-index expectations and analytic ramp
+  values. The scientific SQUID campaign now uses verified uniform timestamps;
+  PSD refinement bounds pass. General nonintegral grids remain nonuniform.
+- **Evidence:** squid-example/print-grid/{red.json,red-tests.log,green-tests.log};
+  [study](qualification/2026-11-06-squid-noise.md). All four local configurations
+  pass 33/33; full ASan/UBSan/leaks pass 33/33 in 209.52 s. Native pending.

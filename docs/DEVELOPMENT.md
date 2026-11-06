@@ -57,6 +57,8 @@ CTest runs the existing circuit examples and focused regression groups:
   an independently derived biased JJ/inductor equilibrium checks flux history.
   Analytic precharge/discharge and beta_c conversion examples are also required;
   see [the model-boundary study](qualification/2026-11-06-model-boundaries.md).
+  Floating-primary/reference and external-loop-flux checks cover #107/#108;
+  see [the SQUID study](qualification/2026-11-06-squid-noise.md).
   See [the linear-circuit study](qualification/2026-11-06-linear-circuits.md).
 - `regression::buffer`: finite-capacitance switching in the #101 buffer,
   independent continuous references, flux conservation and timestep refinement.
@@ -82,6 +84,8 @@ python3 -m venv build/science
 build/science/bin/python -m pip install -r tools/requirements-qualification.txt
 build/science/bin/python -B tools/qualify_buffer.py \
   --binary build/dev/josim-cli --output artifacts/buffer-101 --plot
+build/science/bin/python -B tools/qualify_squid_noise.py \
+  --binary build/dev/josim-cli --output artifacts/squid-noise
 ```
 
 This checks a separate Kirchhoff/RCSJ ODE using tightened Radau tolerances and

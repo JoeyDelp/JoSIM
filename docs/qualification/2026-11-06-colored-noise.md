@@ -138,8 +138,10 @@ ctest --test-dir build/dev -R 'regression::(noise|functions|cli)' \
 
 GCC16/Clang23 Debug and Release pass all 33 CTest groups. The complete
 ASan/UBSan suite with leak detection passes 33/33 in 210.03 s, including the
-expanded noise group in 23.19 s. Native qualification remains pending for this
-implementing revision. Red/green measurements, analytic calculations and exact
+expanded noise group in 23.19 s. All ten native binary/default/shared-library
+jobs pass for `cb594a34d5dd0ed3f3572ca289350ae0de746094` in
+[CI 42270298099](https://github.com/JoeyDelp/JoSIM/actions/runs/42270298099).
+Red/green measurements, analytic calculations and exact
 source/binary identities are under `build/audit-resolution/colored-noise/`;
 compact receipts and the finite-bank calculation are preserved under
 `artifacts/audit-resolution/colored-noise/`.

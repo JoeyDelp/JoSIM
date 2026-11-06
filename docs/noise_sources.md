@@ -2,6 +2,8 @@
 
 JoSIM provides Gaussian white noise and an approximation to power-law noise.
 Use `.option seed=integer` to repeat a run in a fresh simulator process.
+For worked circuits and measured setting choices, see
+[floating flux lines and SQUID noise](squid_noise.md).
 
 ## White noise
 

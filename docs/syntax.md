@@ -359,6 +359,14 @@ to match it. Keep both settings fixed when comparing numerical or noise runs.
 
 If $P_{WINDOW}$ is specified and not 0, a Hanning FIR filter with a window width of $P_{WINDOW}$ seconds is applied to the output data before decimating as a post-processing step. This can be used to low-pass filter the output to prevent aliasing when decimating with $P_{STEP}$, e. g. to create an IV curve of the whole circuit.
 
+Print targets are $P_{START}+nP_{STEP}$, selecting the first available internal
+sample at or after each target. A few floating-point ulps at an exact grid tie
+are treated as equal. Integer step ratios therefore retain a uniform print
+grid without accumulated rounding jitter. A fractional ratio generally selects
+nonuniform internal samples; use the recorded timestamps for such data.
+Verbose mode (`-V 1` or higher) reports the effective internal timestep and
+computed sample count after any full-run timestep reduction.
+
 The FIR window must be finite and non-negative; widths longer than the run are
 clamped to its duration. An output window containing no computed samples is
 an error, including when $P_{START}<T_{STOP}$ but lies after the last grid point.

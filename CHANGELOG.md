@@ -7,6 +7,12 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Validated floating flux-line and weak-noise SQUID examples for #107/#108,
+  with independent flux equilibrium, Josephson/plasma-frequency guidance,
+  controlled-seed PSD uncertainty and timestep/output-sampling refinement.
+  Optional `tools/qualify_squid_noise.py` records the longer scientific campaign.
+- Verbose output reports the effective internal timestep and computed sample
+  count after full-run retries, alongside the effective random seed.
 - Tested capacitor precharge/discharge and explicit Stewart–McCumber parameter
   conversion examples. Document initial-state and nonlinear-inductor boundaries
   (#109, #93, #88).
@@ -29,6 +35,12 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Select output samples from direct print-grid targets with roundoff-safe ties.
+  Cumulative target addition previously produced 9/10/11 ps output gaps for a
+  requested 10 ps interval on a 1 ps internal grid. Nonintegral grids still
+  select actual internal samples; no output interpolation is introduced.
+- Reject excess NOISE/PNOISE/FNOISE/ICNOISE arguments instead of silently
+  discarding them. Valid source waveforms are unchanged.
 - Correct power-law noise weights and normalization, including exponent 0/2
   limits, missing relaxation tails and exact sampled-pole gain. Earlier rolling
   band-edge normalization could give several times the requested interior PSD.

@@ -648,6 +648,49 @@ class CliRegression(unittest.TestCase):
                 self.assertIn(diagnostic, result.stdout + result.stderr)
                 self.assertIsNone(rows)
 
+    def test_noise_excess_arguments_fail_cleanly(self):
+        for source in ("NOISE(1p 0 1p 99)", "PNOISE(1p 1 0 1p 20p 16 99)",
+                       "ICNOISE(1p 1 0 1p 20p 16 99)", "FNOISE(1p 1 0 0 1p 20p 16 99)"):
+            with self.subTest(source=source):
+                deck = f"I1 0 N {source}\nR1 N 0 10\n.tran .25p 20p DST\n.print V(N)\n.end\n"
+                result, rows = self.run_deck(deck)
+                self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                self.assertIn("at most", result.stdout + result.stderr)
+                self.assertIsNone(rows)
+
+    def test_effective_grid_reporting_after_retry(self):
+        for mode in (0, 1):
+            with self.subTest(mode=mode):
+                deck = ("V1 N 0 DC 1m\nB1 N 0 JM\n.model JM JJ(RTYPE=0)\n"
+                        ".tran 2p 128p DST\n.print V(N)\n.end\n")
+                result, rows = self.run_deck(deck, extra=("-a", str(mode), "-V", "1"))
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                match = re.search(r"Effective timestep \(s\):\s*(\S+)", result.stdout)
+                self.assertIsNotNone(match, result.stdout)
+                self.assertAlmostEqual(float(match.group(1)), .25e-12, delta=1e-26)
+                self.assertIn("Computed samples: 512", result.stdout)
+                self.assertTrue(rows)
+        result, _ = self.run_deck(self.SIMPLE + ".end\n", extra=("-V", "1"))
+        self.assertIn("Effective timestep (s):", result.stdout)
+        self.assertIn("Computed samples: 5", result.stdout)
+
+    def test_decimated_output_grid_has_no_roundoff_jitter(self):
+        for mode in (0, 1):
+            for start in ("100p", "100.25p"):
+                with self.subTest(mode=mode, start=start):
+                    deck = ("V1 N 0 PWL(0 0 20n 1)\nR1 N 0 1k\n"
+                            f".tran 1p 20n {start} 10p 0 DST\n.print V(N)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertEqual(len(rows) - 1, 1990)
+                    # Exact integer ratios select a uniform grid; a fractional
+                    # start rounds each requested point up to the next sample.
+                    first_ps = 100 if start == "100p" else 101
+                    for i, row in enumerate(rows[1:]):
+                        expected_time = (first_ps + 10 * i) * 1e-12
+                        self.assertAlmostEqual(float(row[0]), expected_time, delta=1e-20)
+                        self.assertAlmostEqual(float(row[1]), expected_time / 20e-9, delta=1e-6)
+
     def test_nonfinite_solution_fails_before_output(self):
         for mode in (0, 1):
             for startup in ("", " DST"):

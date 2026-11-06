@@ -221,6 +221,63 @@ class NumericalRegression(unittest.TestCase):
                                              "expected_phase1_rad": expected_phase1, "expected_phase2_rad": expected_phase2,
                                              "expected_inductor_A": expected_inductor})
 
+    def test_floating_primary_and_applied_loop_flux(self):
+        phi0 = 6.62607015e-34 / (2 * 1.602176634e-19)
+        sigma, flux = phi0 / (2 * math.pi), .25 * phi0
+        expected_primary = flux / 10e-12
+        # Zero-bias KCL gives I1=-I2=I. Subtracting the two flux-linkage
+        # equations gives 2*sigma*asin(I/Ic)+(L1+L2)*I=(M2-M1)*Ip.
+        low, high = 0., 1e-3
+        for _ in range(80):
+            current = (low + high) / 2
+            if 2 * sigma * math.asin(current / 1e-3) + 10e-12 * current > flux:
+                high = current
+            else:
+                low = current
+        expected_current = (low + high) / 2
+        expected_phase = math.asin(expected_current / 1e-3)
+        original = (ROOT / "test/comp/squid_floating_flux.cir").read_text()
+        for mode in (0, 1):
+            for h in (1., .5):
+                for reference in ("1", "1meg", "1g"):
+                    for sign in (-1, 1):
+                        with self.subTest(mode=mode, h=h, reference=reference, sign=sign):
+                            deck = original.replace(".tran 1p", f".tran {h}p")
+                            deck = deck.replace("RREF REF 0 1g", f"RREF REF 0 {reference}")
+                            if sign < 0:
+                                deck = deck.replace("51.69584621154824u", "-51.69584621154824u")
+                            rows = self.run_example(deck, mode)
+                            max_flux_error = 0
+                            for _, primary, j1, j2, phase1, phase2, drive, leakage in rows[-10:]:
+                                self.assertAlmostEqual(primary, sign * expected_primary, delta=2e-11)
+                                self.assertAlmostEqual(drive, sign * expected_primary, delta=2e-11)
+                                self.assertAlmostEqual(j1, sign * expected_current, delta=2e-11)
+                                self.assertAlmostEqual(j2, -sign * expected_current, delta=2e-11)
+                                self.assertAlmostEqual(phase1, sign * expected_phase, delta=1e-8)
+                                self.assertAlmostEqual(phase2, -sign * expected_phase, delta=1e-8)
+                                self.assertLess(abs(leakage), 1e-15)
+                                self.assertLess(abs(j1 + j2), 1e-15)
+                                flux_error = abs(sigma * (phase1 - phase2) + 10e-12 * j1 - 10e-12 * primary)
+                                max_flux_error = max(max_flux_error, flux_error)
+                                self.assertLess(flux_error, 5e-7 * phi0)
+                            MEASUREMENTS.append({"kind": "floating_flux_loop", "mode": mode, "h_ps": h,
+                                                 "reference_ohm": reference, "flux_sign": sign,
+                                                 "expected_primary_A": sign * expected_primary,
+                                                 "expected_circulating_A": sign * expected_current,
+                                                 "expected_phase_rad": sign * expected_phase,
+                                                 "maximum_flux_error_Wb": max_flux_error,
+                                                 "last_sample": rows[-1], "deck": deck})
+            # Electrical isolation leaves one unconstrained common-mode voltage.
+            # The voltage source can float; the entire unreferenced island cannot.
+            deck = original.replace("RREF REF 0 1g TEMP=0", "* reference removed").replace(" I(RREF)", "")
+            with tempfile.TemporaryDirectory(prefix="floating-island-", dir=pathlib.Path.cwd()) as tmp:
+                directory = pathlib.Path(tmp)
+                (directory / "input.cir").write_text(deck)
+                result = subprocess.run([str(BINARY), "-m", "1", "-a", str(mode), "input.cir"],
+                                        cwd=directory, capture_output=True, text=True, timeout=15)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("singular", (result.stdout + result.stderr).lower())
+
     def test_analytic_responses_conservation_and_convergence(self):
         for kind in ("RC", "RL", "RLC"):
             for startup in (False, True):

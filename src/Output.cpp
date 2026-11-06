@@ -13,11 +13,13 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <limits>
 
 using namespace JoSIM;
 
@@ -82,8 +84,14 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     for (auto& hanning : firwindow) { hanning = firscale * hanning; }
     // Indices to print
     std::vector<int64_t> result_indices;
+    const auto reaches_print_point = [&](double sample, double requested) {
+        // Treat roundoff at an exact grid tie consistently. The tolerance is
+        // a few ulps of time, not a fraction of the physical timestep.
+        const double scale = std::max({std::abs(sample), std::abs(requested), tran.tstep()});
+        return sample >= requested - 8 * std::numeric_limits<double>::epsilon() * scale;
+    };
     for (auto i = 0; i < t.size(); ++i) {
-        if (t.at(i) >= tran.prstart()) {
+        if (reaches_print_point(t.at(i), tran.prstart())) {
             result_indices.emplace_back(i);
             break;
         }
@@ -91,11 +99,13 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     if (result_indices.empty()) {
         Errors::control_errors(ControlErrors::TRANS_ERROR, "Output window contains no simulation samples");
     }
-    double next_print_point = tran.prstart() + tran.prstep();
-    for (auto i = static_cast<size_t>(result_indices.back()); i < t.size(); ++i) {
-        if (t.at(i) >= next_print_point) {
+    int64_t print_point = 1;
+    double next_print_point = std::fma(static_cast<double>(print_point), tran.prstep(), tran.prstart());
+    for (auto i = static_cast<size_t>(result_indices.back()) + 1; i < t.size(); ++i) {
+        if (reaches_print_point(t.at(i), next_print_point)) {
             result_indices.emplace_back(i);
-            next_print_point += tran.prstep();
+            ++print_point;
+            next_print_point = std::fma(static_cast<double>(print_point), tran.prstep(), tran.prstart());
         }
     }
     // Create the time trace

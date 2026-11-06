@@ -1,0 +1,18 @@
+* Two-JJ loop coupled to an electrically floating primary.
+* +/-5 pH mutuals give applied flux (M2-M1)*Ip = 0.25 Phi0.
+* RREF fixes the primary's common-mode reference; it carries no loop current.
+* TEMP=0 keeps this numerical reference noiseless if a global TEMP is added.
+B1 TOP A JM
+B2 TOP B JM
+L1 A 0 5p
+L2 B 0 5p
+LP P Q 100p
+RD Q REF 1
+VD P REF PWL(0 0 100p 0 200p 51.69584621154824u 10n 51.69584621154824u)
+K1 LP L1 -0.22360679774997896
+K2 LP L2 0.22360679774997896
+RREF REF 0 1g TEMP=0
+.model JM JJ(RTYPE=0 ICRIT=1m RN=1m CAP=10p)
+.tran 1p 10n DST
+.print I(LP) I(B1) I(B2) P(B1) P(B2) V(VD) I(RREF)
+.end

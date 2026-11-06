@@ -441,6 +441,10 @@ static void fractional_critical_current() {
 static void invalid_noise_parameters() {
     const auto input = source_input();
     for (const std::string expression : {"NOISE(1 0 0)",
+                                         "NOISE(1 0 1 99)",
+                                         "PNOISE(1 1 0 0.01 100 64 99)",
+                                         "ICNOISE(1 1 0 0.01 100 64 99)",
+                                         "FNOISE(1 1 0 0 0.01 100 64 99)",
                                          "NOISE(1 -1 0.01)",
                                          "PNOISE(1 3 0 0.01 100 64)",
                                          "PNOISE(1 1 0 0.01 -1 64)",

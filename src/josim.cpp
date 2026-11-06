@@ -8,12 +8,15 @@
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Model.hpp"
+#include "JoSIM/Misc.hpp"
 #include "JoSIM/Noise.hpp"
 #include "JoSIM/Output.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/Verbose.hpp"
+
+#include <iostream>
 
 using namespace JoSIM;
 
@@ -45,6 +48,10 @@ int main(int argc, const char** argv) {
         find_relevant_traces(iObj, mObj);
         // Create a simulation object
         Simulation sObj(iObj, mObj);
+        if (iObj.argVerb) {
+            std::cout << "Effective timestep (s): " << Misc::precise_to_string(iObj.transSim.tstep())
+                      << "\nComputed samples: " << sObj.results.timeAxis.size() << "\n";
+        }
         // Create an output object
         Output     oObj(iObj, mObj, sObj);
         // Finish

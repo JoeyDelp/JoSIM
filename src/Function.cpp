@@ -336,6 +336,7 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
 void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o& s) {
     /* NOISE(VA TD[0.0] TSTEP[1/(3*NEB) or sim tstep]) */
 
+    if (t.size() > 3) { Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "NOISE accepts at most 3 arguments"); }
     if (t.size() < 1) { Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
 
     const double tstep_sim = iObj.transSim.tstep();
@@ -471,6 +472,7 @@ void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o
     // TCORR: correlation time (fL ~= 1/TCORR)
     // N: number of OU processes (log-spaced)
 
+    if (t.size() > 6) { Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "PNOISE/ICNOISE accepts at most 6 arguments"); }
     ampValues_.clear();
     timeValues_.clear();
     miscValues_.clear();
@@ -525,6 +527,7 @@ void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o
     // PHIDC : DC flux bias in Phi0
     // returns phase in radians: phi(t) = 2*pi*(PHIDC + dPhi(t))  with dPhi shaped as 1/f^alpha in-band
 
+    if (t.size() > 7) { Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "FNOISE accepts at most 7 arguments"); }
     ampValues_.clear();
     timeValues_.clear();
     miscValues_.clear();
