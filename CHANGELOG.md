@@ -56,6 +56,7 @@ work prepared for the next release, not binaries already available on GitHub.
   Windows entry points and uses relative installed CLI loader paths. Conflicting
   shared/static requests fail explicitly. Native default/shared checks now gate
   release publication on all five platforms.
+  Windows C++ test processes locate the shared DLL in the build directory.
 - Detect whether C++17 filesystem functions need `stdc++fs`; retain the public
   dependency on legacy GNU toolchains and remove it from modern builds.
 

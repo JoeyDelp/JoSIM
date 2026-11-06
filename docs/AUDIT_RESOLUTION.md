@@ -52,6 +52,10 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   recovery; original prefix is absent. ELF loader path is $ORIGIN/../lib.
   Windows exports/DLL discovery and macOS loader paths require native CI;
   these are not accepted solely from the local Linux result.
+  CI 42215518336 passes all five binary jobs and four native library jobs.
+  Windows' installed consumers pass, but three build-tree C++ executables
+  cannot locate josim.dll (0xc0000135). Scope DLL discovery to those CTest
+  processes; require the native rerun before accepting this mode.
 
 ## A05 — Silently ineffective SLU=ON
 

@@ -181,4 +181,12 @@ if(BUILD_TESTING)
       "-DTEST_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}"
       -P "${PROJECT_SOURCE_DIR}/cmake/test_installed_package.cmake")
   set_tests_properties(regression::installed_package PROPERTIES TIMEOUT 90)
+  if(WIN32 AND BUILD_SHARED_LIBS)
+    # The C++ test executables are below test/<config>, away from josim.dll.
+    # Scope DLL discovery to these test processes; do not alter the host PATH.
+    set(josim_test_path "$<TARGET_FILE_DIR:josim>;$ENV{PATH}")
+    string(REPLACE ";" "\\;" josim_test_path "${josim_test_path}")
+    set_tests_properties(regression::library regression::functions regression::noise
+      PROPERTIES ENVIRONMENT "PATH=${josim_test_path}")
+  endif()
 endif()
