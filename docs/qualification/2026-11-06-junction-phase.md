@@ -67,7 +67,8 @@ magnitude relative to its phase allowance.
 GCC16/Clang23 Debug and Release pass all 32 tests. The full ASan/UBSan suite,
 with leak detection, passes 32/32 in 175.12 s; the raw junction group takes
 28.06 s. The 24 constant-bias cases have at most 6.88e-6 rad drift, below 4.4%
-of their rounding allowances. Native-platform qualification remains pending.
+of their rounding allowances. Commit `69b9f1d3b6f` passes all ten native
+binary/library jobs in [CI 42233555152](https://github.com/JoeyDelp/JoSIM/actions/runs/42233555152).
 
 The extended 10-million-step green probe reduces voltage-mode drift from
 161.771 rad to 8.736e-5 rad, a factor of about 1.85 million. Phase-mode drift

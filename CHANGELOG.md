@@ -7,6 +7,8 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Independent current-driven RSJ equilibrium, oscillation-period refinement
+  and average flux-quantum pulse-area checks in both modes.
 - Independent analytic RC/RL/RLC regression tests, conservation checks and
   timestep refinement in both analysis modes. Native binary and library
   qualification require this numerical test group.

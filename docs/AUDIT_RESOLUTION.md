@@ -243,8 +243,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   constants as the cause, rather than an inference from a single run.
 - **Implementation:** use the existing SIGMA consistently in JJ::phaseConst_.
   See F09 for red/green measurements, tolerances and completed local checks.
-- **Required outcome:** Finish native qualification and current-driven nonlinear
-  period/switching/pulse checks. The original report has no circuit; do not
+- **Required outcome:** Finish native qualification of the additional current-driven
+  RSJ checks (local checks pass; see D01). The original report has no circuit; do not
   claim to have reconstructed that undocumented case or explained all artifacts.
 - **Evidence:** [phase accumulation study](qualification/2026-11-06-junction-phase.md);
   regression::junction_numerics. Other #101/thermal/noise studies remain separate.
@@ -285,9 +285,17 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   current error is 1.31534/1.31534/1.43369 nA. CSV KCL residual is zero;
   KVL residual is at most 5.00001e-10 V. Maximum error decreases by 3.4–4x
   per halving, with measured orders 1.75–1.84 (RC/RL), 1.99–2.00 (RLC).
-- **Required outcome:** Complete switching, pulse counts, nonzero precharge
-  and long-run/#91/#101 studies. Passing linear circuits alone does not close
-  this item or establish general scientific correctness.
+- **Additional nonlinear reference:** Twelve current-driven RSJ cases test
+  subcritical equilibrium and above-critical oscillations, both modes and three
+  steps. Period errors are 567.504/142.585/35.6945 ppm and reduce about 4x per
+  halving. Mean pulse area over 820–821 complete rotations agrees with exact SI
+  within 0.092 ppm. See the [RSJ study](qualification/2026-11-06-rsj.md) for
+  independent derivation, tolerances and explicit scope. All four compiler/config
+  checks pass; ASan/UBSan/leaks passes all 36 junction cases in 33.58 s. Native
+  qualification remains pending for the RSJ addition.
+- **Required outcome:** Complete finite-capacitance switching, clocked pulse
+  counts, nonzero precharge and #101. These bounded studies do not establish
+  general scientific correctness.
 - **Implementation/owner:** test/regression_numerics.py; release/library owners
   require its CTest group. No solver/device equations changed by this study.
 - **Verification:** GCC16/Clang23 Debug and Release pass the numerical group.
@@ -642,7 +650,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   relation, steady constitutive current, KCL and voltage. GCC16/Clang23 Debug
   and Release pass 32/32. Full ASan/UBSan/leaks passes 32/32 in 175.12 s.
   Extended 10m-step voltage-mode drift falls from 161.771 to 8.736e-5 rad;
-  phase mode is 8.844e-5 rad. Native qualification remains pending.
+  phase mode is 8.844e-5 rad. Commit 69b9f1d3b6f passes all ten native jobs
+  in CI 42233555152.
 - **Evidence/tolerances:** [junction phase study](qualification/2026-11-06-junction-phase.md)
   derives the cause and rounding allowance, identifies the physical-constant
   precision separately, and points to preserved red/green measurements.

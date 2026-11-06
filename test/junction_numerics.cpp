@@ -11,6 +11,8 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace JoSIM;
 
@@ -70,14 +72,95 @@ static void constant_voltage(AnalysisType mode, double voltage, double h, int64_
     require(verror < 1e-10, "Constant-bias junction voltage changed");
 }
 
-int main() {
+static double rsj_current_bias(AnalysisType mode, double h, double bias) {
+    Input input(mode, 0, true);
+    input.transSim.tstep(h);
+    input.transSim.tstop(1e-9);
+    input.transSim.startup(false);
+    Model model;
+    model.modelName("JM"); model.rtype(0); model.ic(1e-4); model.rn(10); model.c(0);
+    input.netlist.models_new.emplace_back(model, std::nullopt);
+    input.netlist.expNetlist = {{{"I1", "0", "N", "DC", bias > model.ic() ? "200u" : "50u"}, std::nullopt},
+                               {{"B1", "N", "0", "JM"}, std::nullopt}};
+    Matrix matrix;
+    matrix.create_matrix(input);
+    Simulation simulation(input, matrix);
+    require(input.transSim.tstep() == h, "RSJ benchmark unexpectedly retried its timestep");
+    const auto& jj = std::get<JJ>(matrix.components.devices.at(matrix.components.junctionIndices.at(0)));
+    const auto& phase = *simulation.results.xVector.at(mode == AnalysisType::Voltage ? jj.variableIndex_ : matrix.nm.at("N"));
+    const auto& volts = *simulation.results.xVector.at(mode == AnalysisType::Voltage ? matrix.nm.at("N") : jj.variableIndex_);
+    const auto& current = *simulation.results.xVector.at(*jj.indexInfo.currentIndex_);
+    const double pi = std::acos(-1.0);
+    std::vector<double> events, integral(volts.size(), 0.0);
+    double next = 2 * pi, kcl = 0;
+    for (size_t i = 0; i < phase.size(); ++i) {
+        require(std::isfinite(phase[i]) && std::isfinite(volts[i]) && std::isfinite(current[i]), "Non-finite RSJ sample");
+        kcl = std::max(kcl, std::abs(current[i] - bias));
+        if (i == 0) { continue; }
+        integral[i] = integral[i - 1] + 0.5 * (volts[i - 1] + volts[i]) * h;
+        if (bias > model.ic()) { require(phase[i] > phase[i - 1], "Above-critical RSJ reversed its phase rotation"); }
+        if (phase[i] >= next) {
+            const double time = (i - 1 + (next - phase[i - 1]) / (phase[i] - phase[i - 1])) * h;
+            if (time > 20e-12) { events.push_back(time); }
+            next += 2 * pi;
+        }
+    }
+    require(kcl < 1e-15, "Current-driven RSJ violates KCL");
+    if (bias < model.ic()) {
+        require(std::abs(phase.back() - std::asin(bias / model.ic())) < 1e-9, "Subcritical RSJ has the wrong equilibrium phase");
+        require(std::abs(volts.back()) < 1e-12 && events.empty(), "Subcritical RSJ did not settle without full rotations");
+        std::cout << int(mode) << ',' << h << ',' << bias << ',' << phase.back() << ',' << volts.back()
+                  << ",0,0,0,0," << kcl << ",0,0\n";
+        return 0;
+    }
+    require(events.size() > 800, "Too few complete RSJ rotations for the period/flux measurement");
+    // Integrating phi'=R*(Ib-Ic*sin(phi))/sigma over one 2*pi rotation gives
+    // this continuous RSJ period. It uses no solver recurrence or trajectory.
+    const double expected = 2 * pi * Constants::SIGMA / (model.rn() * std::sqrt(bias * bias - model.ic() * model.ic()));
+    const double period = (events.back() - events.front()) / (events.size() - 1);
+    const double periodError = std::abs(period / expected - 1);
+    require(periodError < 4 * std::pow(h / expected, 2), "RSJ period exceeds the timestep-squared error allowance");
+    const auto integral_at = [&](double time) {
+        const double position = time / h;
+        const auto i = static_cast<size_t>(position);
+        const double fraction = position - i;
+        return integral.at(i) + h * fraction * (volts.at(i) + 0.5 * fraction * (volts.at(i + 1) - volts.at(i)));
+    };
+    const double flux = (integral_at(events.back()) - integral_at(events.front())) / (events.size() - 1);
+    // Exact SI h/(2e), independent of the historical Constants::PHI_ZERO.
+    const double fluxQuantum = 6.62607015e-34 / (2 * 1.602176634e-19);
+    const double fluxError = std::abs(flux / fluxQuantum - 1);
+    require(fluxError < 1e-6, "Mean RSJ voltage-pulse area differs from one flux quantum by over 1 ppm");
+    std::cout << int(mode) << ',' << h << ',' << bias << ',' << phase.back() << ',' << volts.back() << ','
+              << events.size() - 1 << ',' << period << ',' << expected << ',' << periodError << ',' << kcl << ','
+              << flux << ',' << fluxError << '\n';
+    return periodError;
+}
+
+int main(int argc, char** argv) {
     try {
-        std::cout << std::setprecision(17)
-                  << "mode,voltage_V,h_s,steps,phase_drift_rad,tolerance_rad,current_residual_A,KCL_A,voltage_error_V\n";
-        for (auto mode : {AnalysisType::Voltage, AnalysisType::Phase}) {
-            for (double voltage : {1e-3, -1e-3}) {
-                for (double h : {1e-14, 1e-13}) {
-                    for (int64_t count : {10000, 100000, 1000000}) { constant_voltage(mode, voltage, h, count); }
+        const std::string selected = argc == 1 ? "all" : argv[1];
+        require(argc <= 2 && (selected == "all" || selected == "constant" || selected == "rsj"), "Unknown junction test selection");
+        std::cout << std::setprecision(17);
+        if (selected == "all" || selected == "constant") {
+            std::cout << "mode,voltage_V,h_s,steps,phase_drift_rad,tolerance_rad,current_residual_A,KCL_A,voltage_error_V\n";
+            for (auto mode : {AnalysisType::Voltage, AnalysisType::Phase}) {
+                for (double voltage : {1e-3, -1e-3}) {
+                    for (double h : {1e-14, 1e-13}) {
+                        for (int64_t count : {10000, 100000, 1000000}) { constant_voltage(mode, voltage, h, count); }
+                    }
+                }
+            }
+        }
+        if (selected == "all" || selected == "rsj") {
+            std::cout << "mode,h_s,bias_A,final_phase_rad,final_voltage_V,complete_cycles,mean_period_s,analytic_period_s,relative_period_error,KCL_A,mean_flux_Wb,relative_SI_flux_error\n";
+            for (auto mode : {AnalysisType::Voltage, AnalysisType::Phase}) {
+                double previous = 1;
+                for (double h : {2e-14, 1e-14, 5e-15}) {
+                    rsj_current_bias(mode, h, 5e-5);
+                    const double error = rsj_current_bias(mode, h, 2e-4);
+                    require(error < 0.4 * previous + 1e-9, "RSJ period failed to converge with timestep refinement");
+                    previous = error;
                 }
             }
         }
