@@ -133,7 +133,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   recoverable resolution failures. GCC16/Clang23 Debug and Release pass 30/30;
   final seven regression groups pass in all four configurations. Full
   ASan/UBSan/leaks passes 30/30 in 144.95 s; final binding/reparse checks also
-  pass under sanitizers. Native CI remains pending for this commit.
+  pass under sanitizers (7/7, 7.18 s). Commit 121ca3ed6439 passes all ten native
+  binary/library jobs in CI 42230226316.
 - **Evidence:** build/audit-resolution/named-parameters-red.log;
   named-parameters-four-config.log; named-parameters-tests.xml and final targeted
   library/gate/installed-consumer logs; named-parameters-sanitizer-tests.xml and
@@ -271,12 +272,26 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## D01 — Numerical regression breadth
 
-- **Classification:** architecture/testing concern.
-- **Current reproduction/result:** Open beyond existing gate/noise invariants.
-- **Required outcome:** Analytic RLC, KCL/KVL, startup, convergence, modes, switching and pulse counts.
-- **Implementation/owner:** src/Simulation.cpp; component stamps; test/.
-- **Verification:** new independent numerical regression suite.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** architecture/testing concern; partially qualified.
+- **Current result:** Independent RC/RL/RLC ramp responses, KCL/KVL and Ohm's
+  law pass for 36 cases: both modes, startup on/off, and 1/0.5/0.25 ps steps.
+  At 0.25 ps maximum voltage error is 13.1534/13.1534/14.0995 nV;
+  current error is 1.31534/1.31534/1.43369 nA. CSV KCL residual is zero;
+  KVL residual is at most 5.00001e-10 V. Maximum error decreases by 3.4–4x
+  per halving, with measured orders 1.75–1.84 (RC/RL), 1.99–2.00 (RLC).
+- **Required outcome:** Complete switching, pulse counts, nonzero precharge
+  and long-run/#91/#101 studies. Passing linear circuits alone does not close
+  this item or establish general scientific correctness.
+- **Implementation/owner:** test/regression_numerics.py; release/library owners
+  require its CTest group. No solver/device equations changed by this study.
+- **Verification:** GCC16/Clang23 Debug and Release pass the numerical group.
+  ASan/UBSan with leaks also passes all 36 cases (0.60 s). Native checks
+  remain pending for this test addition.
+- **Evidence/tolerances:** [linear-circuit study](qualification/2026-11-06-linear-circuits.md)
+  derives the independent continuous references, h^2-scaled bounds, refinement
+  requirement and rounding allowances. artifacts/audit-resolution/rlc.json records
+  exact decks, measurements and executable/test hashes. Logs/JUnit:
+  build/audit-resolution/linear-numerics-*.log/.xml.
 
 ## D02 — Coverage and high-risk gaps
 

@@ -43,6 +43,9 @@ CTest runs the existing circuit examples and focused regression groups:
   flux units, fractional critical-current noise and phase-step reduction.
 - `regression::cli`: invalid transient settings and recursive subcircuits.
 - `regression::functions`: waveform alignment, interpolation and expressions.
+- `regression::numerics`: independent analytic RC/RL/RLC responses, KCL/KVL,
+  timestep refinement and comparison of both modes with warm/cold startup.
+  See [the linear-circuit study](qualification/2026-11-06-linear-circuits.md).
 - `regression::build_options`: retired solver/parallel configuration and macro rejection.
 - `regression::library`: repeated recoverable errors followed by valid runs.
 - `regression::installed_package`: installs the library, then builds and runs a

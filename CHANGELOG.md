@@ -7,6 +7,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Independent analytic RC/RL/RLC regression tests, conservation checks and
+  timestep refinement in both analysis modes. Native binary and library
+  qualification require this numerical test group.
+
 - Gate-controlled Josephson junctions using `GC=node` and model parameter
   `GWIDTH`. Gate control uses volts in both voltage and phase analysis.
 - Configurable current increments for model IV curves using `.iv ... STEP=value`
