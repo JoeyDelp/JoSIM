@@ -190,10 +190,13 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s
 void Function::parse_pulse(const tokens_t& t, const Input& iObj, const string_o& s) {
     /* PULSE(A1 A2 TD[0.0] TR[TSTEP] TF[TSTEP] PW[TSTOP] PER[TSTOP])*/
     if (t.size() < 2) { Errors::function_errors(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
+    if (t.size() > 7) { Errors::function_errors(FunctionErrors::INVALID_PULSE_PARAMETERS, "Expected at most 7 arguments"); }
     // Step and stop time shorthand
     const double& tstop = iObj.transSim.tstop();
     const double& tstep = iObj.transSim.tstep();
     // Set the 2 amplitudes
+    ampValues_.clear();
+    timeValues_.clear();
     ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
     ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
     // Set default values for optional arguments
@@ -208,11 +211,11 @@ void Function::parse_pulse(const tokens_t& t, const Input& iObj, const string_o&
     if (t.size() >= 5) { timeValues_.at(2) = parse_param(t.at(4), iObj.parameters, s); }
     if (t.size() >= 6) { timeValues_.at(3) = parse_param(t.at(5), iObj.parameters, s); }
     if (t.size() >= 7) { timeValues_.at(4) = parse_param(t.at(6), iObj.parameters, s); }
-    if (iObj.argVerb) {
-        // If pulse width is 0.0 then there is no pulse, then useless so warn
-        if (timeValues_.at(3) == 0.0) { Errors::function_errors(FunctionErrors::PULSE_WIDTH_ZERO, t.at(5)); }
-        // If repeat time is 0.0 then impossible, so warn
-        if (timeValues_.at(4) == 0.0) { Errors::function_errors(FunctionErrors::PULSE_REPEAT, t.at(6)); }
+    if (!std::isfinite(ampValues_.at(0)) || !std::isfinite(ampValues_.at(1))
+        || std::any_of(timeValues_.begin(), timeValues_.end(), [](double time) { return !std::isfinite(time) || time < 0; })
+        || timeValues_.at(4) == 0) {
+        Errors::function_errors(FunctionErrors::INVALID_PULSE_PARAMETERS,
+                                "Amplitudes must be finite; TD/TR/TF/PW must be finite and nonnegative; PER must be finite and positive");
     }
     // Store the stop time
     timeValues_.emplace_back(tstop);
@@ -656,13 +659,15 @@ double Function::return_pulse(double& x) {
     double& tf    = timeValues_.at(2);
     double& pw    = timeValues_.at(3);
     double& per   = timeValues_.at(4);
-    double& tstop = timeValues_.at(5);
     double& alow  = ampValues_.at(0);
     double& ahigh = ampValues_.at(1);
     auto    val   = alow;
     if (x < td) { return (val); }
-    int64_t index = static_cast<int64_t>((x - td) / per);
-    auto    time  = x - td - index * per;
+    const double elapsed = x - td;
+    const double cycles = elapsed / per;
+    // Preserve ordinary pulse rounding; avoid an undefined cast for large cycle counts.
+    const double time = cycles < std::ldexp(1.0, 63)
+        ? elapsed - static_cast<int64_t>(cycles) * per : std::fmod(elapsed, per);
     if (time < tr) {
         val = alow + (ahigh - alow) * time / tr;
     } else if (time < tr + pw) {

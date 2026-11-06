@@ -1225,3 +1225,22 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [piecewise study](qualification/2026-11-07-piecewise-grids.md),
   artifacts/audit-resolution/piecewise-negative/ actual decks/CSV/logs and
   compiler/sanitizer/source receipts. Native/final integrated checks remain.
+
+## F28 — Invalid PULSE domains and out-of-range cycle conversion
+
+- **Classification:** confirmed validation and finite-input waveform defect.
+- **Reproduction:** PER=0 returned Release success and UBSan float-to-integer
+  failure. Valid PER=2^-104 s sampled at h=2^-40 s has cycle count 2^64 at the
+  first positive sample; Release returned 0 V instead of the independent 1 V.
+- **Repair:** unconditional finite/nonnegative timing domains, positive PER,
+  argument-count validation, replace stored data on reparse; retain ordinary
+  arithmetic and use floating remainder beyond the int64 cycle range. Zero
+  edges/plateaus remain valid. Error enum appended; signatures/layouts unchanged.
+- **Verification:** independent endpoint/default/triangle/inverted/reparse and
+  dyadic overflow tests, both verbosity levels/modes, rejected CLI has no output.
+  Four local compiler configurations pass 35/35; focused Clang-Tidy has no warnings.
+  Seven paired 64-pulse-bank runs preserve exact CSV and independent point values;
+  median wall increases 1.28%/0.41%, below the predeclared 5% bound.
+- **Evidence:** [pulse study](qualification/2026-11-07-pulse-domain.md),
+  artifacts/audit-resolution/pulse-domain/. Full ASan/UBSan/leaks pass 35/35
+  in 223.26 s. Native qualification remains; no high-frequency sampling claim.

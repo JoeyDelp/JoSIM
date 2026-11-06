@@ -499,6 +499,9 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
         case FunctionErrors::INVALID_PWL_PARAMETERS:
             formattedMessage += "Invalid PWL/PWS parameters. " + message.value_or("");
             throw std::runtime_error(formattedMessage);
+        case FunctionErrors::INVALID_PULSE_PARAMETERS:
+            formattedMessage += "Invalid PULSE parameters. " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::TOO_FEW_TIMESTEPS:
             formattedMessage += "Total timesteps specified do not match the values specified.\n";
             formattedMessage += message.value_or("") + " specified.\n";

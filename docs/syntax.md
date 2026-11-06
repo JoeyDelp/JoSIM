@@ -206,7 +206,12 @@ This source generates a pulse between two amplitudes ($A_{1}$ and $A_{2}$), star
 
 *PW* and *PER* refer to the pulse width and the period respectively. These values default to the transient simulation stop time when not specified.
 
-This source allows the continuous generation of a pulse at a set frequency.
+Amplitudes must be finite. Delay, rise time, fall time and width must be finite
+and nonnegative; the period must be finite and strictly positive. Zero rise/fall
+times give instantaneous edges. Zero width gives a triangular pulse when the
+edges are nonzero. At each period boundary, the waveform restarts from its rise.
+At most seven arguments are accepted. Resolve pulse edges and the period with
+the internal timestep; a finite sampled value does not establish adequate sampling.
 
 #### Sinusoidal
 

@@ -48,6 +48,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Validate PULSE timing independently of verbosity and handle cycle counts beyond
+  the integer range without undefined conversion or wrong sampled values.
+  Preserve zero edge/plateau durations and replace stored data when reparsing.
 - Reject negative or non-finite piecewise waveform grids before prepending time
   zero. A negative first PWL/PWS time previously created an unordered internal
   grid and could give a discontinuity at zero. Preserve valid delayed starts.

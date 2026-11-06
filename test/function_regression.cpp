@@ -187,6 +187,64 @@ int main() {
             near(source.value(point.first), point.second, "half-cosine interpolation and held endpoints");
         }
     });
+    check("pulse endpoints, plateaus and period wrapping", [&] {
+        Function source;
+        source.parse_function("PULSE(1 5 2 1 2 3 8)", input, std::nullopt);
+        for (const auto& point : std::vector<std::pair<double, double>>{
+                 {0, 1}, {1.5, 1}, {2, 1}, {2.5, 3}, {3, 5}, {5, 5},
+                 {6, 5}, {7, 3}, {8, 1}, {9, 1}, {10, 1}, {10.5, 3}, {11, 5}}) {
+            near(source.value(point.first), point.second, "trapezoid and second cycle");
+        }
+        source.parse_function("PULSE(1 5)", input, std::nullopt);
+        near(source.value(0), 1, "default delay zero");
+        near(source.value(.125), 3, "default rise uses TSTEP");
+        near(source.value(11), 5, "default width uses TSTOP");
+        near(source.value(12), 1, "default period uses TSTOP");
+        near(source.value(12.125), 3, "reparsed pulse replaces old timing and amplitudes");
+    });
+    check("zero pulse edges and triangular pulse", [&] {
+        for (int verbose : {0, 1}) {
+            Input config = input;
+            config.argVerb = verbose;
+            Function rectangle, triangle, empty;
+            rectangle.parse_function("PULSE(1 -3 2 0 0 3 8)", config, std::nullopt);
+            for (const auto& point : std::vector<std::pair<double, double>>{
+                     {1.5, 1}, {2, -3}, {4.5, -3}, {5, 1}, {10, -3}}) {
+                near(rectangle.value(point.first), point.second, "instantaneous edges with signed amplitude");
+            }
+            triangle.parse_function("PULSE(1 5 2 1 2 0 8)", config, std::nullopt);
+            for (const auto& point : std::vector<std::pair<double, double>>{
+                     {2, 1}, {2.5, 3}, {3, 5}, {4, 3}, {5, 1}, {11, 5}}) {
+                near(triangle.value(point.first), point.second, "zero plateau retains a triangular pulse");
+            }
+            empty.parse_function("PULSE(1 5 0 0 0 0 8)", config, std::nullopt);
+            near(empty.value(0), 1, "zero-width zero-edge pulse remains at baseline");
+        }
+    });
+    check("pulse cycle count outside integer and quotient ranges", [&] {
+        for (const std::string timing : {"4.76837158203125e-7 9.5367431640625e-7",
+                                         "2.2250738585072014e-308 2.2250738585072014e-308"}) {
+            Function source;
+            source.parse_function("PULSE(1 5 0 0 0 " + timing + ")", input, std::nullopt);
+            // Exact dyadic multiples: remainder is zero, independent of integer conversion.
+            near(source.value(std::ldexp(1.0, 44)), 5, "large finite time returns the pulse's start value");
+        }
+    });
+    check("pulse parameter validity is independent of verbosity", [&] {
+        for (int verbose : {0, 1}) {
+            Input config = input;
+            config.argVerb = verbose;
+            for (const std::string args : {"0", "0 1 -1", "0 1 0 -1", "0 1 0 1 -1", "0 1 0 1 1 -1",
+                                           "0 1 0 1 1 1 0", "0 1 0 1 1 1 -1", "0 1 0 1 1 1 8 99",
+                                           "UNKNOWN 1", "0 UNKNOWN", "0 1 UNKNOWN", "0 1 0 UNKNOWN",
+                                           "0 1 0 1 UNKNOWN", "0 1 0 1 1 UNKNOWN", "0 1 0 1 1 1 UNKNOWN"}) {
+                bool rejected = false;
+                try { Function source; source.parse_function("PULSE(" + args + ")", config, std::nullopt); }
+                catch (const std::runtime_error&) { rejected = true; }
+                if (!rejected) { throw std::runtime_error("invalid pulse accepted: " + args); }
+            }
+        }
+    });
     check("piecewise time-grid validation", [&] {
         for (const std::string kind : {"PWL", "PWS"}) {
             for (const std::string values : {"0 1 2", "0 1 0 2", "0 1 2 2 1 3", "-1 1 2 2",

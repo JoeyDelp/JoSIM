@@ -34,6 +34,33 @@ class CliRegression(unittest.TestCase):
                     rows = list(csv.reader(stream))
             return result, rows
 
+    def test_pulse_invalid_parameters_fail_without_output(self):
+        for mode in (0, 1):
+            for verbose in (0, 1):
+                for args in ("0 1 0 1p 1p 1p 0", "0 1 0 1p 1p 1p -1p", "0 1 -1p",
+                             "0 1 0 -1p", "0 1 0 1p -1p", "0 1 0 1p 1p -1p",
+                             "0 1 0 1p 1p 1p 8p 99"):
+                    with self.subTest(mode=mode, verbose=verbose, args=args):
+                        deck = f"V1 N 0 PULSE({args})\nR1 N 0 1k\n.tran 1p 8p 0 1p 0 DST\n.print V(N)\n.end\n"
+                        result, rows = self.run_deck(deck, extra=("-a", str(mode), "-V", str(verbose)))
+                        self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                        self.assertIn("Invalid PULSE parameters", result.stdout + result.stderr)
+                        self.assertIsNone(rows)
+
+    def test_pulse_large_cycle_count_has_defined_sample_values(self):
+        step, period = 2.0 ** -40, 2.0 ** -104
+        deck = (f"V1 N 0 PULSE(0 1 0 0 0 {period / 2:.17g} {period:.17g})\nR1 N 0 1k\n"
+                f".tran {step:.17g} {8 * step:.17g} 0 {step:.17g} 0 DST\n.print V(N)\n.end\n")
+        for mode in (0, 1):
+            with self.subTest(mode=mode):
+                result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual(len(rows), 9)
+                # Every sample is an exact multiple of PER, hence starts at 1 V.
+                # This intentionally aliases the pulse; it does not resolve its physical frequency.
+                for row in rows[1:]:
+                    self.assertAlmostEqual(float(row[1]), 1.0, delta=1e-9)
+
     def test_custom_waveform_relative_path_and_stdin(self):
         deck = "V1 1 0 CUS(wave.dat 1p)\nR1 1 0 1k\n.tran 0.25p 2p DST\n.print V(1)\n.end\n"
         for stdin in (False, True):

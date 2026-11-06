@@ -33,6 +33,12 @@ headers and libraries.
 
 ## Errors and recovery
 
+`Function::parse_function` rejects invalid PULSE domains, including a zero period,
+independently of verbosity. Replacing a pulse replaces its stored amplitudes and
+timing. Finite cycle counts beyond `int64_t` use a floating remainder instead of
+an out-of-range cast. `INVALID_PULSE_PARAMETERS` is appended to `FunctionErrors`;
+existing enum values, signatures and class layouts are retained.
+
 Set finite, positive `tstep` and `tstop` before creating a matrix. `simsize()`
 checks the point count before integer conversion. `validate_output()` checks
 print settings against the actual grid; output also rejects empty result data.
