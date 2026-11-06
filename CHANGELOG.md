@@ -51,6 +51,11 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Build and distribution
 
+- Retired the non-functional SuperLU selection. `SLU=ON` and manual `SLU` macro
+  definitions now fail explicitly instead of implying that another solver runs.
+  KLU remains the supported solver. Removed the unused SuperLU/CBLAS dependency
+  downloads, linkage and installed package requirements.
+
 - Added opt-in LLVM first-party coverage and AddressSanitizer/UndefinedBehaviorSanitizer
   builds, with reproducible report commands and installed-consumer runtime linkage.
 

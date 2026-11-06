@@ -3,6 +3,10 @@
 #ifndef JOSIM_TYPEDEFINES_HPP
 #define JOSIM_TYPEDEFINES_HPP
 
+#ifdef SLU
+#    error "SuperLU backend has been retired; do not define the SLU macro"
+#endif
+
 #include <optional>
 #include <string>
 #include <vector>

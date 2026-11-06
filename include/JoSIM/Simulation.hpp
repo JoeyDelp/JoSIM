@@ -27,7 +27,8 @@ class Results {
 
 class Simulation {
   private:
-    bool                SLU = false;
+    // Preserve the existing class layout while retiring the unused selection.
+    [[maybe_unused]] bool SLU = false;
     std::vector<double> x_, b_;
     int64_t             simSize_;
     JoSIM::AnalysisType atyp_;
@@ -36,14 +37,10 @@ class Simulation {
     bool                needsTR_ = true;
     bool                startup_;
     double              stepSize_, prstep_, prstart_;
-#ifdef SLU
-    LUSolve lu;
-#else
     int64_t         simOK_;
     klu_l_symbolic* Symbolic_;
     klu_l_common    Common_;
     klu_l_numeric*  Numeric_;
-#endif
 
     void setup(Input& iObj, Matrix& mObj);
     void trans_sim(Matrix& mObj);

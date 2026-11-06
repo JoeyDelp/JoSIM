@@ -21,17 +21,11 @@ Simulation::Simulation(Input& iObj, Matrix& mObj) {
         // Do generic simulation setup for given step size
         setup(iObj, mObj);
         // Do solver setup
-#ifdef SLU
-        // SLU setup
-        lu.create_matrix(mObj.rp.size() - 1, mObj.nz, mObj.ci, mObj.rp);
-        lu.factorize();
-#else
         // KLU setup
         simOK_ = klu_l_defaults(&Common_);
         assert(simOK_);
         Symbolic_ = klu_l_analyze(mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
         Numeric_  = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
-#endif
 
         // Run transient simulation
         trans_sim(mObj);
@@ -39,14 +33,9 @@ Simulation::Simulation(Input& iObj, Matrix& mObj) {
         if (needsTR_) { reduce_step(iObj, mObj); }
 
         // Do solver cleanup
-#ifdef SLU
-        // SLU cleanup
-        lu.free();
-#else
         // KLU cleanup
         klu_l_free_symbolic(&Symbolic_, &Common_);
         klu_l_free_numeric(&Numeric_, &Common_);
-#endif
     }
 }
 
@@ -97,13 +86,9 @@ void Simulation::trans_sim(Matrix& mObj) {
             // Assign x_prev the new b
             x_ = b_;
             // Solve Ax=b, storing the results in x_
-#ifdef SLU
-            lu.solve(x_);
-#else
             simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
             // If anything is a amiss, complain about it
             if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
-#endif
         }
     }
     // Start the simulation loop
@@ -117,13 +102,9 @@ void Simulation::trans_sim(Matrix& mObj) {
         // Assign x_prev the new b
         x_ = b_;
         // Solve Ax=b, storing the results in x_
-#ifdef SLU
-        lu.solve(x_);
-#else
         simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
         // If anything is a amiss, complain about it
         if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
-#endif
         // Store results (only requested, to prevent massive memory usage)
         for (auto j = 0; j < results.xVector.size(); ++j) {
             if (results.xVector.at(j)) { results.xVector.at(j).value().emplace_back(x_.at(j)); }
@@ -166,12 +147,8 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
     // Re-factorize the LU if any jj transitions
     if (needsLU_) {
         mObj.create_nz();
-#ifdef SLU
-        lu.factorize(true);
-#else
         klu_l_free_numeric(&Numeric_, &Common_);
         Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
-#endif
         needsLU_ = false;
     }
     // Handle current sources

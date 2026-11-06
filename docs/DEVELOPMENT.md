@@ -1,7 +1,11 @@
 # Developing JoSIM
 
-JoSIM uses C++17, CMake and CTest. The default sparse solver is KLU. The legacy
-`SLU` option does not currently select a working alternative backend.
+JoSIM uses C++17, CMake and CTest. The default sparse solver is KLU. The obsolete
+SuperLU selection is retired: `-DSLU=ON` and manually defining the `SLU` macro
+produce explicit errors. Use KLU; the earlier accepted option did not select
+a functioning alternative. JoSIM no longer downloads, links or installs the
+unused SuperLU/CBLAS packages. Applications using those packages directly must
+provide their own dependencies. The default KLU public API is unchanged.
 
 ## Build and test
 

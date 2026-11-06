@@ -15,7 +15,10 @@ endif()
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-option(SLU "Enable SuperLU instead of KLU")
+option(SLU "Retired SuperLU selection (ON is unsupported)" OFF)
+if(SLU)
+  message(FATAL_ERROR "SuperLU backend has been retired. KLU is the supported solver; remove -DSLU=ON.")
+endif()
 option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
 option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
 if(MAKING_STATIC_BUILD)
@@ -77,8 +80,7 @@ add_library(
   src/VoltageSource.cpp
   src/Noise.cpp
   src/Spread.cpp
-  src/IV.cpp
-  src/LUSolve.cpp)
+  src/IV.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)
@@ -91,8 +93,6 @@ target_include_directories(
 # Dependencies
 target_link_libraries(josim PUBLIC suitesparse::klu)
 target_compile_features(josim PUBLIC cxx_std_17)
-target_link_libraries(josim PRIVATE superlu)
-target_link_libraries(josim PRIVATE cblas)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
@@ -121,8 +121,6 @@ add_executable(josim-cli src/josim.cpp)
 # Dependencies
 target_link_libraries(josim-cli PRIVATE josim)
 target_link_libraries(josim-cli PRIVATE suitesparse::klu)
-target_link_libraries(josim-cli PRIVATE superlu)
-target_link_libraries(josim-cli PRIVATE cblas)
 
 # Properties
 make_target_static(josim-cli)
@@ -156,10 +154,6 @@ install(DIRECTORY include/JoSIM/
 # Provide their headers at the advertised prefix/include as well.
 foreach(component config amd btf colamd klu)
   install(DIRECTORY "${CMakeSuiteSparse_SOURCE_DIR}/${component}/include/"
-          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-endforeach()
-foreach(dependency CMakeSuperLU CMakeCBLAS)
-  install(DIRECTORY "${${dependency}_SOURCE_DIR}/include/"
           DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endforeach()
 

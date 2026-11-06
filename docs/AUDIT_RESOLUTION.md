@@ -45,11 +45,23 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A05 — Silently ineffective SLU=ON
 
 - **Classification:** confirmed supported-behaviour defect.
-- **Current reproduction/result:** Open; option is still silently accepted.
+- **Current reproduction/result:** Reproduced acceptance of SLU=ON without an
+  SLU compiler definition. Formally retired: configuration and manual macro
+  requests fail explicitly; supported KLU code is unchanged.
 - **Required outcome:** Repair and qualify, or retire with explicit configuration rejection.
-- **Implementation/owner:** CMakeLists.txt; include/JoSIM/Simulation.hpp; src/LUSolve.cpp.
-- **Verification:** configure SLU=ON; backend/library regressions.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Implementation/owner:** CMakeLists.txt; TypeDefines.hpp/LUSolve.hpp rejection
+  guards; dependency_sources.cmake; regression::build_options. Removed unused
+  SuperLU/CBLAS downloads/linkage/exports and compiled-out solver branches.
+  Default class layout is retained; direct users of the removed vendor packages
+  must supply them independently. This retires an inoperative backend rather
+  than claiming untested numerical equivalence between solvers.
+- **Verification:** Fresh-network GCC Release and Clang Release pass 29/29,
+  including fresh installed consumers and explicit configuration rejection.
+  Manual macro rejection is also covered. Default Release Simulation.cpp
+  preprocessor output is byte-identical before/after retirement.
+- **Evidence:** build/audit-resolution/backend-retirement-evidence.json,
+  klu-only-tests.xml and fresh-klu/tests.xml; first-party numerical tests retain
+  their existing tolerances. Final platform verification remains required.
 
 ## A06 — Moving dependency URL and stale linkage
 
@@ -338,4 +350,5 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** artifacts/audit-resolution/parser-repairs.json; exact candidate
   diff hash and run commands under build/audit-resolution/current/*/run.json;
   units-probe.log, numeric-red-test.log and numeric-sanitizer-tests.xml.
-  Current supported-platform CI still needs to verify the committed repair.
+  All five native supported-platform jobs passed in CI run 42207795568 for
+  ebd832afb83001508dbdc0e92720d56a07fee558.

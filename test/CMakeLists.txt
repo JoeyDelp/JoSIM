@@ -133,6 +133,17 @@ add_integration_test(
 )
 
 if(BUILD_TESTING)
+  add_test(NAME regression::build_options
+    COMMAND ${CMAKE_COMMAND}
+      "-DTEST_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+      "-DTEST_BINARY_DIR=${PROJECT_BINARY_DIR}"
+      "-DTEST_GENERATOR=${CMAKE_GENERATOR}"
+      "-DTEST_PLATFORM=${CMAKE_GENERATOR_PLATFORM}"
+      "-DTEST_C_COMPILER=${CMAKE_C_COMPILER}"
+      "-DTEST_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      "-DTEST_SUITESPARSE_SOURCE=${CMakeSuiteSparse_SOURCE_DIR}"
+      -P "${PROJECT_SOURCE_DIR}/cmake/test_rejected_options.cmake")
+  set_tests_properties(regression::build_options PROPERTIES TIMEOUT 60)
   add_executable(josim-function-regression function_regression.cpp)
   target_link_libraries(josim-function-regression PRIVATE josim)
   josim_instrument_target(josim-function-regression)
