@@ -61,6 +61,12 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
     if (!std::isfinite(currentIncrement) || currentIncrement <= 0.0) {
         Errors::control_errors(ControlErrors::INVALID_IV_COMMAND, "IV STEP must be > 0: " + Misc::vector_to_string(i));
     }
+    // Bare IV output names are relative to the main input file.
+    auto path = std::filesystem::path(i.at(3));
+    if (!path.has_parent_path() && iObj.fileParentPath) {
+        path = std::filesystem::path(iObj.fileParentPath.value()).append(i.at(3));
+    }
+    iObj.ensure_safe_output(path.string());
     // Create an input object for this simulation
     Input ivInp = iObj;
     ivInp.controls.clear();
@@ -85,12 +91,6 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
     ivInp.argMin  = true;
     std::vector<std::pair<double, double>> iv_data;
     iv_data   = generate_iv(maxC, currentIncrement, ivInp);
-    // Sanity check, if parent path of output file is empty then change path to
-    // input file path, otherwise file is written in executable location
-    auto path = std::filesystem::path(i.at(3));
-    if (!path.has_parent_path() && iObj.fileParentPath) {
-        path = std::filesystem::path(iObj.fileParentPath.value()).append(i.at(3));
-    }
     write_iv(iv_data, path.string());
 }
 

@@ -32,6 +32,7 @@ class Input {
     std::optional<OutputFile>                    cli_output_file;
     std::vector<OutputFile>                      output_files;
     std::optional<std::string>                   fileParentPath;
+    std::vector<std::string>                     inputFiles;
     AnalysisType                                 argAnal;
     int64_t                                      argVerb;
     bool                                         argMin;
@@ -51,8 +52,10 @@ class Input {
     std::vector<tokens_t> read_input(LineInput& input, string_o fileName = std::nullopt);
     void                  parse_input(string_o fileName = std::nullopt);
     void                  syntax_check_controls(std::vector<tokens_t>& controls);
+    void                  ensure_safe_output(const std::string& filename) const;
 
   private:
+    std::vector<std::string> activeIncludes_;
     std::optional<uint64_t> find_seed_option() const;
 };
 } // namespace JoSIM

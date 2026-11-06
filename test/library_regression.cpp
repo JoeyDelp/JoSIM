@@ -69,6 +69,15 @@ void invalid_matrix() {
     matrix.branchIndex = 1;
     must_throw([&] { JoSIM::Simulation simulation(run, matrix); }, "Invalid sparse matrix");
 }
+
+void cli_values() {
+    const char* argv[] = {"josim", "--minimal=1", "--analysis=0", "--verbose=2", "example.cir"};
+    auto options = JoSIM::CliOptions::parse(5, argv);
+    if (!options.minimal || options.analysis_type != JoSIM::AnalysisType::Voltage || options.verbose != 2
+        || options.cir_file_name.value_or("") != "example.cir") {
+        throw std::runtime_error("CLI long-option values were lost");
+    }
+}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -80,6 +89,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "missing") { missing_model(); }
             if (selected == "all" || selected == "singular") { singular_matrix(); }
             if (selected == "all" || selected == "invalid") { invalid_matrix(); }
+            if (selected == "all" || selected == "cli") { cli_values(); }
             valid_simulation();
         }
     } catch (const std::exception& error) {

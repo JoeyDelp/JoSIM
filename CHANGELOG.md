@@ -56,6 +56,18 @@ work prepared for the next release, not binaries already available on GitHub.
   solver allocations on exceptions and timestep retries. Added repeated
   failure/recovery tests and explicit embedding/random-state guidance.
 
+- Fixed long CLI option values and exact switch recognition. Invalid/empty
+  arguments, out-of-range minimal/verbose values and unsupported output formats
+  fail cleanly. Explicit stdin consistently overrides a positional filename.
+  Retired the inactive OpenMP/`-p` placeholder; no parallel solver was implemented.
+- Protect main and included netlists from normal and `.iv` output collisions,
+  including relative-path and hard-link aliases. Track input provenance in
+  `Input`; embedding applications must recompile. Direct/indirect cyclic
+  includes now fail cleanly instead of recursing until a crash.
+- Effective seeds are printed with `-V 1` even with `-m 1`. Reject seed
+  expressions at or above 2^64 before integer conversion; the exact integer
+  literal 18446744073709551615 remains supported.
+
 - Retired the non-functional SuperLU selection. `SLU=ON` and manual `SLU` macro
   definitions now fail explicitly instead of implying that another solver runs.
   KLU remains the supported solver. Removed the unused SuperLU/CBLAS dependency

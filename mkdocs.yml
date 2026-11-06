@@ -12,6 +12,7 @@ nav:
   - Gate-Controlled Junctions: 'gate_junctions.md'
   - Noise Sources: 'noise_sources.md'
   - Development: 'DEVELOPMENT.md'
+  - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'
   - Development Schedule and Bugs: 'bugs.md'
   - Japanese 日本語版:

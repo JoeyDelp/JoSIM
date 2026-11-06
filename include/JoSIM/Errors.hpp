@@ -23,7 +23,9 @@ enum class CLIErrors : int64_t {
     INVALID_INTEGRATION,
     INVALID_CONVENTION,
     INVALID_MINIMAL,
-    INPUT_SAME_OUTPUT
+    INPUT_SAME_OUTPUT,
+    INVALID_ARGUMENT,
+    UNSUPPORTED_PARALLEL
 };
 
 enum class InputErrors : int64_t {
@@ -37,7 +39,8 @@ enum class InputErrors : int64_t {
     EMPTY_FILE,
     IO_MISMATCH,
     UNKNOWN_CONTROL,
-    DUPLICATE_SUBCIRCUIT
+    DUPLICATE_SUBCIRCUIT,
+    INVALID_INCLUDE
 };
 
 enum class ComponentErrors : int64_t {

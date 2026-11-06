@@ -6,6 +6,8 @@ produce explicit errors. Use KLU; the earlier accepted option did not select
 a functioning alternative. JoSIM no longer downloads, links or installs the
 unused SuperLU/CBLAS packages. Applications using those packages directly must
 provide their own dependencies. The default KLU public API is unchanged.
+The inactive OpenMP placeholder is also retired: `-DUSING_OPENMP=ON` fails
+explicitly. There is no parallel simulation implementation.
 
 ## Build and test
 
@@ -41,7 +43,7 @@ CTest runs the existing circuit examples and focused regression groups:
   flux units, fractional critical-current noise and phase-step reduction.
 - `regression::cli`: invalid transient settings and recursive subcircuits.
 - `regression::functions`: waveform alignment, interpolation and expressions.
-- `regression::build_options`: retired solver configuration/macro rejection.
+- `regression::build_options`: retired solver/parallel configuration and macro rejection.
 - `regression::library`: repeated recoverable errors followed by valid runs.
 - `regression::installed_package`: installs the library, then builds and runs a
   fresh external C++ consumer using `find_package(josim 2.7 CONFIG REQUIRED)`.

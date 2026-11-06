@@ -23,12 +23,10 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
         case CLIErrors::UNKNOWN_SWITCH:
             formattedMessage
                     += "Unknown option '" + message.value_or("") + "' specified. Please refer to the help menu.";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case CLIErrors::UNKNOWN_OUTPUT_TYPE:
-            formattedMessage += "Unknown output type " + message.value_or("") + " specified. CSV will be used instead.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Unknown output type " + message.value_or("") + ". Use CSV, DAT or RAW.";
+            throw std::runtime_error(formattedMessage);
         case CLIErrors::TOO_FEW_ARGUMENTS:
             formattedMessage += "Missing input arguments\n";
             formattedMessage += "Usage: josim [options] input_netlist\n\n";
@@ -40,7 +38,7 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
         case CLIErrors::INVALID_SOLVER:
-            formattedMessage += "Invalid solver type specified. 0 - KLU, 1 - SLU.\n";
+            formattedMessage += "Solver selection has been retired. KLU is the supported solver.\n";
             formattedMessage += "Usage: josim [options] input_netlist\n\n";
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
@@ -50,12 +48,11 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
         case CLIErrors::NO_ANALYSIS:
-            formattedMessage += "No analysis was specified. Reverting to default (0 - Voltage).\n";
+            formattedMessage += "No analysis value specified. Use -a 0 (voltage) or -a 1 (phase).\n";
             formattedMessage +=
           "Please refer to the help menu (-h) or manual for further "
           "information.";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case CLIErrors::NO_SOLVER:
             formattedMessage += "No solver was specified. Reverting to default (0 - KLU).\n";
             formattedMessage +=
@@ -79,8 +76,12 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
         case CLIErrors::INPUT_SAME_OUTPUT:
             formattedMessage += "Output file name is the same as input file name.\n";
             formattedMessage += "This will cause irreversible changes to input file.\n";
-            formattedMessage += "Please choose a different output file name.";
+            formattedMessage += "Please choose a different output file name. " + message.value_or("");
             throw std::runtime_error(formattedMessage);
+        case CLIErrors::INVALID_ARGUMENT:
+            throw std::runtime_error(formattedMessage + "Invalid argument. " + message.value_or(""));
+        case CLIErrors::UNSUPPORTED_PARALLEL:
+            throw std::runtime_error(formattedMessage + "Parallel simulation is unsupported. Use separate processes for independent runs.");
         case CLIErrors::NO_CONVENTION:
             formattedMessage += "No convention was specified. Reverting to default (0 - JSIM).\n";
             formattedMessage +=
@@ -109,9 +110,11 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
         case InputErrors::CYCLIC_INCLUDE:
-            formattedMessage += "Attempting to include file " + message.value_or("") + ".\n";
-            formattedMessage += "This is the same file as input file.\n\n";
-            formattedMessage += "Preventing cyclic includes.";
+            formattedMessage += "Cyclic include: " + message.value_or("") + ".\n";
+            formattedMessage += "This file is already active in the include chain.";
+            throw std::runtime_error(formattedMessage);
+        case InputErrors::INVALID_INCLUDE:
+            formattedMessage += "Include requires exactly one filename: " + message.value_or("");
             throw std::runtime_error(formattedMessage);
         case InputErrors::MISSING_SUBCKT_IO:
             formattedMessage += "Missing subcircuit io.\n";

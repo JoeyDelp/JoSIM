@@ -2,8 +2,7 @@ if(NOT TEST_SOURCE_DIR OR NOT TEST_BINARY_DIR)
   message(FATAL_ERROR "Build-option checks require source and build directories")
 endif()
 set(arguments -S "${TEST_SOURCE_DIR}"
-              -B "${TEST_BINARY_DIR}/rejected-options/superlu"
-              -G "${TEST_GENERATOR}" -DSLU=ON
+              -G "${TEST_GENERATOR}"
               "-DCMAKE_C_COMPILER=${TEST_C_COMPILER}"
               "-DCMAKE_CXX_COMPILER=${TEST_CXX_COMPILER}"
               "-DFETCHCONTENT_SOURCE_DIR_CMAKESUITESPARSE=${TEST_SUITESPARSE_SOURCE}")
@@ -38,11 +37,19 @@ file(WRITE "${TEST_BINARY_DIR}/rejected-options/macro.log" "${output}\n${error}"
 if(result EQUAL 0 OR NOT "${output}\n${error}" MATCHES "SuperLU backend has been retired")
   message(FATAL_ERROR "SLU macro was not explicitly rejected (${result}):\n${output}\n${error}")
 endif()
-execute_process(COMMAND "${CMAKE_COMMAND}" ${arguments}
-                RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
-                TIMEOUT 45)
-file(MAKE_DIRECTORY "${TEST_BINARY_DIR}/rejected-options")
-file(WRITE "${TEST_BINARY_DIR}/rejected-options/superlu.log" "${output}\n${error}")
-if(result EQUAL 0 OR NOT "${output}\n${error}" MATCHES "SuperLU backend has been retired")
-  message(FATAL_ERROR "SLU=ON was not explicitly rejected (${result}):\n${output}\n${error}")
-endif()
+foreach(option IN ITEMS SLU USING_OPENMP)
+  if(option STREQUAL "SLU")
+    set(diagnostic "SuperLU backend has been retired")
+  else()
+    set(diagnostic "Parallel processing is unsupported")
+  endif()
+  execute_process(COMMAND "${CMAKE_COMMAND}" ${arguments}
+                  -B "${TEST_BINARY_DIR}/rejected-options/${option}" "-D${option}=ON"
+                  RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
+                  TIMEOUT 45)
+  file(MAKE_DIRECTORY "${TEST_BINARY_DIR}/rejected-options")
+  file(WRITE "${TEST_BINARY_DIR}/rejected-options/${option}.log" "${output}\n${error}")
+  if(result EQUAL 0 OR NOT "${output}\n${error}" MATCHES "${diagnostic}")
+    message(FATAL_ERROR "${option}=ON was not explicitly rejected (${result}):\n${output}\n${error}")
+  endif()
+endforeach()

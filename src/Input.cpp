@@ -19,12 +19,26 @@
 using namespace JoSIM;
 
 std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
+    struct IncludeStackGuard {
+        std::vector<std::string>& stack;
+        size_t size;
+        ~IncludeStackGuard() { stack.resize(size); }
+    } guard{activeIncludes_, activeIncludes_.size()};
     // When the standard input is selected, "fileName" will be in the nullopt
     // state.
     if (fileName != std::nullopt) {
-        if (std::filesystem::path(fileName.value()).has_parent_path()) {
-            fileParentPath = std::filesystem::path(fileName.value()).parent_path().string();
+        const auto path = std::filesystem::weakly_canonical(fileName.value());
+        for (const auto& ancestor : activeIncludes_) {
+            if (!ancestor.empty() && std::filesystem::equivalent(path, ancestor)) {
+                Errors::input_errors(InputErrors::CYCLIC_INCLUDE, path.string());
+            }
         }
+        if (activeIncludes_.empty()) { fileParentPath = path.parent_path().string(); }
+        activeIncludes_.push_back(path.string());
+        Misc::unique_push(inputFiles, path.string());
+    } else {
+        // Keep stdin as the root context while reading included files.
+        activeIncludes_.push_back("");
     }
     // Variable to store the read line
     std::string           line;
@@ -50,15 +64,13 @@ std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
             });
             // If the line contains a "INCLUDE" statement
             if (tokens.at(0) == ".INCLUDE" || tokens.at(0) == "INCLUDE") {
+                if (tokens.size() != 2) {
+                    Errors::input_errors(InputErrors::INVALID_INCLUDE, line);
+                }
                 // Variable to store path to file to include
                 std::string includeFile;
                 // If reading from a file
                 if (fileName) {
-                    // Sanity check to prevent cyclic includes
-                    if (std::filesystem::path(fileName.value()).c_str()
-                        == std::filesystem::path(fileName.value()).parent_path().append(tokens.at(1)).c_str()) {
-                        Errors::input_errors(InputErrors::CYCLIC_INCLUDE, fileName);
-                    }
                     includeFile = std::filesystem::path(fileName.value()).parent_path().append(tokens.at(1)).string();
                 } else {
                     includeFile = std::filesystem::current_path().append(tokens.at(1)).string();
@@ -260,9 +272,22 @@ void Input::parse_input(string_o fileName) {
         bar.complete();
         std::cout << "\n";
     }
-    if (!argMin && argVerb) { std::cout << "RNG seed: " << Rng::base_seed() << "\n"; }
+    if (argVerb) { std::cout << "RNG seed: " << Rng::base_seed() << "\n"; }
     // If main is empty, complain
     if (netlist.maindesign.empty()) { Errors::input_errors(InputErrors::MISSING_MAIN); }
+    if (cli_output_file) { ensure_safe_output(cli_output_file.value().name()); }
+    for (auto& output : output_files) { ensure_safe_output(output.name()); }
+}
+
+void Input::ensure_safe_output(const std::string& filename) const {
+    const auto output = std::filesystem::weakly_canonical(filename);
+    for (const auto& source : inputFiles) {
+        std::error_code error;
+        const bool equivalent = std::filesystem::equivalent(output, source, error);
+        if (output == std::filesystem::path(source) || (!error && equivalent)) {
+            Errors::cli_errors(CLIErrors::INPUT_SAME_OUTPUT, filename);
+        }
+    }
 }
 
 void Input::syntax_check_controls(std::vector<tokens_t>& controls) {
@@ -305,7 +330,7 @@ std::optional<uint64_t> Input::find_seed_option() const {
 
             // Fallback: expression -> double (but then RANGE CHECK!)
             double dv = parse_param(tok, parameters);
-            if (!std::isfinite(dv) || dv < 0.0 || dv > static_cast<double>(std::numeric_limits<uint64_t>::max())) {
+            if (!std::isfinite(dv) || dv < 0.0 || dv >= std::ldexp(1.0, 64)) {
                 Errors::input_errors(InputErrors::UNKNOWN_CONTROL, "OPTION SEED");
             }
 

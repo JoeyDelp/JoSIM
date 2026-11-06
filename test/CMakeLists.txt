@@ -148,7 +148,7 @@ if(BUILD_TESTING)
       "-DTEST_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
       "-DTEST_SUITESPARSE_SOURCE=${CMakeSuiteSparse_SOURCE_DIR}"
       -P "${PROJECT_SOURCE_DIR}/cmake/test_rejected_options.cmake")
-  set_tests_properties(regression::build_options PROPERTIES TIMEOUT 60)
+  set_tests_properties(regression::build_options PROPERTIES TIMEOUT 150)
   add_executable(josim-function-regression function_regression.cpp)
   target_link_libraries(josim-function-regression PRIVATE josim)
   josim_instrument_target(josim-function-regression)

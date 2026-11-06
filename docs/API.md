@@ -14,6 +14,13 @@ failed run's Input, Matrix and Simulation objects, then create a fresh run.
 Solver allocations are released when construction fails or a timestep retry
 rebuilds the matrix.
 
+`Input` records the main netlist and included files. Normal output and `.iv`
+generation reject destinations that refer to those inputs, including existing
+hard-link aliases. Keep this provenance when using the normal input parser.
+Applications that construct `expNetlist` directly should fill `inputFiles` if
+they also need protection for source files they loaded themselves. This adds
+state to `Input`; recompile existing embedding applications for this release.
+
 The command-line helpers `CliOptions::parse`, `display_help`, `Errors::oor` and
 `Errors::error_message` retain process-exit behaviour for the executable.
 Embedding applications should construct `Input` directly and handle exceptions,

@@ -102,11 +102,17 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A09 — Effective seed absent from -V 1
 
 - **Classification:** confirmed observability defect; merged candidate.
-- **Current reproduction/result:** Implementation present in merged Input owner; dedicated assertions pending.
+- **Current reproduction/result:** Found that minimal output suppressed the
+  effective seed despite the verbosity contract. Fixed and tested with an
+  auto-seeded noisy run, extracting its seed and reproducing its CSV exactly.
 - **Required outcome:** Verify explicit/auto seeds are exposed and usable for replay.
 - **Implementation/owner:** src/Input.cpp: seed reporting; src/Verbose.cpp.
 - **Verification:** CLI verbose/seed replay regression.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** regression::cli checks -m 1/-V 1 and
+  --verbose=1, exact uint64 maximum reporting, and rejection of overflow,
+  fractional/negative seeds. Both Release compilers pass 30/30; seven regression
+  groups pass ASan/UBSan/leaks. See F03; same-build replay is an exact comparison,
+  not a cross-platform bit-identity claim. Final native-platform checks pending.
 
 ## I110 — Original seed support report #110
 
@@ -366,3 +372,34 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   units-probe.log, numeric-red-test.log and numeric-sanitizer-tests.xml.
   All five native supported-platform jobs passed in CI run 42207795568 for
   ebd832afb83001508dbdc0e92720d56a07fee558.
+
+## F03 — CLI parsing, input preservation, includes and seed bounds
+
+- **Classification:** confirmed crashes, silent argument errors and destructive
+  output collisions uncovered while resolving D11/A09/D04.
+- **Reproduction:** --analysis=2, unknown switches, -m 2 and -V 999 returned
+  success; an empty argument crashed. Relative output paths, hard links, .file
+  output and output targeting included files overwrote netlists. Direct and
+  indirect includes crashed. The bounded red suite records 21 failing cases.
+- **Implementation:** CliOptions retains its pair representation with exact
+  option names and intact values. Reject invalid numeric/flag arguments,
+  unsupported output formats and retired solver/parallel requests. The OpenMP
+  option only linked a runtime; it had no simulation implementation and is
+  retired with an explicit configuration error. Preserve explicit stdin intent.
+  Input records loaded netlists, maintains an exception-safe active include
+  stack, and checks output identity using canonical paths and filesystem
+  equivalence. Output and IV validate before writing. Verbose seed reporting
+  works with minimal output; floating seed expressions must be strictly <2^64.
+- **Compatibility:** new Input provenance/stack fields require embedding
+  applications to recompile. Existing enum values are retained. Valid CLI long
+  options now honour their values; invalid requests fail instead of continuing.
+  Existing inputs are protected, including hard-link aliases. Unknown output
+  suffixes no longer silently select CSV. KLU/numerical equations are unchanged.
+- **Verification:** 30/30 GCC16 and Clang23 Release; all seven regression groups
+  pass ASan/UBSan with leak detection (4.71 s). Content comparisons prove every
+  input byte survives rejected output, including model-IV output. Auto-seeded
+  thermal noise replays exactly after extracting -V 1's seed. Max uint64 literal
+  is accepted; 2^64 and invalid seed expressions fail before conversion.
+- **Evidence:** build/audit-resolution/cli-red-probes.json, cli-red-tests.log,
+  cli-{green,gcc,sanitizer}-tests.xml. Final supported-platform verification and
+  the remaining trace/malformed-input corpus stay open under A08b/D11.

@@ -44,7 +44,6 @@ class OutputFile {
             type_ = FileOutputType::Raw;
         } else {
             Errors::cli_errors(CLIErrors::UNKNOWN_OUTPUT_TYPE, ext);
-            type_ = FileOutputType::Csv;
         }
     }
 };

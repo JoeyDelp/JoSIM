@@ -19,7 +19,10 @@ option(SLU "Retired SuperLU selection (ON is unsupported)" OFF)
 if(SLU)
   message(FATAL_ERROR "SuperLU backend has been retired. KLU is the supported solver; remove -DSLU=ON.")
 endif()
-option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
+option(USING_OPENMP "Retired parallel-processing placeholder (ON is unsupported)" OFF)
+if(USING_OPENMP)
+  message(FATAL_ERROR "Parallel processing is unsupported. JoSIM has no OpenMP simulation path; remove -DUSING_OPENMP=ON.")
+endif()
 option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
 if(MAKING_STATIC_BUILD)
   set(BUILD_SHARED_LIBS OFF)
@@ -106,12 +109,6 @@ make_target_static(josim)
 target_add_warnings(josim)
 josim_instrument_target(josim)
 # target_compile_features(josim PUBLIC cxx_std_20)
-
-# OpenMP usage
-if(USING_OPENMP)
-  find_package(OpenMP REQUIRED)
-  target_link_libraries(josim PUBLIC OpenMP::OpenMP_CXX)
-endif()
 
 # JoSIM command line interface
 # ----------------------------

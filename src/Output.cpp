@@ -22,6 +22,8 @@
 using namespace JoSIM;
 
 Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
+    if (iObj.cli_output_file) { iObj.ensure_safe_output(iObj.cli_output_file.value().name()); }
+    for (auto& output : iObj.output_files) { iObj.ensure_safe_output(output.name()); }
     // Write the output in type agnostic format
     write_output(iObj, mObj, sObj);
     // Format the output into the relevant type
@@ -111,7 +113,6 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
             // Shorthand for the optional value
             auto i1    = i.index1.has_value() ? i.index1.value() : -1;
             auto i2    = i.index2.has_value() ? i.index2.value() : -1;
-            auto si    = i.sourceIndex.has_value() ? i.sourceIndex.value() : -1;
             auto vi    = i.variableIndex.has_value() ? i.variableIndex.value() : -1;
             // Size of original data vectors available to FIR filter
             auto xsize = t.size();

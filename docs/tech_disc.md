@@ -32,7 +32,7 @@ This command specifies which analysis type is used by JoSIM. This can be either 
 
 ### Help (-h):
 
-Displays the above help menu and immediately exits the program. If this command is provided with any other command, this command takes precedence.
+Displays the help menu and exits the program.
 
 ### Input (-i):
 
@@ -46,9 +46,17 @@ To prevent JoSIM from printing any unnecessary output to the command interface, 
 
 Specifies the filename and type (through extension) of the output file where results will be stored. By default, if `-o` is specified and no filename is provided, a `output.csv` file is produced. The available file formats are discussed in detail in the [output results](#output-results) section.
 
+Unknown suffixes fail instead of silently selecting CSV. Output must not refer
+to the main or an included netlist, including through a hard link. This also
+applies to `.file` and model `.iv` output. Bare `.file`/`.iv` names use the main
+input's directory; `-o` paths are relative to the working directory.
+
 ### Parallel (-p):
 
-As of version 2.5 there are currently no sections of JoSIM that are parallel processed. This option, when enabled, checks whether JoSIM was compiled with `--DUSING_OPENMP=1` CMake switch. This is reserved for future implementation of very large circuits. At present, does nothing and not detrimental to performance in any scenario.
+Retired. JoSIM has no parallel simulation path. `-p` and `-DUSING_OPENMP=ON`
+now fail explicitly; the earlier switch only reported whether an OpenMP runtime
+was linked. Use separate processes for independent circuit sweeps. Do not run
+concurrent simulations in one embedding process; see [the API guidance](API.md).
 
 ### Verbose (-V):
 
@@ -60,7 +68,8 @@ Only displays the version string for **josim-cli** and then exits. This string i
 
 ### Solver (-x):
 
-This option allows switching between LU solvers. Default is KLU solver. Setting this to `1` enables SuperLU solver.
+Retired. KLU is the supported solver. `-x`, `-DSLU=ON` and manual `SLU` macro
+definitions fail explicitly. Earlier builds accepted `SLU=ON` while running KLU.
 
 ## Parse Input {#parse-input}
 
