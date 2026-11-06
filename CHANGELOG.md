@@ -16,6 +16,11 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Numeric expressions now parse lowercase engineering suffixes, signed scientific
+  exponents and unary signs correctly. Function powers and `LOG10` return the
+  expected values. Missing operands, invalid real-number domains and mismatched
+  brackets now fail instead of crashing, hanging or silently returning a result.
+
 - Custom waveforms resolve relative files without an optional-path crash, align
   linear/cubic interpolation to the stored samples and delay, and repeat from the
   delayed start. Their sample interval no longer stretches with the simulation

@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include "JoSIM/Function.hpp"
+#include "JoSIM/Misc.hpp"
 
 #include <cmath>
 #include <filesystem>
@@ -11,8 +12,8 @@
 
 using namespace JoSIM;
 
-static void near(double actual, double expected, const std::string& context) {
-    if (!std::isfinite(actual) || std::abs(actual - expected) > 1e-11) {
+static void near(double actual, double expected, const std::string& context, double tolerance = 1e-11) {
+    if (!std::isfinite(actual) || std::abs(actual - expected) > tolerance) {
         throw std::runtime_error(context + ": expected " + std::to_string(expected) + ", got " + std::to_string(actual));
     }
 }
@@ -26,7 +27,7 @@ int main() {
     input.fileParentPath = file.parent_path().string();
     auto write = [&](const std::string& values) { std::ofstream(file) << values << '\n'; };
     int failures = 0;
-    auto check = [&](const char* label, const std::function<void()>& test) {
+    auto check = [&](const std::string& label, const std::function<void()>& test) {
         try {
             write("1 3 5 7");
             test();
@@ -118,6 +119,53 @@ int main() {
             source.parse_function("CUS(" + name + " 1 1 0)", input, std::nullopt);
         } catch (const std::runtime_error&) { rejected = true; }
         if (!rejected) { throw std::runtime_error("non-finite waveform samples accepted"); }
+    });
+    const std::vector<std::pair<std::string, double>> expressions = {
+        {"1P", 1e-12}, {"1p", 1e-12}, {"1Meg", 1e6}, {"1m", 1e-3}, {"2mV", 2e-3},
+        {"2.5E-3", 0.0025}, {"2.5e-3", 0.0025}, {"1.E-3", 0.001}, {".5e-3", 0.0005},
+        {"-3.4e+2", -340.0}, {"3*-2", -6.0}, {"3/-2", -1.5}, {"-2^2", -4.0},
+        {"(-2)^2", 4.0}, {"2^-3", 0.125}, {"2^3^2", 512.0},
+        {"SIN(0.5)^2", std::sin(0.5) * std::sin(0.5)}, {"sin(0.5)^2", std::sin(0.5) * std::sin(0.5)},
+        {"LOG10(100)", 2.0}, {"EXP(LOG(3))", 3.0}, {"SQRT(9)+CBRT(8)", 5.0},
+    };
+    for (const auto& expression : expressions) {
+        check("numeric " + expression.first, [&] {
+            near(parse_param(expression.first, {}), expression.second, expression.first,
+                 std::max(1e-300, std::abs(expression.second) * 2e-13));
+        });
+    }
+    check("scoped expression with global fallback", [&] {
+        param_map parameters;
+        Parameter local, global, other;
+        local.set_value(2.0);
+        global.set_value(10.0);
+        other.set_value(3.0);
+        parameters[ParameterName("R", "CELL")] = local;
+        parameters[ParameterName("R", std::nullopt)] = global;
+        parameters[ParameterName("G", std::nullopt)] = other;
+        near(parse_param("R+G", parameters, "CELL"), 5.0, "local R plus global G");
+        near(parse_param("G+R", parameters, "CELL"), 5.0, "global lookup must not depend on operand order");
+        near(parse_param("R+G", parameters), 13.0, "global expression remains independent");
+    });
+    check("engineering suffixes in waveform file", [&] {
+        write("1m 3m 5m 7m");
+        Function source;
+        source.parse_function("CUS(" + name + " 1 1 0)", input, std::nullopt);
+        near(source.value(1.5), 0.003, "waveform file amplitudes use engineering suffixes");
+    });
+    check("invalid numeric domains and literals", [&] {
+        for (const std::string expression : {"1/0", "SQRT(-1)", "LOG(0)", "EXP(1000)", "1E", "1.2.3"}) {
+            bool rejected = false;
+            try { parse_param(expression, {}); }
+            catch (const std::runtime_error&) { rejected = true; }
+            if (!rejected) { throw std::runtime_error("invalid numeric expression accepted: " + expression); }
+        }
+        for (const std::string literal : {"1e", "1.2.3", "1e+"}) {
+            bool rejected = false;
+            try { Misc::modifier(literal); }
+            catch (const std::runtime_error&) { rejected = true; }
+            if (!rejected) { throw std::runtime_error("malformed scalar accepted: " + literal); }
+        }
     });
     std::error_code ignored;
     std::filesystem::remove(file, ignored);

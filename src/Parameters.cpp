@@ -7,6 +7,8 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -75,283 +77,164 @@ int64_t                        JoSIM::precedence_lvl(const std::string& op) {
 }
 
 double JoSIM::parse_param(const std::string& expr, const param_map& params, string_o subc, bool single) {
-    // Initialize the expression to evaluate
-    std::string expToEval = expr;
-    // Sanity check, prepend 0 to a string where the value is eg. .5 to vorm 0.5
-    if (expToEval.front() == '.') { expToEval = "0" + expToEval; }
-    // Remove any and all whitespace characters
-    expToEval.erase(std::remove_if(expToEval.begin(), expToEval.end(), isspace), expToEval.end());
-    // Stacks used in the shunting yard
-    std::vector<std::string> rpnQueue, rpnQueueCopy, opStack;
-    // Create two copies of the type each element in the queue is
-    std::vector<char>        qType, qTypeCopy;
-    // Substring reference to part of the expression
-    std::string              partToEval;
-    // Counter
-    int64_t                  popCount = 0;
-    // Variable for the result to be returned
-    double                   result;
-    // Evaluate expression piece by piece until it is empy
-    while (!expToEval.empty()) {
-        // First test the expression to see if it is a parameter
-        if (params.count(ParameterName(expToEval, subc)) != 0) {
-            if (!params.at(ParameterName(expToEval, subc)).get_value()) {
-                if (!single) {
-                    // Return NaN to indicate this ocurred
-                    return std::numeric_limits<double>::quiet_NaN();
-                } else {
-                    Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
-                }
-            } else {
-                expToEval = Misc::precise_to_string(params.at(ParameterName(expToEval, subc)).get_value().value());
-            }
-        } else if (params.count(ParameterName(expToEval, std::nullopt)) != 0) {
-            if (!params.at(ParameterName(expToEval, std::nullopt)).get_value()) {
-                if (!single) {
-                    // Return NaN to indicate this ocurred
-                    return std::numeric_limits<double>::quiet_NaN();
-                } else {
-                    Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
-                }
-            } else {
-                expToEval = Misc::precise_to_string(
-                        params.at(ParameterName(expToEval, std::nullopt)).get_value().value());
-            }
+    std::string text = expr;
+    text.erase(std::remove_if(text.begin(), text.end(), [](unsigned char c) { return std::isspace(c); }), text.end());
+    if (text.empty()) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+    auto uppercase = [](std::string name) {
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::toupper(c); });
+        return name;
+    };
+    auto parameter = [&](const std::string& name) {
+        auto found = params.find(ParameterName(name, subc));
+        const auto upper = uppercase(name);
+        if (found == params.end() && upper != name) { found = params.find(ParameterName(upper, subc)); }
+        if (found == params.end() && subc) { found = params.find(ParameterName(name, std::nullopt)); }
+        if (found == params.end() && subc && upper != name) { found = params.find(ParameterName(upper, std::nullopt)); }
+        return found;
+    };
+    auto resolved = [&](const Parameter& value) {
+        if (!value.get_value()) {
+            if (!single) { return std::numeric_limits<double>::quiet_NaN(); }
+            Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
         }
-        // Find the position of the first operator
-        int64_t opLoc = expToEval.find_first_of("/*-+(){}[]^");
-        // If no operator is found
-        if (opLoc == -1) {
-            // The part to evaluate is the entire experssion
-            partToEval = expToEval;
-            // If an operator is found
-        } else {
-            // If the operator is either a '-' or a '+'
-            if (expToEval.at(opLoc) == '-' || expToEval.at(opLoc) == '+') {
-                // If this operator is not the start of the string
-                if (opLoc != 0) {
-                    // Do a few checks
-                    bool digitBeforeE = false;
-                    bool eBefore      = false;
-                    bool digitAfter   = false;
-                    // If the character preceeding this operator is an E
-                    if (expToEval[opLoc - 1] == 'E') { eBefore = true; }
-                    // If the character after the operator is a digit
-                    if (opLoc != expToEval.length() - 1) {
-                        if (std::isdigit(expToEval[opLoc + 1])) { digitAfter = true; }
-                    }
-                    // If the char before E is a digit
-                    if ((opLoc - 1) != 0) {
-                        if (std::isdigit(expToEval[opLoc - 2])) { digitBeforeE = true; }
-                    }
-                    if (eBefore && digitAfter && digitBeforeE) {
-                        // Find the next operator since this operator is not an operator
-                        opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-                    }
-                } else {
-                    // If the character after the operator is a digit but not before
-                    if ((opLoc != expToEval.length() - 1) && !qType.empty()) {
-                        if (qType.back() != 'V') {
-                            if (std::isdigit(expToEval[opLoc + 1])) {
-                                // Find next operator since this operator is not an operator
-                                opLoc             = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-                                // Do a few checks
-                                bool digitBeforeE = false;
-                                bool eBefore      = false;
-                                bool digitAfter   = false;
-                                // If the character preceeding this operator is an E
-                                if (expToEval[opLoc - 1] == 'E') { eBefore = true; }
-                                // If the character after the operator is a digit
-                                if (opLoc != expToEval.length() - 1) {
-                                    if (std::isdigit(expToEval[opLoc + 1])) { digitAfter = true; }
-                                }
-                                // If the char before E is a digit
-                                if ((opLoc - 1) != 0) {
-                                    if (std::isdigit(expToEval[opLoc - 2])) { digitBeforeE = true; }
-                                }
-                                if (eBefore && digitAfter && digitBeforeE) {
-                                    // Find next operator since this operator is not an operator
-                                    opLoc = expToEval.find_first_of("/*-+(){}[]^", opLoc + 1);
-                                }
-                            }
-                        }
-                    }
-                }
+        if (!std::isfinite(value.get_value().value())) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+        return value.get_value().value();
+    };
+    // Preserve exact whole-parameter lookup, including names supplied directly
+    // by embedding callers, before interpreting an expression's operators.
+    auto whole = parameter(text);
+    if (whole != params.end()) { return resolved(whole->second); }
+
+    struct Token {
+        std::string op;
+        double value;
+    };
+    std::vector<Token> output;
+    std::vector<std::string> operators;
+    bool operand = true;
+    auto function = [](const std::string& name) { return std::find(funcs.begin(), funcs.end(), name) != funcs.end(); };
+    auto opening = [](const std::string& token) { return token.size() == 1 && std::string("([{").find(token[0]) != std::string::npos; };
+    auto priority = [](const std::string& op) { return op == "U-" || op == "U+" ? int64_t(3) : precedence_lvl(op); };
+    auto emit = [&] { output.push_back({operators.back(), 0.0}); operators.pop_back(); };
+    const std::string delimiters = "+-*/^()[]{}";
+    size_t position = 0;
+    while (position < text.size()) {
+        const char c = text[position];
+        if (std::isdigit(static_cast<unsigned char>(c))
+            || (c == '.' && position + 1 < text.size() && std::isdigit(static_cast<unsigned char>(text[position + 1])))) {
+            if (!operand) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+            size_t numeric = 0;
+            try { std::stod(text.substr(position), &numeric); }
+            catch (const std::exception&) { Errors::misc_errors(MiscErrors::STOD_ERROR, text.substr(position)); }
+            // std::stod identifies exponent signs as part of the number. Only
+            // subsequent operators delimit its optional engineering/unit suffix.
+            size_t end = text.find_first_of(delimiters, position + numeric);
+            if (end == std::string::npos) { end = text.size(); }
+            const auto literal = text.substr(position, end - position);
+            const auto suffix = literal.substr(numeric);
+            if ((!suffix.empty() && (suffix.front() == 'E' || suffix.front() == 'e'))
+                || std::any_of(suffix.begin(), suffix.end(), [](unsigned char ch) { return !std::isalpha(ch); })) {
+                Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr);
             }
-            // If the operator is at the start of the string
-            if (opLoc == 0) {
-                // The part to evaluate is the the operator
-                partToEval = expToEval.substr(0, opLoc + 1);
-                // If the operator is further along
-            } else {
-                // The part to evaluate is from the start to the the operator
-                partToEval = expToEval.substr(0, opLoc);
-            }
+            const double value = Misc::modifier(literal);
+            if (!std::isfinite(value)) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+            output.push_back({"", value});
+            position = end;
+            operand = false;
+            continue;
         }
-        // Handle a numerical value
-        if (isdigit(partToEval.at(0))
-            || ((partToEval.at(0) == '-' || partToEval.at(0) == '+') && partToEval.size() > 1)) {
-            // Add the value to the RPN queue
-            rpnQueue.push_back(Misc::precise_to_string(Misc::modifier(partToEval)));
-            // Identify the type as a value
-            qType.push_back('V');
-            // If it is not a digit, check that it is not a parameter
-        } else if ([&]() {
-                       // Check if the parameter exists
-                       if (params.count(ParameterName(partToEval, subc)) != 0) {
-                           if (params.at(ParameterName(partToEval, subc)).get_value()) { return true; }
-                           return false;
-                       }
-                       return false;
-                   }()) {
-            // If the parameter exists then add to the queue
-            rpnQueue.push_back(Misc::precise_to_string(params.at(ParameterName(partToEval, subc)).get_value().value()));
-            // Identify the type as a value
-            qType.push_back('V');
-            // Else check that it is not a function name such as SIN, COS, TAN, etc.
-        } else if (std::find(funcs.begin(), funcs.end(), partToEval) != funcs.end()) {
-            // Add it to the operator stack if it is
-            opStack.push_back(partToEval);
-            // If not a function, check if it is not a defined constant
-        } else if (Misc::string_constant(partToEval) != 0.0) {
-            // Add this defined constant to the RPN stack
-            rpnQueue.push_back(Misc::precise_to_string(Misc::string_constant(partToEval)));
-            // Identify the type as a value
-            qType.push_back('V');
-            // If not a constant, check if it is an operator in the operator list
-        } else if (partToEval.find_first_of("/*-+^") != std::string::npos) {
-            // While the operator stack is not empty
-            while ((!opStack.empty())
-                   && (((precedence_lvl(opStack.back()) == 4)
-                        || (precedence_lvl(opStack.back()) >= precedence_lvl(partToEval)))
-                       && (opStack.back().find_first_of("([{") == std::string::npos) && (partToEval != "^"))) {
-                // Add the operator to the RPN stack
-                rpnQueue.push_back(opStack.back());
-                // Identify the type as operator
-                qType.push_back('O');
-                // Remove the operator from the operator stack
-                opStack.pop_back();
-            }
-            // Add the part to be evaluated to the operator stack
-            opStack.push_back(partToEval);
-            // Check parenthesis opening
-        } else if (partToEval.find_first_of("([{") != std::string::npos) {
-            // Add the parenthesis opening to the operator stack
-            opStack.push_back(partToEval);
-            // Check parenthesis close
-        } else if (partToEval.find_first_of(")]}") != std::string::npos) {
-            // While operator stack is not empty and the back is not a opening
-            while ((!opStack.empty()) && (opStack.back().find_first_of("([{") == std::string::npos)) {
-                // Add the operator to the RPN stack
-                rpnQueue.push_back(opStack.back());
-                // Identify it as an operator
-                qType.push_back('O');
-                // Remove the operator from the operator stack
-                opStack.pop_back();
-            }
-            // Id the stack is not empty and the back is a closing
-            if ((!opStack.empty()) && (opStack.back().find_first_of("([{") != std::string::npos)) {
-                // Remove from the operator stack
-                opStack.pop_back();
-                // If this point is reached we have mismatched parenthesis
-            } else {
+        if (c == '(' || c == '[' || c == '{') {
+            if (!operand) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+            operators.emplace_back(1, c);
+            ++position;
+            continue;
+        }
+        if (c == ')' || c == ']' || c == '}') {
+            if (operand) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+            while (!operators.empty() && !opening(operators.back())) { emit(); }
+            if (operators.empty()
+                || std::string("([{").find(operators.back()[0]) != std::string(")]}").find(c)) {
                 Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr);
             }
-            // Function is invalid or a parameter is used which is unparsed
-        } else {
-            if (!single) {
-                // Return NaN to indicate this ocurred
-                return std::numeric_limits<double>::quiet_NaN();
+            operators.pop_back();
+            if (!operators.empty() && function(operators.back())) { emit(); }
+            ++position;
+            operand = false;
+            continue;
+        }
+        if (std::string("+-*/^").find(c) != std::string::npos) {
+            if (operand) {
+                if (c != '+' && c != '-') { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+                // Unary signs bind after exponentiation but before products;
+                // pushing them directly also permits a signed exponent.
+                operators.push_back(c == '-' ? "U-" : "U+");
             } else {
+                const std::string op(1, c);
+                while (!operators.empty() && !opening(operators.back())
+                       && (priority(operators.back()) > priority(op)
+                           || (priority(operators.back()) == priority(op) && c != '^'))) { emit(); }
+                operators.push_back(op);
+                operand = true;
+            }
+            ++position;
+            continue;
+        }
+        if (!operand) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+        size_t end = text.find_first_of(delimiters, position);
+        if (end == std::string::npos) { end = text.size(); }
+        const auto name = text.substr(position, end - position);
+        auto found = parameter(name);
+        if (found != params.end()) {
+            const double value = resolved(found->second);
+            if (std::isnan(value)) { return value; }
+            output.push_back({"", value});
+            operand = false;
+        } else {
+            const auto canonical = uppercase(name);
+            if (function(canonical)) {
+                if (end == text.size() || std::string("([{").find(text[end]) == std::string::npos) {
+                    Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr);
+                }
+                operators.push_back(canonical);
+            } else if (Misc::string_constant(canonical) != 0.0) {
+                output.push_back({"", Misc::string_constant(canonical)});
+                operand = false;
+            } else {
+                if (!single) { return std::numeric_limits<double>::quiet_NaN(); }
                 Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, expr);
             }
         }
-        // Adjust the next part to be evaluated
-        if (opLoc == 0) {
-            // If the operator is at 0, substring the rest of the expression
-            expToEval = expToEval.substr(1);
-            // If operator is not found then the remaining expression is empty
-        } else if (opLoc == -1) {
-            expToEval = "";
-            // Else substring until the next operator location
-        } else {
-            expToEval = expToEval.substr(opLoc);
-        }
+        position = end;
     }
-    // If the remaining expresiotn is empty
-    if (expToEval.empty()) {
-        // If the operator stack is not empty (it should be)
-        while (!opStack.empty()) {
-            // If the last operator is an opening parenthesis
-            if (opStack.back().find_first_of("([{") != std::string::npos) {
-                // We have mismatched parenthesis, complain
-                Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr);
-            } else {
-                // Add the operator to the RPN stack
-                rpnQueue.push_back(opStack.back());
-                // Identify it as an operator
-                qType.push_back('O');
-                // Remove the operator from the operator stack
-                opStack.pop_back();
-            }
-        }
+    if (operand) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+    while (!operators.empty()) {
+        if (opening(operators.back())) { Errors::parsing_errors(ParsingErrors::MISMATCHED_PARENTHESIS, expr); }
+        emit();
     }
-    // Perform Reverse Polish Notation expansion on RPN stack
-    while (rpnQueue.size() > 1) {
-        // Clear the copies
-        rpnQueueCopy.clear();
-        qTypeCopy.clear();
-        // Loop the the queue type
-        for (auto i = 0; i < qType.size(); ++i) {
-            // If the queue type is value
-            if (qType[i] == 'V') {
-                // Add the value to the copy of the RPN
-                rpnQueueCopy.push_back(rpnQueue[i]);
-                // Add the type to the copy of the qType
-                qTypeCopy.push_back('V');
-                // If the type is operator
-            } else if (qType[i] == 'O') {
-                // If the operator is the first item in the queue
-                if (i == 0) {
-                    // We have an invalid queue type. Should always be VVO or VO
-                    Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr);
-                    // If we are less than 2 deep in the stack
-                } else if (i < 2) {
-                    // Remove the previous value from the copy
-                    rpnQueueCopy.pop_back();
-                    // Process the operator on the value and add to the copy
-                    rpnQueueCopy.push_back(Misc::precise_to_string(
-                            parse_operator(rpnQueue[i], 0, Misc::modifier(rpnQueue[i - 1]), popCount)));
-                    // Now proceed as normal with RPN expansion
-                } else {
-                    // Evaluate the operator on the two values
-                    result = parse_operator(
-                            rpnQueue[i], Misc::modifier(rpnQueue[i - 2]), Misc::modifier(rpnQueue[i - 1]), popCount);
-                    // Remove the two values from the copy
-                    for (int64_t k = 0; k < popCount; ++k) { rpnQueueCopy.pop_back(); }
-                    // If we removed two
-                    if (popCount == 2) {
-                        // Remove the type from the copy of type stack
-                        qTypeCopy.pop_back();
-                    }
-                    // Add the result value to the RPN queue
-                    rpnQueueCopy.push_back(Misc::precise_to_string(result));
-                }
-                // If the RPN queue is greater or equal to i
-                if (rpnQueue.size() >= i) {
-                    // Insert the rest of the stacks to the copies
-                    rpnQueueCopy.insert(rpnQueueCopy.end(), rpnQueue.begin() + i + 1, rpnQueue.end());
-                    qTypeCopy.insert(qTypeCopy.end(), qType.begin() + i + 1, qType.end());
-                }
-                break;
-            }
+    std::vector<double> values;
+    for (const auto& token : output) {
+        if (token.op.empty()) { values.push_back(token.value); continue; }
+        const bool sign = token.op == "U-" || token.op == "U+";
+        const int64_t arity = sign || function(token.op) ? 1 : 2;
+        if (values.size() < static_cast<size_t>(arity)) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+        const double right = values.back();
+        values.pop_back();
+        double result;
+        if (sign) { result = token.op == "U-" ? -right : right; }
+        else {
+            double left = 0.0;
+            if (arity == 2) { left = values.back(); values.pop_back(); }
+            int64_t consumed = 0;
+            result = parse_operator(token.op, left, right, consumed);
+            if (consumed != arity) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
         }
-        rpnQueue = rpnQueueCopy;
-        qType    = qTypeCopy;
+        if (!std::isfinite(result)) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+        values.push_back(result);
     }
-    // The final value should be the one we want, return this
-    return Misc::modifier(rpnQueue.back());
+    if (values.size() != 1) { Errors::parsing_errors(ParsingErrors::INVALID_RPN, expr); }
+    return values.back();
 }
+
 
 double JoSIM::parse_operator(const std::string& op, double val1, double val2, int64_t& popCount) {
     if (std::find(funcs.begin(), funcs.end(), op) != funcs.end()) {
@@ -384,6 +267,8 @@ double JoSIM::parse_operator(const std::string& op, double val1, double val2, in
             return exp(val2);
         } else if (op == "LOG") {
             return log(val2);
+        } else if (op == "LOG10") {
+            return log10(val2);
         } else if (op == "SQRT") {
             return sqrt(val2);
         } else if (op == "CBRT") {

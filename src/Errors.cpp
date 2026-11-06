@@ -693,11 +693,8 @@ void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
             formattedMessage += "Please correct the expression before trying again.";
             throw std::runtime_error(formattedMessage);
         case ParsingErrors::INVALID_RPN:
-            formattedMessage += "Invalid RPN detected.\n";
-            formattedMessage +=
-          "This might be an algorithm fault or an incorrect expression "
-          "parse.\n";
-            formattedMessage += "The expression in question: " + message.value_or("");
+            formattedMessage += "Invalid or incomplete expression: " + message.value_or("") + "\n";
+            formattedMessage += "Check the operands, operators and function arguments.";
             throw std::runtime_error(formattedMessage);
         case ParsingErrors::INVALID_DECLARATION:
             formattedMessage += "Missing parameter declaration in: " + message.value_or("") + "\n";

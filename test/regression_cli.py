@@ -48,6 +48,16 @@ class CliRegression(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("Invalid transient analysis", result.stdout + result.stderr)
 
+    def test_invalid_parameter_expressions(self):
+        for expression in ("{}", "1+", "1+*2", "(2)3", "SIN()", "(1]", "2/(3-"):
+            with self.subTest(expression=expression):
+                result, _ = self.run_deck(
+                    f".param A={expression}\nV1 1 0 DC A\nR1 1 0 1k\n.tran 1p 5p DST\n.print V(1)\n.end\n",
+                    timeout=2,
+                )
+                self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                self.assertIn("Parsing", result.stdout + result.stderr)
+
     def test_small_valid_transient(self):
         result, rows = self.run_deck("V1 1 0 DC 1\nR1 1 0 1k\n.tran 1p 5p DST\n.print V(1)\n.end\n")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

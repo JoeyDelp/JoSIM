@@ -452,7 +452,25 @@ The final control command that is of importance in JoSIM is the parameters comma
 
 Additionally, expressions can also contain other variables and parameters will be continuously evaluated until all variables are reduced to values. If variables are not defined the program will halt and produce an error.
 
-Expression parsing is exclusive to the *.param* control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in *std::invalid_argument: stod: no conversion* as it tries to convert a string into a double. Please be mindful when using expressions and restrict them to *.param* controls.
+Numeric literals support decimal/scientific notation (`1E-3`, `1e-3`, `1.E-3`)
+and case-insensitive SPICE engineering suffixes. `M` or `m` means milli;
+`MEG` means mega. The remaining suffixes are `T`, `G`, `K`, `U`, `N`, `P` and
+`F`. ASCII unit labels may follow a suffix, such as `2mV`.
+
+Expressions support `+`, `-`, `*`, `/`, `^`, matching `()`, `[]` or `{}`,
+unary signs, and the documented mathematical functions. Exponentiation is right
+associative and precedes a leading unary sign: `2^3^2` is 512, `-2^2` is -4,
+and `2^-3` is 0.125. Function calls bind before a following power. `LOG` is the
+natural logarithm and `LOG10` is base ten. Evaluated expressions must produce
+finite real values; missing operands, invalid function arguments and mismatched
+brackets produce parsing errors.
+
+Parameter expressions resolve local names first and then global names for every
+operand. Undefined names and dependency cycles fail with a diagnostic. Component
+and source parsers that accept parameter expressions use the same evaluator;
+when an expression contains spaces, define it with `.param` and use its name so
+that component fields remain unambiguous. Hierarchical named overrides are
+tracked separately in the audit-resolution ledger.
 
 ### Control Block
 

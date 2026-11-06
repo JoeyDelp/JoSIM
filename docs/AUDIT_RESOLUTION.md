@@ -313,18 +313,29 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Full Clang Release suite passes 28/28; focused ASan/UBSan+leak checks pass
   functions and CLI. Final supported-platform results remain to be recorded.
 
-## F02 — Engineering suffixes in raw library inputs
+## F02 — Numeric literals, expression precedence and malformed input
 
-- **Classification:** newly reproduced numerical parsing defect, still open.
-- **Reproduction/result:** direct Function::parse_function with CUS TS=1p and
-  TD=2.5p interpreted those values as 1 and 2.5 seconds; uppercase/scientific
-  values isolate F01 correctly. CLI normalization masks this in normal decks,
-  but raw waveform file samples and direct library calls reach Misc::modifier.
-- **Required outcome:** case-consistent engineering suffixes and scientific
-  exponents with independent numerical assertions; retain parameter-name scope.
-- **Owner:** src/Misc.cpp modifier; src/Parameters.cpp numeric tokenization.
-- **Verification/evidence:** bounded direct numerical parser regressions are
-  next. F01 uses explicit 1E-12 / 2.5E-12 to test cubic timing independently.
-  units-probe.cpp / units-probe.log preserve direct results: 1P=1e-12, 1p=1,
-  1E-3=0.001, but 1e-3=-2 and 1.E-3=-2. The last case also reaches CLI
-  inputs despite its uppercase normalization. No resolution is claimed yet.
+- **Classification:** confirmed numerical parsing and malformed-input defects.
+- **Reproduction:** raw `1p` became 1, `1e-3`/`1.E-3` became -2; unary signs in
+  products/exponents, function powers and LOG10 gave wrong values. `(2)3` hung
+  in the old RPN reduction; empty/incomplete/mismatched expressions crashed or
+  silently succeeded. The red regressions preserve these individual failures.
+- **Required outcome:** standard scientific literals, case-consistent SPICE
+  prefixes, mathematical precedence and finite real results; malformed input
+  must terminate with a parsing error. Maintain scoped parameter resolution.
+- **Implementation/compatibility:** src/Parameters.cpp parse_param keeps the
+  shunting-yard/RPN architecture with explicit operand-state tracking, unary
+  operators and checked stack arity. parse_operator implements advertised LOG10.
+  Misc::modifier normalizes engineering suffixes and rejects malformed scalars.
+  Public signatures, enum values and object layouts are unchanged. Formerly
+  accepted invalid expressions now fail; incorrect valid results are corrected.
+- **Verification:** independent literal/closed-form/parser-function comparisons,
+  scoped/global operand tests and bounded malformed CLI regressions. Four clean
+  GCC16/Clang23 Debug/Release builds passed 28/28. Full Clang ASan/UBSan with
+  leak detection passed 28/28 in 143.98 s. Direct scalar tolerance is 2e-13
+  relative with a 1e-300 absolute floor: conservative double/libm rounding
+  allowance, never a solver tolerance. Gross scale/sign errors cannot pass it.
+- **Evidence:** artifacts/audit-resolution/parser-repairs.json; exact candidate
+  diff hash and run commands under build/audit-resolution/current/*/run.json;
+  units-probe.log, numeric-red-test.log and numeric-sanitizer-tests.xml.
+  Current supported-platform CI still needs to verify the committed repair.
