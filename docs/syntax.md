@@ -12,6 +12,12 @@ Each line follows similar syntax which uses the first non-blank space character 
 
 Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of **0** and **GND** which indicate a grounded node. Additionally, the use of period (**.**) or vertical bars (**|**) in label or node names are prohibited as these are reserved characters within JoSIM.
 
+Only the exact names `0` and `GND` indicate ground. `GNDREF`, `AGND` and other
+names containing those letters are ordinary nodes. Declared subcircuit pins are
+bound to their instance connections before physical nodes are classified. A pin
+named `GND` can therefore connect to a non-ground node; undeclared ground
+references inside the subcircuit still refer to global ground.
+
 Lines that start with a period (**.**) indicate that the line relates in some way to simulation control. In this case the command that follows the period identifies the control, e.g. .tran, .print, .end.
 
 Comments are lines that start with an asterisk (**\***) or a hash (**\#**). Comments are meant to be in a line of their own and will not work if placed at the end of a line.
@@ -414,6 +420,17 @@ Subcircuit parameters can be output using the `.`(period) or `|`(vertical bar) a
 i.e. **.print** v(14.X01) p(B01.X02)
 
 This method follows the path from inside to out when nested subcircuits are used. 
+
+Declared pin aliases are supported as well as internal nodes and components.
+For example, `V(IN.X1)` addresses pin `IN` of instance `X1`, and
+`V(IN.X2.X1)` addresses its nested instance `X2`. Ground pins produce a zero
+trace when connected to ground. `V(0,N)` is the negative of `V(N)`.
+
+Unknown devices, nodes, aliases and malformed output requests are errors.
+Requested traces are never silently discarded. `C(R1)` is an alias for
+`I(R1)`. Device differences such as `V(R1,R3)`, `P(B1,B2)` and `I(R1,R3)`
+subtract the two physical traces after applying the same output sampling/filter.
+General arithmetic expressions over output vectors remain unsupported.
 
 Subcircuits as mentioned before can also be nested almost indefinitely as they are expanded upon simulation.
 

@@ -56,6 +56,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Windows' installed consumers pass, but three build-tree C++ executables
   cannot locate josim.dll (0xc0000135). Scope DLL discovery to those CTest
   processes; require the native rerun before accepting this mode.
+  Rerun 42216809204 for 4047755473 passes all ten binary/library-mode jobs.
 
 ## A05 — Silently ineffective SLU=ON
 
@@ -111,9 +112,14 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A08b — Hierarchical pin-alias output (#81)
 
 - **Classification:** confirmed compatibility defect.
-- **Current reproduction/result:** Open; audit reproducer silently drops the trace.
+- **Current reproduction/result:** The exact supplied circuit now resolves
+  V(IN.X1) to the connected node and returns 10 V in both analysis modes.
+  Nested/independent instances and ground aliases are retained. Invalid output
+  requests throw; no successful result silently drops the requested trace.
 - **Required outcome:** Resolve pin aliases and reject invalid requested traces explicitly.
-- **Implementation/owner:** src/Netlist.cpp; src/RelevantTrace.cpp.
+- **Implementation/owner:** src/Netlist.cpp pin maps; RelevantTrace.cpp alias
+  resolution; Output.cpp primitive trace differences. See F05 for accompanying
+  ground-name/output defects, compatibility and measured evidence.
 - **Verification:** hierarchical output and malformed trace regressions.
 - **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
 
@@ -444,3 +450,38 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   groups pass ASan/UBSan with leaks (5.08 s); cus-case-sanitizer-tests.xml.
   CI 42214652354 for fcb4e1f722 passes all five supported targets, including the
   previously failed AArch64 test. The original failure remains in the evidence.
+
+## F05 — Pin aliases, ground classification and requested trace contents
+
+- **Classification:** confirmed supported-behaviour defects; resolves A08b
+  independently of the still-open A08a named-parameter issue.
+- **Reproduction:** #81's pin request was dropped; nested/ground aliases were
+  lost. Unknown/malformed requests often returned success. The red corpus
+  records 13 failures. Names containing GND were treated as ground despite the
+  documented exact-name rule; all six divider/name/mode cases fail before repair.
+  Stricter validation also exposed stale example labels and the advertised C()
+  alias/device differences being ignored or misinterpreted.
+- **Implementation:** retain/combine per-instance pin maps through the existing
+  bottom-up expansion, bind declared pins before ground classification, and
+  resolve aliases in the trace owner without adding fake physical matrix nodes.
+  Matrix uses exact ground names. Preserve public trace-handler signatures;
+  render documented device differences from two existing primitive conversions.
+  Add current-source terminal voltage/phase lookup and checked operand arity.
+  Fix R2 (absent) to R3 in the output fixture and use the actual nested
+  L6.X1.X1 component in the multiplier example; preserve its circuit equations.
+- **Compatibility:** unknown or malformed requested traces now fail explicitly.
+  GNDREF/AGND/etc are ordinary nodes. A declared GND port follows its instance
+  connection, including a floating reference. Netlist/Subcircuit/RelevantTrace
+  acquire alias/difference state; embedding consumers must recompile. Existing
+  valid trace column labels and numeric/file formats are retained.
+- **Verification:** original #81 circuit gives 10 V in both modes; nested and
+  independent aliases give 10/20 V. A floating return gives 15/5 V and a 10 V
+  differential. Divider expectations are 0.5 V/0.05 A. Independent series-network
+  expectations check C(), device/source/mixed differences and KCL (source branch
+  -0.625 A). Fixed phase sources give +/-0.9 rad differences. Absolute tolerance
+  2e-6 in the trace's units allows CSV rounding, far below the reproduced errors.
+  GCC16/Clang23 Release suites pass 30/30. Full ASan/UBSan with leaks passed
+  30/30 in 137.19 s; added malformed-selector guards receive a targeted rerun.
+- **Evidence:** build/audit-resolution/pin-alias-red.log, ground-names-red.log,
+  pin-alias-{gcc-,}tests.xml and pin-alias-sanitizer-tests.xml. Native qualification
+  of the committed alias repair remains pending. Named overrides remain open.

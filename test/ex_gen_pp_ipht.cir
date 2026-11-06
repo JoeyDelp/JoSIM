@@ -539,7 +539,8 @@ R176       360        0          2
 .print NODEV 22        
 .print NODEV 222       
 .print NODEV 2222  
-.print DEVV X1_L6
+* L6 in the internal JTL X1 of the first DCSFQ stage X1.
+.print DEVV L6.X1.X1
 .print DEVV R169
 .print DEVV R170
 .print DEVV R171

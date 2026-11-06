@@ -26,6 +26,7 @@ struct pair_hash {
 class Subcircuit {
   public:
     tokens_t                                   io;
+    s_map                                      pinAliases;
     std::vector<std::pair<tokens_t, string_o>> lines;
     tokens_t                                   subckts;
     int64_t                                    jjCount, compCount, subcktCounter;
@@ -64,7 +65,8 @@ class Netlist {
     std::unordered_map<std::string, Subcircuit>                               subcircuits;
     std::unordered_map<std::string, int64_t>                                  subcktLookup;
     std::vector<tokens_t>                                                     maindesign;
-    bool                                                                      sanityCheck;
+    bool                                                                      sanityCheck = false;
+    s_map                                                                     nodeAliases;
     std::unordered_set<std::string>                                           sanityCheckSubckts;
     tokens_t                                                                  subckts;
     std::vector<std::pair<tokens_t, string_o>>                                expNetlist;

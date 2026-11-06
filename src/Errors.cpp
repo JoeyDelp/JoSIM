@@ -313,9 +313,8 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
         case ControlErrors::UNKNOWN_DEVICE:
             formattedMessage += "Unknown device/node " + message.value_or("") + "\n";
             formattedMessage += "Cannot store results for this device/node.\n";
-            formattedMessage += "Ignoring this store request.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Cannot fulfill the requested trace.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::CURRENT_THROUGH_VOLT:
             formattedMessage += "Requesting current through a voltage source.\n";
             formattedMessage += "Line: " + message.value_or("") + "\n";
@@ -343,13 +342,11 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
         case ControlErrors::NODECURRENT:
             formattedMessage += "Request for current of " + message.value_or("") + " is invalid.\n";
             formattedMessage += "Cannot find device or cannot store current of a node.";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::UNKNOWN_NODE:
             formattedMessage += "Node " + message.value_or("") + " was not found in the circuit.\n";
-            formattedMessage += "This request for store will be ignored.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Cannot fulfill the requested trace.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::NODEPHASE_WHEN_VOLT:
             formattedMessage += "Request to store nodal phase for " + message.value_or("") + "\n";
             formattedMessage += "Voltage mode simulation performed.\n";
@@ -393,26 +390,22 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
             break;
         case ControlErrors::MATHOPS:
             formattedMessage += "Mathematical operations on output vectors are not yet supported.\n";
-            formattedMessage += "Ignoring plotting of " + message.value_or("");
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Invalid output expression: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::UNKNOWN_PLOT:
             formattedMessage += "Unknown plot type " + message.value_or("") + "\n";
-            formattedMessage += "Ignoring request to plot.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Cannot fulfill the requested trace.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::INVALID_OUTPUT_COMMAND:
             formattedMessage += "Invalid request for output found.\n";
             formattedMessage += message.value_or("") + "\n";
-            formattedMessage += "Ignoring request and continuing.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Please correct the control command.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::INVALID_FILE_COMMAND:
             formattedMessage += "Invalid request for file output found.\n";
             formattedMessage += message.value_or("") + "\n";
-            formattedMessage += "Ignoring request and continuing.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Please correct the control command.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::INVALID_IV_COMMAND:
             formattedMessage += "Invalid request for IV curve generation found.\n";
             formattedMessage += message.value_or("") + "\n";

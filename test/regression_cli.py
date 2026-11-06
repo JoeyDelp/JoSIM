@@ -203,6 +203,80 @@ class CliRegression(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertAlmostEqual(float(rows[-1][1]), 1.0, delta=1e-6)
 
+    def test_hierarchical_pin_alias_issue81(self):
+        # Supplied #81 circuit: 1 A through 10 ohm gives 10 V.
+        deck = ("X1 TEST 1 0\nI1 0 1 1.0\n.subckt TEST IN GND\nR1 IN GND 10.0\n.ends\n"
+                ".tran 0.25p 5n 0 1p\n.print V(IN.X1) V(GND.X1) V(0,IN.X1)\n.end\n")
+        for mode in (0, 1):
+            with self.subTest(mode=mode):
+                result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual(len(rows[0]), 4)
+                self.assertIn("IN|X1", rows[0][1])
+                for value, expected in zip(map(float, rows[-1][1:]), (10, 0, -10)):
+                    self.assertAlmostEqual(value, expected, delta=2e-6)
+
+    def test_nested_and_independent_pin_aliases(self):
+        deck = ("X1 OUTER A 0\nX3 OUTER B 0\nI1 0 A DC 1\nI2 0 B DC 2\n"
+                ".subckt OUTER P N\nX2 INNER P N\n.ends\n.subckt INNER IN RET\nR1 IN RET 10\n.ends\n"
+                ".tran 0.25p 20p\n.print V(IN.X2.X1) V(RET.X2.X1) V(P.X1) V(IN.X2.X3) I(R1.X2.X1)\n.end\n")
+        result, rows = self.run_deck(deck, extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(len(rows[0]), 6)
+        for value, expected in zip(map(float, rows[-1][1:]), (10, 0, 10, 20, 1)):
+            self.assertAlmostEqual(value, expected, delta=2e-6)
+
+    def test_formal_ground_pin_can_be_connected_to_a_node(self):
+        deck = ("X1 TEST A B\nI1 0 A DC 1\nR0 B 0 5\n.subckt TEST IN GND\nR1 IN GND 10\n.ends\n"
+                ".tran 0.25p 20p\n.print V(A) V(B) V(GND.X1) V(IN.X1,GND.X1)\n.end\n")
+        result, rows = self.run_deck(deck, extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(len(rows[0]), 5)
+        for value, expected in zip(map(float, rows[-1][1:]), (15, 5, 5, 10)):
+            self.assertAlmostEqual(value, expected, delta=2e-6)
+
+    def test_invalid_output_requests_fail(self):
+        for request in ("V(NO_SUCH_NODE)", "I(NO_SUCH_DEVICE)", "V(IN.UNKNOWN)",
+                        "Q(N)", "V()", "I()", "DEVV", "", "V(N,0,0)",
+                        "NODEV N 0 0", "DEVI R1 R1", "PHASE R1 R1", "TRAN",
+                        "V(N,)", "V(N,,0)", "I(R1,)"):
+            with self.subTest(request=request):
+                deck = self.SIMPLE[:self.SIMPLE.index(".print")] + f".print {request}\n.end\n"
+                result, _ = self.run_deck(deck, timeout=3)
+                self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                self.assertIn("Controls", result.stdout + result.stderr)
+
+    def test_device_differences_and_current_alias(self):
+        deck = ("V1 A 0 DC 1\nI1 A 0 DC 0.125\nR1 A B 1\nR3 B C 0.5\nR4 C 0 0.5\n"
+                ".tran 0.25p 20p\n.print V(R1,R3) C(R1) I(R1,R3) V(I1) C(R1,I1) V(R1,A) I(V1)\n.end\n")
+        for mode in (0, 1):
+            with self.subTest(mode=mode):
+                result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual(len(rows[0]), 8)
+                for value, expected in zip(map(float, rows[-1][1:]), (0.25, 0.5, 0, 1, 0.375, -0.5, -0.625)):
+                    self.assertAlmostEqual(value, expected, delta=2e-6)
+
+    def test_only_exact_ground_names_are_reserved(self):
+        for name in ("GNDREF", "AGND", "LOCALGNDNODE"):
+            for mode in (0, 1):
+                with self.subTest(name=name, mode=mode):
+                    deck = (f"V1 A 0 DC 1\nR1 A {name} 10\nR2 {name} 0 10\n"
+                            f".tran 0.25p 20p\n.print V({name}) I(R1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertAlmostEqual(float(rows[-1][1]), 0.5, delta=2e-6)
+                    self.assertAlmostEqual(float(rows[-1][2]), 0.05, delta=2e-6)
+
+    def test_phase_trace_differences(self):
+        deck = ("P1 A 0 DC 1.2\nP2 B 0 DC 0.3\nR1 A 0 10\nR2 B 0 10\n"
+                ".tran 0.25p 20p\n.print P(R1,R2) P(A,B) P(P2,P1)\n.end\n")
+        result, rows = self.run_deck(deck, extra=("-a", "1"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(len(rows[0]), 4)
+        for value, expected in zip(map(float, rows[-1][1:]), (0.9, 0.9, -0.9)):
+            self.assertAlmostEqual(value, expected, delta=2e-6)
+
 
 if __name__ == "__main__":
     unittest.main()

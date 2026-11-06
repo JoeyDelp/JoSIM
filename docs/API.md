@@ -20,6 +20,10 @@ hard-link aliases. Keep this provenance when using the normal input parser.
 Applications that construct `expNetlist` directly should fill `inputFiles` if
 they also need protection for source files they loaded themselves. This adds
 state to `Input`; recompile existing embedding applications for this release.
+Hierarchical pin lookup adds alias state to `Netlist`/`Subcircuit`; device
+differences add a second primitive to `RelevantTrace`. Recompile consumers of
+these public C++ types as well. Existing trace-handler function signatures are
+retained.
 
 The command-line helpers `CliOptions::parse`, `display_help`, `Errors::oor` and
 `Errors::error_message` retain process-exit behaviour for the executable.

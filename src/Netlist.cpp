@@ -64,6 +64,14 @@ bool Netlist::rename_io_nodes(std::string& node, const tokens_t& subIO, const to
 void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, const std::string& label) {
     // Sanity check
     if (io.size() != subc.io.size()) { Errors::input_errors(InputErrors::IO_MISMATCH, label); }
+    const auto map_node = [&](std::string node) {
+        if (!rename_io_nodes(node, subc.io, io) && node != "0" && node != "GND") { node += "|" + label; }
+        return node;
+    };
+    s_map aliases;
+    for (const auto& alias : subc.pinAliases) { aliases[alias.first + "|" + label] = map_node(alias.second); }
+    for (size_t pin = 0; pin < subc.io.size(); ++pin) { aliases[subc.io[pin] + "|" + label] = io[pin]; }
+    subc.pinAliases = std::move(aliases);
     // Loop through the identified subcircuit
     for (auto k = 0; k < subc.lines.size(); ++k) {
         // Set shorthand for long variable name
@@ -86,23 +94,12 @@ void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, con
         }
         for (auto& token : tokens) {
             if (token.rfind("GC=", 0) == 0) {
-                std::string node = token.substr(3);
-                if (node != "0" && node != "GND" && !rename_io_nodes(node, subc.io, io)) {
-                    node += "|" + label;
-                }
-                token = "GC=" + node;
+                token = "GC=" + map_node(token.substr(3));
             }
         }
         // Loop through all the nodes changing where necessary
         for (int64_t n = 1; n < nodeCount + 1; ++n) {
-            // Ensure nodes don't identify as ground
-            if (tokens.at(n) != "0" && tokens.at(n) != "GND") {
-                // Ensure the node is not part of the IO
-                if (!rename_io_nodes(tokens.at(n), subc.io, io)) {
-                    // Append the label to the node number to make it unique
-                    tokens.at(n) = tokens.at(n) + "|" + label;
-                }
-            }
+            tokens.at(n) = map_node(tokens.at(n));
         }
     }
 }
@@ -192,6 +189,7 @@ void Netlist::expand_subcircuits() {
                     if (!subc.containsSubckt) {
                         // Expand the IO nodes of the subcircuit for this instance
                         expand_io(subc, params, io, label);
+                        subcircuit.pinAliases.insert(subc.pinAliases.begin(), subc.pinAliases.end());
                         // Erase the current line (tokens)
                         subcircuit.lines.erase(subcircuit.lines.begin() + j);
                         // Insert the subcircuit token lines at the erased line position
@@ -257,6 +255,7 @@ void Netlist::expand_maindesign() {
             Subcircuit subc = subcircuits.at(subcktName);
             // Expand the appropriate IO nodes of the subcircuit for this instance
             expand_io(subc, params, io, label);
+            nodeAliases.insert(subc.pinAliases.begin(), subc.pinAliases.end());
             // Add the expanded subcircuit lines to the expanded netlist
             expNetlist.insert(expNetlist.end(), subc.lines.begin(), subc.lines.end());
             // If the line is not a subcircuit

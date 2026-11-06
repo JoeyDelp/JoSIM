@@ -95,6 +95,11 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     // Print only the indices of the relevant traces
     int64_t cc = 0;
     if (mObj.relevantTraces.size() != 0) {
+        std::vector<std::pair<RelevantTrace, bool>> requests;
+        for (const auto& trace : mObj.relevantTraces) {
+            requests.emplace_back(trace, false);
+            if (trace.subtract) { requests.emplace_back(*trace.subtract, true); }
+        }
         // Create progress bar
         ProgressBar bar;
         if (!iObj.argMin) {
@@ -103,11 +108,12 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Formatting Output");
-            bar.set_total((float) mObj.relevantTraces.size());
+            bar.set_total((float) requests.size());
         }
         // Reset progress counter
         cc = 0;
-        for (const auto& i : mObj.relevantTraces) {
+        for (const auto& request : requests) {
+            const auto& i = request.first;
             auto& st = i.storageType;
             if (!iObj.argMin) { bar.update(static_cast<float>(cc)); }
             // Shorthand for the optional value
@@ -288,6 +294,12 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                     }
                     traces.back().data_.emplace_back(accumulator);
                 }
+            }
+            if (request.second) {
+                auto& first = traces.at(traces.size() - 2).data_;
+                const auto& second = traces.back().data_;
+                for (size_t sample = 0; sample < first.size(); ++sample) { first.at(sample) -= second.at(sample); }
+                traces.pop_back();
             }
             ++cc;
         }

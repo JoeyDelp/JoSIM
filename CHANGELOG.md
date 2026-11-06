@@ -16,6 +16,16 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Resolve hierarchical pin aliases, including nested/ground pins (#81), and
+  preserve their requested trace labels. Unknown or malformed trace requests
+  now fail explicitly. Restore the documented `C()` current alias and device
+  trace differences; support voltage/phase across current-source terminals.
+- Bind declared subcircuit pins before classifying ground. Only exact `0`/`GND`
+  names are ground; names such as `GNDREF` no longer short to ground. Ground-first
+  voltage differences and zero-valued ground traces work. Correct stale output
+  labels in bundled examples. Added alias/difference fields require C++ consumers
+  to recompile. Named instance-parameter overrides remain a separate #81 item.
+
 - Numeric expressions now parse lowercase engineering suffixes, signed scientific
   exponents and unary signs correctly. Function powers and `LOG10` return the
   expected values. Missing operands, invalid real-number domains and mismatched
