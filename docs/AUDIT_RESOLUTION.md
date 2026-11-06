@@ -218,12 +218,28 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I101 — JJ-buffer reverse response #101
 
-- **Classification:** unresolved circuit/model report.
-- **Current reproduction/result:** Open; no expectation inferred from a single JoSIM run.
-- **Required outcome:** Use supplied circuit, independent dynamic model, convergence and conservation to establish cause.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/101.
-- **Verification:** independent ODE reference plus phase/voltage/step comparisons.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** physical response established; separate startup defect F10 repaired.
+- **Result:** Independent six-state Kirchhoff/RCSJ equations reproduce the active
+  netlist's reverse bipolar response. B02 rotates negatively while B01 returns;
+  reverse net output is -1.38349e-6 Phi0 per pulse. Exchanging ports with the
+  same drive gives 0.999997568 Phi0 forward. The specified input is 4.3 ppm
+  below exact SI Phi0. The original binary/settings are unknown; do not claim
+  exact reconstruction of every screenshot sample.
+- **Reference validation:** Tightened Radau and separate BDF solutions agree
+  within 2.05e-10 scaled state units (budget 1e-8). Junction voltages remain
+  below the original model's 2.75 mV transition boundary, validating R0 use.
+- **Implementation/verification:** tools/qualify_buffer.py, independent fixtures
+  under test/reference, regression::buffer; required by binary/library owners.
+  Sixteen full-waveform comparisons cover both modes and four steps. Native
+  CTest uses twelve cases/352 reference points per direction, KCL, loop flux,
+  pulse area and refinement. GCC16/Clang23 Debug/Release pass 33/33; the new
+  group passes ASan/UBSan/leaks in 16.53 s. Native publication pending.
+- **Measurements/tolerances:** At 0.01 ps maximum output errors are 19.1501 nV
+  reverse and 40.5556 nV forward, decreasing about fourfold per halving. Pulse
+  areas allow 5e-6 Phi0; waveform limits scale with h^2 plus CSV rounding.
+  See [the buffer study](qualification/2026-11-06-buffer.md) for equations,
+  tolerances, input-variant caveat and source/binary provenance. Full local
+  evidence: artifacts/audit-resolution/buffer-101/report.json and plots.
 
 ## I093 — Stewart–McCumber parameter #93
 
@@ -293,9 +309,13 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   independent derivation, tolerances and explicit scope. All four compiler/config
   checks pass; ASan/UBSan/leaks passes all 36 junction cases in 33.58 s. Native
   qualification passes all ten native jobs for 04ef05788e7a in CI 42235902594.
-- **Required outcome:** Complete finite-capacitance switching, clocked pulse
-  counts, nonzero precharge and #101. These bounded studies do not establish
-  general scientific correctness.
+- **Additional finite-capacitance reference:** The #101 buffer study covers
+  two clocked input pulses, both directions/modes, continuous RCSJ references,
+  phase-slip counts, flux area and step refinement. See I101 for measurements
+  and pending native qualification. Nonzero precharge remains separate.
+- **Required outcome:** Complete the remaining startup/precharge scope and
+  final qualification. These bounded studies do not establish general
+  scientific correctness.
 - **Implementation/owner:** test/regression_numerics.py; release/library owners
   require its CTest group. No solver/device equations changed by this study.
 - **Verification:** GCC16/Clang23 Debug and Release pass the numerical group.
@@ -658,8 +678,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## F10 — Junction history during negative startup
 
-- **Classification:** confirmed numerical startup defect; repaired locally,
-  full qualification pending.
+- **Classification:** confirmed numerical startup defect; repaired and native-qualified.
 - **Reproduction:** a zero-voltage, biased JJ/inductor loop settles in warm
   voltage mode to zero junction phases and IL2=-20uA. An independent KCL/flux
   equilibrium requires phi1=-0.00245600306rad, phi2=0.003274673rad and
@@ -679,7 +698,9 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   quiet-flux-red.json, startup-comparison.json, pre-startup-fix.json and probe.log.
   Original bulky transient CSV attempts were regenerated; compact red evidence
   and the original source/deck remain. GCC16/Clang23 Debug and Release pass
-  32/32; full ASan/UBSan/leaks passes 32/32 in 182.98 s. Native checks pending.
+  32/32; full ASan/UBSan/leaks passes 32/32 in 182.98 s. All ten native jobs pass
+  for 4bf3f47e12d1 in CI 42238371973, attempt 2. GitHub's first macOS arm64
+  library attempt never obtained a runner; retry resolved that capacity failure.
   [Startup study](qualification/2026-11-06-junction-startup.md) gives the derivation,
   compatibility scope, values and tolerances. Green measurements:
   artifacts/audit-resolution/jj-startup.json.

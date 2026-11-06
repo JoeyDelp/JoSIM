@@ -335,3 +335,6 @@ __pycache__/
 *.pyc
 
 test_internal
+
+# Versioned independent numerical reference provenance.
+!test/reference/buffer-101-manifest.json

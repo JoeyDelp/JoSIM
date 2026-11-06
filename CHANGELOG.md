@@ -7,6 +7,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Independent finite-capacitance buffer references, pulse-flux/conservation
+  and timestep-refinement checks in both modes (#101). The reverse bipolar
+  response agrees with the independent physical model. Native tests use compact
+  fixtures; optional pinned scientific tools regenerate references and plots.
 - Independent current-driven RSJ equilibrium, oscillation-period refinement
   and average flux-quantum pulse-area checks in both modes.
 - Independent analytic RC/RL/RLC regression tests, conservation checks and

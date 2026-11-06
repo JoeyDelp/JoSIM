@@ -177,6 +177,10 @@ if(BUILD_TESTING)
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_numerics.py
                    $<TARGET_FILE:josim-cli>)
   set_tests_properties(regression::numerics PROPERTIES TIMEOUT 90)
+  add_test(NAME regression::buffer
+           COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_buffer.py
+                   $<TARGET_FILE:josim-cli>)
+  set_tests_properties(regression::buffer PROPERTIES TIMEOUT 90)
   add_test(NAME regression::installed_package
     COMMAND ${CMAKE_COMMAND}
       "-DTEST_SOURCE_DIR=${PROJECT_SOURCE_DIR}"

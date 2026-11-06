@@ -51,14 +51,36 @@ CTest runs the existing circuit examples and focused regression groups:
   timestep refinement and comparison of both modes with warm/cold startup;
   an independently derived biased JJ/inductor equilibrium checks flux history.
   See [the linear-circuit study](qualification/2026-11-06-linear-circuits.md).
+- `regression::buffer`: finite-capacitance switching in the #101 buffer,
+  independent continuous references, flux conservation and timestep refinement.
+  See [the buffer study](qualification/2026-11-06-buffer.md).
 - `regression::build_options`: retired solver/parallel configuration and macro rejection.
 - `regression::library`: repeated recoverable errors followed by valid runs.
 - `regression::installed_package`: installs the library, then builds and runs a
   fresh external C++ consumer using `find_package(josim 2.7 CONFIG REQUIRED)`.
 
-The tests establish these contracts. They do not establish general SPICE
-compatibility or settle the open reports about long-run junction artifacts.
+The tests establish these bounded contracts. They do not establish general
+SPICE compatibility or explain every undocumented long-run artifact.
 Preserve failing numerical evidence before changing device equations.
+
+## Optional scientific references
+
+Native CTest uses Python's standard library and versioned independent fixtures.
+Regenerating the buffer reference or its plots additionally needs the pinned
+scientific packages below. Use Python 3.11 or newer; the qualified environment
+was Python 3.12.12. Keep this environment separate from the legacy build tools.
+
+```bash
+python3 -m venv build/science
+build/science/bin/python -m pip install -r tools/requirements-qualification.txt
+build/science/bin/python -B tools/qualify_buffer.py \
+  --binary build/dev/josim-cli --output artifacts/buffer-101 --plot
+```
+
+This checks a separate Kirchhoff/RCSJ ODE using tightened Radau tolerances and
+an independent BDF method, then compares both JoSIM modes at four timesteps.
+Plots use a headless backend and a temporary task-owned font cache. See the
+[fixture guide](../test/reference/README.md) before regenerating checked-in data.
 
 ## Coverage and sanitizers
 

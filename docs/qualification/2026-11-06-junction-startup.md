@@ -59,8 +59,11 @@ and 0.02/0.01 ps steps. Assertions allow 1e-8 rad for each phase and flux linkag
 rounding and the small legacy-versus-SI constant difference.
 
 GCC16/Clang23 Debug and Release pass all 32 CTest tests. The complete
-ASan/UBSan suite with leak detection passes 32/32 in 182.98 s. Native checks
-remain pending. The #101 independent transient probe now agrees between modes
+ASan/UBSan suite with leak detection passes 32/32 in 182.98 s. All ten native
+binary/library jobs pass in [CI 42238371973](https://github.com/JoeyDelp/JoSIM/actions/runs/42238371973),
+attempt 2. The first attempt's macOS arm64 library job never obtained a runner
+and reported GitHub capacity/internal-server errors; the retry passed.
+The #101 independent transient probe now agrees between modes
 and improves with mesh refinement; its full scientific qualification is separate.
 
 ```bash

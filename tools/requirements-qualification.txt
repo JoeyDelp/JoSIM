@@ -1,0 +1,5 @@
+# Optional scientific reference/plot environment; native CTest uses stdlib fixtures.
+# Qualified with Python 3.12.12. These wheels require Python 3.11 or newer.
+numpy==2.4.1
+scipy==1.17.0
+matplotlib==3.10.8
