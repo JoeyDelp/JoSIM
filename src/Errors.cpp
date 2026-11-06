@@ -670,6 +670,11 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "This is a result of integration error.\n";
             formattedMessage += "Please reduce the timestep and try again.";
             throw std::runtime_error(formattedMessage);
+        case SimulationErrors::STORAGE_ALLOCATION_FAILED:
+            formattedMessage += "Cannot allocate transient result storage.\n";
+            formattedMessage += "Requested samples per retained history: " + message.value_or("") + "\n";
+            formattedMessage += "Reduce retained traces or run size.";
+            throw std::runtime_error(formattedMessage);
         default:
             formattedMessage += "Unknown simulation error: " + message.value_or("") + "\n";
             formattedMessage += "Please contact the developer.";

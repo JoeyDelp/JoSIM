@@ -44,6 +44,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Reserve retained transient histories from the known sample count, preserving
+  unrequested-history omission and exact output. Controlled runs use about
+  13–20% less peak memory in representative long/wide cases. Report impossible
+  result-storage requests through recoverable errors.
 - Start every model-IV point with fresh device histories. Reusing histories
   across otherwise reset simulations broke sign-reversal symmetry and changed
   finite-window voltages. Preserve each point's declared preparation ramp.

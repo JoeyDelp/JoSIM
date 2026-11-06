@@ -193,6 +193,15 @@ class CliRegression(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("Invalid transient analysis", result.stdout + result.stderr)
 
+    def test_unrepresentable_result_storage_fails_cleanly(self):
+        # The count fits int64 but exceeds vector<double>::max_size(); no large
+        # allocation is attempted and no physical-memory pressure is induced.
+        deck = self.SIMPLE.replace(".tran 1p 5p DST", ".tran 1 8e18 DST") + ".end\n"
+        result, rows = self.run_deck(deck, timeout=3)
+        self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+        self.assertIn("Cannot allocate transient result storage", result.stderr)
+        self.assertIsNone(rows)
+
     def test_last_sample_window_and_clamped_fir(self):
         deck = "V1 N 0 DC 1\nR1 N 0 10\n.tran {} DST\n.print V(N)\n.end\n"
         result, rows = self.run_deck(deck.format("1p 5p 4p"), extra=("-a", "0"))

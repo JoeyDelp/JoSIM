@@ -61,6 +61,12 @@ averaging samples are required. CLI `.IV` timing controls are described in the
 [sweep guide](sweeps.md). These finite transients do not imply converged DC or
 continuous state transfer between points.
 
+Transient storage reserves the complete internal sample count only for engaged
+histories. Allocation/size failures during reservation throw a recoverable
+`STORAGE_ALLOCATION_FAILED` diagnostic; the enum is appended without changing
+existing values or layouts. Output decimation does not shrink internal histories.
+See [memory planning](performance.md) for payload scaling and OS memory limits.
+
 `Input` records the main netlist and included files. Normal output and `.iv`
 generation reject destinations that refer to those inputs, including existing
 hard-link aliases. Keep this provenance when using the normal input parser.

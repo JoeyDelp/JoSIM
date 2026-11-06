@@ -15,6 +15,8 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <new>
+#include <stdexcept>
 
 using namespace JoSIM;
 
@@ -135,6 +137,22 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
         for (const auto& i : mObj.relevantIndices) { results.xVector.at(i).emplace(); }
     } else {
         results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
+    }
+    // The complete internal grid is retained, including when output is decimated.
+    // Reserve only histories that are actually requested (or the default full set).
+    try {
+        const auto samples = static_cast<size_t>(simSize_);
+        results.timeAxis.reserve(samples);
+        for (auto& history : results.xVector) {
+            if (history) { history.value().reserve(samples); }
+        }
+        for (auto& history : results.sourceCurrents) {
+            if (history) { history.value().reserve(samples); }
+        }
+    } catch (const std::bad_alloc&) {
+        Errors::simulation_errors(SimulationErrors::STORAGE_ALLOCATION_FAILED, std::to_string(simSize_));
+    } catch (const std::length_error&) {
+        Errors::simulation_errors(SimulationErrors::STORAGE_ALLOCATION_FAILED, std::to_string(simSize_));
     }
 }
 

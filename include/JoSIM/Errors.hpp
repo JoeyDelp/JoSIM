@@ -152,7 +152,8 @@ enum class SimulationErrors : int64_t {
     MATRIX_SINGULAR,
     PHASEGUESS_TOO_LARGE,
     INVALID_MATRIX,
-    SOLVER_FAILURE
+    SOLVER_FAILURE,
+    STORAGE_ALLOCATION_FAILED
 };
 
 enum class ParsingErrors : int64_t {

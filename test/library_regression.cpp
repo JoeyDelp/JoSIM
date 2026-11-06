@@ -97,6 +97,19 @@ void invalid_matrix() {
     must_throw([&] { JoSIM::Simulation simulation(run, matrix); }, "Invalid sparse matrix");
 }
 
+void result_storage_limit() {
+    auto run = input();
+    run.transSim.tstep(1);
+    run.transSim.tstop(8e18);
+    run.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1"}, std::nullopt},
+                             {{"R1", "N", "0", "1K"}, std::nullopt}};
+    JoSIM::Matrix matrix;
+    matrix.create_matrix(run);
+    // N fits int64 but exceeds any supported vector<double>::max_size().
+    // This fails before allocation; it does not induce real memory pressure.
+    must_throw([&] { JoSIM::Simulation simulation(run, matrix); }, "Cannot allocate transient result storage");
+}
+
 void cli_values() {
     const char* argv[] = {"josim", "--minimal=1", "--analysis=0", "--verbose=2", "example.cir"};
     auto options = JoSIM::CliOptions::parse(5, argv);
@@ -275,6 +288,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "missing") { missing_model(); }
             if (selected == "all" || selected == "singular") { singular_matrix(); }
             if (selected == "all" || selected == "invalid") { invalid_matrix(); }
+            if (selected == "all" || selected == "storage") { result_storage_limit(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "output") { output_flush_failure(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }

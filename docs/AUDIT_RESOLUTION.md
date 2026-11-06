@@ -472,11 +472,24 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## D06 — Runtime/memory and trace retention
 
 - **Classification:** measured-performance concern.
-- **Current reproduction/result:** Open; theoretical payload about 8*Nsteps*(Ntraces+1) bytes before overhead.
-- **Required outcome:** Measure large/noisy circuits and retained-trace scaling; address demonstrated avoidable costs.
-- **Implementation/owner:** Simulation::trans_sim; Results; src/Output.cpp.
-- **Verification:** reproducible benchmark with wall time/RSS and trace/step counts.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Storage result:** Simulation reserves only engaged histories from its known
+  sample count. Seven paired repetitions of eight fixtures (112 timed runs)
+  retain identical CSVs and independent analytic/grid/seed checks. Peak RSS
+  medians fall 102.77→89.45 MiB for long noise and 199.77→159.49 MiB for 32
+  voltages; worst wall median change +0.4%. The initial 15% noise-only heuristic
+  was missed (13% measured); the broader storage benefit and negligible runtime
+  cost justify retention, explicitly recorded without relaxing numeric limits.
+- **Contract:** raw double payload is 8*N*(1+retained unknowns+requested applied
+  current histories), before other state/output/allocator memory. Decimation
+  does not reduce retained internal history. Impossible vector sizes fail
+  recoverably without real-memory pressure in the controlled boundary tests.
+- **Owner/evidence:** Simulation::setup; library/CLI regressions; [runtime study](qualification/2026-11-06-runtime-storage.md)
+  and artifacts/audit-resolution/performance/reserve/{summary,decision}.json.
+  All four local configurations pass 34/34; full ASan/UBSan/leaks pass 34/34
+  in 229.86 s. Native qualification remains required for this revision.
+- **Remaining measured costs:** Callgrind identifies per-JJ CPR and per-inductor
+  coupling-vector allocations. Default progress reporting doubles CPU in a
+  controlled case. Isolate and qualify their repairs before closing this item.
 
 ## D07 — Source manuals and support claims
 

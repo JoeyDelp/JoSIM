@@ -15,6 +15,7 @@ nav:
   - Floating Flux Lines and SQUID Noise: 'squid_noise.md'
   - Parameter Sweeps and Circuit IV: 'sweeps.md'
   - Python Plotting and Specifications: 'python_utilities.md'
+  - Runtime and Memory: 'performance.md'
   - Development: 'DEVELOPMENT.md'
   - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'
