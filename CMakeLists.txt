@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+  set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
+endif()
+
 project(JoSIM VERSION 2.7)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -10,6 +15,19 @@ endif()
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+option(SLU "Enable SuperLU instead of KLU")
+option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
+option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
+if(MAKING_STATIC_BUILD)
+  set(BUILD_SHARED_LIBS OFF)
+  if(MSVC)
+    if(CMAKE_VERSION VERSION_LESS 3.15)
+      message(FATAL_ERROR "Static Windows runtimes require CMake 3.15 or newer")
+    endif()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif()
+endif()
+
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
@@ -19,19 +37,9 @@ add_definitions(-DVERSION="${CMAKE_PROJECT_VERSION}")
 if(MSVC)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
-option(SLU "Enable SuperLU instead of KLU")
-
 # Default to release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
-endif()
-
-# See if OpenMP was specified
-option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
-option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
-
-if(MAKING_STATIC_BUILD)
-  set(CMAKE_BUILD_SHARED OFF)
 endif()
 
 # JoSIM library
@@ -152,7 +160,7 @@ foreach(dependency CMakeSuperLU CMakeCBLAS)
           DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endforeach()
 
-install(FILES LICENSE README.md DESTINATION .)
+install(FILES LICENSE README.md CHANGELOG.md DESTINATION .)
 
 # Install targets
 install(

@@ -8,6 +8,11 @@ function(run_checked)
   endif()
 endfunction()
 
+if(NOT TEST_BINARY_DIR OR NOT TEST_SOURCE_DIR)
+  message(FATAL_ERROR "Installed-package tests require source and build directories")
+endif()
+# This directory contains only this test's generated installation and consumer.
+file(REMOVE_RECURSE "${TEST_BINARY_DIR}/installed-consumer")
 set(prefix "${TEST_BINARY_DIR}/installed-consumer/prefix")
 set(consumer_build "${TEST_BINARY_DIR}/installed-consumer/build")
 run_checked("${CMAKE_COMMAND}" --install "${TEST_BINARY_DIR}" --prefix "${prefix}" --config "${TEST_CONFIG}")
@@ -15,6 +20,9 @@ run_checked("${CMAKE_COMMAND}" --install "${TEST_BINARY_DIR}" --prefix "${prefix
 set(configure_args -S "${TEST_SOURCE_DIR}/test/consumer" -B "${consumer_build}"
                    -G "${TEST_GENERATOR}" "-DCMAKE_PREFIX_PATH=${prefix}"
                    "-DCMAKE_CXX_COMPILER=${TEST_CXX_COMPILER}")
+if(TEST_MSVC_RUNTIME_LIBRARY)
+  list(APPEND configure_args "-DCMAKE_MSVC_RUNTIME_LIBRARY=${TEST_MSVC_RUNTIME_LIBRARY}")
+endif()
 if(TEST_PLATFORM)
   list(APPEND configure_args -A "${TEST_PLATFORM}")
 endif()

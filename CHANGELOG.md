@@ -36,6 +36,8 @@ work prepared for the next release, not binaries already available on GitHub.
   headers and C++17 setting, and support versioned `find_package(josim)` calls.
 - Solver source downloads are pinned to immutable archives and verified with
   SHA-256 checksums.
+- Static Linux runtime flags now apply during linking. Static Windows builds use
+  the same MSVC runtime for JoSIM, its solvers and installed-library consumers.
 
 ## 2.7 — 2025-12-19
 

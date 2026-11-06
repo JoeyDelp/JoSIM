@@ -10,11 +10,11 @@ function(make_target_static target)
     # TODO clang
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # using GCC
-    target_compile_options(${target} PRIVATE -static-libgcc -static-libstdc++)
+    target_link_options(${target} PRIVATE -static-libgcc -static-libstdc++)
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     # using Intel C++
     # TODO test if this actually works
-    target_compile_options(${target} PRIVATE -static-libgcc -static-libstdc++)
+    target_link_options(${target} PRIVATE -static-libgcc -static-libstdc++)
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     # using Visual Studio C++
     # TODO figure out what one should do

@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
 project(JoSIMInstalledConsumer LANGUAGES CXX)
 find_package(josim 2.7 CONFIG REQUIRED)
 add_executable(consumer main.cpp)
