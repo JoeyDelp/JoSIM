@@ -4,6 +4,7 @@
 #include "JoSIM/Function.hpp"
 
 #include "JoSIM/Misc.hpp"
+#include "JoSIM/Noise.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "spline.h"
 
@@ -332,7 +333,7 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
 }
 
 void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* NOISE(VA TD[0.0] TSTEP[1/(2*NEB) or sim tstep]) */
+    /* NOISE(VA TD[0.0] TSTEP[1/(3*NEB) or sim tstep]) */
 
     if (t.size() < 1) { Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
 
@@ -346,8 +347,8 @@ void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o&
     double tstep_noise = tstep_sim;
     if (t.size() >= 3) {
         tstep_noise = parse_param(t.at(2), iObj.parameters, s);
-    } else if (iObj.neB && iObj.neB > 0.0) {
-        tstep_noise = 1.0 / (2.0 * iObj.neB);
+    } else if (iObj.neB != 0.0) {
+        tstep_noise = Noise::determine_sampling_interval(iObj.neB, tstep_sim);
     }
 
     if (!std::isfinite(VA) || VA < 0.0 || !std::isfinite(td) || td < 0.0
@@ -372,7 +373,7 @@ void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o&
 
     // misc: y1, y2, x1, x2
     miscValues_.emplace_back(0.0);
-    miscValues_.emplace_back(VA * Misc::grand() / sqrt(2.0 * tstep_noise));
+    miscValues_.emplace_back(Misc::grand() / (std::sqrt(2.0) * std::sqrt(tstep_noise)));
     miscValues_.emplace_back(td);
     miscValues_.emplace_back(td + tstep_noise);
 
@@ -873,14 +874,14 @@ double Function::return_noise(double& x) {
     // Advance as many noise segments as needed (handles dt > T too)
     while (x >= x2) {
         y1 = y2;
-        y2 = ampValues_.at(0) * Misc::grand() / std::sqrt(2.0 * T);
+        y2 = Misc::grand() / (std::sqrt(2.0) * std::sqrt(T));
         x1 = x2;
         x2 = x1 + T;
     }
 
     // Linear interpolation within current segment
     const double u = (x - x1) / (x2 - x1); // 0..1
-    return y1 + (y2 - y1) * u;
+    return ampValues_.at(0) * (y1 + (y2 - y1) * u);
 }
 
 double Function::return_pnoise(double& x) {

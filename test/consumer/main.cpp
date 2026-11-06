@@ -2,12 +2,17 @@
 // This code is licensed under MIT license (see LICENSE for details)
 #include <JoSIM/Input.hpp>
 #include <JoSIM/Matrix.hpp>
+#include <JoSIM/Model.hpp>
+#include <JoSIM/Noise.hpp>
 #include <JoSIM/Rng.hpp>
 #include <JoSIM/Simulation.hpp>
 
 #include <cmath>
 
 int main() {
+    JoSIM::Model{}.validate();
+    const double interval = JoSIM::Noise::determine_sampling_interval(1e9, 1e-12);
+    if (std::abs(3e9 * interval - 1) > 1e-12) { return 1; }
     JoSIM::OutputFile output("probe.CSV");
     if (output.type() != JoSIM::FileOutputType::Csv) { return 1; }
     JoSIM::Input input(JoSIM::AnalysisType::Voltage, 0, true);

@@ -17,12 +17,18 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## A02 — State-dependent JJ thermal amplitude
 
-- **Classification:** confirmed defect; prior repair.
-- **Current reproduction/result:** Stored-amplitude repair present; expanded transition measurements pending.
-- **Required outcome:** Verify both transitions and justify transition-region model separately.
-- **Implementation/owner:** 505abca; src/JJ.cpp; include/JoSIM/Function.hpp.
-- **Verification:** thermal-amplitude library regression and stochastic circuit checks.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** confirmed defect; prior stored-source repair incomplete.
+- **Result:** F16 reproduces and repairs retained old interpolation amplitudes,
+  missing transition amplitude and sampling before the active slope update.
+  Both transition directions/polarities and six actual circuit cases pass.
+- **Owner:** JJ::update_value, Function::return_noise, Simulation::handle_jj;
+  test/noise_regression.cpp. Existing slope/thermal constants are retained.
+- **Physical disposition:** classical local differential-conductance noise,
+  S_I=4kBTG, explicitly not a microscopic nonequilibrium gap-noise model.
+- **Evidence:** [white/thermal study](qualification/2026-11-06-white-thermal-noise.md).
+  Six circuit cases give max 5.114e-13 A error against independent SI amplitudes;
+  bound 1 ppm plus 1e-14 A. Full retry must replay bit-for-bit. Broader #107/#108
+  measurement/example qualification remains separate.
 
 ## A03 — Modern C compiler incompatibility
 
@@ -201,8 +207,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I108a — Finite-cycle sine #108
 
-- **Classification:** implemented request; analytic qualification complete locally,
-  native check pending.
+- **Classification:** implemented request; analytically and native-qualified.
 - **Result:** Exact requested SINE(0 315u 4g 20p 0 0 4) stops at
   20 ps + 4/(4 GHz) = 1020 ps. Source/resistor current and voltage match the
   analytic waveform in both modes, including inactive intervals, within
@@ -214,7 +219,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Verification/evidence:** All four compiler/configurations pass 33/33;
   affected function/CLI ASan/UBSan/leak checks pass in 5.89 s.
   [Sine study](qualification/2026-11-06-sine.md), regression::functions/cli,
-  build/audit-resolution/sine/.
+  build/audit-resolution/sine/. All ten native jobs pass for 18bb60c9c23b in
+  CI 42259227651, including default/shared libraries.
 
 ## I108b — Switching-dependent noise #108
 
@@ -818,7 +824,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## F14 — Verbosity-dependent finite-sine validation
 
-- **Classification:** confirmed waveform-input defect; repaired locally.
+- **Classification:** confirmed waveform-input defect; repaired and native-qualified.
 - **Reproduction:** Finite-cycle SINE with zero/negative frequency succeeds at
   -V 0 and fails at -V 1. Its period and stop time are undefined. Excess fields
   were silently discarded. Red verbosity/exit witnesses and failed tests:
@@ -828,4 +834,44 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Valid source evaluation/signatures/layouts are unchanged.
 - **Verification:** Independent analytic waveform and exact #108 circuit
   assertions in function/CLI groups. GCC16/Clang23 Debug/Release pass 33/33;
-  affected ASan/UBSan/leak checks pass in 5.89 s. Native publication pending.
+  affected ASan/UBSan/leak checks pass in 5.89 s. All ten native jobs pass for
+  18bb60c9c23b in CI 42259227651.
+
+## F15 — Interpolated white-noise effective bandwidth
+
+- **Classification:** confirmed noise-normalization defect uncovered in A02/I107.
+- **Reproduction:** NEB=64 Hz gives measured time-averaged variance 42.7041
+  instead of 64 for unit ASD. Linear interpolation requires B=1/(3*dt), while
+  the old interval 1/(2*NEB) supplies only two-thirds of the requested power.
+- **Repair:** One interval owner uses max(h,1/(3*NEB)) for omitted-TSTEP manual
+  white noise and automatic resistor/JJ noise. Explicit TSTEP is preserved.
+  Reject invalid/unrepresentable bandwidths; correct stale default documentation.
+- **Verification:** Eight seeds give variance 63.8564268, 0.2243% below 64;
+  predeclared tolerance 5%, relative SE below 0.6%. Six Welch PSD ratios to
+  analytic sinc^4 lie 0.969538–1.016064, within a justified 30% statistical
+  bound. Four sampling phases/interval ratios check grid versus time variance.
+- **Evidence/compatibility:** [study](qualification/2026-11-06-white-thermal-noise.md),
+  test/noise_regression.cpp; artifacts/audit-resolution/white-thermal-noise/.
+  New static API method, no layout change; corrected NEB changes seeded waves.
+  GCC16/Clang23 Debug/Release pass 33/33; full ASan/UBSan/leaks pass 33/33 in
+  198.80 s. Native checks pending for this revision.
+
+## F16 — Thermal sample scaling, transition state and invalid controls
+
+- **Classification:** confirmed amplitude/timing and input-abort defects.
+- **Reproduction:** Amplitude changes leave current interpolation values scaled
+  by the preceding amplitude. Transition amplitude depends on previous R0/RN.
+  `.TEMP 4.2` with `.NEB 0` aborts with bad_optional_access.
+- **Repair:** Retain unit-ASD white knots; apply current amplitude immediately.
+  Set transition amplitude from its stated classical slope model and update
+  before one sample is injected into the physical terminals. Validate controls
+  and direct API values with recoverable errors. Amplitude rescaling adds no
+  random draw; both-ground junctions now advance their thermal source too.
+- **Verification:** Both transition directions/polarities, six actual KCL
+  injection cases, zero/restored amplitude, invalid-domain recovery and exact
+  fresh-final-step replay. Max injection error 5.114e-13 A; allowance 1 ppm
+  plus 1e-14 A. Physical approximation and branch trace meaning are explicit.
+- **Evidence:** stochastic/{red,invalid-red}.json and failed pre-fix assertions;
+  [study](qualification/2026-11-06-white-thermal-noise.md). All four local
+  configurations pass 33/33; full ASan/UBSan/leaks pass 33/33 in 198.80 s.
+  Native checks pending; broader colored/SQUID work remains open.

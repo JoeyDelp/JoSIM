@@ -98,6 +98,20 @@ Updated matrices are checked before refactorization, and every solved unknown
 must be finite. Invalid models or unrepresentable solutions throw before
 output; discard the failed run as described above.
 
+`Noise::determine_sampling_interval(bandwidth, simulation_step)` returns
+`max(simulation_step, 1/(3*bandwidth))`, rejecting invalid or unrepresentable
+intervals. It adds a static method without changing object layout. For legacy
+direct callers, `Input::neB=0` retains the omitted-`TSTEP` manual-NOISE fallback
+to the simulation step; `.NEB 0` in a netlist is rejected. Automatic thermal
+sources always require a positive bandwidth.
+
+White `Function` instances store unit-ASD interpolation samples and apply the
+current `ampValues()[0]` on evaluation. Changing that amplitude rescales the
+current realization immediately, without drawing another sample. Internal
+`miscValues` contents are implementation state. Existing signatures/layouts
+and explicit-interval grid variance remain; the corrected NEB interval changes
+seeded waveforms. See the [noise conventions](noise_sources.md).
+
 ## Random state and concurrent runs
 
 JoSIM currently has process-global random engines and a per-thread Gaussian

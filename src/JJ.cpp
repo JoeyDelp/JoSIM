@@ -9,6 +9,7 @@
 #include "JoSIM/Noise.hpp"
 
 #include <cmath>
+#include <limits>
 
 using namespace JoSIM;
 
@@ -169,7 +170,7 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
         }
     }
     if (!temp_ && iObj.globalTemp) { temp_ = iObj.globalTemp; }
-    if (!neb_ && iObj.neB) { neb_ = iObj.neB; }
+    if (!neb_) { neb_ = iObj.neB; }
     // Set component timestep
     h_     = iObj.transSim.tstep();
     at_    = iObj.argAnal;
@@ -206,7 +207,7 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
         spAmp_ = Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
         Function tnoise;
         tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) + ", 0.0, "
-                                      + Misc::precise_to_string(1.0 / (2 * neb_.value())) + ")",
+                                      + Misc::precise_to_string(Noise::determine_sampling_interval(neb_.value(), iObj.transSim.tstep())) + ")",
                               iObj,
                               s.second);
         thermalNoise = tnoise;
@@ -322,13 +323,16 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
 bool JJ::update_value(const double& v) {
     // Shorthand for the model
     const Model& m = model_;
+    const auto update_noise = [&](double resistance) {
+        if (temp_) {
+            spAmp_ = Noise::determine_spectral_amplitude(resistance, *temp_);
+            thermalNoise.value().ampValuesRef().at(0) = *spAmp_;
+        }
+    };
     // If the absolute value of the voltage is less than lower bounds
     if (fabs(v) < lowerB_) {
         // Set temperature resistance
-        if (this->temp_) {
-            thermalNoise.value().ampValuesRef().at(0)
-                    = Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
-        }
+        update_noise(model_.r0());
         // Set the transition current to 0
         it_ = 0.0;
         // If the non zero vector does not end with the subgap conductance
@@ -345,6 +349,8 @@ bool JJ::update_value(const double& v) {
         }
         // If the absolute value of the voltage is less than the upperbounds
     } else if (fabs(v) < upperB_) {
+        // Classical local-equilibrium approximation for the active slope.
+        update_noise(gLarge_ == 0 ? std::numeric_limits<double>::infinity() : 1.0 / gLarge_);
         // Set the transition current
         it_ = lowerB_ * ((1 / m.r0()) - gLarge_);
         // If the voltage is negative, current must be negative
@@ -364,10 +370,7 @@ bool JJ::update_value(const double& v) {
         // If neither of the above then it must be in normal operating region
     } else {
         // Set temperature resistance
-        if (this->temp_) {
-            thermalNoise.value().ampValuesRef().at(0)
-                    = Noise::determine_spectral_amplitude(this->model_.rn(), temp_.value());
-        }
+        update_noise(model_.rn());
         // Reset the transition current, transition has passed.
         it_ = 0.0;
         // If the back of the non zero vector is not the normal conductance

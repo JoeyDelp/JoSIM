@@ -637,6 +637,17 @@ class CliRegression(unittest.TestCase):
                     self.assertIn("NCYCLES requires positive FREQ", result.stdout + result.stderr)
                     self.assertIsNone(rows)
 
+    def test_invalid_thermal_controls_fail_cleanly(self):
+        for controls, diagnostic in ((".temp 4.2\n.neb 0", "NEB"), (".neb 0", "NEB"),
+                                     (".temp 4.2\n.neb -1g", "NEB"), (".temp -1\n.neb 1g", "TEMP")):
+            with self.subTest(controls=controls):
+                deck = (f"I1 0 N NOISE(1p)\nR1 N 0 10\n{controls}\n"
+                        ".tran 0.1p 2p DST\n.print V(N)\n.end\n")
+                result, rows = self.run_deck(deck)
+                self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                self.assertIn(diagnostic, result.stdout + result.stderr)
+                self.assertIsNone(rows)
+
     def test_nonfinite_solution_fails_before_output(self):
         for mode in (0, 1):
             for startup in ("", " DST"):

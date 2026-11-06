@@ -53,7 +53,9 @@ The value of a resistor is in Ohms.
 
 Temperature used for noise analysis in  Kelvin. Units need to be excluded since **K** for Kelvin will be interpreted as Kilo by JoSIM, e.g. 4K will become 4000.
 
-Optional frequency parameter sets the noise effective bandwidth during noise analysis. Default is 1GHz.
+Optional `neb=` sets the thermal-noise effective bandwidth in Hz. The default
+is 1 THz. The [noise guide](noise_sources.md) defines the interpolated spectrum,
+timestep floor and classical thermal-noise assumptions.
 
 ### Inductor
 
@@ -270,13 +272,17 @@ A DC source that is always at $A$ at any given time during the simulation.
 
 **noise(**$A$&emsp;$T_{D}$&emsp;$T_{STEP}$**)**
 
-This source produces a noise value for the time step provided that it is after $T_{D}$. The $T_{STEP}$ is the inverse of the noise effective bandwidth set globally using `.neb` or locally for a resistor using `neb=`.
-
-The noise value returned is calculated using the following equation:
+The source is zero before $T_D$. $A$ is a one-sided amplitude spectral density
+in A/sqrt(Hz) or V/sqrt(Hz). $T_{STEP}$ is the Gaussian update interval, limited
+to at least the internal simulation timestep. If omitted, it is $1/(3NEB)$
+before that floor. The independent values at update points are
 
 $f(t) = A\frac{GRAND()}{\sqrt{2T_{STEP}}}$
 
-$GRAND()$ is a Gaussian random number generating function.
+$GRAND()$ is a unit-variance Gaussian sample. Values between update points are
+linearly interpolated, giving time-averaged variance $A^2/(3T_{STEP})$ and a
+smooth spectral rolloff. Grid-point variance differs. See the
+[noise guide](noise_sources.md) for sampling and bandwidth conventions.
 
 #### Exponential
 
@@ -430,6 +436,12 @@ As mentioned in the technical discussion, noise can be automatically inserted as
 **.temp**&emsp;*Temperature in Kelvin*
 
 **.neb**&emsp;*Bandwidth in Hertz*
+
+Temperature must be finite and non-negative; bandwidth must be finite and
+positive. Local `TEMP=`/`NEB=` settings override the globals. `TEMP=0` disables
+classical thermal noise for that component. The default bandwidth is 1 THz.
+Junction thermal noise uses the active resistive slope, with the explicit
+local-equilibrium limits described in the [noise guide](noise_sources.md).
 
 ### Spread
 

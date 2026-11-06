@@ -374,16 +374,10 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
 
         // ---- Node voltage/phase "pn1_" and add thermal noise (as current injection) ----
         if (temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-            if (temp.thermalNoise) { b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step); }
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
         } else if (!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-            if (temp.thermalNoise) { b_.at(temp.indexInfo.negIndex_.value()) += temp.thermalNoise.value().value(step); }
             temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
         } else if (temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-            if (temp.thermalNoise) {
-                b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step);
-                b_.at(temp.indexInfo.negIndex_.value()) += temp.thermalNoise.value().value(step);
-            }
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()) - x_.at(temp.indexInfo.negIndex_.value()));
         } else {
             temp.pn1_ = 0.0;
@@ -435,6 +429,12 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
         if (model.rtype() == 1) {
             const bool testLU = temp.update_value(v0);
             if (testLU && !needsLU_) { needsLU_ = true; }
+        }
+        // Apply one sample using the conductance selected for this step.
+        if (temp.thermalNoise) {
+            const double noise = temp.thermalNoise.value().value(step);
+            if (temp.indexInfo.posIndex_) { b_.at(*temp.indexInfo.posIndex_) -= noise; }
+            if (temp.indexInfo.negIndex_) { b_.at(*temp.indexInfo.negIndex_) += noise; }
         }
         double gateFactor = 1.0;
         if (temp.gateIndex_) {

@@ -11,14 +11,39 @@ I1 out 0 NOISE(1p 0 1p)
 
 `NOISE(ASD TD TSTEP)` takes an amplitude spectral density in A/sqrt(Hz) for a
 current source, or V/sqrt(Hz) for a voltage source. `TD` defaults to zero.
-`TSTEP` sets the noise update interval. If omitted, it is derived from `.NEB`
-as `1/(2*NEB)`. The interval is limited to at least the simulation timestep.
+`TSTEP` sets the noise update interval, denoted by \(\Delta\). If omitted, it
+is derived from `.NEB` as `1/(3*NEB)`. The interval is limited to at least the
+internal simulation timestep \(h\). The default `.NEB` is 1 THz; `.NEB` must
+be finite and positive. An explicit `TSTEP` overrides `.NEB` for that source.
 
 Independent Gaussian values at the update points have variance
-`ASD^2/(2*TSTEP)`. Values between updates are linearly interpolated. This
-interpolation changes the spectrum near the update frequency; the waveform is
-not ideal white noise with a rectangular frequency cutoff. Match the timestep
-and bandwidth to the circuit and check convergence when measuring noise.
+`ASD^2/(2*TSTEP)`. Values between updates are linearly interpolated. After the
+initial ramp, the time-averaged one-sided spectrum and total variance are
+
+\[
+S(f)=ASD^2\operatorname{sinc}^4(f\Delta),\qquad
+\overline{\operatorname{var}(x)}=\frac{ASD^2}{3\Delta},\qquad
+\operatorname{sinc}(z)=\frac{\sin(\pi z)}{\pi z}.
+\]
+
+Thus the effective bandwidth is \(1/(3\Delta)\), with smooth rolloff rather
+than a rectangular cutoff. When the timestep floor applies, it becomes
+\(\min(NEB,1/(3h))\). Older versions used \(\Delta=1/(2NEB)\), giving only
+two-thirds of the requested time-averaged noise power. This correction changes
+seeded thermal and omitted-`TSTEP` white-noise waveforms. Explicit-`TSTEP` grid
+variance is preserved, up to rounding. Each junction thermal source is evaluated
+once per step; a source whose two terminals are ground now advances too, which
+can change later draws in the process-global stream.
+
+Samples exactly at the update points have variance `ASD^2/(2*TSTEP)`;
+oversampling approaches the smaller time-averaged variance above. For \(K\)
+uniformly spaced samples per interval, starting at an update point, the expected
+sample variance is \(ASD^2(2/3+1/(3K^2))/(2\Delta)\). Setting \(h=\Delta\)
+therefore does not establish noise accuracy. Resolve circuit dynamics and the
+interpolated waveform, discard startup, and check timestep refinement. Output
+sampling and FIR filtering are separate settings: downsampling can alias power
+outside the output Nyquist band. Keep the seed, bandwidth and sampling choices
+in the measurement record.
 
 `I(source)` output uses the samples actually applied by the simulator. Printing
 does not re-evaluate a noise generator at past times. Source differences and
@@ -26,8 +51,46 @@ output FIR filtering use the same captured history. Histories are retained
 only when requested, at about 8 bytes per internal sample per source, plus
 vector metadata. Output decimation does not reduce that retained internal data.
 
-Automatic resistor and junction thermal noise use the same update interval
-convention. Junction thermal-noise amplitude follows its resistive state.
+## Automatic thermal noise
+
+`.TEMP T` enables a parallel Norton current source for each resistor and
+junction. A component's `TEMP=` overrides the global temperature; `TEMP=0`
+disables its classical noise. Temperatures must be finite and non-negative.
+Component `NEB=` overrides the global bandwidth. Both thermal source types use
+the white-noise interval convention above.
+
+The one-sided current ASD is \(\sqrt{4k_BTG}\). For a resistor, \(G=1/R\).
+For an RTYPE=1 junction, the active piecewise resistive slope selects
+
+\[
+G=\begin{cases}
+1/R_0,& |V_{pred}|<V_G-\Delta V/2,\\
+I_c/(ICFCT\,\Delta V),& V_G-\Delta V/2\le |V_{pred}|<V_G+\Delta V/2,\\
+1/R_N,& |V_{pred}|\ge V_G+\Delta V/2.
+\end{cases}
+\]
+
+RTYPE=0 uses \(1/R_N\) throughout. Here \(V_{pred}\) is the existing explicit
+voltage predictor used to choose the step's linearization. The current sample
+uses that step's slope immediately, including on entry to and exit from the
+transition region. Positive temperature requires positive conductance; zero
+conductance contributes zero noise.
+
+The resistor relation follows classical equilibrium
+[Johnson–Nyquist noise](https://doi.org/10.1103/PhysRev.32.110). Applying it to
+each junction slope is a **local-equilibrium approximation**. It does not model
+quasiparticle shot noise, quantum noise, heating or nonequilibrium gap physics.
+The transition-region choice is an explicit model assumption, not a microscopic
+prediction of switching rates. Classical noise also requires relevant frequencies
+well below \(k_BT/h_{Planck}\).
+
+The Norton source enters node KCL separately. `I(R)` and `I(B)` report the
+constitutive device branch current, excluding its internal noise source. For
+example, with an ideal voltage source and one noisy junction across the same
+terminals, `-(I(Vdrive)+I(B))` recovers the injected thermal current. There is no
+separate named trace for an internal thermal source. See the
+[bandwidth and thermal-noise study](qualification/2026-11-06-white-thermal-noise.md)
+for measured checks and statistical bounds.
 
 ## Power-law noise
 

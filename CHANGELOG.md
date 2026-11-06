@@ -29,6 +29,16 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Correct `.NEB` for the time-averaged power of linearly interpolated white
+  noise: the update interval is `1/(3*NEB)`, retaining the simulation-step floor.
+  The old interval supplied only two-thirds of the requested effective power.
+  Explicit `NOISE(... TSTEP)` retains its grid-variance convention. Seeded
+  thermal and omitted-interval waveforms change; document sampling/aliasing.
+- Apply JJ thermal noise using the current step's resistive slope, including
+  the transition region, and rescale current interpolation samples immediately.
+  Document the classical local-equilibrium approximation and branch-current
+  trace meaning. Reject invalid temperatures/bandwidths cleanly; `.NEB 0`
+  with automatic thermal noise previously aborted with `bad_optional_access`.
 - Validate finite-cycle SIN/SINE frequency regardless of verbosity, reject
   excess arguments and show the complete syntax in diagnostics. Add analytic
   delay/phase/damping/cycle-boundary checks, including the exact #108 source.

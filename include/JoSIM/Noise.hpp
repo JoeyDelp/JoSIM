@@ -11,6 +11,7 @@ class Noise {
   public:
     static void   determine_global_temperature(Input& iObj);
     static void   determine_noise_effective_bandwidth(Input& iObj);
+    static double determine_sampling_interval(const double& bandwidth, const double& simulation_step);
     static double determine_spectral_amplitude(const double& R, const double& T);
 };
 } // namespace JoSIM
