@@ -104,9 +104,10 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
         capture_source(trace);
         if (trace.subtract) { capture_source(*trace.subtract); }
     }
-    if (atyp_ == AnalysisType::Phase) {
+    {
+        const auto converted = atyp_ == AnalysisType::Phase ? StorageType::Voltage : StorageType::Phase;
         const auto capture_phase = [&](const RelevantTrace& trace) {
-            if (trace.storageType == StorageType::Voltage && !trace.variableIndex) {
+            if (trace.storageType == converted && !trace.variableIndex) {
                 if (trace.index1) { results.phaseBefore.emplace(trace.index1.value(), std::array<double, 2>{}); }
                 if (trace.index2) { results.phaseBefore.emplace(trace.index2.value(), std::array<double, 2>{}); }
             }
@@ -151,9 +152,6 @@ void Simulation::trans_sim(Matrix& mObj) {
             Errors::control_errors(ControlErrors::TRANS_ERROR, "Startup interval exceeds the supported range");
         }
         for (int64_t i = -startup; i < 0; ++i) {
-            if (i == -1) {
-                for (auto& history : results.phaseBefore) { history.second[1] = x_.at(history.first); }
-            }
             // Setup the b matrix
             setup_b(mObj, i, i * stepSize_);
             if (needsTR_) { return; }
@@ -163,9 +161,16 @@ void Simulation::trans_sim(Matrix& mObj) {
             simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
             // If anything is a amiss, complain about it
             if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
+            for (auto& history : results.phaseBefore) {
+                const auto node = x_.at(history.first);
+                const double phase = atyp_ == AnalysisType::Phase ? node
+                    : (2.0 * stepSize_ / (3.0 * Constants::SIGMA)) * node
+                      + (4.0 / 3.0) * history.second[0] - (1.0 / 3.0) * history.second[1];
+                history.second[1] = history.second[0];
+                history.second[0] = phase;
+            }
         }
     }
-    for (auto& history : results.phaseBefore) { history.second[0] = x_.at(history.first); }
     // Start the simulation loop
     for (int64_t i = 0; i < simSize_; ++i) {
         double step = i * stepSize_;
@@ -522,27 +527,16 @@ void Simulation::handle_vs(Matrix& mObj, const int64_t& i, double& step, double 
 void Simulation::handle_ps(Matrix& mObj, const int64_t& i, double& step, double factor) {
     for (const auto& j : mObj.components.psIndices) {
         auto& temp = std::get<PhaseSource>(mObj.components.devices.at(j));
+        const double phase = mObj.sourcegen.at(temp.sourceIndex_).value(step);
         if (atyp_ == AnalysisType::Phase) {
             // φn
-            b_.at(temp.indexInfo.currentIndex_.value()) = (mObj.sourcegen.at(temp.sourceIndex_).value(step));
+            b_.at(temp.indexInfo.currentIndex_.value()) = phase;
         } else if (atyp_ == AnalysisType::Voltage) {
-            if (i == 0) {
-                b_.at(temp.indexInfo.currentIndex_.value())
-                        = (Constants::SIGMA / (stepSize_ * factor))
-                          * ((3.0 / 2.0) * (mObj.sourcegen.at(temp.sourceIndex_).value(step)));
-            } else if (i == 1) {
-                b_.at(temp.indexInfo.currentIndex_.value())
-                        = (Constants::SIGMA / (stepSize_ * factor))
-                          * ((3.0 / 2.0) * (mObj.sourcegen.at(temp.sourceIndex_).value(step))
-                             - 2.0 * (mObj.sourcegen.at(temp.sourceIndex_).value(step - (stepSize_ * factor))));
-            } else {
-                b_.at(temp.indexInfo.currentIndex_.value())
-                        = (Constants::SIGMA / (stepSize_ * factor))
-                          * ((3.0 / 2.0) * (mObj.sourcegen.at(temp.sourceIndex_).value(step))
-                             - 2.0 * (mObj.sourcegen.at(temp.sourceIndex_).value(step - (stepSize_ * factor)))
-                             + 0.5 * (mObj.sourcegen.at(temp.sourceIndex_).value(step - (2 * stepSize_ * factor))));
-            }
+            b_.at(temp.indexInfo.currentIndex_.value()) = (Constants::SIGMA / (stepSize_ * factor))
+                * (1.5 * phase - 2.0 * temp.pn1_ + 0.5 * temp.pn2_);
         }
+        temp.pn2_ = temp.pn1_;
+        temp.pn1_ = phase;
     }
 }
 

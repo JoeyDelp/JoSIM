@@ -60,13 +60,25 @@ histories, indexed by the matrix's `sourcegen` index. Each retained vector has
 the same length as `timeAxis`. Unrequested histories remain absent. This
 appended result state requires consumers of `Results`/`Simulation` to recompile.
 
-`Results::phaseBefore` retains nodal phase at `-h` and `-2h` for phase-mode
-voltage conversion. These are the actual startup states, or zero histories
-when startup is disabled. Explicit trace selection retains only nodes needed
-for voltage output; default all-unknown results retain every nodal history for
-later postprocessing. The map stores two doubles per retained node plus map
-overhead; it does not grow with the run length. This also changes the size of
-`Results` and requires recompilation.
+`Results::phaseBefore` retains nodal phase at `-h` and `-2h` for output
+conversion. Phase mode retains its solved phases; voltage mode integrates the
+solved startup voltages with the same BDF2 relation used for subsequent output.
+The phase origin is zero before the first simulated step, including negative
+startup steps. Histories are zero when startup is disabled. Explicit selection
+retains only nodes needing conversion (voltage in phase mode, phase in voltage
+mode), including difference operands; direct JJ variables need no duplicate
+nodal history. Default all-unknown results retain every nodal history for later
+postprocessing. The map stores two doubles per retained node plus map overhead;
+it does not grow with run length. This changes the size of `Results` and
+requires recompilation.
+
+`PhaseSource` retains two preceding applied phase samples. BDF2 voltage
+conversion uses these actual samples instead of asking an advanced random
+generator for past values. Warmup continues through t=0 without resetting
+history; a cold phase step retains its existing two-sample voltage impulse.
+Full timestep retries reconstruct the sources and clear all result history.
+The appended source fields also require consumers of component/Matrix types
+to recompile against matching headers and libraries.
 
 The command-line helpers `CliOptions::parse`, `display_help`, `Errors::oor` and
 `Errors::error_message` retain process-exit behaviour for the executable.

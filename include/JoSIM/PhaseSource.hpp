@@ -25,6 +25,8 @@ namespace JoSIM {
 class PhaseSource : public BasicComponent {
   public:
     int64_t sourceIndex_;
+    // Actual preceding samples; never re-evaluate a stateful source in the past.
+    double pn1_ = 0.0, pn2_ = 0.0;
     PhaseSource(const std::pair<tokens_t, string_o>& s,
                 const NodeConfig&                    ncon,
                 const nodemap&                       nm,

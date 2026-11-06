@@ -27,7 +27,7 @@ class Results {
     std::vector<double>                             timeAxis;
     // Requested applied current-source samples, indexed by sourcegen index.
     std::vector<std::optional<std::vector<double>>> sourceCurrents;
-    // Nodal phase at -h and -2h for BDF2 voltage conversion.
+    // Nodal phase at -h and -2h for BDF2 output conversion in either mode.
     std::unordered_map<int64_t, std::array<double, 2>> phaseBefore;
 };
 

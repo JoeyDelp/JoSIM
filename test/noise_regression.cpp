@@ -207,6 +207,63 @@ static void flux_through_inductor() {
     }
 }
 
+static void phase_source_samples() {
+    for (const std::string waveform : {"SIN(0.2,0.1,50G,0,0,30)",
+                                       "PWL(0,0.2,1P,0.3,3P,-0.1,20P,0.2)",
+                                       "NOISE(1P,0,1P)", "PNOISE(0.001,1,0,1P,100P,16)",
+                                       "FNOISE(0.001,1,0.05,0,1P,100P,16)"}) {
+        for (bool startup : {false, true}) {
+            for (auto mode : {AnalysisType::Voltage, AnalysisType::Phase}) {
+                Input input(mode, 0, true);
+                const double h = 1e-13;
+                input.transSim.tstep(h);
+                input.transSim.tstop(20e-12);
+                input.transSim.startup(startup);
+                input.netlist.expNetlist = {{{"P1", "N", "0", waveform}, std::nullopt},
+                                           {{"R1", "N", "0", "10"}, std::nullopt}};
+                Rng::start_run(123);
+                Matrix matrix;
+                matrix.create_matrix(input);
+                Simulation simulation(input, matrix);
+                require(input.transSim.tstep() == h, "Phase-source reference unexpectedly retried");
+                const auto node = matrix.nm.at("N");
+                const auto& resistor = std::get<Resistor>(matrix.components.devices.at(matrix.components.resistorIndices.front()));
+                const auto& currents = *simulation.results.xVector.at(*resistor.indexInfo.currentIndex_);
+                const auto& nodes = *simulation.results.xVector.at(node);
+                Rng::start_run(123);
+                Function reference;
+                reference.parse_function(waveform, input, std::nullopt);
+                double previous = 0, older = 0;
+                double integrated = mode == AnalysisType::Voltage ? simulation.results.phaseBefore.at(node)[0] : 0;
+                double integrated_older = mode == AnalysisType::Voltage ? simulation.results.phaseBefore.at(node)[1] : 0;
+                // At 0.1 ps the bounded warmup has 1000 steps. Sample the
+                // standalone generator only in time order, including warmup.
+                for (int64_t i = startup ? -1000 : 0; i < static_cast<int64_t>(nodes.size()); ++i) {
+                    const double phase = reference.value(i * h);
+                    if (i >= 0) {
+                        // Josephson voltage relation under the documented BDF2
+                        // differentiation, compared against actual source samples.
+                        const double voltage = Constants::SIGMA / h * (1.5 * phase - 2 * previous + .5 * older);
+                        require(std::isfinite(currents[i]) && std::abs(currents[i] - voltage / 10) < 1e-15,
+                                "Phase source did not apply its actual preceding generator samples: " + waveform);
+                        double observed = nodes[i];
+                        if (mode == AnalysisType::Voltage) {
+                            observed = (2 * h / (3 * Constants::SIGMA)) * nodes[i]
+                                       + (4.0 / 3.0) * integrated - (1.0 / 3.0) * integrated_older;
+                            integrated_older = integrated;
+                            integrated = observed;
+                        }
+                        require(std::isfinite(observed) && std::abs(observed - phase) < 1e-11,
+                                "Phase source/integrated node lost prescribed phase: " + waveform);
+                    }
+                    older = previous;
+                    previous = phase;
+                }
+            }
+        }
+    }
+}
+
 static void full_cycle_step_guard() {
     Input input(AnalysisType::Voltage, 0, true);
     input.transSim.tstep(2.0 * Constants::PI * Constants::SIGMA / 1e-3);
@@ -220,8 +277,10 @@ static void full_cycle_step_guard() {
     input.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1M"}, std::nullopt},
                                {{"B1", "N", "0", "JM"}, std::nullopt},
                                {{"I1", "0", "R", "NOISE(1P", "0", "1P)"}, std::nullopt},
-                               {{"R1", "R", "0", "10"}, std::nullopt}};
-    input.controls = {{"PRINT", "I(I1)", "I(R1)"}};
+                               {{"R1", "R", "0", "10"}, std::nullopt},
+                               {{"P1", "PH", "0", "FNOISE(0.001,1,0.05,0,1P,100P,16)"}, std::nullopt},
+                               {{"RP", "PH", "0", "10"}, std::nullopt}};
+    input.controls = {{"PRINT", "I(I1)", "I(R1)", "P(PH)", "I(RP)"}};
     const double requested   = input.transSim.tstep();
     Rng::start_run(7654);
     Matrix       matrix;
@@ -250,6 +309,9 @@ static void full_cycle_step_guard() {
     const auto fine_index = fine_matrix.components.currentsources.front().sourceIndex_;
     require(captured == fine_simulation.results.sourceCurrents.at(fine_index).value(),
             "Same-process final-step run did not replay the retry noise samples");
+    require(simulation.results.xVector == fine_simulation.results.xVector
+            && simulation.results.phaseBefore == fine_simulation.results.phaseBefore,
+            "Phase-source history or noise realization changed after timestep retry");
 }
 
 int main() {
@@ -262,6 +324,7 @@ int main() {
         fractional_critical_current();
         invalid_noise_parameters();
         flux_through_inductor();
+        phase_source_samples();
         full_cycle_step_guard();
         std::cout << "Noise and phase-step regressions passed\n";
         return 0;

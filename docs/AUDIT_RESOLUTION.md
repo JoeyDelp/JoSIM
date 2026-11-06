@@ -704,3 +704,32 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   [Startup study](qualification/2026-11-06-junction-startup.md) gives the derivation,
   compatibility scope, values and tolerances. Green measurements:
   artifacts/audit-resolution/jj-startup.json.
+
+## F11 — Phase-source and voltage-to-phase startup history
+
+- **Classification:** confirmed supported-output/source defects; repaired locally,
+  native qualification pending.
+- **Reproduction:** At 0.1 mV constant JJ bias, h=0.01 ps, warm voltage mode
+  prints node phase about 3.03854 rad below the same junction's phase. A warm
+  constant one-radian phase source injects a false 4.93659 mV pulse at t=0
+  (h=0.1 ps), although the already established phase is constant. Seeded FNOISE
+  phase-source output differs between modes by 0.00332625 rad and resistor
+  current by 1.90786 uA in a controlled cold run.
+- **Cause:** Output starts voltage-to-phase integration from zero despite
+  negative startup. handle_ps re-evaluates stateful sources at past times after
+  advancing them, and resets derivative history at i=0/1 after warmup.
+- **Repair:** Retain requested nodal phase history in both modes and actual
+  preceding phase-source samples, preserving cold-step semantics and full-retry
+  replay. No constants/signatures change; appended source state needs consumers
+  to recompile. See [the history study](qualification/2026-11-06-phase-history.md).
+- **Evidence:** build/audit-resolution/phase-source/red.json, constant-red.json
+  and cli-red.log; three new focused CLI tests fail in 21 subcases before repair.
+  The first two records include exact decks and the qualified red binary hash.
+- **Verification:** Floating/difference traces, FIR/downsampling, single-point
+  and delayed output, warm/cold starts, deferred library output, and raw
+  SIN/PWL/NOISE/PNOISE/FNOISE source samples pass. Raw phase/current bounds are
+  1e-11 rad/1e-15 A. Same-process full-retry results must match a fresh final-step
+  run exactly. GCC16/Clang23 Debug/Release pass 33/33; full ASan/UBSan/leaks
+  passes 33/33 in 212.16 s. All three controlled red cases now agree between
+  modes at CSV precision. Green measurements and source/binary hashes:
+  artifacts/audit-resolution/phase-source/measurements.json.

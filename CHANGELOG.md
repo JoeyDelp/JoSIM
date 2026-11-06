@@ -26,6 +26,12 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Preserve voltage-mode nodal phase accumulated during startup, so node and
+  junction phase traces agree. Phase sources now retain their actual preceding
+  samples, fixing stateful noise differentiation and false t=0 voltage pulses
+  after warmup. Keep cold-step impulses and seeded full-retry replay. Appended
+  phase-source state requires C++ consumers to recompile.
+
 - Read actual JJ phase/voltage histories during negative-time startup and at
   t=0. Voltage mode previously used node volts as phase history, creating a
   persistent wrong flux state in biased junction/inductor loops. Add an

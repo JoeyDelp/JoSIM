@@ -138,6 +138,43 @@ void default_phase_history_for_postprocessing() {
     }
 }
 
+void default_voltage_history_for_postprocessing() {
+    auto run = input();
+    run.transSim.startup(true);
+    run.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1"}, std::nullopt},
+                             {{"R1", "N", "0", "10"}, std::nullopt}};
+    JoSIM::Matrix matrix;
+    matrix.create_matrix(run);
+    JoSIM::Simulation simulation(run, matrix);
+    run.controls = {{"PRINT", "P(N)"}};
+    JoSIM::find_relevant_traces(run, matrix);
+    JoSIM::Output output;
+    output.write_output(run, matrix, simulation);
+    run.argAnal = JoSIM::AnalysisType::Phase;
+    JoSIM::Matrix phase_matrix;
+    phase_matrix.create_matrix(run);
+    JoSIM::Simulation phase_simulation(run, phase_matrix);
+    const auto& reference = *phase_simulation.results.xVector.at(phase_matrix.nm.at("N"));
+    if (output.traces.at(1).data_.size() != reference.size()) {
+        throw std::runtime_error("Deferred phase output changed its time grid");
+    }
+    for (size_t i = 0; i < reference.size(); ++i) {
+        if (std::abs(output.traces.at(1).data_[i] - reference[i]) > 1e-10 * std::abs(reference[i])) {
+            throw std::runtime_error("Default voltage results lost startup phase for deferred output");
+        }
+    }
+    auto selected = input();
+    selected.netlist.expNetlist = run.netlist.expNetlist;
+    selected.controls = {{"PRINT", "V(N)"}};
+    JoSIM::Matrix selected_matrix;
+    selected_matrix.create_matrix(selected);
+    JoSIM::find_relevant_traces(selected, selected_matrix);
+    JoSIM::Simulation selected_simulation(selected, selected_matrix);
+    if (!selected_simulation.results.phaseBefore.empty()) {
+        throw std::runtime_error("Unrequested converted phase history was retained");
+    }
+}
+
 void scoped_and_legacy_expansion() {
     for (bool scoped : {false, true}) {
         auto run = input();
@@ -189,7 +226,10 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
             if (selected == "all" || selected == "parameters") { scoped_and_legacy_expansion(); }
-            if (selected == "all" || selected == "phase") { default_phase_history_for_postprocessing(); }
+            if (selected == "all" || selected == "phase") {
+                default_phase_history_for_postprocessing();
+                default_voltage_history_for_postprocessing();
+            }
             valid_simulation();
         }
     } catch (const std::exception& error) {

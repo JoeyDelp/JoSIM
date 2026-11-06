@@ -1,6 +1,7 @@
 """Process-level regressions for rejected input and small valid circuits."""
 
 import csv
+import math
 import os
 import pathlib
 import re
@@ -448,6 +449,69 @@ class CliRegression(unittest.TestCase):
         result, rows = self.run_deck(deck.format(" DST"), extra=("-a", "0"))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertAlmostEqual(float(rows[1][1]), 1.0, delta=2e-6)
+
+    def test_node_phase_preserves_junction_startup_history(self):
+        for startup in ("", " DST"):
+            for timing in ("0.01p 2p", "0.01p 0.01p", "0.01p 2p 0 0.03p 0.04p",
+                           "0.01p 2p 0.5p 0.03p"):
+                for floating in (False, True):
+                    terminal = "A B" if floating else "A 0"
+                    deck = (f"V1 {terminal} DC 0.1m\nB1 {terminal} JM\n"
+                            + ("V2 B 0 DC 0.05m\nR0 B 0 10\n" if floating else "")
+                            + ".model JM JJ(RTYPE=0 IC=100u RN=10 CAP=0.1p)\n"
+                            + f".tran {timing}{startup}\n"
+                            + (".print P(A,B) P(B1) P(B) P(B1,R0)\n" if floating else ".print P(A) P(B1)\n")
+                            + ".end\n")
+                    for mode in (0, 1):
+                        with self.subTest(startup=startup, timing=timing, floating=floating, mode=mode):
+                            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            self.assertGreater(len(rows), 1)
+                            for row in rows[1:]:
+                                values = list(map(float, row[1:]))
+                                tolerance = 3e-6 * max(abs(v) for v in values) + 1e-9
+                                self.assertAlmostEqual(values[0], values[1], delta=tolerance)
+                                if floating:
+                                    self.assertAlmostEqual(values[3], values[1] - values[2], delta=tolerance)
+
+    def test_constant_phase_source_has_continuous_startup_history(self):
+        # A warm constant phase has dphi/dt=0. A cold step retains the BDF2
+        # impulse (3/2, -1/2), whose total area is sigma*delta(phi).
+        sigma_si = 6.62607015e-34 / (4 * math.pi * 1.602176634e-19)
+        for startup in ("", " DST"):
+            for mode in (0, 1):
+                with self.subTest(startup=startup, mode=mode):
+                    deck = (f"P1 N 0 DC 1\nR1 N 0 10\n.tran 0.1p 2p{startup}\n"
+                            ".print P(N) V(N) I(R1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    for i, row in enumerate(rows[1:]):
+                        phase, voltage, current = map(float, row[1:])
+                        coefficient = (1.5 if i == 0 else -.5 if i == 1 else 0) if startup else 0
+                        expected = sigma_si / 1e-13 * coefficient
+                        self.assertAlmostEqual(phase, 1, delta=2e-6)
+                        self.assertAlmostEqual(voltage, expected, delta=2e-6 * abs(expected) + 1e-12)
+                        self.assertAlmostEqual(current, expected / 10, delta=2e-7 * abs(expected) + 1e-13)
+
+    def test_seeded_phase_sources_agree_between_modes(self):
+        for waveform in ("NOISE(1p 0 1p)", "PNOISE(0.001 1 0 1p 100p 16)",
+                         "FNOISE(0.001 1 0.05 0 1p 100p 16)"):
+            for startup in ("", " DST"):
+                for filtering in ("0 0.1p", "0.5p 0.3p 0.4p"):
+                    with self.subTest(waveform=waveform, startup=startup, filtering=filtering):
+                        deck = (f"P1 A B {waveform}\nR1 A B 10\nR0 B 0 5\n.option SEED=123\n"
+                                f".tran 0.1p 20p {filtering}{startup}\n.print P(A,B) P(P1) I(R1)\n.end\n")
+                        observed = []
+                        for mode in (0, 1):
+                            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            observed.append(rows)
+                        self.assertEqual(len(observed[0]), len(observed[1]))
+                        for first, second in zip(observed[0][1:], observed[1][1:]):
+                            self.assertEqual(first[0], second[0])
+                            for column, (a, b) in enumerate(zip(map(float, first[1:]), map(float, second[1:]))):
+                                tolerance = 3e-6 * max(abs(a), abs(b)) + (1e-9 if column < 2 else 1e-13)
+                                self.assertAlmostEqual(a, b, delta=tolerance)
 
     def test_phase_step_flux_quantum_area(self):
         # Phi0=h/(2e), exact SI definitions; NIST physics.nist.gov/cuu/Constants/

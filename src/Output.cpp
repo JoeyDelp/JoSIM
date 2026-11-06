@@ -234,8 +234,9 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                         // It takes extra memory and time, so do it only if necessary.
                         std::vector<double> vectphase;
                         vectphase.reserve(xsize);
-                        double phaseN1 = 0., phaseN2 = phaseN1;
-                        for (auto j = 0; j < xsize; j++) {
+                        double phaseN1 = phase_at(i1, -1) - phase_at(i2, -1);
+                        double phaseN2 = phase_at(i1, -2) - phase_at(i2, -2);
+                        for (size_t j = 0; j < xsize; j++) {
                             auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
                             auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
                             auto value  = ((2.0 * iObj.transSim.tstep()) / (3.0 * Constants::SIGMA)) * (valin1 - valin2)
