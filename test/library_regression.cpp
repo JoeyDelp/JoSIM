@@ -9,6 +9,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -78,6 +79,31 @@ void cli_values() {
         throw std::runtime_error("CLI long-option values were lost");
     }
 }
+
+void invalid_transient() {
+    for (double step : {0.0, -1.0, std::numeric_limits<double>::infinity(),
+                        std::numeric_limits<double>::quiet_NaN()}) {
+        auto run = input();
+        run.transSim.tstep(step);
+        must_throw([&] { volatile auto count = run.transSim.simsize(); (void)count; }, "Invalid transient analysis");
+    }
+    for (double stop : {0.0, -1.0, std::numeric_limits<double>::infinity(),
+                        std::numeric_limits<double>::quiet_NaN(), 1e200}) {
+        auto run = input();
+        run.transSim.tstop(stop);
+        must_throw([&] { volatile auto count = run.transSim.simsize(); (void)count; }, "Invalid transient analysis");
+    }
+    auto run = input();
+    run.transSim.prstart(4.9e-12);
+    must_throw([&] { run.transSim.validate_output(); }, "Print start is after the last simulation sample");
+    run.transSim.prstart(0.0);
+    run.transSim.prstep(0.0);
+    must_throw([&] { run.transSim.validate_output(); }, "Print step");
+    run.netlist.expNetlist = {{{"R1", "N", "0", "1K"}, std::nullopt}};
+    run.transSim.tstep(0.0);
+    JoSIM::Matrix matrix;
+    must_throw([&] { matrix.create_matrix(run); }, "Invalid transient analysis");
+}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -90,6 +116,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "singular") { singular_matrix(); }
             if (selected == "all" || selected == "invalid") { invalid_matrix(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
+            if (selected == "all" || selected == "transient") { invalid_transient(); }
             valid_simulation();
         }
     } catch (const std::exception& error) {

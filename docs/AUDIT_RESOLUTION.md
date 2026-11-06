@@ -94,7 +94,10 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A07 — Invalid transient and recursive subcircuits
 
 - **Classification:** confirmed defects; prior repairs.
-- **Current reproduction/result:** Existing bounded regressions pass in four builds; non-finite/error-path expansion pending.
+- **Current reproduction/result:** Bounded cycle/negative-time checks pass.
+  Additional direct-library non-finite/zero/overflow point counts lacked
+  validation; print starts after the final actual sample produced a generic
+  out-of-range error. Repaired and covered in F06.
 - **Required outcome:** Clean finite/bounds errors, direct/indirect cycle rejection; no hangs/crashes.
 - **Implementation/owner:** c36ea8a; 3a11500; src/Transient.cpp; src/Netlist.cpp.
 - **Verification:** ctest -R regression::cli; sanitizers; malformed-input corpus.
@@ -483,5 +486,54 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   GCC16/Clang23 Release suites pass 30/30. Full ASan/UBSan with leaks passed
   30/30 in 137.19 s; added malformed-selector guards receive a targeted rerun.
 - **Evidence:** build/audit-resolution/pin-alias-red.log, ground-names-red.log,
-  pin-alias-{gcc-,}tests.xml and pin-alias-sanitizer-tests.xml. Native qualification
-  of the committed alias repair remains pending. Named overrides remain open.
+  pin-alias-{gcc-,}tests.xml and pin-alias-sanitizer-tests.xml. CI 42219314943
+  for df54660779 passes all ten binary/library-mode jobs. Named overrides remain open.
+
+## F06 — Checked library time grids and empty output windows
+
+- **Classification:** confirmed input/recovery defects extending A07/D04/D11.
+- **Reproduction:** direct simsize() with zero/non-finite timing did not throw
+  before undefined integer conversion. `.tran 1p 5p 4.9p` and `1p 1.5p 1p`
+  reached an empty output index vector and reported a generic internal bug.
+- **Implementation:** Transient::simsize owns checked finite/positive/range
+  conversion; Matrix and Simulation use it. validate_output checks the actual
+  final grid point, and Output refuses empty data/index vectors. Direct FIR
+  widths are clamped to the duration before converting tap counts, as in CLI.
+  Public method names/signatures and object layouts are retained; the new
+  output validator is an API addition. Valid grid/numerical equations unchanged.
+- **Verification:** nine scalar invalid cases plus direct matrix rejection,
+  empty print windows, exact final-sample output (4 ps, tolerance 1e-20 s), and
+  huge finite FIR width preserving a 1 V constant (1e-9 V rounding allowance).
+  GCC16/Clang23 Release pass 30/30; all seven sanitizer/leak regression groups
+  pass in 5.23 s. Native qualification still required for the committed repair.
+- **Evidence:** build/audit-resolution/transient-library-red.json,
+  transient-window-red.json, transient-{gcc-,}tests.xml and
+  transient-sanitizer-tests.xml.
+
+## F07 — Stateful current-source output history (open)
+
+- **Classification:** confirmed numerical output defect; unresolved.
+- **Reproduction:** seeded NOISE current into a single 10 ohm resistor prints
+  source and resistor currents differing by up to 7.406399e-6 A. KCL requires
+  equality. Output re-evaluates the source at past times after its generator
+  has advanced to the end of the run, causing extrapolated values.
+- **Required outcome:** output the samples actually applied during simulation;
+  capture only requested source histories, include difference operands, retain
+  timestep-retry/RNG behaviour, and test both orientations/modes/filtering.
+- **Owners:** Simulation::handle_cs, Results and Output::write_output.
+- **Evidence:** build/audit-resolution/output-history-red.json, exact seed/deck
+  and binary hash. This is separate from the previously repaired Gaussian cache.
+
+## F08 — Initial phase-to-voltage output history (open)
+
+- **Classification:** confirmed numerical output/startup defect; unresolved.
+- **Reproduction:** an ideal constant 1 V source prints 0 V then 1.5 V in phase
+  mode with startup (1.333333 V without startup), before settling to 1 V.
+  The analytic voltage is 1 V at every sample. Output fabricates the first two
+  phase-history values rather than using the states used by the integrator.
+- **Required outcome:** retain the actual pre-t=0 states needed for conversion;
+  verify cold/startup, analytic source/RLC behaviour and cross-mode results.
+  Do not change the integrator to disguise a trace-conversion defect.
+- **Owners:** Simulation results/history and Output phase differentiation.
+- **Evidence:** build/audit-resolution/output-history-red.json. Broader numerical
+  validation, including #91/#101, remains open independently.

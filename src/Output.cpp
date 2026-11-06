@@ -55,9 +55,12 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     auto&   x           = sObj.results.xVector;
     auto&   t           = sObj.results.timeAxis;
     auto&   tran        = iObj.transSim;
+    tran.validate_output();
+    if (t.empty()) { Errors::control_errors(ControlErrors::TRANS_ERROR, "Output contains no simulation samples"); }
     // Create downsampling FIR window, use Hanning function with odd number of taps.
     // The FIR filter is centered around the requested point in time, i. e. looks into the past and future.
-    int64_t halffirsize = static_cast<int64_t>(tran.prfirwindow() <= 0. ? 0 : .5 * tran.prfirwindow() / tran.tstep());
+    const double window = std::min(tran.prfirwindow(), tran.tstop());
+    int64_t halffirsize = static_cast<int64_t>(window <= 0. ? 0 : .5 * window / tran.tstep());
     int64_t firsize     = halffirsize * 2 + 1; // Guarantees odd number of taps or 1 in case of disabled filter.
     std::vector<double> firwindow;
     firwindow.reserve(firsize);
@@ -79,6 +82,9 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
             result_indices.emplace_back(i);
             break;
         }
+    }
+    if (result_indices.empty()) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR, "Output window contains no simulation samples");
     }
     double next_print_point = tran.prstart() + tran.prstep();
     for (auto i = static_cast<size_t>(result_indices.back()); i < t.size(); ++i) {

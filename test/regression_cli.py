@@ -153,13 +153,23 @@ class CliRegression(unittest.TestCase):
 
     def test_invalid_transient(self):
         for parameters in ("-1p 5p", "0 5p", "1p -5p", "1p", "1p 5p 0 -1p",
-                           "1p 5p 10p", "1p 5p 0 1p -1p", "1p 1E200"):
+                           "1p 5p 10p", "1p 5p 0 1p -1p", "1p 1E200", "1p 5p 4.9p", "1p 1.5p 1p"):
             with self.subTest(parameters=parameters):
                 result, _ = self.run_deck(
                     f"V1 1 0 DC 1\nR1 1 0 1k\n.tran {parameters} DST\n.print V(1)\n.end\n"
                 )
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("Invalid transient analysis", result.stdout + result.stderr)
+
+    def test_last_sample_window_and_clamped_fir(self):
+        deck = "V1 N 0 DC 1\nR1 N 0 10\n.tran {} DST\n.print V(N)\n.end\n"
+        result, rows = self.run_deck(deck.format("1p 5p 4p"), extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(len(rows), 2)
+        self.assertAlmostEqual(float(rows[1][0]), 4e-12, delta=1e-20)
+        result, rows = self.run_deck(deck.format("1p 5p 0 1p 1e100"), extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(all(abs(float(row[1]) - 1.0) < 1e-9 for row in rows[1:]))
 
     def test_invalid_parameter_expressions(self):
         for expression in ("{}", "1+", "1+*2", "(2)3", "SIN()", "(1]", "2/(3-"):

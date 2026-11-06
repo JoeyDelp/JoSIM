@@ -16,6 +16,11 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Validate direct-library transient point counts before integer conversion and
+  matrix construction. Print windows after the last computed sample now fail
+  with a transient diagnostic. Bound direct-library FIR windows consistently
+  with the CLI and preserve valid last-sample output.
+
 - Resolve hierarchical pin aliases, including nested/ground pins (#81), and
   preserve their requested trace labels. Unknown or malformed trace requests
   now fail explicitly. Restore the documented `C()` current alias and device

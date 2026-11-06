@@ -32,7 +32,8 @@ class Transient {
 
     double      prfirwindow() const { return prfirwindow_; }
 
-    int64_t     simsize() const { return static_cast<int64_t>(tstop_ / tstep_); }
+    int64_t     simsize() const;
+    void        validate_output() const;
 
     bool        startup() const { return startup_; }
 

@@ -314,11 +314,20 @@ The most important of these control commands is the transient simulation command
 
 **.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$&emsp;[$P_{WINDOW}$]]]&emsp;DST
 
-This generates a simulation that runs from 0 until $T_{STOP}$. The amount simulation steps that will be performed is $n=\frac{T_{STOP}}{T_{STEP}}$.
+For effective step $h$, JoSIM computes $N=\lfloor T_{STOP}/h\rfloor$ samples at
+$t_k=kh$, $k=0,\ldots,N-1$. The stop time itself is not an extra sample. Step
+and stop time must be finite and positive, with at least one supported sample.
 
-$P_{START}$ indicates at what point output will start printing. $P_{STEP}$ sets the size of the print steps. This has to be larger or equal to $T_{STEP}$.
+$P_{START}$ selects the first output sample on or after that time. It must not
+exceed the last computed sample. $P_{STEP}$ is the print interval. If it is
+smaller than the requested simulation step, the CLI reduces the initial step
+to match it. Keep both settings fixed when comparing numerical or noise runs.
 
 If $P_{WINDOW}$ is specified and not 0, a Hanning FIR filter with a window width of $P_{WINDOW}$ seconds is applied to the output data before decimating as a post-processing step. This can be used to low-pass filter the output to prevent aliasing when decimating with $P_{STEP}$, e. g. to create an IV curve of the whole circuit.
+
+The FIR window must be finite and non-negative; widths longer than the run are
+clamped to its duration. An output window containing no computed samples is
+an error, including when $P_{START}<T_{STOP}$ but lies after the last grid point.
 
 DST disables the start-up time. The start-up time is a period calculated internally by the simulator in which components settle. This is equivalent to the few picoseconds from when a circuit initially receives power (power switch flipped).
 

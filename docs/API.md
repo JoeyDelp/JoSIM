@@ -7,6 +7,10 @@ across compiler, standard-library or JoSIM versions is not promised.
 
 ## Errors and recovery
 
+Set finite, positive `tstep` and `tstop` before creating a matrix. `simsize()`
+checks the point count before integer conversion. `validate_output()` checks
+print settings against the actual grid; output also rejects empty result data.
+
 Input, model, matrix, simulation and output failures throw C++ exceptions. Catch
 `std::exception` around the complete operation; `std::runtime_error::what()`
 contains JoSIM's diagnostic. A failed simulation is not a result. Discard the

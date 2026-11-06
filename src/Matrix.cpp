@@ -34,6 +34,8 @@ void Matrix::create_matrix(Input& iObj) {
 }
 
 void Matrix::setup(Input& iObj) {
+    // Direct embedding callers use the same checked time grid as CLI callers.
+    (void)iObj.transSim.simsize();
     needsTR_ = false;
     spread.get_spreads(iObj);
     Noise::determine_global_temperature(iObj);
