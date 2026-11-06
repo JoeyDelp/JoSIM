@@ -102,6 +102,21 @@ class CliRegression(unittest.TestCase):
                 self.assertIn("Command Line", result.stdout + result.stderr)
                 self.assertIsNone(rows)
 
+    def test_advertised_long_options_are_accepted(self):
+        help_result = subprocess.run([str(BINARY), "--help"], capture_output=True, text=True, timeout=5)
+        self.assertEqual(help_result.returncode, 0, help_result.stdout + help_result.stderr)
+        advertised = set(re.findall(r"^(--[A-Za-z]+)=?\s+\|", help_result.stdout, re.MULTILINE))
+        arguments = {"--analysis": ("--analysis=0",), "--help": ("--help",), "--input": ("--input",),
+                     "--minimal": ("--minimal=1",), "--output": ("--output=output.csv",),
+                     "--sanity": ("--sanity",), "--verbose": ("--verbose=1",), "--version": ("--version",)}
+        self.assertEqual(advertised, set(arguments))
+        for option in advertised:
+            with self.subTest(option=option):
+                result, rows = self.run_deck(self.SIMPLE + ".end\n", extra=arguments[option], stdin=option == "--input")
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                if option not in ("--help", "--version"):
+                    self.assertGreater(len(rows), 1)
+
     def test_output_preserves_input_files(self):
         for mode in ("relative", "hardlink", "file", "included", "iv"):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory(prefix="preserve-", dir=pathlib.Path.cwd()) as tmp:

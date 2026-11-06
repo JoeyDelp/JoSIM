@@ -243,7 +243,7 @@ void CliOptions::display_help() {
     // Output
     // ---------------------------------------------------------------------------
     std::cout << std::setw(16) << std::left << "-o" << std::setw(3) << std::left << "|"
-              << "Specify output file for simulation results (.csv)." << std::endl;
+              << "Specify output file for simulation results (.csv, .dat, .raw)." << std::endl;
     std::cout << std::setw(16) << std::left << "--output=" << std::setw(3) << std::left << "|"
               << "Default will be output.csv if no file is specified." << std::endl;
     std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|" << std::endl;
@@ -252,7 +252,7 @@ void CliOptions::display_help() {
     std::cout << std::setw(16) << std::left << "-s" << std::setw(3) << std::left << "|"
               << "(EXPERIMENTAL) Sanity check circuit netlist (main design). "
               << "Subcircuits can also be checked if specified." << std::endl;
-    std::cout << std::setw(16) << std::left << "--sanitycheck" << std::setw(3) << std::left << "|"
+    std::cout << std::setw(16) << std::left << "--sanity" << std::setw(3) << std::left << "|"
               << "Multiple subcircuits can be specified by providing CLI option "
               << "multiple times. (e.g. -s SUBCKT1 -s SUBCKT2)" << std::endl;
     std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|"
@@ -263,8 +263,8 @@ void CliOptions::display_help() {
     // ---------------------------------------------------------------------------
     std::cout << std::setw(16) << std::left << "-V" << std::setw(3) << std::left << "|"
               << "Runs JoSIM in verbose mode." << std::endl;
-    std::cout << std::setw(16) << std::left << "--Verbose=" << std::setw(3) << std::left << "|"
-              << "Defaults to minimal(1), can be medium(2) or maximum(3)" << std::endl;
+    std::cout << std::setw(16) << std::left << "--verbose=" << std::setw(3) << std::left << "|"
+              << "Default level 1; 0 disables verbosity; 2 and 3 add detail." << std::endl;
     std::cout << std::setw(16) << std::left << "  " << std::setw(3) << std::left << "|" << std::endl;
     // Version info
     // ---------------------------------------------------------------------------
