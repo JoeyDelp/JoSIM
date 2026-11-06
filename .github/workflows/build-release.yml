@@ -57,14 +57,14 @@ jobs:
             "$BUILD_IMAGE" bash -c '
               set -euo pipefail
               export PATH="/opt/python/cp310-cp310/bin:$PATH"
-              tag_args=()
+              source_args=(--revision "$GITHUB_SHA")
               if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-                tag_args=(--release-tag "$GITHUB_REF_NAME")
+                source_args+=(--release-tag "$GITHUB_REF_NAME")
               fi
               python3 -B tools/build_release.py --target "$BUILD_TARGET" \
                 --build-dir "build/$BUILD_TARGET" --dependencies build/dependencies \
-                --artifacts artifacts --revision "$GITHUB_SHA" --parallel 4 \
-                "${tag_args[@]}"
+                --artifacts artifacts --parallel 4 \
+                "${source_args[@]}"
             '
       - name: Upload verified archives, manifests and checksums
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -96,7 +96,7 @@ jobs:
       matrix:
         include:
           - target: windows-x64
-            runner: windows-2025
+            runner: windows-2022
           - target: macos-arm64
             runner: macos-15
           - target: macos-x86_64
@@ -133,14 +133,14 @@ jobs:
           BUILD_TARGET: ${{ matrix.target }}
         run: |
           set -euo pipefail
-          tag_args=()
+          source_args=(--revision "$GITHUB_SHA")
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            tag_args=(--release-tag "$GITHUB_REF_NAME")
+            source_args+=(--release-tag "$GITHUB_REF_NAME")
           fi
           python3 -B tools/build_release.py --target "$BUILD_TARGET" \
             --build-dir "build/$BUILD_TARGET" --dependencies build/dependencies \
-            --artifacts artifacts --revision "$GITHUB_SHA" --parallel 4 \
-            "${tag_args[@]}"
+            --artifacts artifacts --parallel 4 \
+            "${source_args[@]}"
       - name: Upload verified archives, manifests and checksums
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

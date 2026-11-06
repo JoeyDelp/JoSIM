@@ -48,6 +48,8 @@ work prepared for the next release, not binaries already available on GitHub.
   is extracted, checked and executed before upload. Release tags publish only
   after every target passes.
 - Replaced obsolete setup instructions with current build and release guides.
+- CI argument handling works with older Bash versions, and the Windows runner
+  supplies the selected Visual Studio 2022 generator.
 
 ## 2.7 — 2025-12-19
 
