@@ -160,6 +160,36 @@ int main() {
         update_parameters(parameters);
         near(parse_param("DERIVED", parameters), 15, "a redefinition replaces the previous expression");
     });
+    check("finite sine cycles, delay, damping and phase", [&] {
+        const double pi = std::acos(-1.0), delay = .125, frequency = 2;
+        for (const std::string alias : {"SIN", "SINE"}) {
+            for (double cycles : {0., -2., .5, 4.}) {
+                Function source;
+                source.parse_function(alias + "(0.25 2 2 0.125 0.3 30 " + std::to_string(cycles) + ")", input, std::nullopt);
+                for (double t : {-.1, 0., .12499, .125, .2, .37499, .375, .4, 2.12499, 2.125, 2.2, 12.}) {
+                    const double elapsed = t - delay;
+                    const double expected = elapsed < 0 || (cycles > 0 && elapsed >= cycles / frequency) ? .25
+                        : .25 + 2 * std::exp(-.3 * elapsed) * std::sin(2 * pi * frequency * elapsed + pi / 6);
+                    near(source.value(t), expected, "sine duration measured from delay, phase in degrees");
+                }
+            }
+            Function source;
+            source.parse_function(alias + "(0.25 2)", input, std::nullopt);
+            near(source.value(3), 2.25, "default frequency is 1/tstop, no delay or finite cutoff");
+        }
+    });
+    check("sine argument validity is independent of verbosity", [&] {
+        for (int verbose : {0, 1}) {
+            Input config = input;
+            config.argVerb = verbose;
+            for (const std::string args : {"0 1 0 0 0 0 4", "0 1 -2 0 0 0 4", "0 1 2 0 0 0 4 99"}) {
+                bool rejected = false;
+                try { Function source; source.parse_function("SINE(" + args + ")", config, std::nullopt); }
+                catch (const std::runtime_error&) { rejected = true; }
+                if (!rejected) { throw std::runtime_error("invalid finite sine accepted: " + args); }
+            }
+        }
+    });
     check("engineering suffixes in waveform file", [&] {
         write("1m 3m 5m 7m");
         Function source;

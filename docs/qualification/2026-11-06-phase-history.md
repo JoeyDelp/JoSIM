@@ -76,7 +76,7 @@ can differ from old output. The [API guide](../API.md) defines the history scope
 The three new CLI methods failed in 21 subcases before repair. GCC16/Clang23
 Debug and Release now pass 33/33 CTest groups. Full ASan/UBSan with leak detection
 passes 33/33 in 212.16 s. Compiler warnings remain limited to two unused helpers
-in the vendored spline header. Native qualification is pending publication.
+in the vendored spline header. All ten native binary/library jobs pass for descendant [7cbea62036df](https://github.com/JoeyDelp/JoSIM/commit/7cbea62036df6e0c7a1e76180c894cf26fb23be5) in [CI 42255843921](https://github.com/JoeyDelp/JoSIM/actions/runs/42255843921).
 
 ```bash
 ctest --test-dir build/dev -R 'regression::(cli|noise|library)' \

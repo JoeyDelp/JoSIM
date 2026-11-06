@@ -608,6 +608,35 @@ class CliRegression(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertAlmostEqual(float(rows[-1][1]), critical, delta=3e-12)
 
+    def test_issue_108_four_sine_cycles(self):
+        deck = ("I1 0 N SINE(0 315u 4g 20p 0 0 4)\nR1 N 0 1\n"
+                ".tran 5p 1100p 0 5p DST\n.print I(I1) I(R1) V(N)\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            active = stopped = 0
+            for row in rows[1:]:
+                time = float(row[0])
+                expected = (315e-6 * math.sin(2 * math.pi * 4e9 * (time - 20e-12))
+                            if 20e-12 <= time < 1020e-12 else 0)
+                for value in map(float, row[1:]):
+                    self.assertAlmostEqual(value, expected, delta=1e-9)
+                active += abs(expected) > 300e-6
+                stopped += time > 1020e-12
+            self.assertGreater(active, 10)
+            self.assertGreater(stopped, 10)
+
+    def test_invalid_finite_sine_is_independent_of_verbosity(self):
+        for frequency in ("0", "-4g"):
+            for verbose in (0, 1):
+                with self.subTest(frequency=frequency, verbose=verbose):
+                    deck = (f"I1 0 N SINE(0 315u {frequency} 20p 0 0 4)\nR1 N 0 1\n"
+                            ".tran 1p 100p DST\n.print I(I1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-V", str(verbose)))
+                    self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                    self.assertIn("NCYCLES requires positive FREQ", result.stdout + result.stderr)
+                    self.assertIsNone(rows)
+
     def test_nonfinite_solution_fails_before_output(self):
         for mode in (0, 1):
             for startup in ("", " DST"):

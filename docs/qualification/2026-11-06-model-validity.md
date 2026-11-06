@@ -115,7 +115,7 @@ area overflow and repeated failure followed by a valid simulation. GCC16 and
 Clang23 Debug/Release pass all 33 CTest groups. The final full ASan/UBSan suite
 with leak detection passes 33/33 in 180.87 s. An earlier candidate passed
 215.90 s before the added near-cusp cases exposed cancellation; that result
-does not substitute for the final run. Native qualification is pending publication.
+does not substitute for the final run. All ten native binary/library jobs pass for descendant [7cbea62036df](https://github.com/JoeyDelp/JoSIM/commit/7cbea62036df6e0c7a1e76180c894cf26fb23be5) in [CI 42255843921](https://github.com/JoeyDelp/JoSIM/actions/runs/42255843921).
 
 ```bash
 ctest --test-dir build/dev -R 'regression::(cli|library)' \

@@ -539,13 +539,13 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "Total arguments specified do not match the required for SIN.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the SIN definition:\n";
-            formattedMessage += "SIN(VO VA FREQ TD THETA)";
+            formattedMessage += "SIN(VO VA [FREQ [TD [THETA [PHASE_DEG [NCYCLES]]]]])";
             throw std::runtime_error(formattedMessage);
         case FunctionErrors::SIN_TOO_MANY_ARGUMENTS:
             formattedMessage += "Total arguments specified do not match the required for SIN.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the SIN definition:\n";
-            formattedMessage += "SIN(VO VA FREQ TD THETA)";
+            formattedMessage += "SIN(VO VA [FREQ [TD [THETA [PHASE_DEG [NCYCLES]]]]])";
             throw std::runtime_error(formattedMessage);
         case FunctionErrors::SIN_VA_ZERO:
             formattedMessage += "SIN amplitude is 0.0, this renders the function redundant.\n";

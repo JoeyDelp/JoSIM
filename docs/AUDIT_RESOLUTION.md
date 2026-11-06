@@ -193,20 +193,28 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Independent closed-form response, KCL/KVL and three-step refinement pass in
   both modes. Voltage errors are 114.502/29.7314/7.59995 nV; KCL is zero at CSV
   precision. All four compiler/configurations pass 33/33; affected sanitizer
-  groups pass with leak detection. Native qualification pending. F12 rejects
-  unsupported IC syntax.
+  groups pass with leak detection. All ten native jobs pass in CI 42255843921
+  for descendant 7cbea62036df. F12 rejects unsupported IC syntax.
 - **Evidence:** [support guide](model_limits.md#capacitor-voltage) and
   [model-boundary study](qualification/2026-11-06-model-boundaries.md) define
   equations, h^2 bounds, rounding allowance, commands and practical limits.
 
 ## I108a — Finite-cycle sine #108
 
-- **Classification:** implemented request requiring validation.
-- **Current reproduction/result:** Baseline syntax support present; focused assertions pending.
-- **Required outcome:** Test delay, phase, cycle count and stop independently of noise discussion.
-- **Implementation/owner:** src/Function.cpp; https://github.com/JoeyDelp/JoSIM/issues/108.
-- **Verification:** analytic sine waveform/output regression.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** implemented request; analytic qualification complete locally,
+  native check pending.
+- **Result:** Exact requested SINE(0 315u 4g 20p 0 0 4) stops at
+  20 ps + 4/(4 GHz) = 1020 ps. Source/resistor current and voltage match the
+  analytic waveform in both modes, including inactive intervals, within
+  1 nA/1 nV. Direct tests cover delay, damping, phase in degrees, aliases,
+  fractional cycles, defaults, unlimited tones and both sides of cutoffs.
+- **Additional repair:** F14 makes invalid finite-cycle frequencies fail
+  independently of verbosity and rejects excess arguments; valid sine
+  evaluation is unchanged. This is separate from I108b noise qualification.
+- **Verification/evidence:** All four compiler/configurations pass 33/33;
+  affected function/CLI ASan/UBSan/leak checks pass in 5.89 s.
+  [Sine study](qualification/2026-11-06-sine.md), regression::functions/cli,
+  build/audit-resolution/sine/.
 
 ## I108b — Switching-dependent noise #108
 
@@ -243,7 +251,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Sixteen full-waveform comparisons cover both modes and four steps. Native
   CTest uses twelve cases/352 reference points per direction, KCL, loop flux,
   pulse area and refinement. GCC16/Clang23 Debug/Release pass 33/33; the new
-  group passes ASan/UBSan/leaks in 16.53 s. Native publication pending.
+  group passes ASan/UBSan/leaks in 16.53 s. All ten native binary/library jobs
+  pass for descendant 7cbea62036df in CI 42255843921, covering this study.
 - **Measurements/tolerances:** At 0.01 ps maximum output errors are 19.1501 nV
   reverse and 40.5556 nV forward, decreasing about fourfold per halving. Pulse
   areas allow 5e-6 Phi0; waveform limits scale with h^2 plus CSV rounding.
@@ -261,7 +270,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Verification:** test/comp/jj_beta_c.cir derives R for beta=0.2/1/5. Both modes
   satisfy Ic*sin(phi)+V/R+C*dV/dt, with current errors below 9.40e-13 A against
   1e-10 A allowance; KCL residual is zero. All four compiler/configurations pass
-  33/33; affected sanitizer groups pass with leak detection. Native checks pending.
+  33/33; affected sanitizer groups pass with leak detection. All ten native jobs
+  pass for descendant 7cbea62036df in CI 42255843921.
 - **Evidence:** [conversion guide](model_limits.md#beta-c) and
   [study](qualification/2026-11-06-model-boundaries.md); exact SI constants,
   positive-domain restrictions and zero-C boundary are explicit.
@@ -731,8 +741,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## F11 — Phase-source and voltage-to-phase startup history
 
-- **Classification:** confirmed supported-output/source defects; repaired locally,
-  native qualification pending.
+- **Classification:** confirmed supported-output/source defects; repaired and native-qualified.
 - **Reproduction:** At 0.1 mV constant JJ bias, h=0.01 ps, warm voltage mode
   prints node phase about 3.03854 rad below the same junction's phase. A warm
   constant one-radian phase source injects a false 4.93659 mV pulse at t=0
@@ -756,11 +765,12 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   run exactly. GCC16/Clang23 Debug/Release pass 33/33; full ASan/UBSan/leaks
   passes 33/33 in 212.16 s. All three controlled red cases now agree between
   modes at CSV precision. Green measurements and source/binary hashes:
-  artifacts/audit-resolution/phase-source/measurements.json.
+  artifacts/audit-resolution/phase-source/measurements.json. All ten native jobs
+  pass for descendant 7cbea62036df in CI 42255843921.
 
 ## F12 — Silently ignored capacitor initial-voltage syntax
 
-- **Classification:** confirmed user-input defect; repaired locally, native checks pending.
+- **Classification:** confirmed user-input defect; repaired and native-qualified.
 - **Reproduction:** Adding IC=1m or IC = 1m to an uncharged RC circuit succeeds
   and produces the same zero voltage as no IC option. It does not apply the
   requested initial state. Exact red decks/output/binary hash:
@@ -772,15 +782,15 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   recoverable direct-library error followed by valid runs, and independent
   precharge/discharge alternatives. Red CLI assertions fail all six before
   repair. GCC16/Clang23 Debug/Release pass 33/33; affected CLI/numerics/library
-  ASan/UBSan/leak checks pass in 5.19 s. Native qualification pending.
+  ASan/UBSan/leak checks pass in 5.19 s. All ten native jobs pass for descendant
+  7cbea62036df in CI 42255843921.
 - **Evidence:** optional-features/ic-red.log and candidate.patch; the
   [boundary study](qualification/2026-11-06-model-boundaries.md) defines support
   and quantitative regression acceptance.
 
 ## F13 — Model domains, transparent CPR and non-finite solver states
 
-- **Classification:** confirmed model/input/numerical defects; repaired locally,
-  native qualification pending.
+- **Classification:** confirmed model/input/numerical defects; repaired and native-qualified.
 - **Reproduction:** RTYPE=1e30 triggers UBSan floating-to-integer overflow;
   fractional/unknown RTYPE silently changes behaviour. Invalid D=2 and valid
   D=1 at finite T/phase pi report success with NaN current. Extreme finite V/R
@@ -803,4 +813,19 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   derives limits, domains and numeric-cusp handling. Exact red inputs/sanitizer
   witnesses: build/audit-resolution/model-validation. Green measurements/source
   hashes and compact compiler/sanitizer receipts:
-  artifacts/audit-resolution/model-validation/.
+  artifacts/audit-resolution/model-validation/. All ten native jobs pass for
+  7cbea62036df in CI 42255843921, including default/shared libraries.
+
+## F14 — Verbosity-dependent finite-sine validation
+
+- **Classification:** confirmed waveform-input defect; repaired locally.
+- **Reproduction:** Finite-cycle SINE with zero/negative frequency succeeds at
+  -V 0 and fails at -V 1. Its period and stop time are undefined. Excess fields
+  were silently discarded. Red verbosity/exit witnesses and failed tests:
+  build/audit-resolution/sine/red.json and red-tests.log.
+- **Repair:** Require positive frequency whenever NCYCLES>0, independently of
+  logging; enforce the documented seven-field maximum and update error help.
+  Valid source evaluation/signatures/layouts are unchanged.
+- **Verification:** Independent analytic waveform and exact #108 circuit
+  assertions in function/CLI groups. GCC16/Clang23 Debug/Release pass 33/33;
+  affected ASan/UBSan/leak checks pass in 5.89 s. Native publication pending.

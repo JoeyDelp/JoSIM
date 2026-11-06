@@ -216,6 +216,9 @@ void Function::parse_sin(const tokens_t& t, const Input& iObj, const string_o& s
         Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
         return;
     }
+    if (t.size() > 7) {
+        Errors::function_errors(FunctionErrors::SIN_TOO_MANY_ARGUMENTS, std::to_string(t.size()));
+    }
 
     const double tstop = iObj.transSim.tstop();
 
@@ -252,7 +255,7 @@ void Function::parse_sin(const tokens_t& t, const Input& iObj, const string_o& s
     if (t.size() >= 7) { timeValues_.at(4) = parse_param(t.at(6), iObj.parameters, s); }
 
     // Basic sanity (avoid div-by-zero when using NCYCLES)
-    if (iObj.argVerb && timeValues_.at(4) > 0.0 && timeValues_.at(0) <= 0.0) {
+    if (timeValues_.at(4) > 0.0 && timeValues_.at(0) <= 0.0) {
         Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS, "NCYCLES requires positive FREQ");
     }
 }

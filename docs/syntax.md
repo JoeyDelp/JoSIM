@@ -211,7 +211,8 @@ $T_{D}$ is a start delay: for $t<T_{D}$ the output is held at $A_{O}$.
 
 $\theta$ is an exponential damping factor (units $s^{-1}$). When $\theta=0$, no damping is applied.
 
-$\phi$ is a phase shift applied to the sine term. Internally it is treated as radians; if specified in degrees it is converted via $\phi=\phi_{\deg}\pi/180$.
+$\phi$ is supplied in degrees and converted internally by
+$\phi=\phi_{\deg}\pi/180$.
 
 If $N_{C}$ is provided and $N_{C}$ $>0$, the sinusoid runs for that many cycles and then stops, returning to the offset $A_{O}$ for all subsequent times.
 
@@ -233,6 +234,11 @@ Notes:
 
 - If $N_{C}$ is omitted (or $\le 0$), the sinusoid continues for the full simulation duration.
 - If $N_{C}$ $>0$, $f$ must be positive to define the stop time.
+- `SIN` and `SINE` are aliases. Positive fractional cycle counts specify the
+  corresponding fraction of a period. At the stop time output returns to the
+  offset, including when a nonzero phase makes that return discontinuous.
+- For `SINE(0 315u 4g 20p 0 0 4)`, the stop is 1020 ps. See the
+  [finite-cycle qualification](qualification/2026-11-06-sine.md).
 
 #### Custom Waveform
 

@@ -29,6 +29,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Validate finite-cycle SIN/SINE frequency regardless of verbosity, reject
+  excess arguments and show the complete syntax in diagnostics. Add analytic
+  delay/phase/damping/cycle-boundary checks, including the exact #108 source.
 - Validate JJ model domains before numeric casts and after instance scaling,
   including direct C++ model construction. Invalid RTYPE values no longer
   truncate silently or cause undefined behaviour. Preserve zero capacitance

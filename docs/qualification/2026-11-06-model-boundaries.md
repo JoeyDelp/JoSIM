@@ -78,5 +78,4 @@ revision passed the complete 33-group sanitizer suite in 212.16 s.
 Exact decks and executable/test hashes are in
 `artifacts/audit-resolution/model-boundaries.json`; red diagnostics and build
 receipts are in `build/audit-resolution/optional-features/`.
-Native qualification is pending for the combined source and required existing
-numerical/CLI/library groups.
+All ten native binary/library jobs pass for descendant [7cbea62036df](https://github.com/JoeyDelp/JoSIM/commit/7cbea62036df6e0c7a1e76180c894cf26fb23be5) in [CI 42255843921](https://github.com/JoeyDelp/JoSIM/actions/runs/42255843921).
