@@ -34,6 +34,8 @@ work prepared for the next release, not binaries already available on GitHub.
   instead of hanging during expansion.
 - Installed C++ packages now load their dependencies, expose the required
   headers and C++17 setting, and support versioned `find_package(josim)` calls.
+- Solver source downloads are pinned to immutable archives and verified with
+  SHA-256 checksums.
 
 ## 2.7 — 2025-12-19
 
