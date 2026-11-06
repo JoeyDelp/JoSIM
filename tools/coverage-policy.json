@@ -95,6 +95,74 @@
           "branches": 87.75510204081633
         }
       }
+    },
+    "18": {
+      "qualification": "Reviewed GitHub CI42307801289 for source8f183d831fbc19d909bb446faeadd62ed7be0dbf: all35tests, mapping validation and independent risk floors pass; only the new-major review gate stopped acceptance. References use the published two-decimal job summary. Windows qualification-tool path failure is separate.",
+      "reference_precision_decimal_places": 2,
+      "evidence": "https://github.com/JoeyDelp/JoSIM/actions/runs/42307801289#summary-128201467636",
+      "artifact": "https://github.com/JoeyDelp/JoSIM/actions/runs/42307801289/artifacts/13547690684",
+      "overall": {
+        "lines": 81.32,
+        "functions": 88.95,
+        "branches": 78.77
+      },
+      "modules": {
+        "src/Input.cpp": {
+          "lines": 90.87,
+          "functions": 100,
+          "branches": 83.91
+        },
+        "src/Netlist.cpp": {
+          "lines": 90.17,
+          "functions": 100,
+          "branches": 76.5
+        },
+        "src/Parameters.cpp": {
+          "lines": 92.09,
+          "functions": 100,
+          "branches": 83.89
+        },
+        "src/Function.cpp": {
+          "lines": 91.67,
+          "functions": 96.77,
+          "branches": 77.63
+        },
+        "src/Model.cpp": {
+          "lines": 89.12,
+          "functions": 100,
+          "branches": 80.65
+        },
+        "src/Noise.cpp": {
+          "lines": 100,
+          "functions": 100,
+          "branches": 94.74
+        },
+        "src/JJ.cpp": {
+          "lines": 91.3,
+          "functions": 100,
+          "branches": 77.27
+        },
+        "src/Simulation.cpp": {
+          "lines": 94.59,
+          "functions": 100,
+          "branches": 86.2
+        },
+        "src/RelevantTrace.cpp": {
+          "lines": 92.01,
+          "functions": 93.33,
+          "branches": 88.07
+        },
+        "src/Output.cpp": {
+          "lines": 90.12,
+          "functions": 100,
+          "branches": 86.69
+        },
+        "src/IV.cpp": {
+          "lines": 96.79,
+          "functions": 100,
+          "branches": 88.0
+        }
+      }
     }
   }
 }

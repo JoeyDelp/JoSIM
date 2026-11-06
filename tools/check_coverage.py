@@ -16,7 +16,7 @@ from ctest_results import REQUIRED_TESTS
 def evaluate(summary, policy, source):
     files = first_party_files(source)
     modules = {item["path"]: item["coverage"] for item in summary["modules"]}
-    if len(modules) != len(summary["modules"]) or set(modules) != {str(path.relative_to(source)) for path in files}:
+    if len(modules) != len(summary["modules"]) or set(modules) != {path.relative_to(source).as_posix() for path in files}:
         raise RuntimeError("Coverage inventory omits or adds first-party files")
     if summary["first_party_source_sha256"] != source_digest(source, files):
         raise RuntimeError("Coverage is stale for the current first-party source")

@@ -21,7 +21,7 @@ def first_party_files(source):
 def source_digest(source, files):
     digest = hashlib.sha256()
     for path in files:
-        digest.update(str(path.relative_to(source)).encode() + b"\0" + path.read_bytes() + b"\0")
+        digest.update(path.relative_to(source).as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
     return digest.hexdigest()
 
 
@@ -65,7 +65,7 @@ def main():
     initial_digest = source_digest(source, files)
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source, text=True).strip()
     source_diff = hashlib.sha256(subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=source)).hexdigest()
-    owners = {str(path.relative_to(source)): hashlib.sha256(path.read_bytes()).hexdigest()
+    owners = {path.relative_to(source).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
               for path in (pathlib.Path(__file__).resolve(), source / "tools/ctest_results.py")}
     build, output = args.build_dir.resolve(), args.output.resolve()
     build.mkdir(parents=True, exist_ok=True)
@@ -149,7 +149,7 @@ def main():
     modules = []
     for path in files:
         item = measured.get(str(path))
-        modules.append({"path": str(path.relative_to(source)),
+        modules.append({"path": path.relative_to(source).as_posix(),
                         "coverage": item["summary"] if item else None})
     if source_digest(source, files) != initial_digest:
         raise RuntimeError("First-party source changed during coverage collection")

@@ -421,8 +421,11 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Remaining guard/helper/diagnostic counters have explicit assessed limits.
 - **Evidence:** [coverage study](qualification/2026-11-07-coverage.md),
   artifacts/audit-resolution/coverage-policy/ reports/HTML/counters/owners;
-  earlier campaigns remain separate. Local policy passes. CI LLVM18 reference
-  qualification and final integrated/native checks remain pending.
+  earlier campaigns remain separate. Local policy passes. CI42307801289
+  LLVM18 passes all35 tests, mappings and risk floors (81.32/88.95/78.77%); its
+  reference is reviewed. The new guard initially used native path separators
+  and failed its positive fixture on Windows; canonical report paths repair
+  that tool defect. The subsequent complete native/guard run remains pending.
 
 ## D03 — Sanitizers, warnings and static analysis
 
