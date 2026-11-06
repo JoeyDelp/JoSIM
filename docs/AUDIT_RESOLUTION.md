@@ -425,6 +425,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   and current/dispositions.json/raw logs. Existing compiler warning options
   are recorded, including their unused/sign-compare suppressions. Final clean
   compiler builds and integrated sanitizer/native checks remain separate gates.
+  The F27 ten-owner rerun retains exactly the same 45 reviewed locations with
+  zero command errors; final/ holds its current source hashes and diagnostics.
 
 ## D04 — Library recovery and RNG ownership
 
@@ -1186,3 +1188,22 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   All four local GCC/Clang Debug/Release suites pass 34/34; full Clang Debug
   ASan/UBSan/leak detection passes 34/34 in 216.72 s. Native/final integration
   checks remain required for this revision.
+
+## F27 — Unordered piecewise grids from negative first times
+
+- **Classification:** confirmed source-grid validation defect.
+- **Reproduction:** PWL/PWS accepted a negative first time, then prepended zero
+  ahead of it. PWS(-1p 1 2p 2) returned 1 V at zero and 1.296632 V at 0.1 ps;
+  an ordered half-cosine segment would start at 1.25 V at zero. Both old CLI
+  witnesses returned success. This comes from grid/clamp handling, not the solver.
+- **Repair:** require finite nonnegative first time, finite amplitudes and finite
+  later times before committing the waveform data. Existing strict-order and
+  pair-count checks remain. Positive delayed first points retain the zero-time
+  prepend and warning. Append INVALID_PWL_PARAMETERS, preserving prior values.
+- **Verification:** both aliases; odd/duplicate/decreasing/negative grids and
+  unresolved values; valid half-cosine/EXP/delayed-first-point closed forms;
+  rejected CLI inputs produce no output. All four local configurations pass
+  35/35; full Clang Debug ASan/UBSan/leaks pass 35/35 in 212.87 s.
+- **Evidence:** [piecewise study](qualification/2026-11-07-piecewise-grids.md),
+  artifacts/audit-resolution/piecewise-negative/ actual decks/CSV/logs and
+  compiler/sanitizer/source receipts. Native/final integrated checks remain.

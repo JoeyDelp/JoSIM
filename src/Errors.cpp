@@ -496,6 +496,9 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "PWL(0 V0 T1 V1 T2 V2 ... Tn Vn)";
             warning_message(formattedMessage);
             break;
+        case FunctionErrors::INVALID_PWL_PARAMETERS:
+            formattedMessage += "Invalid PWL/PWS parameters. " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::TOO_FEW_TIMESTEPS:
             formattedMessage += "Total timesteps specified do not match the values specified.\n";
             formattedMessage += message.value_or("") + " specified.\n";

@@ -191,7 +191,12 @@ The value is the coupling factor *k*.
 
 This source linearly interpolates amplitude values for every time point in the simulation between the specified amplitudes.
 
-The initial two values are required to be zero at the start of the simulation.
+Times must be finite, nonnegative and strictly increasing; amplitudes must be
+finite. The first amplitude can be nonzero. If the first time is positive,
+JoSIM prepends time zero with that same amplitude and reports a warning.
+Negative first times are rejected. The final amplitude is held after the last
+point. PWL returns zero before time zero during startup; PWS holds its first
+amplitude before the first point.
 
 #### Pulse
 

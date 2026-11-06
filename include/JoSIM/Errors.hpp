@@ -141,7 +141,8 @@ enum class FunctionErrors : int64_t {
     PARENTHESIS,
     UNKNOWN_FUNCTION,
     INVALID_NOISE_PARAMETERS,
-    INVALID_CUS_PARAMETERS
+    INVALID_CUS_PARAMETERS,
+    INVALID_PWL_PARAMETERS
 };
 
 enum class SimulationErrors : int64_t {

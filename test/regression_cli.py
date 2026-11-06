@@ -146,6 +146,15 @@ class CliRegression(unittest.TestCase):
                 self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
                 self.assertIn("Cyclic include", result.stdout + result.stderr)
 
+    def test_piecewise_negative_first_time_is_rejected(self):
+        for kind in ("PWL", "PWS"):
+            result, rows = self.run_deck(f"V1 N 0 {kind}(-1P 1 2P 2)\nR1 N 0 1K\n"
+                                         ".tran 0.1P 3P DST\n.print V(N)\n.end\n", extra=("-a", "0"))
+            self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+            self.assertIn("First time must be finite and non-negative", result.stdout + result.stderr)
+            self.assertIsNone(rows)
+
+
     def test_seed_reporting_and_auto_replay(self):
         noisy = "I1 0 N DC 0\nR1 N 0 50\n.temp 4.2\n.neb 500g\n.tran 0.1p 20p DST\n.print V(N)\n"
         result, first = self.run_deck(noisy + ".option SEED=AUTO\n.end\n", extra=("-V", "1"))

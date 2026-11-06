@@ -178,6 +178,39 @@ int main() {
             near(source.value(3), 2.25, "default frequency is 1/tstop, no delay or finite cutoff");
         }
     });
+    check("piecewise sinusoidal endpoints and nonuniform segments", [&] {
+        Function source;
+        source.parse_function("PWS(0 1 2 3 5 -1)", input, std::nullopt);
+        const double q = std::sqrt(0.5);
+        for (auto point : {std::pair<double, double>{-1, 1}, {0, 1}, {.5, 2 - q},
+                           {1, 2}, {1.5, 2 + q}, {2, 3}, {3.5, 1}, {5, -1}, {7, -1}}) {
+            near(source.value(point.first), point.second, "half-cosine interpolation and held endpoints");
+        }
+    });
+    check("piecewise time-grid validation", [&] {
+        for (const std::string kind : {"PWL", "PWS"}) {
+            for (const std::string values : {"0 1 2", "0 1 0 2", "0 1 2 2 1 3", "-1 1 2 2",
+                                            "UNKNOWN 1 2 2", "0 UNKNOWN 2 2", "0 1 UNKNOWN 2", "0 1 2 UNKNOWN"}) {
+                bool rejected = false;
+                try { Function source; source.parse_function(kind + "(" + values + ")", input, std::nullopt); }
+                catch (const std::runtime_error&) { rejected = true; }
+                if (!rejected) { throw std::runtime_error("invalid piecewise time grid accepted: " + values); }
+            }
+        }
+        Function source;
+        source.parse_function("PWL(2 1 4 3)", input, std::nullopt);
+        near(source.value(0), 1, "hold first specified amplitude before first time");
+        near(source.value(3), 2, "linear interpolation after delayed first point");
+    });
+    check("exponential rise and fall", [&] {
+        Function source;
+        source.parse_function("EXP(1 3 2 0.5 5 1)", input, std::nullopt);
+        for (double t : {-1., 0., 1.9, 2., 2.5, 3., 4.9, 5., 5.5, 6., 12.}) {
+            const double rise = t < 2 ? 0 : 2 * (1 - std::exp(-2 * (t - 2)));
+            const double fall = t < 5 ? 0 : -2 * (1 - std::exp(-(t - 5)));
+            near(source.value(t), 1 + rise + fall, "superposed exponential step responses");
+        }
+    });
     check("sine argument validity is independent of verbosity", [&] {
         for (int verbose : {0, 1}) {
             Input config = input;

@@ -137,6 +137,10 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s
     // Parse first pair using parse_param (NOT stod)
     double t0 = parse_param(t.at(0), iObj.parameters, s);
     double v0 = parse_param(t.at(1), iObj.parameters, s);
+    if (!std::isfinite(t0) || t0 < 0.0 || !std::isfinite(v0)) {
+        Errors::function_errors(FunctionErrors::INVALID_PWL_PARAMETERS,
+                                "First time must be finite and non-negative; amplitudes must be finite");
+    }
 
     // If first time isn't 0, prepend (0, v0) instead of (0,0)
     if (t0 != 0.0) {
@@ -153,6 +157,9 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s
     for (size_t i = 2; i < t.size(); i += 2) {
         double ti = parse_param(t.at(i), iObj.parameters, s);
         double vi = parse_param(t.at(i + 1), iObj.parameters, s);
+        if (!std::isfinite(ti) || !std::isfinite(vi)) {
+            Errors::function_errors(FunctionErrors::INVALID_PWL_PARAMETERS, "Time/value pairs must be finite");
+        }
 
         // Enforce strictly increasing time
         if (ti <= timesteps.back()) {

@@ -44,6 +44,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Reject negative or non-finite piecewise waveform grids before prepending time
+  zero. A negative first PWL/PWS time previously created an unordered internal
+  grid and could give a discontinuity at zero. Preserve valid delayed starts.
 - Reject non-finite derived output before opening destinations. Finite solved
   values could overflow during phase conversion or trace subtraction and still
   produce `inf`/`nan` files with success status. Preserve existing output files
