@@ -26,6 +26,8 @@ work prepared for the next release, not binaries already available on GitHub.
   Gaussian samples as well as the random-number engines.
 - Random-number engines initialize correctly with the GCC 8 toolchain used for
   RHEL6-compatible builds.
+- Bundled C solvers use a compatible C standard with current GCC. Linux timing
+  functions link correctly on systems with glibc older than 2.17.
 
 ## 2.7 — 2025-12-19
 

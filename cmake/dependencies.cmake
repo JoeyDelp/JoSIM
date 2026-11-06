@@ -19,3 +19,9 @@ CPMAddPackage(
   VERSION 0.1.0
   GIT_TAG 8ee64086a8ab012595744c4a97a49cdfc73b81ab
 )
+
+# clock_gettime is supplied by librt on glibc versions before 2.17.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  get_target_property(josim_config_target suitesparse::config ALIASED_TARGET)
+  target_link_libraries(${josim_config_target} INTERFACE rt)
+endif()
