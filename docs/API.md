@@ -128,6 +128,14 @@ rejects empty/inconsistent arrays, invalid indices and non-finite coefficients
 before calling KLU. Changing public arrays is the caller's responsibility;
 normal applications should use `Matrix::create_matrix`.
 
+The legacy `Inductor::update_timestep(factor)` hook rescales the component's
+self and mutual voltage-mode stamp coefficients for a finite positive factor.
+Phase-mode coefficients do not depend on timestep. This edits component stamp
+storage only; it does not rebuild global CSR arrays or integration histories.
+Normal simulation retries reconstruct the complete Matrix from Input. Use that
+path for simulation timestep changes; this hook does not provide variable-step
+integration.
+
 `Model::validate()` checks physical/numerical parameter domains. Parsing and
 junction construction call it, including after area/temperature scaling, so
 directly constructed models receive the same checks. This adds a nonvirtual

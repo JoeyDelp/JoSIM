@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
 #include <JoSIM/ProgressBar.hpp>
+#include <JoSIM/Constants.hpp>
 #include <JoSIM/IV.hpp>
 #include <JoSIM/Input.hpp>
 #include <JoSIM/Matrix.hpp>
@@ -85,6 +86,46 @@ void progress_worker_lifetime() {
             bar.complete();
         }
         // Destruction must stop/join every worker in both cases.
+    }
+}
+
+void inductor_timestep_stamp() {
+    for (auto mode : {JoSIM::AnalysisType::Voltage, JoSIM::AnalysisType::Phase}) {
+        for (auto nodes : {JoSIM::NodeConfig::GND, JoSIM::NodeConfig::POSGND,
+                           JoSIM::NodeConfig::GNDNEG, JoSIM::NodeConfig::POSNEG}) {
+            auto run = input();
+            run.argAnal = mode;
+            JoSIM::nodemap map{{"A", 0}, {"B", 1}};
+            JoSIM::nodeconnections connections(2);
+            std::unordered_set<std::string> labels;
+            JoSIM::Spread spread;
+            int64_t current = 2;
+            JoSIM::Inductor inductor({{"L1", "A", "B", "1N"}, std::nullopt},
+                nodes, map, labels, connections, run, spread, current);
+            inductor.add_mutualInductance(2e-10, mode, 1e-12, 3);
+            inductor.add_mutualInductance(-3e-10, mode, 1e-12, 4);
+            const auto original = inductor.matrixInfo.nonZeros_;
+            inductor.update_timestep(0.5);
+            size_t coefficient = 0;
+            for (size_t k = 0; k < original.size(); ++k) {
+                double expected = original[k];
+                if (inductor.matrixInfo.columnIndex_.at(k) >= 2) {
+                    const double inductance[] = {1e-9, 2e-10, -3e-10};
+                    expected = mode == JoSIM::AnalysisType::Voltage
+                        ? -1.5 * inductance[coefficient] / 5e-13
+                        : -inductance[coefficient] / JoSIM::Constants::SIGMA;
+                    ++coefficient;
+                }
+                if (std::abs(inductor.matrixInfo.nonZeros_.at(k) - expected)
+                    > 1e-12 * std::max(1.0, std::abs(expected))) {
+                    throw std::runtime_error("Inductor timestep stamp differs from constitutive equation");
+                }
+            }
+            inductor.update_timestep(2.0);
+            if (inductor.matrixInfo.nonZeros_ != original) {
+                throw std::runtime_error("Inductor timestep stamp did not reverse exactly");
+            }
+        }
     }
 }
 
@@ -309,6 +350,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "output") { output_flush_failure(); }
             if (selected == "all" || selected == "progress") { progress_worker_lifetime(); }
+            if (selected == "all" || selected == "inductor") { inductor_timestep_stamp(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
             if (selected == "all" || selected == "model") { invalid_models(); }

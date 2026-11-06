@@ -1134,3 +1134,24 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   artifacts/audit-resolution/performance/progress/{decision,source-sha256}.json,
   both campaign summaries/per-run receipts and header/lifetime red/green logs.
   Native and final integrated checks remain separate requirements.
+
+## F25 — Coupled-inductor component timestep hook
+
+- **Classification:** confirmed C++ component-helper defect, not a CLI retry defect.
+- **Reproduction:** after appending two mutual terms, halving the timestep leaves
+  the self coefficient at -1500 instead of -3000 and scales only the last mutual
+  coefficient. An independently compiled installed-library probe returns 1.
+- **Repair:** locate the own-current stamp and scale it plus every appended
+  mutual-current term. Nodal coefficients and all phase-mode terms stay fixed.
+  Existing signatures/layouts and normal full-Matrix retry reconstruction remain.
+- **Verification:** library regressions cover both modes, all four node topologies,
+  two signed mutual terms, the independent -3L/(2h) or -L/SIGMA equations and
+  exact reversal after factors 0.5 then 2. Relative allowance 1e-12 accommodates
+  coefficient evaluation roundoff; eight repeated runs protect reuse.
+- **Boundary:** this legacy method edits component stamps only. It does not update
+  CSR storage or histories and does not add variable-step simulation support.
+- **Results:** GCC Release affected groups pass 4/4 in 4.46 s; Clang Debug
+  ASan/UBSan/leak checks pass the same four groups in 27.92 s.
+- **Evidence:** artifacts/audit-resolution/inductor-hook/ red/green receipts and
+  test/library_regression.cpp::inductor_timestep_stamp. Final full/native checks
+  remain required for the integrated source.

@@ -44,6 +44,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Rescale the self and every mutual-inductance coefficient in the legacy C++
+  component timestep hook. It previously changed only the last coefficient.
+  Normal simulation retries already rebuild the full matrix.
 - Let progress workers sleep between updates and wake immediately on completion.
   Controlled runs use about 50% less CPU with identical numerical output.
   Make the progress header self-contained, join every worker on destruction,
