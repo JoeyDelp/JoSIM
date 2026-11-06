@@ -160,6 +160,9 @@ if(BUILD_TESTING)
   add_test(NAME regression::noise COMMAND josim-noise-regression)
   set_tests_properties(regression::noise PROPERTIES TIMEOUT 90)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  add_test(NAME regression::qualification
+           COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/regression_qualification.py)
+  set_tests_properties(regression::qualification PROPERTIES TIMEOUT 30)
   add_test(NAME regression::gate
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_gate.py
                    $<TARGET_FILE:josim-cli>)

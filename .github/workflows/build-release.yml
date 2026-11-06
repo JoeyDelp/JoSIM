@@ -248,10 +248,50 @@ jobs:
           path: artifacts/python-utilities
           if-no-files-found: error
 
+  coverage:
+    name: First-party C++ coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install matching Clang and LLVM tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y clang-18 llvm-18 libclang-rt-18-dev
+      - name: Prepare verified solver sources
+        run: cmake -DJOSIM_DEPENDENCY_DIR=build/dependencies -P cmake/prepare_dependencies.cmake
+      - name: Build, execute all tests and export coverage
+        run: |
+          python3 -B tools/coverage.py \
+            --build-dir build/coverage --output artifacts/coverage \
+            --initial-cache build/dependencies/sources.cmake \
+            --cc clang-18 --cxx clang++-18 \
+            --llvm-cov llvm-cov-18 --llvm-profdata llvm-profdata-18
+      - name: Check reviewed coverage requirements
+        run: |
+          python3 -B tools/check_coverage.py \
+            --summary artifacts/coverage/summary.json \
+            --output artifacts/coverage/policy.json
+      - name: Show coverage summary
+        if: always()
+        run: |
+          if test -f artifacts/coverage/README.md; then
+            cat artifacts/coverage/README.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain coverage and diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: first-party-coverage
+          path: artifacts/coverage
+          if-no-files-found: error
+
   release:
     name: Publish tagged release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build_linux, build_native, build_library, python_utilities]
+    needs: [build_linux, build_native, build_library, python_utilities, coverage]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

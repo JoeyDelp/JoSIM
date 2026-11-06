@@ -171,6 +171,22 @@ void invalid_matrix() {
     matrix.nz = {1};
     matrix.branchIndex = 1;
     must_throw([&] { JoSIM::Simulation simulation(run, matrix); }, "Invalid sparse matrix");
+    for (int corruption = 0; corruption < 6; ++corruption) {
+        auto valid = input();
+        valid.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1"}, std::nullopt},
+                                   {{"R1", "N", "0", "1K"}, std::nullopt}};
+        JoSIM::Matrix damaged;
+        damaged.create_matrix(valid);
+        switch (corruption) {
+            case 0: damaged.rp.at(1) = -1; break;
+            case 1: damaged.rp.at(1) = damaged.rp.back() + 1; break;
+            case 2: damaged.ci.front() = -1; break;
+            case 3: damaged.ci.front() = damaged.branchIndex; break;
+            case 4: damaged.nz.front() = std::numeric_limits<double>::quiet_NaN(); break;
+            case 5: damaged.nz.front() = std::numeric_limits<double>::infinity(); break;
+        }
+        must_throw([&] { JoSIM::Simulation simulation(valid, damaged); }, "Invalid sparse matrix");
+    }
 }
 
 void result_storage_limit() {

@@ -146,6 +146,38 @@ class CliRegression(unittest.TestCase):
                 self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
                 self.assertIn("Cyclic include", result.stdout + result.stderr)
 
+    def test_sanity_counts_do_not_change_circuit_solution(self):
+        circuit = (".subckt CELL IN OUT\nR1 IN MID 1\nR2 MID OUT 2\n.ends\n"
+                   "I1 0 A DC 1\nX1 A 0 CELL\n.tran 1p 5p DST\n.print V(A)\n")
+        for extra_components, expected_voltage, crowded in [("", 3., False),
+                ("RPAR A 0 6\nRTAIL A DANGLING 1\n", 2., True)]:
+            for requested in ("CELL", "MISSING"):
+                with self.subTest(crowded=crowded, requested=requested):
+                    result, rows = self.run_deck(circuit + extra_components + ".end\n",
+                                                 extra=("-a", "0", "-s", requested))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertIn("Sanity check results:", result.stdout)
+                    if requested == "MISSING":
+                        self.assertIn("'MISSING' does not exist. Skip.", result.stdout)
+                    else:
+                        self.assertIn("'CELL':", result.stdout)
+                    if crowded:
+                        self.assertIn("Node 'A' looks overused (4)", result.stdout)
+                        self.assertIn("Node 'DANGLING' looks either undefined or unused", result.stdout)
+                    else:
+                        self.assertIn("Everything looks fine!", result.stdout)
+                    for row in rows[1:]:
+                        self.assertAlmostEqual(float(row[1]), expected_voltage, delta=1e-9)
+
+    def test_control_block_parameters_and_model(self):
+        deck = ("I1 0 N DC 1\nR1 N 0 RES\n.control\nPARAM RES=2\n"
+                "MODEL M JJ(CAP=0)\nTRAN 1P 5P DST\nPRINT V(N)\n.endc\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for row in rows[1:]:
+                self.assertAlmostEqual(float(row[1]), 2.0, delta=1e-9)
+
     def test_piecewise_negative_first_time_is_rejected(self):
         for kind in ("PWL", "PWS"):
             result, rows = self.run_deck(f"V1 N 0 {kind}(-1P 1 2P 2)\nR1 N 0 1K\n"
@@ -154,6 +186,40 @@ class CliRegression(unittest.TestCase):
             self.assertIn("First time must be finite and non-negative", result.stdout + result.stderr)
             self.assertIsNone(rows)
 
+    def test_file_output_formats_preserve_values_and_units(self):
+        for extension in ("csv", "dat", "raw"):
+            with self.subTest(extension=extension), tempfile.TemporaryDirectory(prefix="formats-", dir=pathlib.Path.cwd()) as tmp:
+                root = pathlib.Path(tmp)
+                deck = ("V1 N 0 DC 1\nR1 N 0 1K\n.tran 1P 5P 0 1P 0 DST\n"
+                        + f".file selected.{extension}\n.print V(N) P(N) I(R1)\n.end\n")
+                (root / "input.cir").write_text(deck)
+                result = subprocess.run([str(BINARY), "-m", "1", "-a", "0", "-o", "all.csv", "input.cir"],
+                                        cwd=root, capture_output=True, text=True, timeout=5)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                baseline = [[float(x) for x in row] for row in list(csv.reader((root / "all.csv").read_text().splitlines()))[1:]]
+                text = (root / ("selected." + extension)).read_text()
+                if extension == "raw":
+                    self.assertIn("No. Variables: 4", text)
+                    self.assertIn("No. Points: 5", text)
+                    for label in ("time Seconds", "V(N) Voltage", "P(N) Phase", "R1#branch Current"):
+                        self.assertIn(label, text)
+                    values = [line.split() for line in text.split("Values:\n", 1)[1].splitlines() if line.strip()]
+                    selected = []
+                    for i in range(5):
+                        self.assertEqual(int(values[4 * i][0]), i)
+                        selected.append([float(values[4 * i][1]), *[float(values[4 * i + k][0]) for k in (1, 2, 3)]])
+                else:
+                    selected = [[float(x) for x in row] for row in
+                                (list(csv.reader(text.splitlines()))[1:] if extension == "csv"
+                                 else [line.split() for line in text.splitlines()[1:]])]
+                self.assertEqual(len(selected), len(baseline))
+                for actual, expected in zip(selected, baseline):
+                    self.assertEqual(len(actual), 4)
+                    self.assertAlmostEqual(actual[1], 1.0, delta=1e-9)
+                    self.assertAlmostEqual(actual[3], .001, delta=1e-12)
+                    for a, b in zip(actual, expected):
+                        self.assertTrue(math.isfinite(a))
+                        self.assertAlmostEqual(a, b, delta=5e-6 * abs(b) + 1e-15)
 
     def test_seed_reporting_and_auto_replay(self):
         noisy = "I1 0 N DC 0\nR1 N 0 50\n.temp 4.2\n.neb 500g\n.tran 0.1p 20p DST\n.print V(N)\n"

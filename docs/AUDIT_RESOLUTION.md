@@ -403,17 +403,32 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## D02 — Coverage and high-risk gaps
 
 - **Classification:** testing/maintenance concern.
-- **Current reproduction/result:** Initial measured line/function/branch coverage is 57.54%/72.81%/52.47%; all mappings inventoried; thresholds and high-risk gap closure remain pending.
-- **Required outcome:** Reproducible line/function/branch reports and justified CI regression policy; assess all high-risk gaps.
-- **Implementation/owner:** first-party src/ and include/JoSIM/.
-- **Verification:** coverage build/export/report and CI check.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Local result:** 81.30% lines, 88.95% functions and 78.80% branches under
+  Clang/LLVM23.1.4, up from 57.54%/72.81%/52.47%. All compiled first-party
+  source/header mappings remain included; 35/35 declared tests execute without
+  skips. LLVM zero-hash diagnostics retain exact live execution counts.
+- **Required policy:** predeclared 75/80/60 overall floors and 80 line/65 branch
+  floors for eleven critical owners, plus review of uncovered decisions. The
+  first expanded 73.77% line result was not accepted by lowering its floor.
+  Later reviewed references guard drops over 0.5 point overall/2 points per
+  critical owner, separately by LLVM major. New majors require report review.
+- **Implementation:** tools/coverage.py, check_coverage.py, coverage-policy.json;
+  shared CTest inventory validation also gates release/library owners. Eight
+  tool regression methods reject incomplete, stale, skipped and mismatched data.
+- **Risk closure:** independent PWS/EXP, TX delay/orientations (36), E/G/F/H gains
+  (72), reversed/floating capacitors (12), malformed CSR, control parsing,
+  sanity counts and CSV/DAT/RAW units/data. Piecewise tests exposed/repaired F27.
+  Remaining guard/helper/diagnostic counters have explicit assessed limits.
+- **Evidence:** [coverage study](qualification/2026-11-07-coverage.md),
+  artifacts/audit-resolution/coverage-policy/ reports/HTML/counters/owners;
+  earlier campaigns remain separate. Local policy passes. CI LLVM18 reference
+  qualification and final integrated/native checks remain pending.
 
 ## D03 — Sanitizers, warnings and static analysis
 
 - **Classification:** verification concern.
-- **Result:** full Clang Debug ASan/UBSan/leak detection passes 34/34 through
-  F26 in 216.72 s. Solver dependencies are instrumented too; leak checks remain
+- **Result:** full Clang Debug ASan/UBSan/leak detection passes 35/35 through
+  F27 in 212.87 s. Solver dependencies are instrumented too; leak checks remain
   enabled. Earlier failures and per-repair runs are retained separately.
 - **Static review:** all 49 initial locations have individual dispositions:
   44 constructor/topology/immediate-guard invariants, one generated-IV helper

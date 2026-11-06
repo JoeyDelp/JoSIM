@@ -141,9 +141,19 @@ is disabled by default and is not used for release packages. LeakSanitizer needs
 process inspection that some sandboxes prohibit; run in a suitable environment
 instead of disabling leak checks or changing host security settings.
 
-The [audit-resolution ledger](AUDIT_RESOLUTION.md) records open verification work
-and the initial coverage gaps. CI thresholds will follow the assessed risk and
-required regression protection; they are not chosen merely to match a baseline.
+Check the completed report against the reviewed policy:
+
+```bash
+python3 -B tools/check_coverage.py --summary artifacts/coverage/summary.json \
+  --output artifacts/coverage/policy.json
+```
+
+The [coverage study](qualification/2026-11-07-coverage.md) records the independent
+risk floors, remaining gaps and per-compiler regression limits. The guard rejects
+stale source, incomplete tests, changed mapping scope and unreviewed LLVM majors.
+CI runs matching Clang/LLVM 18; local qualification also covers major 23.
+The coverage job is a tagged-release prerequisite. Percentages supplement the
+numerical/error assertions and do not establish scientific accuracy.
 
 ## Installed C++ library
 

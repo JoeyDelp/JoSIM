@@ -7,6 +7,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- First-party line/function/branch coverage with reviewed risk floors, per-LLVM
+  regression references, complete-test/mapping checks and a CI release gate.
+  Add analytic matched-line delay, controlled-source gain and reversed/floating
+  capacitor checks, plus source/parser/output and qualification-tool regressions.
 - Model-IV `TSTEP`, `TSTOP` and `TSTART` controls, effective-grid diagnostics and
   independent slow-RSJ/gated-curve refinement checks. Defaults retain the short
   historical protocol; settling and averaging require model-specific checks.

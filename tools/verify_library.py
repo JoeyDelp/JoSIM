@@ -8,9 +8,9 @@ import pathlib
 import platform
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
 
 from build_release import compiler_metadata, sha256, source_identity
+from ctest_results import verify_ctest
 
 
 def main():
@@ -68,18 +68,15 @@ def main():
         run(["cmake", "--build", build, "--config", "Release", "--parallel", args.parallel], output / (mode + "-build.log"))
         inventory = output / (mode + "-inventory.json")
         run(["ctest", "--test-dir", build, "-C", "Release", "--show-only=json-v1"], inventory)
-        declared = {item["name"] for item in json.loads(inventory.read_text())["tests"]}
         junit = output / (mode + "-tests.xml")
         run(["ctest", "--test-dir", build, "-C", "Release", "--output-on-failure", "--timeout", "120",
              "--no-tests=error", "--output-junit", junit], output / (mode + "-tests.log"))
-        cases = ET.parse(junit).getroot().findall(".//testcase")
-        executed = {case.attrib["name"] for case in cases}
-        required = {"regression::sweep", "regression::buffer", "regression::junction_numerics", "regression::numerics", "regression::installed_package", "regression::library", "regression::build_options"}
-        if not declared or executed != declared or not required.issubset(executed):
-            fail("Declared and executed tests differ, or package/recovery checks are absent")
-        if any(case.find(tag) is not None for case in cases for tag in ("skipped", "failure", "error")):
-            fail("A library-mode test failed or was skipped")
-        report["modes"][mode] = {"status": "passed", "tests": len(cases), "toolchain": compiler_metadata(build),
+        try:
+            tests = verify_ctest(inventory, junit)
+        except RuntimeError as error:
+            fail(str(error))
+        report["modes"][mode] = {"status": "passed", "tests": tests["entries"], "test_inventory": tests,
+                                  "toolchain": compiler_metadata(build),
                                   "installation": "Moved to a path with spaces before fresh consumer discovery; original prefix absent"}
         save()
     if source_identity(source, args.revision) != identity or sha256(pathlib.Path(__file__)) != report["owner_sha256"]:

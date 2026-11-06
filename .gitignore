@@ -338,3 +338,6 @@ test_internal
 
 # Versioned independent numerical reference provenance.
 !test/reference/buffer-101-manifest.json
+
+# Reviewed first-party coverage requirements.
+!tools/coverage-policy.json

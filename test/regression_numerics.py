@@ -58,6 +58,103 @@ class NumericalRegression(unittest.TestCase):
         self.assertTrue(rows and all(math.isfinite(v) for row in rows for v in row))
         return rows
 
+    def test_matched_transmission_line_delay_and_port_orientations(self):
+        # A lossless line terminated in Z0 has no reflected wave. With a source
+        # resistance Z0, each port voltage is half the drive, delayed by TD.
+        def drive(t):
+            if t <= 10e-12 or t >= 40e-12:
+                return 0.0
+            if t < 20e-12:
+                return 1e8 * (t - 10e-12)
+            if t <= 30e-12:
+                return 1e-3
+            return 1e8 * (40e-12 - t)
+        ports = [("A", "0", ""), ("0", "A", ""), ("A", "AR", "VRA AR 0 DC 0.0003\n")]
+        loads = [("B", "0", ""), ("0", "B", ""), ("B", "BR", "VRB BR 0 DC -0.0002\n")]
+        for mode in (0, 1):
+            for h in (.5, .25):
+                for positive, negative, reference in ports:
+                    for out_positive, out_negative, out_reference in loads:
+                        with self.subTest(mode=mode, h=h, input=(positive, negative),
+                                          output=(out_positive, out_negative)):
+                            deck = (reference + out_reference
+                                + f"V1 D {negative} PWL(0 0 10P 0 20P 1M 30P 1M 40P 0 100P 0)\n"
+                                + f"RS D {positive} 50\n"
+                                + f"T1 {positive} {negative} {out_positive} {out_negative} Z0=50 TD=8P\n"
+                                + f"RL {out_positive} {out_negative} 50\n"
+                                + f".tran {h}P 100P 0 {h}P 0 DST\n"
+                                + f".print V({positive},{negative}) V({out_positive},{out_negative}) I(RS) I(RL)\n.end\n")
+                            rows = self.run_example(deck, mode)
+                            error = 0.0
+                            for t, vin, vout, source_current, load_current in rows:
+                                expected_in, expected_out = .5 * drive(t), .5 * drive(t - 8e-12)
+                                error = max(error, abs(vin - expected_in), abs(vout - expected_out))
+                                self.assertAlmostEqual(vin, expected_in, delta=2e-9)
+                                self.assertAlmostEqual(vout, expected_out, delta=2e-9)
+                                self.assertAlmostEqual(source_current, vin / 50, delta=1e-10)
+                                self.assertAlmostEqual(load_current, vout / 50, delta=1e-10)
+                            MEASUREMENTS.append({"case": "matched-transmission-line", "mode": mode,
+                                "h_ps": h, "input": [positive, negative], "output": [out_positive, out_negative],
+                                "delay_ps": 8, "voltage_error_V": error, "bound_V": 2e-9})
+
+    def test_capacitor_reversed_and_floating_ports(self):
+        for mode in (0, 1):
+            for floating, reversed_port in [(False, True), (True, False), (True, True)]:
+                previous = None
+                for h in (.5, .25):
+                    reference = "REF" if floating else "0"
+                    positive, negative = (reference, "OUT") if reversed_port else ("OUT", reference)
+                    deck = (("VREF REF 0 DC 0.0003\n" if floating else "")
+                        + f"V1 IN {reference} PWL(0 0 200P 2M)\nR1 IN OUT 10\n"
+                        + f"C1 {positive} {negative} 1P\n.tran {h}P 120P 0 {h}P 0 DST\n"
+                        + f".print V(OUT,{reference}) I(R1) I(C1)\n.end\n")
+                    with self.subTest(mode=mode, floating=floating, reversed=reversed_port, h=h):
+                        error = 0.0
+                        bound = 2 * 1e-4 * (h / 10) ** 2 + 1e-9
+                        for t, voltage, resistor, capacitor in self.run_example(deck, mode):
+                            expected_voltage, expected_current = analytic("RC", t)
+                            error = max(error, abs(voltage - expected_voltage))
+                            self.assertAlmostEqual(voltage, expected_voltage, delta=bound)
+                            self.assertAlmostEqual(resistor, expected_current, delta=bound / 10)
+                            self.assertAlmostEqual(capacitor, (-1 if reversed_port else 1) * resistor, delta=1e-15)
+                        if previous is not None:
+                            self.assertLess(error, .4 * previous + 1e-9)
+                        previous = error
+                        MEASUREMENTS.append({"case": "capacitor-port", "mode": mode, "floating": floating,
+                            "reversed": reversed_port, "h_ps": h, "voltage_error_V": error, "bound_V": bound})
+
+    def test_controlled_source_gain_and_port_orientations(self):
+        control_ports = [("C", "0", ""), ("0", "C", ""), ("C", "CR", "VRC CR 0 DC 0.0003\n")]
+        output_ports = [("O", "0", ""), ("0", "O", ""), ("O", "OR", "VRO OR 0 DC -0.0002\n")]
+        for kind, gain in [("E", 2.), ("G", .002), ("F", 2.), ("H", 2000.)]:
+            for mode in (0, 1):
+                for cp, cn, reference in control_ports:
+                    for op, on, out_reference in output_ports:
+                        with self.subTest(kind=kind, mode=mode, control=(cp, cn), output=(op, on)):
+                            drive = (f"V1 {cp} {cn}" if kind in "EG" else f"I1 {cn} {cp}")
+                            deck = (reference + out_reference + drive + " PWL(0 0 10P 1M 20P -1M 30P 0 40P 0)\n"
+                                + f"{kind}1 {op} {on} {cp} {cn} {gain}\nRL {op} {on} 1000\n"
+                                + f".tran 0.5P 40P 0 0.5P 0 DST\n.print V({cp},{cn}) V({op},{on}) I(RL)\n.end\n")
+                            error = 0.0
+                            for t, control_voltage, voltage, current in self.run_example(deck, mode):
+                                if t < 10e-12:
+                                    source = 1e8 * t
+                                elif t < 20e-12:
+                                    source = 1e-3 - 2e8 * (t - 10e-12)
+                                elif t < 30e-12:
+                                    source = -1e-3 + 1e8 * (t - 20e-12)
+                                else:
+                                    source = 0.0
+                                expected = gain * source * (-1000 if kind in "FG" else 1)
+                                bound = 2e-6 * abs(expected) + 1e-10
+                                self.assertAlmostEqual(voltage, expected, delta=bound)
+                                self.assertAlmostEqual(current, expected / 1000, delta=bound / 1000)
+                                self.assertAlmostEqual(control_voltage, source if kind in "EG" else 0., delta=2e-9)
+                                error = max(error, abs(voltage - expected))
+                            MEASUREMENTS.append({"case": "controlled-source", "kind": kind, "mode": mode,
+                                "control": [cp, cn], "output": [op, on], "gain": gain,
+                                "voltage_error_V": error, "relative_bound": 2e-6, "absolute_bound_V": 1e-10})
+
     def test_explicit_capacitor_precharge_and_discharge(self):
         # RC response to A - (A/d)*(t-t1)*H(t-t1) + (A/d)*(t-t2)*H(t-t2).
         # The initial step transient has decayed before the measurement window.
@@ -305,8 +402,8 @@ if __name__ == "__main__":
         options.report.write_text(json.dumps({
             "passed": result.wasSuccessful(), "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
             "test_sha256": hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
-            "reference": "Closed-form R/L/C ramps, RC precharge, KCL/zero-flux JJ/L equilibrium and beta_c conversion; SI units",
-            "scope": "Linear dynamics, static JJ/L equilibrium and specified constitutive response; switching/long-run studies have separate owners",
+            "reference": "Closed-form R/L/C ramps, matched-line delay, controlled-source gains, RC precharge, KCL/zero-flux JJ/L equilibrium and beta_c conversion; SI units",
+            "scope": "Linear dynamics/port orientations, static JJ/L equilibrium and specified constitutive response; switching/long-run studies have separate owners",
             "cases": MEASUREMENTS,
         }, indent=2) + "\n")
     sys.exit(not result.wasSuccessful())
