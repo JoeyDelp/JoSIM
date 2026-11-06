@@ -57,6 +57,11 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     auto&   tran        = iObj.transSim;
     tran.validate_output();
     if (t.empty()) { Errors::control_errors(ControlErrors::TRANS_ERROR, "Output contains no simulation samples"); }
+    const auto phase_at = [&](int64_t index, int64_t sample) {
+        if (index < 0) { return 0.0; }
+        if (sample >= 0) { return x.at(index).value().at(sample); }
+        return sObj.results.phaseBefore.at(index).at(static_cast<size_t>(-sample - 1));
+    };
     // Create downsampling FIR window, use Hanning function with odd number of taps.
     // The FIR filter is centered around the requested point in time, i. e. looks into the past and future.
     const double window = std::min(tran.prfirwindow(), tran.tstop());
@@ -163,20 +168,8 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                             if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
                                 value = x.at(vi).value().at(jk);
                             } else {
-                                double valin1n1, valin1n2;
-                                double valin2n1, valin2n2;
-                                if (jk >= 2) {
-                                    valin1n2 = i1 != -1 ? x.at(i1).value().at(jk - 2) : 0;
-                                    valin1n1 = i1 != -1 ? x.at(i1).value().at(jk - 1) : 0;
-                                    valin2n2 = i2 != -1 ? x.at(i2).value().at(jk - 2) : 0;
-                                    valin2n1 = i2 != -1 ? x.at(i2).value().at(jk - 1) : 0;
-                                } else if (jk == 1) {
-                                    valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(jk - 1) : 0;
-                                    valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(jk - 1) : 0;
-                                } else {
-                                    valin1n2 = valin1n1 = valin1;
-                                    valin2n2 = valin2n1 = valin2;
-                                }
+                                const double valin1n1 = phase_at(i1, jk - 1), valin1n2 = phase_at(i1, jk - 2);
+                                const double valin2n1 = phase_at(i2, jk - 1), valin2n2 = phase_at(i2, jk - 2);
                                 value = ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep()))
                                         * ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1)
                                            + (1.0 / 3.0) * (valin1n2 - valin2n2));

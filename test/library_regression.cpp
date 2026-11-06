@@ -3,6 +3,7 @@
 #include <JoSIM/IV.hpp>
 #include <JoSIM/Input.hpp>
 #include <JoSIM/Matrix.hpp>
+#include <JoSIM/Output.hpp>
 #include <JoSIM/Rng.hpp>
 #include <JoSIM/Simulation.hpp>
 
@@ -116,6 +117,26 @@ void unrequested_source_history() {
         throw std::runtime_error("Unrequested source histories were retained");
     }
 }
+
+void default_phase_history_for_postprocessing() {
+    auto run = input();
+    run.argAnal = JoSIM::AnalysisType::Phase;
+    run.transSim.startup(true);
+    run.netlist.expNetlist = {{{"V1", "N", "0", "DC", "1"}, std::nullopt},
+                             {{"R1", "N", "0", "10"}, std::nullopt}};
+    JoSIM::Matrix matrix;
+    matrix.create_matrix(run);
+    JoSIM::Simulation simulation(run, matrix);
+    run.controls = {{"PRINT", "V(N)"}};
+    JoSIM::find_relevant_traces(run, matrix);
+    JoSIM::Output output;
+    output.write_output(run, matrix, simulation);
+    for (double voltage : output.traces.at(1).data_) {
+        if (std::abs(voltage - 1.0) > 1e-10) {
+            throw std::runtime_error("Default results lost the phase history required for postprocessing");
+        }
+    }
+}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -130,6 +151,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
+            if (selected == "all" || selected == "phase") { default_phase_history_for_postprocessing(); }
             valid_simulation();
         }
     } catch (const std::exception& error) {

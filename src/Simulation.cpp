@@ -93,6 +93,7 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
     x_.clear();
     x_.resize(mObj.branchIndex, 0.0);
     results.sourceCurrents.clear();
+    results.phaseBefore.clear();
     const auto capture_source = [&](const RelevantTrace& trace) {
         if (trace.storageType == StorageType::Current && trace.sourceIndex) {
             if (results.sourceCurrents.empty()) { results.sourceCurrents.resize(mObj.sourcegen.size()); }
@@ -102,6 +103,23 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
     for (const auto& trace : mObj.relevantTraces) {
         capture_source(trace);
         if (trace.subtract) { capture_source(*trace.subtract); }
+    }
+    if (atyp_ == AnalysisType::Phase) {
+        const auto capture_phase = [&](const RelevantTrace& trace) {
+            if (trace.storageType == StorageType::Voltage && !trace.variableIndex) {
+                if (trace.index1) { results.phaseBefore.emplace(trace.index1.value(), std::array<double, 2>{}); }
+                if (trace.index2) { results.phaseBefore.emplace(trace.index2.value(), std::array<double, 2>{}); }
+            }
+        };
+        if (mObj.relevantTraces.empty()) {
+            // Preserve all nodal history with the default all-unknown result set.
+            for (const auto& node : mObj.nm) { results.phaseBefore.emplace(node.second, std::array<double, 2>{}); }
+        } else {
+            for (const auto& trace : mObj.relevantTraces) {
+                capture_phase(trace);
+                if (trace.subtract) { capture_phase(*trace.subtract); }
+            }
+        }
     }
     if (!mObj.relevantTraces.empty()) {
         results.xVector.resize(mObj.branchIndex);
@@ -127,9 +145,15 @@ void Simulation::trans_sim(Matrix& mObj) {
     b_.resize(mObj.rp.size(), 0.0);
     if (startup_) {
         // Stabilize the simulation before starting at t=0
-        int64_t startup = static_cast<int64_t>(2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1));
-        if (startup > 1000) { startup = 1000; }
+        const double proposed = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
+        const int64_t startup = proposed >= 1000 ? 1000 : static_cast<int64_t>(proposed);
+        if (!std::isfinite(static_cast<double>(startup) * stepSize_)) {
+            Errors::control_errors(ControlErrors::TRANS_ERROR, "Startup interval exceeds the supported range");
+        }
         for (int64_t i = -startup; i < 0; ++i) {
+            if (i == -1) {
+                for (auto& history : results.phaseBefore) { history.second[1] = x_.at(history.first); }
+            }
             // Setup the b matrix
             setup_b(mObj, i, i * stepSize_);
             if (needsTR_) { return; }
@@ -141,6 +165,7 @@ void Simulation::trans_sim(Matrix& mObj) {
             if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
         }
     }
+    for (auto& history : results.phaseBefore) { history.second[0] = x_.at(history.first); }
     // Start the simulation loop
     for (int64_t i = 0; i < simSize_; ++i) {
         double step = i * stepSize_;
@@ -185,6 +210,7 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
     if (!tempMinOut) { iObj.argMin = tempMinOut; }
     results.xVector.clear();
     results.sourceCurrents.clear();
+    results.phaseBefore.clear();
     results.timeAxis.clear();
 }
 

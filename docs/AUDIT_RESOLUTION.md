@@ -512,7 +512,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## F07 — Stateful current-source output history
 
-- **Classification:** confirmed numerical output defect; locally repaired, native rerun pending.
+- **Classification:** confirmed numerical output defect; repaired and native-qualified.
 - **Reproduction:** seeded NOISE current into a single 10 ohm resistor prints
   source and resistor currents differing by up to 7.406399e-6 A. KCL requires
   equality. Output re-evaluates the source at past times after its generator
@@ -538,6 +538,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Results:** GCC16/Clang23 Release pass 30/30; all seven sanitizer/leak
   regression groups pass in 5.53 s. Broader PSD/amplitude qualification remains
   open; this item establishes applied current-sample provenance.
+  Commit 30e311b4a690 passed all ten native jobs in CI 42224588150.
 - **Owners:** Simulation::handle_cs, Results and Output::write_output.
 - **Evidence:** build/audit-resolution/output-history-red.json, exact seed/deck
   and binary hash. Green measurements: artifacts/audit-resolution/current-source-history.json;
@@ -545,16 +546,33 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   separate from the previously repaired Gaussian cache; the retry test now also
   protects that fix in a full same-process simulation.
 
-## F08 — Initial phase-to-voltage output history (open)
+## F08 — Initial phase-to-voltage output history
 
-- **Classification:** confirmed numerical output/startup defect; unresolved.
+- **Classification:** confirmed numerical output/startup defect; repaired locally.
 - **Reproduction:** an ideal constant 1 V source prints 0 V then 1.5 V in phase
   mode with startup (1.333333 V without startup), before settling to 1 V.
-  The analytic voltage is 1 V at every sample. Output fabricates the first two
-  phase-history values rather than using the states used by the integrator.
-- **Required outcome:** retain the actual pre-t=0 states needed for conversion;
-  verify cold/startup, analytic source/RLC behaviour and cross-mode results.
-  Do not change the integrator to disguise a trace-conversion defect.
+  Output fabricated the first two phase-history values. A valid tiny timestep
+  of 1e-30 s also exposed an undefined startup-count conversion before clamping.
+- **Implementation:** retain actual nodal phases at -h and -2h and use them in
+  output's existing BDF2 conversion. Cold histories are zero. Capture only
+  required voltage nodes with explicit traces, or all nodes for default results
+  supporting later postprocessing. Clear history on retries. Clamp startup
+  counts before integer conversion and reject an unrepresentable interval.
+  No integrator or device equations changed. Appended Results state requires
+  C++ consumers to recompile; API.md describes memory and postprocessing scope.
+- **Verification:** eight constant-source cases cover warm/cold starts, a
+  single point, FIR output and a 1e-30 s grid; all have zero error at CSV
+  precision against 1 V (2e-6 V allowance for output rounding). Floating PWL
+  terminal voltages match an independent piecewise formula. One/three-cycle
+  phase steps integrate to one/three flux quanta in both modes, within 2e-6
+  relative, including CSV rounding and the historical constants' precision.
+  The reference uses exact SI h/(2e), independently of JoSIM's constants:
+  https://physics.nist.gov/cgi-bin/cuu/Value?flxquhs2e.
+  Repeated library/installed-consumer tests verify deferred trace selection.
+- **Results:** GCC16/Clang23 Release pass 30/30; full ASan/UBSan with leak
+  detection passes 30/30 in 136.28 s. Native CI remains pending for this commit.
 - **Owners:** Simulation results/history and Output phase differentiation.
-- **Evidence:** build/audit-resolution/output-history-red.json. Broader numerical
-  validation, including #91/#101, remains open independently.
+- **Evidence:** build/audit-resolution/output-history-red.json,
+  startup-overflow-red.json; artifacts/audit-resolution/phase-output-history.json;
+  phase-history-{gcc-,}tests.xml and phase-history-sanitizer-tests.xml.
+  Broader RLC, #91 and #101 studies remain open independently.

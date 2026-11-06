@@ -16,6 +16,12 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Preserve actual pre-zero phase states when converting phase-mode output to
+  voltage. The first two samples now obey the same BDF2 relation as later
+  samples, including cold starts, floating terminals and filtered output.
+  Clamp startup counts before integer conversion and reject unrepresentable
+  startup intervals. Added result history requires C++ consumers to recompile.
+
 - Current-source output now uses the samples applied during simulation, fixing
   incorrect NOISE/PNOISE traces from re-evaluating an advanced generator at past
   times. Capture only requested histories, including difference operands, and

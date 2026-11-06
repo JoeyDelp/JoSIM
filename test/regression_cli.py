@@ -329,6 +329,54 @@ class CliRegression(unittest.TestCase):
         self.assertEqual([row[:2] for row in plain], [row[:2] for row in captured])
         self.assertGreater(len({row[3] for row in captured[1:]}), 1)
 
+    def test_initial_phase_voltage_output_matches_ideal_source(self):
+        for startup in ("", " DST"):
+            for timing in ("1p 5p", "1p 1p", "1p 5p 0 1p 2p", "1e-30 5e-30"):
+                with self.subTest(startup=startup, timing=timing):
+                    deck = ("V1 N 0 DC 1\nR1 N 0 10\n" + f".tran {timing}{startup}\n"
+                            ".print V(N) V(R1) V(V1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", "1"))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertGreater(len(rows), 1)
+                    for row in rows[1:]:
+                        for value in map(float, row[1:]):
+                            self.assertAlmostEqual(value, 1.0, delta=2e-6)
+
+    def test_phase_voltage_conversion_for_time_varying_source(self):
+        for startup in ("", " DST"):
+            deck = ("V1 A B PWL(0 0 1p 1 2p 0.5 5p 0.5)\nR1 A B 10\nR0 B 0 5\n"
+                    + f".tran 0.25p 5p{startup}\n.print V(A,B) V(R1) V(V1)\n.end\n")
+            result, rows = self.run_deck(deck, extra=("-a", "1"))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for row in rows[1:]:
+                t = float(row[0]) / 1e-12
+                expected = t if t < 1 else (1 - 0.5 * (t - 1) if t < 2 else 0.5)
+                for value in map(float, row[1:]):
+                    self.assertAlmostEqual(value, expected, delta=2e-6)
+
+    def test_unrepresentable_startup_interval(self):
+        deck = "V1 N 0 DC 1\nR1 N 0 10\n.tran 1e308 1e308{}\n.print V(N)\n.end\n"
+        result, _ = self.run_deck(deck.format(""), extra=("-a", "0"))
+        self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+        self.assertIn("Startup interval exceeds", result.stdout + result.stderr)
+        result, rows = self.run_deck(deck.format(" DST"), extra=("-a", "0"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertAlmostEqual(float(rows[1][1]), 1.0, delta=2e-6)
+
+    def test_phase_step_flux_quantum_area(self):
+        # Phi0=h/(2e), exact SI definitions; NIST physics.nist.gov/cuu/Constants/
+        flux_quantum = 6.62607015e-34 / (2 * 1.602176634e-19)
+        for mode in (0, 1):
+            for cycles, phase in ((1, "6.283185307179586"), (3, "18.84955592153876")):
+                with self.subTest(mode=mode, cycles=cycles):
+                    deck = (f"P1 N 0 DC {phase}\nR1 N 0 10\n.tran 1p 5p DST\n"
+                            ".print V(N) V(P1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    for column in (1, 2):
+                        area = sum(float(row[column]) * 1e-12 for row in rows[1:])
+                        self.assertAlmostEqual(area / flux_quantum, cycles, delta=2e-6 * cycles)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -34,6 +34,14 @@ histories, indexed by the matrix's `sourcegen` index. Each retained vector has
 the same length as `timeAxis`. Unrequested histories remain absent. This
 appended result state requires consumers of `Results`/`Simulation` to recompile.
 
+`Results::phaseBefore` retains nodal phase at `-h` and `-2h` for phase-mode
+voltage conversion. These are the actual startup states, or zero histories
+when startup is disabled. Explicit trace selection retains only nodes needed
+for voltage output; default all-unknown results retain every nodal history for
+later postprocessing. The map stores two doubles per retained node plus map
+overhead; it does not grow with the run length. This also changes the size of
+`Results` and requires recompilation.
+
 The command-line helpers `CliOptions::parse`, `display_help`, `Errors::oor` and
 `Errors::error_message` retain process-exit behaviour for the executable.
 Embedding applications should construct `Input` directly and handle exceptions,
