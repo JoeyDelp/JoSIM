@@ -146,4 +146,16 @@ if(BUILD_TESTING)
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_cli.py
                    $<TARGET_FILE:josim-cli>)
   set_tests_properties(regression::cli PROPERTIES TIMEOUT 90)
+  add_test(NAME regression::installed_package
+    COMMAND ${CMAKE_COMMAND}
+      "-DTEST_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+      "-DTEST_BINARY_DIR=${PROJECT_BINARY_DIR}"
+      "-DTEST_CONFIG=$<CONFIG>"
+      "-DTEST_GENERATOR=${CMAKE_GENERATOR}"
+      "-DTEST_PLATFORM=${CMAKE_GENERATOR_PLATFORM}"
+      "-DTEST_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      "-DTEST_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}"
+      "-DTEST_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+      -P "${PROJECT_SOURCE_DIR}/cmake/test_installed_package.cmake")
+  set_tests_properties(regression::installed_package PROPERTIES TIMEOUT 90)
 endif()

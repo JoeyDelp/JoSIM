@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.14)
+project(JoSIMInstalledConsumer LANGUAGES CXX)
+find_package(josim 2.7 CONFIG REQUIRED)
+add_executable(consumer main.cpp)
+target_link_libraries(consumer PRIVATE josim::josim)
+enable_testing()
+add_test(NAME installed-simulation COMMAND consumer)

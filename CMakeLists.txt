@@ -80,7 +80,8 @@ target_include_directories(
                $<INSTALL_INTERFACE:include>)
 
 # Dependencies
-target_link_libraries(josim PRIVATE suitesparse::klu)
+target_link_libraries(josim PUBLIC suitesparse::klu)
+target_compile_features(josim PUBLIC cxx_std_17)
 target_link_libraries(josim PRIVATE superlu)
 target_link_libraries(josim PRIVATE cblas)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -140,6 +141,17 @@ include(GNUInstallDirs)
 install(DIRECTORY include/JoSIM/
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/JoSIM/")
 
+# Legacy dependency wrappers add an extra include/ directory during install.
+# Provide their headers at the advertised prefix/include as well.
+foreach(component config amd btf colamd klu)
+  install(DIRECTORY "${CMakeSuiteSparse_SOURCE_DIR}/${component}/include/"
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endforeach()
+foreach(dependency CMakeSuperLU CMakeCBLAS)
+  install(DIRECTORY "${${dependency}_SOURCE_DIR}/include/"
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endforeach()
+
 install(FILES LICENSE README.md DESTINATION .)
 
 # Install targets
@@ -154,6 +166,16 @@ install(
 
 install(
   EXPORT josim-targets
-  FILE josim-config.cmake
+  FILE josim-targets.cmake
   NAMESPACE josim::
   DESTINATION share/josim/)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(cmake/josim-config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/josim-config.cmake"
+  INSTALL_DESTINATION share/josim)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/josim-config-version.cmake"
+  VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/josim-config.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/josim-config-version.cmake"
+        DESTINATION share/josim/)

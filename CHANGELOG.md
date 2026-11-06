@@ -32,6 +32,8 @@ work prepared for the next release, not binaries already available on GitHub.
   produce errors instead of crashing or silently substituting another run.
 - Recursive subcircuit dependencies now report the unresolved subcircuits
   instead of hanging during expansion.
+- Installed C++ packages now load their dependencies, expose the required
+  headers and C++17 setting, and support versioned `find_package(josim)` calls.
 
 ## 2.7 — 2025-12-19
 

@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+find_dependency(CMakeSuiteSparseConfig CONFIG)
+find_dependency(CMakeSuiteSparseAMD CONFIG)
+find_dependency(CMakeSuiteSparseCOLAMD CONFIG)
+find_dependency(CMakeSuiteSparseBTF CONFIG)
+find_dependency(CMakeSuiteSparseKLU CONFIG)
+find_dependency(CMakeSuperLU CONFIG)
+find_dependency(CMakeCBLAS CONFIG)
+
+include("${CMAKE_CURRENT_LIST_DIR}/josim-targets.cmake")
+check_required_components(josim)
