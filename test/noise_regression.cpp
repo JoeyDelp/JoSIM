@@ -48,6 +48,20 @@ static void white_noise() {
     std::cout << "white variance=" << variance << " expected=50\n";
 }
 
+static void reseed_and_rewind() {
+    for (int count : {1, 2, 3, 5}) {
+        Rng::start_run(123456);
+        std::vector<double> expected;
+        for (int i = 0; i < count; ++i) { expected.push_back(Rng::normal01_noise()); }
+        Rng::start_run(123456);
+        for (double value : expected) {
+            require(Rng::normal01_noise() == value, "Reseeding retained a cached Gaussian sample");
+        }
+        Rng::rewind();
+        require(Rng::normal01_noise() == expected.front(), "Rewind did not restore the first Gaussian sample");
+    }
+}
+
 static double spectral_density(const std::vector<double>& values, int bin) {
     const int    window = 2048;
     const int    hop    = window / 2;
@@ -214,6 +228,7 @@ static void full_cycle_step_guard() {
 int main() {
     try {
         white_noise();
+        reseed_and_rewind();
         power_law_spectrum();
         flux_units_and_delay();
         normalization_outside_band();

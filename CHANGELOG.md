@@ -22,6 +22,10 @@ work prepared for the next release, not binaries already available on GitHub.
   points. Invalid noise timing and process counts produce useful errors.
 - Junction thermal-noise amplitude updates now modify the stored source.
 - Model assignments retain support for spaces around `=`.
+- Repeating or rewinding a seeded simulation in the same process resets cached
+  Gaussian samples as well as the random-number engines.
+- Random-number engines initialize correctly with the GCC 8 toolchain used for
+  RHEL6-compatible builds.
 
 ## 2.7 — 2025-12-19
 

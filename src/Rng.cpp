@@ -29,6 +29,7 @@ void Rng::start_run(uint64_t seed) {
 
     noise_.seed(seqN);
     spread_.seed(seqS);
+    noise_state_() = BMState{};
 
     seeded_ = true;
 }
@@ -84,9 +85,13 @@ double Rng::normal01_(std::mt19937_64& eng, BMState& st) {
     return z0;
 }
 
+Rng::BMState& Rng::noise_state_() {
+    static thread_local BMState state;
+    return state;
+}
+
 double Rng::normal01_noise() {
-    static thread_local BMState st;
-    return normal01_(noise(), st);
+    return normal01_(noise(), noise_state_());
 }
 
 double Rng::normal_spread(double mean, double sigma) {

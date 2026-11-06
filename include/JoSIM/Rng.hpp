@@ -31,12 +31,13 @@ class Rng {
         double spare    = 0.0;
     };
 
+    static BMState&               noise_state_();
     static double                 normal01_(std::mt19937_64& eng, BMState& st);
 
     static inline bool            seeded_ = false;
     static inline uint64_t        seed_   = 0;
-    static inline std::mt19937_64 noise_;
-    static inline std::mt19937_64 spread_;
+    static inline std::mt19937_64 noise_{std::mt19937_64::default_seed};
+    static inline std::mt19937_64 spread_{std::mt19937_64::default_seed};
 };
 
 } // namespace JoSIM
