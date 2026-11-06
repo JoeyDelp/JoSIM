@@ -7,6 +7,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Model-IV `TSTEP`, `TSTOP` and `TSTART` controls, effective-grid diagnostics and
+  independent slow-RSJ/gated-curve refinement checks. Defaults retain the short
+  historical protocol; settling and averaging require model-specific checks.
 - Pinned Python utility dependencies, tested headless exports and a CI release
   gate for the plotting and phase-specification tools.
 - Safe one-parameter external circuit sweeps with fresh processes, preserved
@@ -41,6 +44,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Start every model-IV point with fresh device histories. Reusing histories
+  across otherwise reset simulations broke sign-reversal symmetry and changed
+  finite-window voltages. Preserve each point's declared preparation ramp.
 - Preserve the requested model-IV bias through timestep retries. Only the active
   function was updated previously; rebuilding from the stale testbench could
   replace every sweep point with 2.5 µA.

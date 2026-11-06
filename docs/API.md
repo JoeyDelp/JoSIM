@@ -52,6 +52,15 @@ appended to `OutputErrors`, preserving its existing values and method signatures
 If an embedding application redirects `std::cout` to a failing stream, it owns
 restoring that destination and clearing the stream's error state before reuse.
 
+Model-IV helpers operate on the generated single-junction testbench. Each point
+rebuilds fresh device state from its bias declaration; timestep retries rebuild
+from the same Input. Existing signatures/layouts remain. `do_simulate` honors
+a positive `Input::transSim.prstart()` as its averaging start; the default zero
+retains the legacy latter-half convention for direct callers. At least two
+averaging samples are required. CLI `.IV` timing controls are described in the
+[sweep guide](sweeps.md). These finite transients do not imply converged DC or
+continuous state transfer between points.
+
 `Input` records the main netlist and included files. Normal output and `.iv`
 generation reject destinations that refer to those inputs, including existing
 hard-link aliases. Keep this provenance when using the normal input parser.

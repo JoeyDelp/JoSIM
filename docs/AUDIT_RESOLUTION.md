@@ -466,8 +466,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   jtl-exports.json; build/audit-resolution/python-utilities/{probes,tests.log}.
   Native-platform CI remains a separate final integration requirement.
 
-  Native/utility CI 42286617926 qualifies the pushed utility revision separately;
-  its final status is recorded with the milestone evidence.
+  Native/utility CI 42286617926 passes all ten native jobs and the utility job
+  for 096461bf8b. Subsequent source revisions require their own qualification.
 
 ## D06 — Runtime/memory and trace retention
 
@@ -1028,47 +1028,58 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Implementation:** Output::format_csv_or_dat/format_raw explicitly close and
   check streams; format_cout flushes/checks; IV::write_iv checks close state.
   Appended OutputErrors::WRITE_FAILED retains existing enum values and signatures.
-- **Verification:** regression::cli six Linux fault cases now return255 with
+- **Verification:** regression::cli six Linux fault cases now return 255 with
   destination diagnostics; portable regression::library fails only at flush,
   catches/reuses output state and runs valid simulations in eight cycles.
-- **Measurements:** GCC16.2.1/Clang23.1.4 Debug/Release all34/34; full Clang
-  ASan/UBSan/leaks34/34 in211.84s. No numerical tolerances changed. Native CI
+- **Measurements:** GCC 16.2.1/Clang 23.1.4 Debug/Release all 34/34; full Clang
+  ASan/UBSan/leaks 34/34 in 211.84 s. No numerical tolerances changed. Native CI
   remains required for the pushed revision; non-Linux file fault injection is
   not inferred from the portable stream test.
 - **Evidence:** [output study](qualification/2026-11-06-output-completion.md),
   artifacts/audit-resolution/output-write/{red,stdout-red,green}.json,
   source-sha256.json, four build/test receipts and sanitizer JUnit.
+  All ten native jobs plus the utility job pass for 978fe82f in CI 42288359410.
 
 ## F22 — Model-IV timestep retry loses the requested bias
 
 - **Classification:** reproduced numerical/control defect, repaired.
-- **Reproduction:** Ic=C=0, RN100Ω, Imax1mA/STEP1mA forces repeated phase-guard
-  retries. All four rows incorrectly became2.5µA/250µV, returning success.
+- **Reproduction:** Ic=C=0, RN=100 Ω, Imax=1 mA, STEP=1 mA forces repeated phase-guard
+  retries. All four rows incorrectly became 2.5 µA/250 µV, returning success.
 - **Implementation:** IV::generate_iv keeps each generated PWL declaration and
   active function synchronized. Input remains the source of retry reconstruction.
   No signature/layout/timing-default or physical-equation change.
 - **Verification:** regression::gate four ordinary/gated/caller-mode cases assert
-  Ohm's law and requested [+1mA,0,-1mA,0] points: [+0.1V,0,-0.1V,0], with1e-12A
-  and1e-8V absolute bounds for exactly representable CSV reference literals.
-- **Measurements:** local4 full34/34; affected ASan/UBSan/leak groups4/4 in34.52s.
-  Full sanitizer34/34 in211.84s immediately precedes this targeted IV repair;
+  Ohm's law and requested [+1 mA, 0, −1 mA, 0] points: [+0.1 V, 0, −0.1 V, 0], with 1e-12 A
+  and 1e-8 V absolute bounds for exactly representable CSV reference literals.
+- **Measurements:** four local configurations pass 34/34; affected ASan/UBSan/leak groups 4/4 in 34.52 s.
+  Full sanitizer 34/34 in 211.84 s immediately precedes this targeted IV repair;
   final integrated full/native qualification remains required.
 - **Evidence:** [IV retry study](qualification/2026-11-06-iv-retry.md),
   artifacts/audit-resolution/iv-physics/retry-{probe,green}.json, source hashes,
   four build/test receipts and retry-sanitizer.xml.
+  All ten native jobs plus the utility job pass for a1c0fa10 in CI 42289758492.
 
 ## F23 — Model-IV initial state and finite averaging protocol
 
-- **Classification:** open numerical/configuration investigation; not resolved by F22.
-- **Reproduction:** RTYPE0,Ic100µA,C0,RN1mΩ,Ib±150µA; independent RSJ DC mean
-  ±1.118034e-7V has period18.5ns, far longer than the fixed500ps protocol.
-  Default means+1.351658e-7/-1.384165e-7V differ by21–24% from the converged
+- **Classification:** reproduced device-history defect repaired; required model-IV
+  timing refinement implemented and independently qualified.
+- **Reproduction:** RTYPE=0, Ic=100 µA, C=0, RN=1 mΩ, Ib=±150 µA; independent RSJ DC mean
+  ±1.118034e-7 V has period 18.5 ns, far longer than the fixed 500 ps protocol.
+  Default means +1.351658e-7/−1.384165e-7 V differ by 21–24% from the converged
   DC mean, and paired excursions are not exactly odd. The latter is inconsistent
   with the odd constitutive equation and sign-reversed generated ramps from
-  zero state; cached per-device histories across Simulation objects need review.
-- **Required outcome:** isolate initial-state behavior; provide and qualify
-  meaningful timestep/settling/measurement refinement for model IV. Preserve
-  existing API/default compatibility where valid; no automatic DC-accuracy claim.
-- **Evidence:** build/audit-resolution/iv-physics/initial-probes.json and decks;
-  copied compact receipt artifacts/audit-resolution/iv-physics/initial-probes.json.
-  Investigation/implementation and final qualification remain open.
+  zero state. Rebuilding a fresh Matrix per point alone removes the 3.2507 nV
+  outward and 1.385687 nV returning symmetry residuals, isolating cached histories.
+- **Implementation:** fresh per-point devices plus TSTEP/TSTOP/TSTART controls,
+  default finite protocol retained; verbose effective grid/count diagnostics.
+  Existing API signatures/layouts remain; positive prstart now selects the
+  averaging window. At least two samples are required; no automatic DC guarantee.
+- **Measurements:** ordinary slow-RSJ long mean 111.7475 nV vs 111.8034 nV (−0.0500%);
+  ±5 mV gate 141.4591 nV vs 141.4214 nV (+0.0267%); full suppression 150 nV exactly.
+  Independent finite-window Phi0/W + 0.1 nV discretization allowance gives 0.617 nV;
+  h=20→10 ps difference 0.0002 nV. All eight campaign runs pass, source/binary unchanged.
+  All four local configurations pass 34/34; full ASan/UBSan/leaks pass 34/34 in 237.00 s. Native/final
+  integrated qualification remains required for the pushed revision.
+- **Evidence:** [model-IV study](qualification/2026-11-06-model-iv-physics.md),
+  artifacts/audit-resolution/iv-physics/state-{red,green}.json and timing/
+  report.json with exact owner/decks/CSV/logs, source hashes and build/test receipts.

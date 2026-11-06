@@ -482,7 +482,7 @@ An example:
 
 JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:
 
-**.iv**&emsp;*modelname*&emsp;*max_current*&emsp;*filepath*
+**.iv**&emsp;*modelname*&emsp;*max_current*&emsp;*filepath*&emsp;[STEP=*current*]&emsp;[GTJJ=*voltage*]&emsp;[TSTEP=*time*]&emsp;[TSTOP=*time*]&emsp;[TSTART=*time*]
 
 This command outputs a comma seperated value (CSV) at the *filepath* specified which contains the IV curve data for the *modelname* from negative *max_current* to positive *max_current*.
 
@@ -492,6 +492,17 @@ This evaluates the definition's default parameters with global fallback. It
 uses no particular instance's overrides or caller environment; missing required
 defaults are errors. This command draws a model IV curve, rather than sweeping
 an arbitrary connected circuit.
+
+`STEP` (alias `ISTEP`) is the positive current increment, default 2.5 µA.
+`GTJJ` supplies a physical gate voltage. `TSTEP` selects the initial internal
+step (default 0.05 ps), `TSTOP` the duration (default 500 ps), and `TSTART` the
+averaging start (default half the selected duration). Timing values use seconds
+and engineering suffixes. Require `TSTEP > 0` and `TSTOP > TSTART >= 50 ps`,
+with at least two actual averaging samples. Every point starts with fresh device
+histories and its specified 0/10/50 ps bias ramp. The mean uses unfiltered internal
+samples from `TSTART`; retries may reduce the step. `-V 1` reports the effective
+grid. These finite transients require model-specific settling and convergence
+checks; see [model IV versus circuit sweeps](sweeps.md#circuit-iv-versus-model-iv).
 
 ### Output
 

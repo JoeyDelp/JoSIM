@@ -79,15 +79,41 @@ settling time, duration and timestep for the circuit, and check refinement. A
 fixed seed in the template reuses a controlled stream at each fresh point;
 independent noise realizations require explicitly different seeds.
 
-The built-in `.IV` uses a fixed single-junction transient protocol: 0/10/50 ps
-bias knots, 0.05 ps internal step, 500 ps duration and mean voltage over the
-second half. Returning branches first visit +/-Imax. It does not sweep an
-arbitrary circuit and does not provide conventional DC/Newton tolerance control.
+The built-in `.IV` uses a single-junction transient testbench. Its defaults are
+0/10/50 ps bias knots, 0.05 ps initial internal step, 500 ps duration and mean
+voltage over the second half. Returning branches first visit +/-Imax. Every
+point starts from fresh zero-state device histories with its specified ramp;
+it does not carry the preceding point's final state. It does not sweep an
+arbitrary circuit or provide conventional DC/Newton tolerance control.
 The generated bias declaration is kept in sync with each point's active source,
 so a timestep retry retains the requested point rather than restoring a stale
 testbench current.
-Use explicit circuit transients when the required settling/measurement protocol
-differs. The timestep-restart guard alone does not guarantee numerical accuracy.
+
+Use `TSTEP`, `TSTOP` and `TSTART` to refine the initial internal step, run duration
+and averaging start, all in seconds. Defaults remain 0.05 ps, 500 ps and half
+the selected stop time. The averaging start must be at least 50 ps, when the
+generated source reaches its final bias, and before the stop time. At least two
+actual averaging samples must remain. The same timing applies to every point.
+For example, a slow overdamped model can need a much longer plateau:
+
+```spice
+.model SLOW JJ(RTYPE=0 ICRIT=100u RN=.001 CAP=0)
+.iv SLOW 150u slow-iv.csv STEP=150u TSTEP=20p TSTOP=5u TSTART=1u
+```
+
+The mean uses unfiltered internal samples at or after `TSTART`; the stop time
+itself is not an extra sample. Timestep retries may reduce `TSTEP` and never
+increase it within the curve. `-V 1` reports the requested protocol and each
+point's effective timestep and averaging sample count.
+
+In this example, the Josephson period is about 18.5 ns: the default 500 ps run
+does not estimate its DC mean accurately. The longer protocol gives 111.7475 nV
+against the independent RSJ mean 111.8034 nV; halving the step changes it by
+0.0002 nV. These are bounded checks, not a universal timing prescription.
+Refine both timestep and settling/measurement duration for the model. The
+timestep guard alone does not guarantee accuracy. Use explicit circuit
+transients for another preparation waveform or continuous hysteresis protocol.
+See the [model-IV study](qualification/2026-11-06-model-iv-physics.md).
 
 The main transient solver uses BDF2 with nonlinear junction terms predicted
 from prior samples and one sparse linear solve per accepted step. It does not

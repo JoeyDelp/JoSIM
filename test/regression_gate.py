@@ -3,6 +3,7 @@
 import csv
 import math
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -13,12 +14,13 @@ BINARY = pathlib.Path(sys.argv.pop(1)).resolve()
 
 
 class GateRegression(unittest.TestCase):
-    def simulate(self, deck, mode=0, success=True, iv_filename="iv.csv"):
+    def simulate(self, deck, mode=0, success=True, iv_filename="iv.csv", details=False):
         with tempfile.TemporaryDirectory(prefix="gate-", dir=pathlib.Path.cwd()) as tmp:
             directory = pathlib.Path(tmp)
             (directory / "input.cir").write_text(deck)
             result = subprocess.run(
-                [str(BINARY), "-m", "1", "-a", str(mode), "-o", "output.csv", "input.cir"],
+                [str(BINARY), "-m", "1", "-a", str(mode), "-o", "output.csv",
+                 *(["-V", "1"] if details else []), "input.cir"],
                 cwd=directory, capture_output=True, text=True, timeout=30,
             )
             if not success:
@@ -33,7 +35,7 @@ class GateRegression(unittest.TestCase):
             if (directory / iv_filename).exists():
                 with (directory / iv_filename).open() as stream:
                     iv = [[float(v) for v in row] for row in list(csv.reader(stream))[1:]]
-            return traces, iv
+            return (traces, iv, result.stdout) if details else (traces, iv)
 
     def deck(self, gate="5m", junction="B1 n 0 jm GC=g", width="10m", temperature=""):
         return (
@@ -158,6 +160,61 @@ class GateRegression(unittest.TestCase):
                         # CSV has six digits; the exact Ohmic steady state is
                         # reached long before the latter-half averaging window.
                         self.assertAlmostEqual(voltage, 100 * expected, delta=1e-8)
+
+    def test_model_iv_points_start_from_sign_symmetric_state(self):
+        # The zero-state RSJ ODE and both generated ramps are odd under
+        # (I,phase,V)->(-I,-phase,-V), even before a DC mean has converged.
+        deck = ("RMAIN N 0 1\n.model M JJ(RTYPE=0 ICrit=100u RN=.001 CAP=0)\n"
+                ".iv M 150u iv.csv STEP=150u\n.tran 1p 5p DST\n.print V(N)\n.end\n")
+        for mode in (0, 1):
+            _, rows = self.simulate(deck, mode)
+            self.assertAlmostEqual(rows[0][0], -rows[2][0], delta=1e-13)
+            self.assertAlmostEqual(rows[1][0], -rows[3][0], delta=1e-13)
+
+    def test_slow_model_iv_timing_refinement_and_gate_physics(self):
+        observed = []
+        cases = ((None, "20p"), (None, "10p"), ("0", "20p"),
+                 ("5m", "20p"), ("-5m", "20p"), ("10m", "20p"))
+        for index, (gate, step) in enumerate(cases):
+            with self.subTest(gate=gate, step=step):
+                option = "" if gate is None else " GTJJ=" + gate
+                deck = ("RMAIN N 0 1\n.model M JJ(RTYPE=0 ICrit=100u RN=.001 CAP=0 GWIDTH=10m)\n"
+                        f".iv M 150u iv.csv STEP=150u TSTEP={step} TSTOP=5u TSTART=1u{option}\n"
+                        ".tran 1p 5p DST\n.print V(N)\n.end\n")
+                _, rows, log = self.simulate(deck, index % 2, details=True)
+                critical = 100e-6 * max(0., 1 - abs(float(gate.rstrip("m")) / 10)) if gate is not None else 100e-6
+                expected = .001 * math.sqrt((150e-6) ** 2 - critical ** 2)
+                # RSJ's periodic phase correction spans <2pi, so a finite
+                # plateau mean differs by at most Phi0/window. Add .1nV for
+                # timestep/quadrature error, separately checked by h halving.
+                bound = 2.067833831e-15 / (4e-6 - 20e-12) + 1e-10
+                for (voltage, current), target in zip(rows, (150e-6, 0, -150e-6, 0)):
+                    self.assertAlmostEqual(current, target, delta=1e-12)
+                    self.assertAlmostEqual(voltage, math.copysign(expected, target) if target else 0., delta=bound)
+                metadata = re.findall(r"Model IV point: current \(A\): ([^;]+); effective timestep \(s\): ([^;]+); average samples: (\d+)", log)
+                self.assertEqual(len(metadata), 4, log)
+                wanted_step = (20 if step == "20p" else 10) * 1e-12
+                for _, effective, count in metadata:
+                    self.assertAlmostEqual(float(effective), wanted_step, delta=1e-25)
+                    self.assertGreater(int(count), 190000)
+                observed.append(rows)
+        for coarse, fine in zip(observed[0], observed[1]):
+            self.assertAlmostEqual(coarse[0], fine[0], delta=1e-10)
+        for ordinary, zero_gate in zip(observed[0], observed[2]):
+            self.assertAlmostEqual(ordinary[0], zero_gate[0], delta=1e-13)
+        for positive, negative in zip(observed[3], observed[4]):
+            self.assertAlmostEqual(positive[0], negative[0], delta=1e-13)
+
+    def test_invalid_iv_timing(self):
+        for option in ("TSTEP=0", "TSTEP=-1p", "TSTEP=nan", "TSTOP=0", "TSTOP=50p",
+                       "TSTART=0", "TSTART=-1p", "TSTART=500p", "TSTART=499.99p",
+                       "TSTEP=100p TSTART=400p", "TSTOP=1e200"):
+            with self.subTest(option=option):
+                # The Ohmic model prevents a phase-guard retry from refining
+                # the one-sample case into a valid multi-sample window.
+                deck = self.deck().replace("ic=100u", "ic=0").replace("rn=16", "rn=.001").replace("cap=0.07p", "cap=0")
+                deck = deck.replace(".end\n", f".iv jm 5u iv.csv STEP=5u {option}\n.end\n")
+                self.simulate(deck, success=False)
 
 
 if __name__ == "__main__":
