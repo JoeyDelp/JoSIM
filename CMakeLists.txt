@@ -28,6 +28,7 @@ if(MAKING_STATIC_BUILD)
   endif()
 endif()
 
+include(${PROJECT_SOURCE_DIR}/cmake/verification.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
@@ -103,6 +104,7 @@ endif()
 set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON)
 make_target_static(josim)
 target_add_warnings(josim)
+josim_instrument_target(josim)
 # target_compile_features(josim PUBLIC cxx_std_20)
 
 # OpenMP usage
@@ -125,6 +127,7 @@ target_link_libraries(josim-cli PRIVATE cblas)
 # Properties
 make_target_static(josim-cli)
 target_add_warnings(josim-cli)
+josim_instrument_target(josim-cli)
 
 # Testing
 # -------

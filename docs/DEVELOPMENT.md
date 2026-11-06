@@ -43,6 +43,50 @@ The tests establish these contracts. They do not establish general SPICE
 compatibility or settle the open reports about long-run junction artifacts.
 Preserve failing numerical evidence before changing device equations.
 
+## Coverage and sanitizers
+
+Use matching major versions of Clang, `llvm-cov` and `llvm-profdata`. The
+coverage owner builds an instrumented Debug application/library, runs CTest,
+and produces annotated HTML, raw LLVM JSON, per-module summaries and exact
+commands. Use a dedicated build directory for each campaign; existing execution
+profiles are preserved rather than silently combined with a later run.
+
+```bash
+python3 -B tools/coverage.py \
+  --build-dir build/coverage --output artifacts/coverage
+```
+
+Add `--initial-cache build/dependencies/sources.cmake` to reuse prepared solver
+sources. Versioned tools can be selected with `--cc`, `--cxx`, `--llvm-cov` and
+`--llvm-profdata`. Coverage includes all compiled first-party `src/*.cpp` and
+`include/JoSIM/*.hpp` mappings. Solvers, the vendored spline header, generated
+code and test implementation are excluded. Files without mappings remain in the
+inventory; declarations, disabled preprocessor paths and uninstantiated templates
+do not acquire executable counters. Review LLVM diagnostics before accepting
+measurements. Coverage percentages do not establish numerical correctness.
+
+For memory and undefined-behaviour checks with GCC or Clang:
+
+```bash
+cmake -S . -B build/sanitizers -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+  -DJOSIM_SANITIZERS=ON
+cmake --build build/sanitizers --parallel 4
+ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
+UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 \
+  ctest --test-dir build/sanitizers --output-on-failure --timeout 120
+```
+
+This instruments the C solver dependencies as well as first-party code. Runtime
+link requirements propagate to installed development consumers. Instrumentation
+is disabled by default and is not used for release packages. LeakSanitizer needs
+process inspection that some sandboxes prohibit; run in a suitable environment
+instead of disabling leak checks or changing host security settings.
+
+The [audit-resolution ledger](AUDIT_RESOLUTION.md) records open verification work
+and the initial coverage gaps. CI thresholds will follow the assessed risk and
+required regression protection; they are not chosen merely to match a baseline.
+
 ## Installed C++ library
 
 ```bash

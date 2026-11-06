@@ -41,6 +41,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Build and distribution
 
+- Added opt-in LLVM first-party coverage and AddressSanitizer/UndefinedBehaviorSanitizer
+  builds, with reproducible report commands and installed-consumer runtime linkage.
+
 - One release script builds, tests, installs and verifies all platform packages.
 - GitHub Actions targets Linux x86_64 with glibc 2.12, Linux AArch64 with glibc
   2.17, Windows x64, and separate macOS ARM and Intel binaries.

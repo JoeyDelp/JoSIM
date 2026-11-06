@@ -134,6 +134,7 @@ add_integration_test(
 
 if(BUILD_TESTING)
   add_executable(josim-noise-regression noise_regression.cpp)
+  josim_instrument_target(josim-noise-regression)
   target_link_libraries(josim-noise-regression PRIVATE josim suitesparse::klu)
   add_test(NAME regression::noise COMMAND josim-noise-regression)
   set_tests_properties(regression::noise PROPERTIES TIMEOUT 90)
