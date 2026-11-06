@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
+#include <JoSIM/ProgressBar.hpp>
 #include <JoSIM/IV.hpp>
 #include <JoSIM/Input.hpp>
 #include <JoSIM/Matrix.hpp>
@@ -69,6 +70,22 @@ void output_flush_failure() {
     }
     std::cout.rdbuf(original);
     std::cout.clear();
+}
+
+void progress_worker_lifetime() {
+    for (bool explicit_stop : {false, true}) {
+        JoSIM::ProgressBar bar;
+        bar.set_total(1);
+        bar.set_bar_width(1);
+        bar.create_thread();
+        bar.create_thread();
+        bar.update(1);
+        if (explicit_stop) {
+            bar.complete();
+            bar.complete();
+        }
+        // Destruction must stop/join every worker in both cases.
+    }
 }
 
 void missing_model() {
@@ -291,6 +308,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "storage") { result_storage_limit(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "output") { output_flush_failure(); }
+            if (selected == "all" || selected == "progress") { progress_worker_lifetime(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
             if (selected == "all" || selected == "model") { invalid_models(); }

@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Johannes Delport
 // This code is licensed under MIT license (see LICENSE for details)
+#include <JoSIM/ProgressBar.hpp>
 #include <JoSIM/Input.hpp>
 #include <JoSIM/Matrix.hpp>
 #include <JoSIM/Model.hpp>
@@ -10,6 +11,13 @@
 #include <cmath>
 
 int main() {
+    JoSIM::ProgressBar bar;
+    bar.set_total(1);
+    bar.set_bar_width(1);
+    bar.create_thread();
+    bar.update(1);
+    bar.complete();
+    bar.complete();
     JoSIM::Model{}.validate();
     const double interval = JoSIM::Noise::determine_sampling_interval(1e9, 1e-12);
     if (std::abs(3e9 * interval - 1) > 1e-12) { return 1; }

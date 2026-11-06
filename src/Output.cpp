@@ -124,12 +124,12 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
         // Create progress bar
         ProgressBar bar;
         if (!iObj.argMin) {
-            bar.create_thread();
             bar.set_bar_width(30);
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Formatting Output");
             bar.set_total((float) requests.size());
+            bar.create_thread();
         }
         // Reset progress counter
         cc = 0;
@@ -320,12 +320,12 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     } else {
         ProgressBar bar;
         if (!iObj.argMin) {
-            bar.create_thread();
             bar.set_bar_width(30);
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Formatting Output");
             bar.set_total((float) mObj.nm.size());
+            bar.create_thread();
         }
         int64_t cc = 0;
         for (const auto& i : mObj.nm) {
@@ -375,12 +375,12 @@ void Output::format_csv_or_dat(const std::string& filename, const char& delimite
         outfile << traces.at(tIndices.at(tIndices.size() - 1)).name_ << "\n";
         ProgressBar bar;
         if (!argmin) {
-            bar.create_thread();
             bar.set_bar_width(30);
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Writing Output");
             bar.set_total((float) traces.at(0).data_.size());
+            bar.create_thread();
         }
         for (auto j = 0; j < traces.at(0).data_.size(); ++j) {
             if (!argmin) { bar.update(static_cast<float>(j)); }
@@ -456,12 +456,12 @@ void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex
             int64_t     pointSizeSpacing = std::to_string(loopsize).length() + 1;
             ProgressBar bar;
             if (!argmin) {
-                bar.create_thread();
                 bar.set_bar_width(30);
                 bar.fill_bar_progress_with("O");
                 bar.fill_bar_remainder_with(" ");
                 bar.set_status_text("Writing Output");
                 bar.set_total((float) loopsize);
+                bar.create_thread();
             }
             for (int64_t i = 0; i < loopsize; ++i) {
                 if (!argmin) { bar.update(static_cast<float>(i)); }

@@ -1,9 +1,9 @@
 # Runtime and storage qualification — 6 November 2026
 
 This study addresses D06 through measured changes. Separate stages reserve
-retained histories and remove profiled per-step vector copies. Progress
-reporting remains distinct follow-up work. No simulation equation or operation
-order changes in these two stages.
+retained histories, remove profiled per-step vector copies and let progress
+workers wait between display updates. No simulation equation or operation
+order changes in these stages.
 
 ## Storage change
 
@@ -124,6 +124,46 @@ owners, all per-run receipts, source/binary identities, profiles and annotated
 call trees. Its baseline already includes reservation, so these gains isolate
 the two copying sites through the pure-JJ and pure-inductor fixtures.
 
+## Progress workers
+
+The clean baseline is `9de8d69a8ff4925ecd0256b5a1e50ecca63e5f7d`, which
+already includes both earlier stages. The old progress worker continually
+polled atomic values. It now waits up to 20 ms between updates; completion
+notifies it immediately, so finishing a short run does not require that delay.
+Internal callers configure text and total before starting the worker.
+
+Two public-helper defects were reproduced separately: including its header
+alone failed to compile because of missing includes, and creating two workers
+then destroying the bar aborted because only the last thread was joined.
+The header is now self-contained; completion/destruction joins all workers and
+repeated completion is safe. Installed-consumer and repeated embedding tests
+protect these contracts. Added synchronization state changes `ProgressBar`'s
+layout; consumers must recompile. This does not add simulation parallelism.
+
+A separate seven-pair campaign uses two available CPUs, default progress mode,
+the same CSV/numerical checks and the corrected clock above. All 42 timed runs
+pass with identical paired CSVs:
+
+| Workload | Before wall seconds | Waiting wall seconds | Before CPU seconds | Waiting CPU seconds |
+|---|---:|---:|---:|---:|
+| 128 coupled RL pairs | 0.5041 | 0.4939 | 0.97 | 0.48 |
+| 128 RLC cells | 0.3923 | 0.3853 | 0.75 | 0.37 |
+| Five-sample DC run | 0.002405 | 0.002070 | below timer resolution | below timer resolution |
+
+Both medium cases exceed the predeclared 40% CPU-reduction requirement and
+have no wall regression. The small-run median adds no latency, within its
+predeclared 5 ms absolute allowance; its millisecond result is not a general
+speed claim. Peak RSS changes by at most +0.33% in the medium cases.
+
+Minimal mode creates no progress worker but still constructs the helper.
+Another seven-pair campaign repeats all eight earlier fixtures in minimal
+mode: all 112 timed runs pass, every paired CSV is identical, and the largest
+median wall increase is 1.06%, within the predeclared 5% regression limit.
+Peak RSS changes by at most +0.59%. No numerical tolerance was changed.
+`artifacts/audit-resolution/performance/progress/` retains both summaries,
+per-run receipts, exact owners, fixtures, source/binary hashes and the
+independent header/lifetime red/green evidence.
+
 ## Verification and evidence
 
 All four local GCC/Clang Debug/Release configurations pass 34/34 CTest groups,
@@ -136,6 +176,14 @@ The vector-copy stage also passes all four local 34/34 suites. Its focused
 ASan/UBSan/leak campaign passes **9/9 groups in 102.46 s**, covering junction,
 coupling, noise, installed-consumer and recovery paths. Final integrated full
 sanitizer/native qualification remains required separately.
+
+The progress stage passes all four local 34/34 suites and full Clang Debug
+ASan/UBSan/leak detection, **34/34 in 211.29 s**. Its fresh installed consumer
+includes the progress header first and completes a worker twice. Repeated
+library runs also destroy two-worker bars with and without explicit completion.
+The preceding vector-copy source passes all ten native binary/library jobs
+and the utility job in [CI42298764991](https://github.com/JoeyDelp/JoSIM/actions/runs/42298764991).
+Each subsequent pushed revision still requires its own native checks.
 
 `artifacts/audit-resolution/performance/reserve/` contains `summary.json`, the
 explicit `decision.json`, all per-repetition receipts, fixtures and exact

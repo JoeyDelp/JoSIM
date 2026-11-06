@@ -44,6 +44,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Let progress workers sleep between updates and wake immediately on completion.
+  Controlled runs use about 50% less CPU with identical numerical output.
+  Make the progress header self-contained, join every worker on destruction,
+  and allow repeated completion. Recompile callers of `ProgressBar`.
 - Remove one CPR/coupling-vector allocation per device per timestep through
   borrowed reads. Wall time falls about 15%/21% in controlled JJ/coupled-inductor
   cases with identical output. Existing copying getters remain available.

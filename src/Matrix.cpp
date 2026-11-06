@@ -108,12 +108,12 @@ void Matrix::create_components(Input& iObj) {
     int64_t     cc = 0;
     ProgressBar bar;
     if (!iObj.argMin) {
-        bar.create_thread();
         bar.set_bar_width(30);
         bar.fill_bar_progress_with("O");
         bar.fill_bar_remainder_with(" ");
         bar.set_status_text("Creating Matrix");
         bar.set_total((float) iObj.netlist.expNetlist.size());
+        bar.create_thread();
     }
     // Loop through all the components in the netlist
     for (auto it = iObj.netlist.expNetlist.begin(); it != iObj.netlist.expNetlist.end(); it++) {

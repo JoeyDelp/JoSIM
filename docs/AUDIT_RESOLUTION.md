@@ -493,10 +493,18 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   20.9%, noise 7.6%, exact CSVs and at most 1.4% wall/1.2% RSS increases elsewhere.
   Existing copy getters/layouts remain; Model adds a const-reference CPR accessor.
   All four local configurations pass 34/34; focused ASan/UBSan/leak groups
-  pass 9/9 in 102.46 s. Native/final integrated checks remain required for this
-  revision. Evidence: performance/views/ receipts.
-- **Remaining measured cost:** default progress reporting doubles CPU in a
-  controlled case. Qualify its repair before closing this item.
+  pass 9/9 in 102.46 s. All ten native and the utility job pass for 9de8d69
+  (CI42298764991). Evidence: performance/views/ receipts.
+- **Progress result (F24):** replace polling with a notified 20 ms timed wait.
+  Seven paired default-mode repetitions reduce coupled-RL/RLC CPU medians by
+  50.5%/50.7%, with slightly lower wall time and identical CSVs. A five-sample
+  run adds no median latency. Eight minimal-mode fixtures also retain identical
+  CSVs; largest median wall increase 1.06%, below the predeclared 5% bound.
+  Independent header compilation and two-worker lifetime failures are repaired;
+  repeated completion/destruction and fresh installed consumers protect them.
+  Recompile ProgressBar users because its synchronization state changes layout.
+  Evidence: performance/progress/. Final integrated/native qualification remains
+  required separately; storage scaling and model equations are unchanged.
 
 ## D07 — Source manuals and support claims
 
@@ -1103,3 +1111,26 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [model-IV study](qualification/2026-11-06-model-iv-physics.md),
   artifacts/audit-resolution/iv-physics/state-{red,green}.json and timing/
   report.json with exact owner/decks/CSV/logs, source hashes and build/test receipts.
+
+## F24 — Busy progress workers and incomplete thread cleanup
+
+- **Classification:** confirmed runtime/header/lifetime defects.
+- **Reproduction:** default progress consumes an extra CPU; standalone header
+  fails compilation; destruction after two workers aborts with an unjoined thread.
+- **Repair:** ProgressBar waits on a condition variable between display updates,
+  wakes on completion and joins all joinable workers. Repeated completion is
+  safe. Required includes are explicit; internal callers configure before start.
+- **Compatibility:** existing signatures remain; public synchronization state
+  changes layout. Recompile consumers. This is display scheduling, not solver
+  parallelism; numerical operation order and output formats are unchanged.
+- **Verification:** repeated library worker lifetimes and fresh installed header
+  consumer; all four local compiler/configuration suites pass 34/34. Full Clang
+  Debug ASan/UBSan/leak detection passes 34/34 in 211.29 s.
+- **Measurements:** 42 default-mode timed runs and 112 minimal-mode timed runs,
+  seven counterbalanced pairs per fixture, all CSVs identical. Medium CPU falls
+  50.5%/50.7% against a predeclared 40% target; wall remains below the 5%
+  regression bound. Tiny median latency decreases within its 5 ms allowance.
+- **Evidence:** [runtime study](qualification/2026-11-06-runtime-storage.md),
+  artifacts/audit-resolution/performance/progress/{decision,source-sha256}.json,
+  both campaign summaries/per-run receipts and header/lifetime red/green logs.
+  Native and final integrated checks remain separate requirements.

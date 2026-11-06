@@ -74,6 +74,14 @@ the model during simulation. The engine borrows these coefficients and the
 inductor's existing coupling vector without per-step allocations. Existing
 copying getters and public layouts remain unchanged.
 
+`ProgressBar` waits between display updates instead of spinning. Configure its
+text and total before starting workers; call `update` while the worker runs,
+then `complete` from the owning thread. Repeated completion is safe and
+destruction joins every worker. Do not concurrently create/complete workers or
+change their text. The mutex/condition-variable state changes this public type's
+layout; recompile consumers. Existing stream parameters retain their previous
+behavior: asynchronous rendering uses `std::cout`.
+
 `Input` records the main netlist and included files. Normal output and `.iv`
 generation reject destinations that refer to those inputs, including existing
 hard-link aliases. Keep this provenance when using the normal input parser.

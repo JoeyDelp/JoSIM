@@ -161,12 +161,12 @@ void Simulation::trans_sim(Matrix& mObj) {
     results.timeAxis.clear();
     ProgressBar bar;
     if (!minOut_) {
-        bar.create_thread();
         bar.set_bar_width(30);
         bar.fill_bar_progress_with("O");
         bar.fill_bar_remainder_with(" ");
         bar.set_status_text("Simulating");
         bar.set_total((float) simSize_);
+        bar.create_thread();
     }
     // Initialize the b matrix
     b_.resize(mObj.rp.size(), 0.0);

@@ -3,10 +3,15 @@
 #ifndef JOSIM_PROGRESSBAR_HPP
 #define JOSIM_PROGRESSBAR_HPP
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <string>
 #include <thread>
+#include <vector>
 
 namespace JoSIM {
 
@@ -19,6 +24,8 @@ class ProgressBar {
     std::atomic<size_t>      bar_width_{60};
     std::string              fill_{"#"}, remainder_{" "}, status_text_{""};
     std::vector<std::thread> threads_;
+    std::mutex              wait_mutex_;
+    std::condition_variable wake_;
 
   public:
     void set_progress(float value) { progress_ = value; }
@@ -54,12 +61,14 @@ class ProgressBar {
     }
 
     void thread_print() {
+        std::unique_lock<std::mutex> lock(wait_mutex_);
         while (!complete_) {
             float perc = progress_ / total_ * 100;
             if (perc > c_progress_) {
                 write_progress(perc);
                 set_currentprogress(perc);
             }
+            wake_.wait_for(lock, std::chrono::milliseconds(20), [this] { return complete_.load(); });
         }
         write_progress(100.0f);
     }
@@ -67,16 +76,18 @@ class ProgressBar {
     void create_thread() { threads_.push_back(std::thread(&ProgressBar::thread_print, this)); }
 
     void complete(std::ostream& os = std::cout) {
-        complete_ = true;
-        if (!threads_.empty()) { threads_.back().join(); }
-    }
-
-    ~ProgressBar() {
-        complete_ = true;
-        if (!threads_.empty()) {
-            if (threads_.back().joinable()) { threads_.back().join(); }
+        {
+            std::lock_guard<std::mutex> lock(wait_mutex_);
+            complete_ = true;
+        }
+        wake_.notify_all();
+        for (auto& thread : threads_) {
+            if (thread.joinable()) { thread.join(); }
         }
     }
+
+    ~ProgressBar() { complete(); }
+
 };
 
 } // namespace JoSIM
