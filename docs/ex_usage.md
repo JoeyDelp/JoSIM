@@ -88,10 +88,11 @@ time,"V(VIN)","I(ROUT)","P(B01)","P(B02)"
 
 ```
 
-We then plot this result with the [*josim-plot*](https://github.com/JoeyDelp/JoSIM/tree/master/scripts/josim-plot) script found in the [scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts) using the following command:
+We then plot this result with `scripts/josim-plot.py`. Install its isolated
+environment using the [Python utility guide](python_utilities.md), then run:
 
 ```
-josim-plot ./ex_jtl_basic.csv -t stacked
+build/python-utilities/bin/python scripts/josim-plot.py ./ex_jtl_basic.csv -t stacked
 ```
 
 This produces the following visualized result:

@@ -55,6 +55,11 @@ five native targets, including fresh consumers after installation relocation.
 JoSIM/runtime configuration stated above; shared-library source-build checks
 do not change the published binary format or runtime baseline.
 
+The separate Python-utility job installs its pinned direct dependencies into a
+fresh environment and tests data values, file safety and real headless exports
+with the runner's installed Chrome. It records Python/browser/package versions
+and pip's install report. Tagged publication also requires this job to pass.
+
 Archives include `MANIFEST.json`. A sidecar manifest records source identity,
 compiler versions, dependency hashes, configuration, test count and binary ABI
 inspection. A `.sha256` file identifies the archive itself.

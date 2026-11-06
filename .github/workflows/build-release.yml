@@ -211,10 +211,47 @@ jobs:
           path: artifacts/library
           if-no-files-found: error
 
+  python_utilities:
+    name: Python utilities
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install isolated utility dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/python-utilities
+          python3 --version | tee artifacts/python-utilities/python.txt
+          python3 -m venv build/python-utilities
+          build/python-utilities/bin/python -m pip install --no-cache-dir \
+            --index-url https://pypi.org/simple \
+            --report artifacts/python-utilities/install-report.json \
+            -r tools/requirements-utilities.txt
+          build/python-utilities/bin/python -m pip freeze > artifacts/python-utilities/installed.txt
+      - name: Verify data, file safety and real headless image exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          export BROWSER_PATH="$(command -v google-chrome)"
+          "$BROWSER_PATH" --version | tee artifacts/python-utilities/browser.txt
+          build/python-utilities/bin/python -B test/regression_python_utilities.py \
+            --report artifacts/python-utilities/report.json \
+            2>&1 | tee artifacts/python-utilities/test.log
+      - name: Retain utility qualification evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python-utilities
+          path: artifacts/python-utilities
+          if-no-files-found: error
+
   release:
     name: Publish tagged release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build_linux, build_native, build_library]
+    needs: [build_linux, build_native, build_library, python_utilities]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

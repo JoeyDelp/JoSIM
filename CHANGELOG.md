@@ -7,6 +7,8 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Pinned Python utility dependencies, tested headless exports and a CI release
+  gate for the plotting and phase-specification tools.
 - Safe one-parameter external circuit sweeps with fresh processes, preserved
   templates/includes, isolated outputs, checked failures, effective seeds/grids
   and time-weighted measurement windows (#84/#82). Add tested resistance and
@@ -39,6 +41,15 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Repair Pandas 3 DAT loading, optional image dimensions, comparison timestamps
+  and phase-unit scaling in every plotting layout. Reject invalid requests,
+  unsupported EPS export and output paths that overwrite inputs.
+- Generate phase specifications from nonuniform sample times without requiring
+  an exact 20 ps row. Record reversals and returns toward zero after a complete
+  quiet interval; validate data and options. Stability remains in seconds.
+- Retire the obsolete noise-insertion preprocessor with an explicit error and
+  native `.TEMP`/`.NEB` alternatives. It crashed on common netlists and used an
+  incorrect noise clock. Its entry point now changes no files.
 - Retire the unsafe `ivcurve.py` prototype. It overwrote existing temporary
   netlists and ignored simulator failures, repeatedly reading stale output.
   Its entry point now fails with model-IV/circuit-sweep alternatives and

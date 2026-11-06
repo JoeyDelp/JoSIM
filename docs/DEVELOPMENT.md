@@ -77,6 +77,11 @@ Preserve failing numerical evidence before changing device equations.
 
 ## Optional scientific references
 
+The plotting and phase-specification utilities have a separate pinned environment
+and runtime suite. See [Python utilities](python_utilities.md) for installation,
+headless image export and the CI release gate. Their dependencies are not needed
+for the standard-library Python tests in the native CTest suite.
+
 Native CTest uses Python's standard library and versioned independent fixtures.
 Regenerating the buffer reference or its plots additionally needs the pinned
 scientific packages below. Use Python 3.11 or newer; the qualified environment

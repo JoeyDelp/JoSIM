@@ -443,12 +443,28 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## D05 — Maintained Python utilities
 
-- **Classification:** runtime/dependency concern.
-- **Current reproduction/result:** Syntax-only audit evidence insufficient; runtime validation pending.
-- **Required outcome:** Dependency manifest; modern NumPy/SciPy imports, representative functions and headless plotting.
-- **Implementation/owner:** scripts/*.py.
-- **Verification:** isolated dependency install/import/runtime tests.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** repaired runtime/data/safety defects; obsolete noise
+  preprocessor formally retired with native alternatives.
+- **Reproduction/result:** Pandas 3 DAT loading, omitted image dimensions,
+  comparison timelines, phase scaling, input overwrite and phase-spec startup/
+  reversals failed in actual runtime probes. The noise helper crashed on common
+  netlists and used an incorrect bandwidth clock. See the
+  [utility study](qualification/2026-11-06-python-utilities.md).
+- **Implementation/owner:** `scripts/plot_common.py`, all three plotters and
+  `sp_generator.py`; `noise_insert.py` now fails explicitly without file changes.
+  `tools/requirements-utilities.txt` pins modern NumPy/Pandas/Plotly/Kaleido/
+  Tabulate. Maintained postprocessing needs no SciPy; scientific qualification
+  tools use their separate pinned environment.
+- **Verification:** isolated install plus
+  `python -B test/regression_python_utilities.py --report <new-report.json>`;
+  CI utility job is a tagged-release prerequisite.
+- **Measurements:** 14/14 methods pass on Python 3.12.12; five layouts, four
+  phase units, three HTML and eight actual static exports. Numeric scaling/
+  round-trip allowance 1e-14; independent nonuniform phase counts and timestamps;
+  source hashes preserved. Real JTL HTML/PNG/PDF/SP exports also pass.
+- **Evidence:** artifacts/audit-resolution/python-utilities/report.json and
+  jtl-exports.json; build/audit-resolution/python-utilities/{probes,tests.log}.
+  Native-platform CI remains a separate final integration requirement.
 
 ## D06 — Runtime/memory and trace retention
 
