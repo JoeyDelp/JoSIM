@@ -44,6 +44,14 @@ failed run's Input, Matrix and Simulation objects, then create a fresh run.
 Solver allocations are released when construction fails or a timestep retry
 rebuilds the matrix.
 
+CSV/DAT/RAW and model-IV writers explicitly close their streams and check the
+final state. Standard-output formatting flushes and checks `std::cout`.
+A write/close failure throws with its destination; a partially written file
+may remain and must not be treated as a successful result. `WRITE_FAILED` is
+appended to `OutputErrors`, preserving its existing values and method signatures.
+If an embedding application redirects `std::cout` to a failing stream, it owns
+restoring that destination and clearing the stream's error state before reuse.
+
 `Input` records the main netlist and included files. Normal output and `.iv`
 generation reject destinations that refer to those inputs, including existing
 hard-link aliases. Keep this provenance when using the normal input parser.

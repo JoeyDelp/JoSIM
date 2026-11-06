@@ -12,6 +12,7 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <streambuf>
 #include <string>
 
 namespace {
@@ -44,6 +45,30 @@ void valid_simulation() {
     if (!std::isfinite(voltage) || std::abs(voltage - 1.0) > 1e-12) {
         throw std::runtime_error("A simulation failed after recovering from an error");
     }
+}
+
+void output_flush_failure() {
+    // Accept every character, then fail only when the writer flushes it.
+    struct FailedBuffer : std::streambuf {
+        std::streamsize xsputn(const char*, std::streamsize count) override { return count; }
+        int_type overflow(int_type value) override { return traits_type::not_eof(value); }
+        int sync() override { return -1; }
+    } buffer;
+    JoSIM::Output output;
+    output.traces.emplace_back("time");
+    output.traces.back().data_ = {0.0};
+    output.traces.emplace_back("V(N)");
+    output.traces.back().data_ = {1.0};
+    auto* original = std::cout.rdbuf(&buffer);
+    try {
+        must_throw([&] { output.format_cout(false); }, "Failed to write or close output: standard output");
+    } catch (...) {
+        std::cout.rdbuf(original);
+        std::cout.clear();
+        throw;
+    }
+    std::cout.rdbuf(original);
+    std::cout.clear();
 }
 
 void missing_model() {
@@ -251,6 +276,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "singular") { singular_matrix(); }
             if (selected == "all" || selected == "invalid") { invalid_matrix(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
+            if (selected == "all" || selected == "output") { output_flush_failure(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
             if (selected == "all" || selected == "model") { invalid_models(); }

@@ -466,6 +466,9 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   jtl-exports.json; build/audit-resolution/python-utilities/{probes,tests.log}.
   Native-platform CI remains a separate final integration requirement.
 
+  Native/utility CI 42286617926 qualifies the pushed utility revision separately;
+  its final status is recorded with the milestone evidence.
+
 ## D06 — Runtime/memory and trace retention
 
 - **Classification:** measured-performance concern.
@@ -513,12 +516,18 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## D11 — Output and malformed-input failures
 
-- **Classification:** existing correct behaviour plus expanded error-path concern.
-- **Current reproduction/result:** Audit missing-output-directory probe passed; broader corpus pending.
-- **Required outcome:** Preserve useful output errors, no unintended overwrite/crash/hang or silent partial success.
-- **Implementation/owner:** src/Output.cpp; src/Input.cpp; src/CliOptions.cpp.
-- **Verification:** bounded malformed-input/output-preservation regression corpus.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** repaired CLI/input/output defects, including newly
+  reproduced false success after output-write failure (F21).
+- **Result/owner:** F01–F06/F13/F14/F18 cover malformed waveforms, expressions,
+  CLI, include/file normalization, requested traces, time grids and model/source
+  domains. F03 preserves input files and aliases. F21 repairs final write/close
+  checks in Output/IV and flush checks for standard output.
+- **Verification:** `regression::cli`, `regression::functions`,
+  `regression::library`, `regression::gate` and independent numerical groups;
+  bounded timeouts and explicit diagnostics, not smoke tests alone.
+- **Evidence:** [output study](qualification/2026-11-06-output-completion.md)
+  and the individual F reports. Final integrated native/coverage qualification
+  remains required; no arbitrary-input fuzzing claim is made.
 
 ## F01 — CUS waveform path, alignment and malformed data
 
@@ -1009,3 +1018,23 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   passes all four and ASan/UBSan/leaks in4.02s. No production C++ change;
   preceding full sanitizer33/33 passed209.52s. Native pending.
   [Study](qualification/2026-11-06-sweeps.md) owns bounds.
+
+## F21 — False success after output-write/close failure
+
+- **Classification:** reproduced supported-behavior defect, repaired.
+- **Reproduction:** CLI CSV/DAT/RAW, `.FILE`, model `.iv` and standard output
+  each returned 0 when a destination opened but rejected writes. Controlled
+  `/dev/full` probes used only task-owned symlinks; no disk was filled.
+- **Implementation:** Output::format_csv_or_dat/format_raw explicitly close and
+  check streams; format_cout flushes/checks; IV::write_iv checks close state.
+  Appended OutputErrors::WRITE_FAILED retains existing enum values and signatures.
+- **Verification:** regression::cli six Linux fault cases now return255 with
+  destination diagnostics; portable regression::library fails only at flush,
+  catches/reuses output state and runs valid simulations in eight cycles.
+- **Measurements:** GCC16.2.1/Clang23.1.4 Debug/Release all34/34; full Clang
+  ASan/UBSan/leaks34/34 in211.84s. No numerical tolerances changed. Native CI
+  remains required for the pushed revision; non-Linux file fault injection is
+  not inferred from the portable stream test.
+- **Evidence:** [output study](qualification/2026-11-06-output-completion.md),
+  artifacts/audit-resolution/output-write/{red,stdout-red,green}.json,
+  source-sha256.json, four build/test receipts and sanitizer JUnit.

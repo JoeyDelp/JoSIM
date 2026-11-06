@@ -170,6 +170,7 @@ void IV::write_iv(std::vector<std::pair<double, double>>& iv_data, const std::st
         outfile << "V,I\n";
         for (auto i : iv_data) { outfile << i.first << "," << i.second << "\n"; }
         outfile.close();
+        if (!outfile) { Errors::output_errors(OutputErrors::WRITE_FAILED, path.string()); }
     } else {
         Errors::output_errors(OutputErrors::CANNOT_OPEN_FILE, path.string());
     }

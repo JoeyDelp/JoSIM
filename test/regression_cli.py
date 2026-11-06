@@ -152,6 +152,37 @@ class CliRegression(unittest.TestCase):
                 self.assertIn(diagnostic, result.stdout + result.stderr)
                 self.assertFalse((root / filename).exists())
 
+    def test_output_write_failures(self):
+        # Linux supplies a real device that opens successfully and rejects writes.
+        # Other platforms still run the portable failing-flush library regression.
+        if not sys.platform.startswith("linux"):
+            return
+        self.assertTrue(pathlib.Path("/dev/full").exists(), "Linux write-failure fixture unavailable")
+        for kind in ("csv", "dat", "raw", "file", "iv", "stdout"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(prefix="write-failure-", dir=pathlib.Path.cwd()) as tmp:
+                root = pathlib.Path(tmp)
+                deck = self.SIMPLE
+                target = root / ("full." + (kind if kind in ("csv", "dat", "raw") else "csv"))
+                target.symlink_to("/dev/full")
+                args = ["-o", str(target)]
+                if kind == "file":
+                    deck += f".file {target}\n.print V(N)\n"
+                    args = []
+                elif kind == "iv":
+                    deck += f".model M JJ(RTYPE=0 ICrit=100u RN=10 CAP=0)\n.iv M 1u {target} STEP=1u\n"
+                    args = ["-o", str(root / "transient.csv")]
+                if kind == "stdout":
+                    with pathlib.Path("/dev/full").open("wb") as sink:
+                        result = subprocess.run([str(BINARY), "-m", "0"], input=deck + ".end\n", cwd=root,
+                                                stdout=sink, stderr=subprocess.PIPE, text=True, timeout=5)
+                    destination = "standard output"
+                else:
+                    result = subprocess.run([str(BINARY), "-m", "1", *args], input=deck + ".end\n", cwd=root,
+                                            capture_output=True, text=True, timeout=5)
+                    destination = str(target)
+                self.assertIn(result.returncode, (1, 255, 4294967295), result.stderr)
+                self.assertIn("Failed to write or close output: " + destination, result.stderr)
+
     def test_invalid_transient(self):
         for parameters in ("-1p 5p", "0 5p", "1p -5p", "1p", "1p 5p 0 -1p",
                            "1p 5p 10p", "1p 5p 0 1p -1p", "1p 1E200", "1p 5p 4.9p", "1p 1.5p 1p"):

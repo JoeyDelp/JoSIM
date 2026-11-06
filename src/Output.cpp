@@ -391,6 +391,8 @@ void Output::format_csv_or_dat(const std::string& filename, const char& delimite
             outfile << std::scientific << std::setprecision(6)
                     << traces.at(tIndices.at(tIndices.size() - 1)).data_.at(j) << "\n";
         }
+        outfile.close();
+        if (!outfile) { Errors::output_errors(OutputErrors::WRITE_FAILED, filename); }
         if (!argmin) {
             bar.complete();
             std::cout << "\n\n";
@@ -481,6 +483,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex
             Errors::output_errors(OutputErrors::NOTHING_SPECIFIED);
         }
         outfile.close();
+        if (!outfile) { Errors::output_errors(OutputErrors::WRITE_FAILED, filename); }
         // If the file could not be opened for writing
     } else {
         // Complain about it
@@ -500,5 +503,7 @@ void Output::format_cout(const bool& argMin) {
             std::cout << std::setw(15) << std::scientific << std::setprecision(6)
                       << traces.at(traces.size() - 1).data_.at(j) << "\n";
         }
+        std::cout.flush();
+        if (!std::cout) { Errors::output_errors(OutputErrors::WRITE_FAILED, "standard output"); }
     }
 }

@@ -41,6 +41,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Detect failed writes and final flush/close errors for CSV, DAT, RAW, model-IV
+  files and standard output. These paths previously returned success after a
+  destination rejected writes. Report the destination and retain recoverable
+  library exceptions.
 - Repair Pandas 3 DAT loading, optional image dimensions, comparison timestamps
   and phase-unit scaling in every plotting layout. Reject invalid requests,
   unsupported EPS export and output paths that overwrite inputs.

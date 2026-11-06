@@ -739,6 +739,9 @@ void Errors::output_errors(OutputErrors errorCode, string_o message) {
             formattedMessage += "Cannot open the requested file for output.\n";
             formattedMessage += "Please ensure write permission for the file: " + message.value_or("");
             throw std::runtime_error(formattedMessage);
+        case OutputErrors::WRITE_FAILED:
+            formattedMessage += "Failed to write or close output: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case OutputErrors::NOTHING_SPECIFIED:
             formattedMessage += "Nothing specified to output.\n";
             formattedMessage += "Cannot create empty RAW file.";
