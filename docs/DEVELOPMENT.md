@@ -12,8 +12,8 @@ explicitly. There is no parallel simulation implementation.
 ## Build and test
 
 Use a C++17 compiler, CMake 3.21 or newer, and Python 3 for these commands and
-the regression suite. The source still declares CMake 3.14 as its minimum; that
-older build-tool version has not been qualified by the current release process.
+the regression suite. CTest 3.21 provides the JUnit output required by the
+qualification owners; the declared minimum follows this tested workflow.
 
 From the repository root:
 

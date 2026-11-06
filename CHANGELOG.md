@@ -215,6 +215,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Build and distribution
 
+- Require CMake/CTest 3.21 for the JUnit-based qualification workflow. The exact
+  3.21.0 default build, complete suite and fresh installed consumer are tested.
+  Binary runtime baselines are unchanged.
 - Added default/shared/static library qualification with relocated installations
   and fresh consumers. Shared JoSIM embeds static KLU dependencies, exports
   Windows entry points and uses relative installed CLI loader paths. Conflicting
