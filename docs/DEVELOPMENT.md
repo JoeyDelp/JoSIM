@@ -99,7 +99,7 @@ build/science/bin/python -B tools/qualify_squid_noise.py \
 This checks a separate Kirchhoff/RCSJ ODE using tightened Radau tolerances and
 an independent BDF method, then compares both JoSIM modes at four timesteps.
 Plots use a headless backend and a temporary task-owned font cache. See the
-[fixture guide](../test/reference/README.md) before regenerating checked-in data.
+[fixture guide](https://github.com/JoeyDelp/JoSIM/blob/master/test/reference/README.md) before regenerating checked-in data.
 
 ## Coverage and sanitizers
 
@@ -206,3 +206,21 @@ modern toolchains no longer receive the stale unconditional link flag.
 Keep fixes focused and add regression checks for non-trivial defects. Record
 user-visible behavior in [CHANGELOG.md](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md).
 See [the release procedure](RELEASE_POLICY.md) for portable binary builds.
+
+## Build and check the manual
+
+Use Python 3.11+ in a separate environment. The documentation dependencies are
+independent of the numerical/plotting utilities:
+
+```bash
+python3 -m venv build/documentation-env
+build/documentation-env/bin/python -m pip install -r tools/requirements-docs.txt
+build/documentation-env/bin/mkdocs build --strict --site-dir build/documentation
+build/documentation-env/bin/python -B tools/check_docs.py \
+  --site-dir build/documentation --output artifacts/documentation/links.json
+```
+
+On Windows use the corresponding executables under `build/documentation-env/Scripts/`.
+The site excludes ignored `docs/context/` notes. Local file/anchor checking is
+separate from external URL and browser checks. Math rendering uses pinned
+MathJax 3.2.2 and targets modern browsers; no legacy polyfill is loaded.

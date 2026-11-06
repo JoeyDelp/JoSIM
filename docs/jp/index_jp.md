@@ -1,12 +1,11 @@
 # JoSIM - 超伝導回路シミュレータ
 
-Developers Manual for v2.6.5
+現在のソース（3.0.0 系）のユーザー・開発者向け文書です。
+公開済みバイナリは [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases)、
+変更点は [CHANGELOG](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md) を参照してください。
 
-## プロジェクトの状況
-
-### Testing: v2.6.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoSIM-CI-Devel?branchName=testing)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=1&branchName=testing)
-
-### Stable: v2.6.5 - Status: [![Build Status](https://joeydelp.visualstudio.com/JoSIM/_apis/build/status/JoeyDelp.JoSIM?branchName=master)](https://joeydelp.visualstudio.com/JoSIM/_build/latest?definitionId=3&branchName=master)
+日本語版は要点を更新しています。新しいモデル・検証条件の詳細は
+[英語版](../index.md) と [互換性・移行ガイド](../compatibility.md) を参照してください。
 
 ## はじめに
 
@@ -47,139 +46,29 @@ JoSIMリポジトリは次のような構成になっています。ファイル
     ...					# その他のコンフィグファイルとスクリプト。
 
 ## 初期セットアップ
-メジャーなプラットフォームに対するメジャー版のJoSIMはGitHubリポジトリの[Releases](https://github.com/JoeyDelp/JoSIM/releases) にあります。これが書かれている段階のバージョンは2.5です。
 
-JoSIMをソースからコンパイルするためには、以下のパッケージが必要になります：
-
-- CMake 3.14
-- Git
-- C++ compiler with C++17 support
+[Releases](https://github.com/JoeyDelp/JoSIM/releases) から OS と CPU に対応する
+アーカイブを展開し、`bin/` 内の実行ファイルを使用します。対象は Linux x86_64・
+AArch64、Windows x64、macOS arm64・Intel です。最低実行環境と実際の検証範囲は
+[リリース手順](../RELEASE_POLICY.md) を参照してください。
 
 ### ソースからのビルド
-#### Linux
 
-これからの手順は最低限のインストールがされたCentOS 7上で実行されています。その他のディストリビューションを利用している場合、それぞれに合ったディストリビューションのパッケージマネージャを利用してください。
-
-インターネット接続と、パッケージをインストールするための動作環境が必要です。もしインターネット接続がされていない場合オンにします。<network interface>の部分は*eth0*など、利用しているインターフェースに置き換えてください。
+C++17、C11、CMake/CTest 3.21 以上、Python 3 が必要です。リポジトリのルートで実行します。
+依存ソルバーはハッシュを検証して取得されます。KLU のみをサポートします。
 
 ```bash
-sudo ifup <network interface>
+cmake -S . -B build/dev -DCMAKE_BUILD_TYPE=Release
+cmake --build build/dev --config Release --parallel 4
+ctest --test-dir build/dev -C Release --output-on-failure --timeout 90
+build/dev/josim-cli -o build/example.csv test/ex_dcsfq_jtl_sink.cir
 ```
 
-CentOS 7はデフォルトで全てのLinuxエンタープライズのパッケージを含んでいるわけではないので、以下を有効化する必要があります：
-
-```bash
-sudo yum install epel-release
-sudo yum update
-```
-
-CentOS 7は開発パッケージを必要とします。幸いなことにこちらはコマンド一つで済みます：
-
-```bash
-sudo yum groupinstall "Development Tools"
-```
-
- *gcc*, *make*, *git*といった様々な開発ツールがこれでインストールされます。しかし、JoSIMはここで入ったものよりさらに新しいバージョンの*gcc*が必要です。ありがたいことに、次のように実行することでかなり簡単にインストール可能です。
-
-```bash
-sudo yum install centos-release-scl
-sudo yum install devtoolset-8
-scl enable devtoolset-8 bash
-```
-
-最後のコマンドは新しい*gcc* が必要となった時に毎回入力する必要があります。幸いこのようなエイリアスを使えば短くすることができます：
-The last command needs to be entered whenever the newer *gcc* is needed. This can fortunately be shortened using an alias:
-
-```bash
-echo 'alias dts8="scl enable devtoolset-8 bash"' >> ~/.bashrc
-```
-
-これは*dts8*とコマンドを打つだけでdevtoolset-8環境を現在のbash上で有効化することができるということです。
-
-いろいろなパッケージのインストールを簡単に行うためにPython3とpipを使います：
-
-```bash
-sudo install python36 python36-pip
-```
-
-これで適切なバージョンの*cmake*をインストールしてくれます：
-
-```bash
-pip3 install cmake --user
-```
-
-これでJoSIMのコンパイルの準備ができました。
-
-JoSIMのソースは圧縮された*.tar.gz*形式またはリポジトリをcloneすることで直接ダウンロードできます。いずれの場合にしても展開するためのディレクトリまで行ってtarballまたは以下を実行してください：
-
-```bash
-git clone https://github.com/JoeyDelp/JoSIM.git
-cd JoSIM
-```
-
-新しくcloneまたは展開されたJoSIMディレクトリに入り、次のコマンドを実行してください：
-
-```bash
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-```
-
-これで**build**ディレクトリの中に実行可能なJoSIMが生成されます。
-
-さらに、*libjosim* ライブラリも生成されます。このライブラリ（そしてjosim-cli）を使うためにはパスを通す必要があります。一番いい方法は：
-
-```bash
-sudo make install
-```
-
-これによってCMakeの*GNUInstallDirs*マクロが見つけた適切なインストールディレクトリの中に*josim-cli* 、*libjosim*、それを使うのに必要なヘッダファイルがインストールされます。
-
-#### Apple macOS
-
-Apple macOSは他のUnixシステムと非常に似ているのでほぼ同じ手順で行うことができます。ユーザによってはリポジトリのクローンやCMake・Gitのインストールをするかもしれません。必要要件はHomebrewでもMacportsでも、（Xcodeからインストールされている）標準のmacOSのコンパイラを利用してソースからコンパイルしてもインストール可能です。
-
-Python 3はHomebrewから利用可能で、CMakeは通常pip (PyPI)からインストール可能です。
-
-#### Microsoft Windows
-
-Microsoft WindowsプラットフォームでJoSIMをコンパイルする方法はいくつもあります。最も簡単な方法はフリーの[Community version of Microsoft Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16)をインストールすることです。これはCMakeで使うC++コンパイラを取得するためだけにやっています。
-
-次にPython 3も同様に必要になります。Windows Store・Anaconda・[Miniconda](https://docs.conda.io/en/latest/miniconda.html)からインストールできます。インストール後は他システムと同様、CMakeは次のようにインストールできます：
-
-```powershell
-pip install cmake --user
-```
-
-CMakeが適切なコンパイラを見つけていることを確認するためには単純に次のようにします（MSVCのインストール後再起動が必要かもしれません）：
-
-```powershell
-cmake --help
-```
-
-ヘルプとジェネレータのリストが最後に表示されたはずです。MSVCがインストールされていて検出されていた場合、デフォルトのジェネレータとなっていることを示すためアスタリスク（*）が適切なMSVCのバージョンの隣についているはずです。
-
-残りのステップはLinuxと同じです：
-
-```powershell
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-```
-
-これで実行可能なJoSIM(*josim-cli*)とライブラリ (*josim.lib*) が**build/Release**フォルダの中に生成されます。
-
-Unixシステムとは異なり、Windowsでは*CMake* *GNUInstallDirs*マクロを正しく補完してくれないため、もし同じようにすると*josim-cli* は**C:\usr\local\josim\bin\josim-cli**のような変な場所にインストールされる可能性があります。したがってWindowsシステム上ではコマンドによるインストールは推奨されず、むしろ*josim-cli* をパスが通っている場所までコピーまたは移動させた方がよいです。
-
-そうするための一つの方法としては、例えば**JoSIM**のようなフォルダを**C:\\**以下に作成し、**build/Release**ディレクトリ内部から*josim-cli*と*josim.lib*ファイルを持ってきてフォルダをPATH環境に追加する、というものがあります。そのために**Win+x**キーを押すと出てくる管理者権限の**Command Prompt (Admin)**を選択し、次のコマンドを打ってエンターを押します：
-
-```bash
-SETX PATH %PATH%;C:\JoSIM
-```
-
-これで**C:\JoSIM**フォルダにパスが通り、*josim-cli* を管理者権限でないコマンドプロンプトでも使える場所に置けるようになります。
+Windows の複数構成ジェネレーターでは `build/dev/Release/josim-cli.exe` を使用します。
+オフライン準備、共有ライブラリ、インストール済みライブラリの利用は
+[開発手順](../DEVELOPMENT.md) と [C++ API](../API.md) を参照してください。
+既存 C++ アプリケーションは同じ版のヘッダーとライブラリで再コンパイルしてください。
+`SLU=ON`、`USING_OPENMP=ON`、CLI `-x`・`-p` は非対応としてエラーになります。
 
 #### TimExとその他のツール
 

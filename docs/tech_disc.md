@@ -22,9 +22,9 @@ A CLI Options object is created from the handled command line options and fed to
 
 A list of available command line options can be displayed using the `-h`, but each command what action is performed by it is discussed here.
 
-Running `-h` produces the following:
-
-<div style="text-align:center;"><img src="../img/josim_help.png" alt="JoSIM Help" style="zoom:100%;" /></div>
+Run `josim-cli -h` for the current option list. Long option names are lowercase,
+for example `--analysis=0`, `--verbose=1` and `--sanity`. The short verbose
+option is uppercase `-V`.
 
 ### Analysis (-a):
 
@@ -58,9 +58,19 @@ now fail explicitly; the earlier switch only reported whether an OpenMP runtime
 was linked. Use separate processes for independent circuit sweeps. Do not run
 concurrent simulations in one embedding process; see [the API guidance](API.md).
 
+### Sanity (-s):
+
+`-s` / `--sanity` checks connection counts in the main design. Name a subcircuit
+with `-s CELL`; repeat the option for several definitions. This is an experimental
+cell-wiring heuristic, not electrical or numerical verification. Warnings do not
+change simulation results.
+
 ### Verbose (-V):
 
-This enables different levels of verbosity by the simulator. Level `1` verbosity only displays statistics of the circuit being simulated. Level `2` verbosity displays all of level 1 and any evaluated `.param` statements found in the circuit. Level `3` verbosity displays level 2 and the completely expanded main design of circuit being simulated. These outputs are not muted by `-m`
+Level `1` reports circuit statistics, the effective random seed and the final
+internal timestep/sample count. Level `2` also displays evaluated `.param`
+statements. Level `3` additionally displays the expanded main design. These
+outputs are not muted by `-m`. Level `0` disables verbose output.
 
 ### Version (-v):
 
@@ -223,7 +233,7 @@ A useful feature of the MNA method allows every component to be represented as a
 
 #### Backward Differentiation Formula
 
-In transient analysis many components have time dependent $(\frac{d}{dt})$ voltage or current values. These differentials are not easily solvable and require special techniques to approximate the value at the requested time given previous time values. One such method is the backward differential formula (BDF)[^5], which is a linear multistep method. In circuit analysis applications, the BDF2 (2nd order) method is considered the most stable method.
+In transient analysis many components have time dependent $(\frac{d}{dt})$ voltage or current values. These differentials are not easily solvable and require special techniques to approximate the value at the requested time given previous time values. One such method is the backward differential formula (BDF)[^5], which is a linear multistep method. JoSIM uses the second-order BDF2 relation below. Stability and accuracy still depend on the circuit, model and chosen step.
 
 This method is expressed as:
 
@@ -433,7 +443,18 @@ JoSIM uses the sparse matrix solver library SuiteSparse[^8] of which the KLU sol
 
 ### Start Simulation
 
-A transient simulation is synonymous to a time domain simulation, and since we are working with a digital system this time simulation needs to be discretized into a set amount of steps determined by the total simulation time divided by the step size. 
+Each simulation attempt uses a fixed internal timestep and BDF2 histories.
+Transmission-line delay constraints can halve the step while constructing the
+matrix. During simulation, a predicted junction phase increment above `0.2*2π`
+after the first 1% of samples triggers a complete restart with half the step.
+JoSIM rebuilds the matrix, source/device histories and results, and rewinds its
+random stream. It does not continue from the failed point with a local step.
+
+This heuristic is not adaptive local-error control and does not prove accuracy.
+There is no automatic timestep increase. Check convergence with smaller requested
+steps and inspect the final grid with `-V 1`. Sampling and noise bandwidth must
+remain explicit; see the [transient syntax](syntax.md#transient-analysis) and
+[noise guidance](noise_sources.md).
 
 #### Create **b** Matrix
 
@@ -471,53 +492,16 @@ If no extension is given for the file name then a RAW SPICE file will be created
 
 ## Plotting interfaces
 
-In previous versions of JoSIM there existed 2 plotting windows, namely FLTK and Matplotlib. These interfaces were, however, ultimately scrapped due to maintainability issues as well as cross-platform compatibility. The user is requested to use the plotting system they are most comfortable with. 
+JoSIM writes data for external plotting tools. Use the maintained Plotly utility
+and its [pinned environment](python_utilities.md). For example, from the repository root:
 
-Below we provide a simple Python 3 script that plots all the results in a *.csv* file. It is very basic and the user should modify it as required. This script requires installation of the **Numpy** as well as **Matplotlib** packages for Python 3. Optionally, we comment the lines for use of the **Qt5** backend for plotting. The user can enable this if the **PyQt5** package is installed.
-
-A **Plotly** and **Pandas** script is provided in the [scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts) folder of the GitHub repository that visualizes the results in a much more elegant way, with many more settings that can be adjusted by the user.
-
-```python
-#!/usr/bin/env python
-import math
-# import matplotlib
-# matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as pl
-from matplotlib import gridspec
-import numpy as np
-import csv
-import sys
-
-time = []
-data = []
-labels = set()
-with open(sys.argv[1], 'r') as csvFile:
-    reader = csv.DictReader(csvFile)
-    labels = reader.fieldnames
-    data.append([])
-    for row in reader:
-        time.append(float(row[labels[0]]))
-        for var in range(1,len(labels)):
-            data.append([])
-            data[var].append(float(row[labels[var]]))
-csvFile.close()
-
-N = len(labels) - 1
-cols = int(math.ceil(N / 4))
-rows = int(math.ceil(N / cols))
-
-gs = gridspec.GridSpec(rows, cols)
-fig = pl.figure()
-for var in range(1,len(labels)):
-    ax = fig.add_subplot(gs[var - 1])
-    ax.plot(time, data[var])
-    ax.set_xlabel(labels[0])
-    ax.set_ylabel(labels[var])
-
-fig.set_tight_layout(True)
-fig.show()
-input()
+```bash
+build/python-utilities/bin/python scripts/josim-plot.py build/example.csv \
+  -t stacked -x build/example.html
 ```
+
+HTML export embeds Plotly and does not require Chrome. Static image export has
+separate browser requirements. The guide documents accepted formats and options.
 
 [^1]:E. W. Dijkstra, "Algol 60 translation : An Algol 60 translator for the x1 and Making a translator for Algol 60" in *MR35, Mathematisch Centrum, Amsterdam*, 1961
 [^2]:J. Satchell, "Limitations on HTS single flux quantum logic," in *IEEE Transactions on Applied Superconductivity*, vol. 9, no. 2, pp. 3841-3844, June 1999, doi: 10.1109/77.783865

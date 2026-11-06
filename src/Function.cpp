@@ -614,7 +614,7 @@ void Function::parse_dc(const tokens_t& t, const Input& iObj, const string_o& s)
 }
 
 void Function::parse_exp(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TD1+TSTEP] TAU2[TSTEP]) */
+    /* EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TSTEP] TAU2[TSTEP]) */
     if (t.size() < 2) { Errors::function_errors(FunctionErrors::EXP_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
     const double& tstep = iObj.transSim.tstep();
     // Set amplitudes

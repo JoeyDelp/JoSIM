@@ -536,17 +536,24 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## D07 — Source manuals and support claims
 
-- **Classification:** documentation/maintenance concern.
-- **Current reproduction/result:** Partially refreshed in 1866d03; full review pending.
-- **Required outcome:** Current examples, API/ABI/build modes, fixed-step/restart limits and accurate supported behaviour.
-- **Implementation/owner:** README.md; docs/; mkdocs.yml.
-- **Verification:** documentation build/link/example/version checks.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** documentation/maintenance concern, including repaired
+  advertised-help (F29) and installed-manual (F30) defects.
+- **Result:** README/English/Japanese guides now match tested commands, support
+  limits, sampling, model/sweep semantics and fixed-step/full-restart behaviour.
+  Correct EXP formulas/defaults, ten broken links/anchors and the old plotting
+  snippet. Build dependencies pinned; local context excluded from site/packages.
+- **Verification:** strict MkDocs plus all generated local file/anchor checks;
+  real MathJax/browser navigation; identical translated JTL decks in both modes,
+  4,000 finite samples, input flux within 4.3 ppm/Phi0 and junction increments
+  within 1.24e-5 rad of 2π (bounds 10 ppm/1e-4 rad). Real HTML plotting export.
+- **Evidence:** [manual/version study](qualification/2026-11-07-manual-version.md),
+  artifacts/audit-resolution/documentation/, minimum-tool/library receipts.
+  Final integrated-source/native/release/deployed-site checks remain separate.
 
 ## D08 — Versioning and qualified release
 
 - **Classification:** publication/packaging concern.
-- **Current reproduction/result:** Current version 2.7; v2.7 immutable. Release decision deferred until repairs qualified.
+- **Current reproduction/result:** Source version 3.0.0 selected for public C++ layout/support changes; v2.7 immutable. Publication remains pending qualification/integration.
 - **Required outcome:** Select justified new version after audit, build exact commit, publish and verify downloaded assets on relevant platforms.
 - **Implementation/owner:** CMakeLists.txt; tools/build_release.py; docs/RELEASE_POLICY.md.
 - **Verification:** five-platform release gates and download checksums/execution.
@@ -555,7 +562,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## D09 — Published GitHub Pages
 
 - **Classification:** confirmed stale public documentation.
-- **Current reproduction/result:** Open; retained site is older than current source.
+- **Current reproduction/result:** Source manual rebuilt/checked; retained public site is older. Deployment and external verification remain pending.
 - **Required outcome:** Build and deploy updated manual through existing process; externally verify navigation/examples/version/download links.
 - **Implementation/owner:** gh-pages; mkdocs.yml; https://joeydelp.github.io/JoSIM/.
 - **Verification:** MkDocs build plus deployed-site checks.
@@ -1244,3 +1251,26 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [pulse study](qualification/2026-11-07-pulse-domain.md),
   artifacts/audit-resolution/pulse-domain/. Full ASan/UBSan/leaks pass 35/35
   in 223.26 s. Native qualification remains; no high-frequency sampling claim.
+
+## F29 — Help advertises rejected long options
+
+- **Classification:** confirmed CLI help contract defect found during D07.
+- **Reproduction:** help lists `--sanitycheck`/`--Verbose`, but both exit 255 as
+  unknown switches. Exact old help/commands/binary hash are retained.
+- **Repair:** print the accepted lowercase names, correct verbosity/output help.
+  Do not change parsing, numerical behavior or public API.
+- **Verification:** extract and execute all eight advertised long options;
+  CLI plus fresh installed consumer pass 2/2. Full native checks remain separate.
+- **Evidence:** test/regression_cli.py, src/CliOptions.cpp;
+  artifacts/audit-resolution/documentation/help/ and the manual/version study.
+
+## F30 — Installed manual omits linked guides
+
+- **Classification:** confirmed packaged documentation defect found during D07.
+- **Reproduction:** installed README/API guides link migration, model, sweep and
+  performance files that the explicit five-file installation did not include.
+- **Repair:** install the public manual directory while excluding ignored context.
+- **Verification:** fresh relocated consumers require all four guides and reject
+  docs/context; default/shared and minimum-CMake receipts record qualification.
+- **Evidence:** cmake/test_installed_package.cmake, CMakeLists.txt;
+  artifacts/audit-resolution/documentation/package-docs-red.json and library-3-final/.

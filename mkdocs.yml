@@ -1,8 +1,14 @@
 site_name: JoSIM Documentation
+site_url: https://joeydelp.github.io/JoSIM/
 repo_url: https://github.com/JoeyDelp/JoSIM
 repo_name: JoeyDelp/JoSIM
 site_author: Johannes Delport
 edit_uri: ""
+exclude_docs: |
+  /context/
+validation:
+  links:
+    anchors: warn
 nav:
   - Home: 'index.md'
   - Technical Discussion: 'tech_disc.md'
@@ -17,6 +23,7 @@ nav:
   - Python Plotting and Specifications: 'python_utilities.md'
   - Runtime and Memory: 'performance.md'
   - Development: 'DEVELOPMENT.md'
+  - Compatibility and Migration: 'compatibility.md'
   - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'
   - Development Schedule and Bugs: 'bugs.md'
@@ -32,11 +39,6 @@ theme:
   palette:
     scheme: preference
     primary: black
-  highlightjs: true
-  hljs_languages:
-    - bash
-    - c++
-    - python
   favicon: img/favicon.ico
   logo: img/favicon.ico
   features:
@@ -54,12 +56,11 @@ markdown_extensions:
   - pymdownx.superfences
 extra_javascript: 
   - javascripts/config.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
 extra:
     social:
         - icon: fontawesome/brands/github
           link: https://github.com/JoeyDelp
           name: JoeyDelp on GitHub
 
-copyright: Copyright &copy; 2025 Johannes Delport
+copyright: Copyright &copy; 2026 Johannes Delport

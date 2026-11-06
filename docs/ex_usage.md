@@ -4,7 +4,11 @@
 
 In this section we provide example usage for JoSIM. In the [*test*](https://github.com/JoeyDelp/JoSIM/tree/master/test) subfolder of the repository the user will find multiple example files that can be used to test JoSIM with.
 
-In this example we will make use of the[ *ex_jtl_basic.cir*](https://github.com/JoeyDelp/JoSIM/tree/master/test/ex_jtl_basic.cir) file. This is a basic Josephson transmission line (JTL) that transmits a single flux quantum pulse from input to output.
+In this example we will make use of the[ *ex_jtl_basic.cir*](https://github.com/JoeyDelp/JoSIM/tree/master/test/ex_jtl_basic.cir) file. This is a basic Josephson transmission line (JTL) that transmits two single-flux-quantum input pulses through two junctions.
+
+Save the self-contained circuit below as `ex_jtl_basic.cir`. The repository
+example also contains model `.iv` generation, omitted here; see the
+[sweep guide](sweeps.md) for that separate operation.
 
 ~~~
 * Example JTL Basic
@@ -38,54 +42,30 @@ Only the device voltage (DEVV) of the input source (VIN), the device current (DE
 
 The simulation executes for a total of 1000ps and produces a result every 0.25ps which results in 4000 points of data for each requested variable.
 
-We simulate this circuit (on a CentOS 7 machine) using the command:
+From the directory containing this circuit, run an extracted or installed CLI:
 
 ````bash
 josim-cli -o ./ex_jtl_basic.csv ./ex_jtl_basic.cir -V 1
 ````
 
-This simulation is almost instant, given the size of the problem and should take no longer than 10ms to complete.
+Runtime depends on the build and host. `-V 1` reports the effective internal grid. The terminal image below is an illustration from an earlier version.
 
 <center><img src="../img/josim_jtl_ex.png" alt="Simulation Output"/></center>
 
 
-The results of this simulation are stored in the *ex_jtl_basic.csv* file of which an excerpt of the two events is shown below.
+The results of this simulation are stored in the *ex_jtl_basic.csv* file with the following excerpt from the 3.0.0 phase-mode run. Intermediate rows are omitted; last-bit values can vary with toolchain.
 
-```
+```csv
 time,"V(VIN)","I(ROUT)","P(B01)","P(B02)"
-0.000000e+00,0.000000e+00,0.000000e+00,-0.000000e+00,0.000000e+00
+0.000000e+00,0.000000e+00,0.000000e+00,0.000000e+00,0.000000e+00
 2.500000e-13,0.000000e+00,6.636509e-07,2.899951e-03,2.923977e-03
 5.000000e-13,0.000000e+00,1.963239e-06,1.130820e-02,1.150191e-02
 7.500000e-13,0.000000e+00,3.931372e-06,2.615879e-02,2.691635e-02
 1.000000e-12,0.000000e+00,6.352259e-06,4.650288e-02,4.856039e-02
-1.250000e-12,0.000000e+00,8.883856e-06,7.016312e-02,7.460258e-02
-1.500000e-12,0.000000e+00,1.119620e-05,9.467237e-02,1.028169e-01
-1.750000e-12,0.000000e+00,1.306925e-05,1.180767e-01,1.313045e-01
-2.000000e-12,0.000000e+00,1.442942e-05,1.393699e-01,1.589077e-01
-2.250000e-12,0.000000e+00,1.533178e-05,1.585212e-01,1.852864e-01
-2.500000e-12,0.000000e+00,1.590988e-05,1.762000e-01,2.107379e-01
-2.750000e-12,0.000000e+00,1.631792e-05,1.933666e-01,2.358942e-01
-3.000000e-12,0.000000e+00,1.668458e-05,2.108929e-01,2.614215e-01
-3.250000e-12,0.000000e+00,1.708811e-05,2.293210e-01,2.878081e-01
-3.500000e-12,0.000000e+00,1.755325e-05,2.487930e-01,3.152722e-01
-3.750000e-12,0.000000e+00,1.806395e-05,2.691245e-01,3.437779e-01
-4.000000e-12,0.000000e+00,1.858336e-05,2.899579e-01,3.731206e-01
-	.				.			.			.			.
-	.				.			.			.			.
-	.				.			.			.			.
-9.970000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.972500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.975000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.977500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.980000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.982500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.985000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.987500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.990000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.992500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.995000e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-9.997500e-10,1.803219e-19,1.753829e-18,1.297098e+01,1.318194e+01
-
+...
+9.992500e-10,1.753829e-18,1.753829e-18,1.297098e+01,1.318194e+01
+9.995000e-10,1.753829e-18,1.753829e-18,1.297098e+01,1.318194e+01
+9.997500e-10,1.753829e-18,1.753829e-18,1.297098e+01,1.318194e+01
 ```
 
 We then plot this result with `scripts/josim-plot.py`. Install its isolated

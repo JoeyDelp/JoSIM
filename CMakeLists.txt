@@ -5,7 +5,7 @@ if(POLICY CMP0091)
   set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 endif()
 
-project(JoSIM VERSION 2.7)
+project(JoSIM VERSION 3.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -132,6 +132,7 @@ endif()
 
 # Properties
 set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set_target_properties(josim PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 make_target_static(josim)
 target_add_warnings(josim)
 josim_instrument_target(josim)
@@ -189,8 +190,7 @@ foreach(component config amd btf colamd klu)
 endforeach()
 
 install(FILES LICENSE README.md CHANGELOG.md DESTINATION .)
-install(FILES docs/gate_junctions.md docs/noise_sources.md
-              docs/DEVELOPMENT.md docs/RELEASE_POLICY.md docs/API.md DESTINATION docs)
+install(DIRECTORY docs/ DESTINATION docs PATTERN "context" EXCLUDE)
 
 # Install targets
 install(

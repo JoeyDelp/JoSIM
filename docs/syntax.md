@@ -82,7 +82,11 @@ with an explicit charging interval before measurement. See the
 
 **B**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;*<PhaseNode\>*&emsp;**MODEL**&emsp;[area=<**AREA**\>]&emsp;[ic=<**IC**>]&emsp;[temp=<**TEMP**>]&emsp;[neb=<**FREQ**>]
 
-A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.
+A Josephson junction has two electrical terminals. An optional third field is
+normally an unused WRspice phase-node placeholder. A model explicitly specifying
+`GWIDTH` can instead use it as a gate, or use the explicit `GC=node` field. See
+the [gate-controlled junction guide](gate_junctions.md) for unambiguous syntax
+and the physical gate-voltage convention in both modes.
 
 The Josephson junction requires specification of a model name which can be defined anywhere in the program using the control **.MODEL**.
 
@@ -113,6 +117,7 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | ICFCT or ICFACT | 0, 1                  | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
 | PHI             | 0, $2\pi$             | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
 | CPR             | {$-\infty$, $\infty$} | {1}             | Sets the Current Phase Relationship harmonic amplitudes.     |
+| GWIDTH          | $0 < GWIDTH < \infty$ | 0.1E-3          | Gate voltage for complete suppression; enable with `GC=node` or explicit third-field gate syntax |
 
 The `.model` line belongs to its containing subcircuit. Separate subcircuits can
 use the same model name. Lookup checks the current instance, its containing
@@ -303,9 +308,12 @@ smooth spectral rolloff. Grid-point variance differs. See the
 | ---------- | ----------------- |
 | $T_{D1}$   | 0.0               |
 | $T_{D2}$   | $T_{STEP}$        |
-| $\tau_{1}$ | $T_{D1}+T_{STEP}$ |
+| $\tau_{1}$ | $T_{STEP}$ |
 | $\tau_{2}$ | $T_{STEP}$        |
 
+The omitted delay/constant defaults above are independent. In particular, TD2
+remains TSTEP when TD1 is supplied. Specify both delays and positive time
+constants explicitly when preparing a delayed rise/fall waveform.
 
 Returns different values for the 3 different time segments.
 
@@ -315,11 +323,11 @@ $f(t)=A_{1}$
 
 For $T_{D1}\le t < T_{D2}$:
 
-$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})$
+$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{-\frac{t - T_{D1}}{\tau_{1}}})$
 
 For $T_{D2} \le t$:
 
-$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{\frac{t - T_{D2}}{\tau_{2}}})$
+$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{-\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{-\frac{t - T_{D2}}{\tau_{2}}})$
 
 #### Piecewise Sinusoidal (PWS)
 
@@ -660,5 +668,7 @@ JoSIM has a set of built in constants that when used expand to the corresponding
 | EPS0      | $\epsilon_{0}$                               | 8.854187817E-12         |
 | SIGMA     | $\sigma$ (short for $\frac{\Phi_{0}}{2\pi}$) | 3.291059757E-16         |
 
-[^1]: I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
-[^2]:S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.
+## Further reading
+
+- I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
+-S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.

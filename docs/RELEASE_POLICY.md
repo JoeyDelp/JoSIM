@@ -76,6 +76,31 @@ declared version and a clean source tree. The tagged workflow publishes only
 after every target passes. A tag is a separate publication decision; passing
 tests does not authorize creating one.
 
+Version 3.0.0 records the audited public C++ layout changes and explicit support
+boundaries. CMake package versions use `SameMajorVersion`; Unix shared libraries
+carry the major `SOVERSION`. Recompile applications with matching headers,
+libraries and compatible toolchains. Compatible fixes use patch versions;
+compatible interface additions use minor versions. Preserve existing tags and
+assets. See [compatibility and migration](compatibility.md) for the rationale.
+
+## Documentation publication
+
+Build and check the manual using [the development procedure](DEVELOPMENT.md#build-and-check-the-manual).
+The existing site is published from `gh-pages` with MkDocs. From a clean,
+integrated and qualified source commit, fetch the current branch and run:
+
+```bash
+git fetch origin gh-pages
+build/documentation-env/bin/mkdocs gh-deploy --strict \
+  --site-dir build/documentation --remote-name origin --remote-branch gh-pages
+```
+
+Keep normal branch history: do not use `--force` or `--no-history`. Retain any
+existing `CNAME` and `.nojekyll`; the current site has no custom domain. The
+configuration excludes local project context. Verify the deployed source,
+navigation, math rendering, examples, current version and download links after
+deployment. A successful push alone is not a website check.
+
 Source archives used outside Git require a sibling `bundle-manifest.json` with
 the full revision, source state and bundle hash. The script accepts this only
 with a matching `--revision`; it never silently assigns a release identity.

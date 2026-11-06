@@ -20,6 +20,14 @@ run_checked("${CMAKE_COMMAND}" --install "${TEST_BINARY_DIR}" --prefix "${prefix
 set(relocated_prefix "${TEST_BINARY_DIR}/installed-consumer/relocated prefix")
 file(RENAME "${prefix}" "${relocated_prefix}")
 set(prefix "${relocated_prefix}")
+foreach(guide compatibility.md sweeps.md model_limits.md performance.md)
+  if(NOT EXISTS "${prefix}/docs/${guide}")
+    message(FATAL_ERROR "Installed manual is missing ${guide}")
+  endif()
+endforeach()
+if(EXISTS "${prefix}/docs/context")
+  message(FATAL_ERROR "Ignored local project context was installed")
+endif()
 
 set(configure_args -S "${TEST_SOURCE_DIR}/test/consumer" -B "${consumer_build}"
                    -G "${TEST_GENERATOR}" "-DCMAKE_PREFIX_PATH=${prefix}"

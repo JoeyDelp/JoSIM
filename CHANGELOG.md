@@ -1,12 +1,18 @@
 # Changelog
 
-Changes that affect JoSIM users are recorded here. Unreleased entries describe
-work prepared for the next release, not binaries already available on GitHub.
+Changes that affect JoSIM users are recorded here. Source changes can precede
+published binaries; see GitHub Releases for qualified downloads.
 
-## Unreleased
+## 3.0.0
+
+This source line is undergoing release qualification. The historical `v2.7`
+tag is unchanged. Recompile C++ applications against matching headers and
+libraries: public type layouts changed. See [migration guidance](docs/compatibility.md).
 
 ### Added
 
+- Major-version CMake package selection and Unix shared-library ABI version 3,
+  with explicit migration, runtime and reproducibility boundaries.
 - First-party line/function/branch coverage with reviewed risk floors, per-LLVM
   regression references, complete-test/mapping checks and a CI release gate.
   Add analytic matched-line delay, controlled-source gain and reversed/floating
@@ -47,6 +53,14 @@ work prepared for the next release, not binaries already available on GitHub.
   [noise source guide](docs/noise_sources.md) for units and bandwidth conventions.
 
 ### Fixed
+
+- Include the linked public manual in installed packages, excluding ignored
+  local project notes. Fresh consumers check the required guides and exclusion.
+- Correct the help menu's long option names and exercise every advertised long
+  option. `--sanitycheck` and `--Verbose` were advertised but not accepted.
+- Refresh English/Japanese build and syntax guidance, numerical examples and
+  plotting commands; correct exponential formulas and broken links. Exclude
+  local project notes from documentation builds and pin the site dependencies.
 
 - Validate PULSE timing independently of verbosity and handle cycle counts beyond
   the integer range without undefined conversion or wrong sampled values.

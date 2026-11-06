@@ -1,6 +1,7 @@
 # 構文ガイド
 
-本セクションでは、JoSIM で利用可能な構文について、ユーザーに包括的なガイドを提供します。
+3.0.0 系の主要な構文を説明します。新しい機能・物理モデルの詳細は
+[現在の英語版](../syntax.md) と各モデルガイドも参照してください。
 
 JoSIM は、読み込み時に各行が大文字に変換されるため、***大文字・小文字を区別しません（CaSe InSeNsItIvE）***。
 
@@ -47,25 +48,29 @@ JoSIM の値は工学表記（Engineering Notation）またはサフィックス
 
 ノイズ解析で用いる温度はケルビン（Kelvin）です。単位は付けないでください。ケルビンの `K` を付けると、JoSIM では Kilo と解釈されるためです（例: `4K` は `4000` になります）。
 
-任意の周波数パラメータは、ノイズ解析時の有効ノイズ帯域幅（noise effective bandwidth）を設定します。既定値は 1GHz です。
+任意の周波数パラメータは、ノイズ解析時の有効ノイズ帯域幅（noise effective bandwidth）を設定します。既定値は 1THz です。
 
 ### インダクタ
 
 **L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
-インダクタ値の単位はヘンリー（Henry）です。
+インダクタ値の単位はヘンリー（Henry）です。L は計算中一定で、電流依存 L(I) は未対応です。
+[モデル境界](../model_limits.md#nonlinear-inductance) を参照してください。
 
 ### コンデンサ
 
 **C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
-コンデンサ値の単位はファラド（Farad）です。
+コンデンサ値の単位はファラド（Farad）です。`IC=` は未対応でエラーになります。
+非零初期電圧には [明示的な充電区間](../model_limits.md#capacitor-voltage) を使用してください。
 
-### ジョセフソン接合（JJ）
+### ジョセフソン接合（JJ） {#josephson-junction-jj}
 
 **B**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;*<PhaseNode\>*&emsp;**MODEL**&emsp;[area=<**AREA**\>]&emsp;[ic=<**IC**>]&emsp;[temp=<**TEMP**>]&emsp;[neb=<**FREQ**>]
 
-ジョセフソン接合は 2 端子デバイスですが、WRspice との互換性のために、接続されない 3 つ目のノードを指定して定義することもできます。このノードは JoSIM では一切使用されません。
+ジョセフソン接合は 2 端子デバイスです。3 番目のフィールドは通常、未使用の WRspice 位相ノードです。
+モデルに `GWIDTH` を明示するとゲートとして使えます。明示的な `GC=node` も使用できます。
+両モードでの物理ゲート電圧と正確な構文は [ゲートガイド](../gate_junctions.md) を参照してください。
 
 ジョセフソン接合ではモデル名の指定が必要で、そのモデルは制御 **.MODEL** を用いてプログラム内の任意の場所で定義できます。
 
@@ -97,7 +102,7 @@ JoSIM で現在サポートされている接合モデルは RCSJ モデルの�
 | PHI              | 0, $2\pi$             | 0               | $\pi$ 接合などの phi-junction を実現                         |
 | CPR              | {$-\infty$, $\infty$} | {1}             | 電流‐位相関係（CPR）の高調波振幅を設定                       |
 
-*.model* 行は、それが属するサブサーキット固有です。そのため、別々のサブサーキット内では同名でも異なるモデルを定義できます。サブサーキット内でモデルが見つからない場合はグローバルに検索され、それでも見つからなければ既定値（デフォルトモデル）が使用されます。
+*.model* 行は、それが属するサブサーキット固有です。そのため、別々のサブサーキット内では同名でも異なるモデルを定義できます。現在のインスタンス、親インスタンス、グローバルの順に検索します。モデルが見つからない場合はエラーになります。
 
 **AREA** と **IC** はモデルパラメータに対する修飾子として働きます。**AREA** は臨界電流の乗数であり、**IC** が指定された場合は **AREA** の代わりに $AREA=\frac{IC_{jj}}{IC_{model}}$ が用いられます。
 
@@ -161,7 +166,8 @@ JoSIM で現在サポートされている接合モデルは RCSJ モデルの�
 
 このソースは、指定された振幅値の間を、シミュレーションの各時刻点で線形補間します。
 
-先頭 2 つの値は、シミュレーション開始時に 0 である必要があります。
+時刻は有限・非負で、厳密に増加する必要があります。振幅は有限で、先頭振幅は非零でも構いません。
+先頭時刻が正の場合、その振幅で時刻ゼロが補われます。負の先頭時刻はエラーになります。
 
 #### パルス（Pulse）
 
@@ -171,7 +177,9 @@ JoSIM で現在サポートされている接合モデルは RCSJ モデルの�
 
 *PW* と *PER* はそれぞれパルス幅と周期を指します。指定されない場合、これらは既定で過渡解析の停止時間になります。
 
-このソースは、設定した周波数で連続的にパルスを生成できます。
+振幅は有限、遅延・立上り・立下り・幅は有限かつ非負、周期は有限かつ正でなければなりません。
+立上り・立下りをゼロにすると瞬時のエッジ、幅をゼロにすると三角パルスを指定できます。
+引数は最大 7 個です。内部ステップ幅でエッジと周期を十分に分解してください。
 
 #### 正弦波（Sinusoidal）
 
@@ -222,11 +230,14 @@ $$
 
 任意の時刻で常に $A$ を出力する DC ソースです。
 
-#### ノイズ（Noise）
+#### ノイズ（Noise） {#noise-source} {#noise}
 
 **noise(**$A$&emsp;$T_{D}$&emsp;$T_{STEP}$**)**
 
-$T_{D}$ 以降の時刻について、指定された時間ステップごとにノイズ値を生成します。$T_{STEP}$ は、`.neb` によってグローバルに、または抵抗の `neb=` によってローカルに設定される有効ノイズ帯域幅の逆数です。
+$T_{D}$ 以降の時刻について、指定された時間ステップごとにノイズ値を生成します。明示的な $T_{STEP}$ は内部ステップ幅以上に制限されます。省略時は帯域幅 B に対する
+$1/(3B)$ を使用し、内部ステップ幅が下限です。隣接する独立サンプル間は線形補間されます。
+振幅 A は片側振幅スペクトル密度です。実効帯域幅は補間スペクトルの積分で定義され、
+急峻な遮断周波数ではありません。詳細は [ノイズガイド](../noise_sources.md) を参照してください。
 
 返されるノイズ値は次式で計算されます：
 
@@ -242,8 +253,11 @@ $GRAND()$ はガウス乱数を生成する関数です。
 | --------- | ------------------- |
 | $T_{D1}$  | 0.0                 |
 | $T_{D2}$  | $T_{STEP}$          |
-| $\tau_{1}$| $T_{D1}+T_{STEP}$   |
+| $\tau_{1}$| $T_{STEP}$   |
 | $\tau_{2}$| $T_{STEP}$          |
+
+省略時の既定値は独立です。TD1 を指定しても TD2 の既定値は TSTEP のままです。
+遅延した立上り・立下りを定義する場合は、両方の遅延と正の時定数を明示してください。
 
 3 つの時間区間に対して異なる値を返します。
 
@@ -253,11 +267,11 @@ $f(t)=A_{1}$
 
 $T_{D1}\le t < T_{D2}$ のとき：
 
-$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})$
+$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{-\frac{t - T_{D1}}{\tau_{1}}})$
 
 $T_{D2} \le t$ のとき：
 
-$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{\frac{t - T_{D2}}{\tau_{2}}})$
+$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{-\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{-\frac{t - T_{D2}}{\tau_{2}}})$
 
 #### 区分正弦補間（PWS）
 
@@ -291,13 +305,18 @@ f(t)=V_i + (V_{i+1}-V_i)\,\frac{1-\cos(\pi u)}{2},
 
 これらの制御コマンドのうち最も重要なのは過渡解析コマンドで、これなしにはシミュレーションを実行できません。
 
-### 過渡解析（Transient Analysis）
+### 過渡解析（Transient Analysis） {#transient-analysis}
 
 **.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$&emsp;[$P_{WINDOW}$]]]&emsp;DST
 
-0 から $T_{STOP}$ まで実行されるシミュレーションを生成します。実行されるステップ数は $n=\frac{T_{STOP}}{T_{STEP}}$ です。
+実効ステップ幅 $h$ に対して $N=\lfloor T_{STOP}/h\rfloor$ 個を計算します。
+時刻は $t_k=kh$、$k=0,\ldots,N-1$ で、停止時刻自体は追加されません。
+ステップ幅・停止時刻は有限かつ正で、計算可能なサンプルが 1 個以上必要です。
 
-$P_{START}$ は出力の印字開始時刻を示します。$P_{STEP}$ は印字ステップ幅で、$T_{STEP}$ 以上でなければなりません。
+$P_{START}$ は印字開始時刻で、最後の計算サンプルを超えてはいけません。
+$P_{STEP}$ が要求ステップ幅より小さい場合、初期内部ステップ幅をそれに合わせて小さくします。
+出力は各印字目標時刻以降の最初の内部サンプルを選びます。非整数比では時刻間隔が不均一になるため、
+保存されたタイムスタンプを使用してください。`-V 1` で最終内部グリッドを確認できます。
 
 $P_{WINDOW}$ が指定され、かつ 0 でない場合、出力データに対して幅 $P_{WINDOW}$ 秒の Hanning FIR フィルタが適用され、その後に間引き（decimation）が後処理として行われます。これは、$P_{STEP}$ で間引く際のエイリアシング防止のために低域通過フィルタとして使えます（例: 回路全体の IV カーブ生成など）。
 
@@ -364,11 +383,17 @@ JoSIM は、インダクタ・抵抗・コンデンサ・JJ（area/Ic）の各�
 
 JoSIM は、ネットリスト内で指定した JJ モデルの IV カーブを出力するために、以下のコマンドを提供します：
 
-**.iv** *modelname* *max_current* *filepath*
+**.iv** *modelname* *max_current* *filepath* [STEP=*current*] [GTJJ=*voltage*] [TSTEP=*time*] [TSTOP=*time*] [TSTART=*time*]
 
 このコマンドは、指定された *filepath* にカンマ区切り（CSV）で IV カーブデータを出力します。電流範囲は負の *max_current* から正の *max_current* までです。
 
 サブサーキット内のモデルは、*modelname* とサブサーキット名の区切りに `.`（ピリオド）または `|`（縦棒）を使って出力できます。
+
+モデル `.iv` は単一接合の有限過渡計算です。`STEP`、ゲート電圧と時間設定、
+整定・平均化の制限は [スイープガイド](../sweeps.md) を参照してください。
+任意回路の IV 掃引には、入力を変更しない外部プロセスのスイープを使用します。
+ゲート接合、色付きノイズ、初期状態の制限は
+[ゲート](../gate_junctions.md)・[ノイズ](../noise_sources.md)・[モデル境界](../model_limits.md) を参照してください。
 
 ### 出力（Output）
 
@@ -485,7 +510,9 @@ JoSIM には、使用すると対応する値に展開される組み込み定�
 | EPS0      | $\epsilon_{0}$                       | 8.854187817E-12         |
 | SIGMA     | $\sigma$（$\frac{\Phi_{0}}{2\pi}$ の略） | 3.291059757E-16         |
 
-[^1]: I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
+## Further reading
 
-[^2]: S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.
+- I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
+
+- S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.
 
