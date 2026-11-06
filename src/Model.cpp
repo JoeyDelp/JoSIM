@@ -188,3 +188,13 @@ void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
 
     models.emplace_back(std::make_pair(temp, s.second));
 }
+
+const Model* Model::find_model(const std::string& name, const vector_pair_t<Model, string_o>& models, string_o scope) {
+    for (;;) {
+        for (const auto& model : models) {
+            if (model.first.modelName() == name && model.second == scope) { return &model.first; }
+        }
+        if (!scope) { return nullptr; }
+        scope = parent_parameter_scope(scope);
+    }
+}

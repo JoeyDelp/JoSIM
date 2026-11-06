@@ -16,6 +16,18 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Bind named subcircuit parameters per instance, with optional header defaults,
+  caller-evaluated overrides, nested scopes and dependent local expressions
+  (#81). Preserve hierarchical aliases and legacy component-value overrides.
+  Parse spaced/multiple assignments and reject duplicate instance assignments.
+- Evaluate local JJ models per instance and prefer local/parent models over
+  globals consistently, including positional gate detection. Type-level model
+  IV generation uses definition defaults. Document the parameter-aware library
+  overload and retained legacy calls.
+- Repeated parameter parsing accepts already resolved values. Parameter updates
+  now reset stored values and recompute dependencies; redefinitions replace
+  the previous expression as their existing warning promises.
+
 - Preserve actual pre-zero phase states when converting phase-mode output to
   voltage. The first two samples now obey the same BDF2 relation as later
   samples, including cold starts, floating terminals and filtered output.

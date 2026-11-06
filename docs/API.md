@@ -5,6 +5,32 @@ your application against the headers and libraries from the same installation.
 The interface exposes C++ standard-library types; a stable binary interface
 across compiler, standard-library or JoSIM versions is not promised.
 
+## Parsing and subcircuit binding
+
+After `Input::parse_input`, call
+`input.netlist.expand_maindesign(input.parameters)`. This resolves globals,
+then binds parameters and local models per instance before expanding its
+children. Do not pre-evaluate all local definitions: some need instance values.
+Continue with transient identification, matrix creation and simulation as in
+the CLI entry point. Overrides capture their caller-evaluated values at binding.
+To change caller/global parameters and rebind a circuit, create fresh Input and
+Netlist objects; reparsing an already expanded map does not reinstantiate it.
+
+The no-argument `expand_subcircuits()`/`expand_maindesign()` entry points remain
+for existing callers that pre-parse type-scoped parameters/models. They preserve
+that legacy lookup and component-value overrides; use the parameter-aware
+overload for named instance parameters. `expand_subcircuits()` now validates
+structural dependencies while retaining templates until main-design expansion.
+Callers inspecting partially expanded templates must adapt to this change.
+
+Resolved instance contexts in expanded lines, `ParameterName` and `models_new`
+begin with `|`, followed by the inside-to-outside instance path. Definition
+contexts retain their type names. Local template expressions can remain
+unevaluated; check `Parameter::get_value()` before accessing a numeric value.
+Model lookup prefers the nearest instance before globals. These changes add
+methods without adding class state; rebuild consumers with this release's
+headers and libraries.
+
 ## Errors and recovery
 
 Set finite, positive `tstep` and `tstop` before creating a matrix. `simsize()`

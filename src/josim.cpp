@@ -27,16 +27,8 @@ int main(int argc, const char** argv) {
         Input iObj(cli_options);
         // Parse input file as specified by the cli arguments
         iObj.parse_input(cli_options.cir_file_name);
-        // Parse any identified parameter values
-        if (iObj.parameters.size() > 0) { parse_parameters(iObj.parameters); }
-        // Parse any identified models
-        for (const auto& i : iObj.netlist.models) {
-            Model::parse_model(std::make_pair(i.second, i.first.second), iObj.netlist.models_new, iObj.parameters);
-        }
-        // Expand nested subcircuits
-        iObj.netlist.expand_subcircuits();
-        // Expand main design using expanded subcircuits
-        iObj.netlist.expand_maindesign();
+        // Bind parameters and models separately for each subcircuit instance.
+        iObj.netlist.expand_maindesign(iObj.parameters);
         // Simulate IV curves if need be
         IV ivObj(iObj);
         // Identify the simulation parameters

@@ -131,13 +131,11 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
     size_t firstAttribute = 3;
     // The experimental branch also accepted B+ B- gate model ordering.
     if (s.first.size() > 4 && s.first.at(3).find('=') == std::string::npos) {
-        for (const auto& model : iObj.netlist.models_new) {
-            if (model.first.modelName() == s.first.at(4) && model.first.gateWidthSpecified()) {
-                // WRspice decks may contain an unused phase-node field here.
-                if (nm.count(s.first.at(3)) != 0) { set_gate(s.first.at(3)); }
-                firstAttribute = 4;
-                break;
-            }
+        const auto* model = Model::find_model(s.first.at(4), iObj.netlist.models_new, s.second);
+        if (model && model->gateWidthSpecified()) {
+            // WRspice decks may contain an unused phase-node field here.
+            if (nm.count(s.first.at(3)) != 0) { set_gate(s.first.at(3)); }
+            firstAttribute = 4;
         }
     }
     for (size_t i = firstAttribute; i < s.first.size(); ++i) {
@@ -277,31 +275,11 @@ void JJ::set_matrix_info() {
 }
 
 void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& models, const string_o& subc) {
-    bool found = false;
-    // Loop through all models
-    for (auto& i : models) {
-        // If the model name matches that of an identified model
-        if (i.first.modelName() == t.back()) {
-            // If both models belong to a subcircuit and the subcircuit names match
-            if ((i.second && subc) && (subc.value() == i.second.value())) {
-                // Set the model to the exact identified model
-                model_ = i.first;
-                found  = true;
-                break;
-                // JJ might be in a subcircuit but model in global scope6
-            } else if (!i.second) {
-                // Set the model to the globally identified model
-                model_ = i.first;
-                found  = true;
-                break;
-            }
-        }
-    }
-    // If no model was found
-    if (!found) {
-        // Complain about it
+    const auto* model = t.empty() ? nullptr : Model::find_model(t.back(), models, subc);
+    if (!model) {
         Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
     }
+    model_ = *model;
     // Change the area if ic was defined
     if (Ic_) { area_ = Ic_.value() / model_.ic(); }
     // Set the model critical current for this JJ instance

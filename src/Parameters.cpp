@@ -15,27 +15,79 @@
 
 using namespace JoSIM;
 
+size_t JoSIM::parameter_start(const tokens_t& tokens, size_t first) {
+    for (size_t i = first; i < tokens.size(); ++i) {
+        if (tokens[i] == "PARAMS:" || tokens[i].find('=') != std::string::npos
+            || (i + 1 < tokens.size() && tokens[i + 1].rfind("=", 0) == 0)) { return i; }
+    }
+    return tokens.size();
+}
+
+std::vector<std::pair<std::string, std::string>> JoSIM::parameter_assignments(const tokens_t& tokens, size_t first) {
+    std::vector<std::pair<std::string, std::string>> result;
+    if (first >= tokens.size()) { return result; }
+    const auto text = Misc::vector_to_string(tokens_t(tokens.begin() + first, tokens.end()));
+    auto fail = [&] { Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, text); };
+    auto space = [](unsigned char c) { return std::isspace(c) || c == ','; };
+    auto name_char = [](unsigned char c) { return std::isalnum(c) || c == '_' || c == '|' || c == '.'; };
+    size_t pos = 0;
+    if (text.rfind("PARAMS:", 0) == 0) { pos = 7; }
+    while (pos < text.size()) {
+        while (pos < text.size() && space(text[pos])) { ++pos; }
+        if (pos == text.size()) { break; }
+        const auto begin = pos;
+        while (pos < text.size() && name_char(text[pos])) { ++pos; }
+        const auto name = text.substr(begin, pos - begin);
+        while (pos < text.size() && space(text[pos])) { ++pos; }
+        if (name.empty() || pos == text.size() || text[pos++] != '=') { fail(); }
+        const auto expression = pos;
+        std::string brackets;
+        while (pos < text.size()) {
+            const char c = text[pos];
+            if (std::string("({[").find(c) != std::string::npos) { brackets += c; }
+            else if (std::string(")}]").find(c) != std::string::npos) {
+                if (brackets.empty() || std::string("({[").find(brackets.back()) != std::string(")}]").find(c)) { fail(); }
+                brackets.pop_back();
+            } else if (brackets.empty() && space(c)) {
+                size_t next = pos;
+                while (next < text.size() && space(text[next])) { ++next; }
+                const auto nextName = next;
+                while (next < text.size() && name_char(text[next])) { ++next; }
+                const auto nextEnd = next;
+                while (next < text.size() && space(text[next])) { ++next; }
+                if (nextEnd > nextName && next < text.size() && text[next] == '=') { break; }
+            }
+            ++pos;
+        }
+        auto value = text.substr(expression, pos - expression);
+        while (!value.empty() && space(value.back())) { value.pop_back(); }
+        if (!brackets.empty() || value.find_first_not_of(" \t,") == std::string::npos
+            || std::any_of(result.begin(), result.end(), [&](const auto& kv) { return kv.first == name; })) { fail(); }
+        result.emplace_back(name, value);
+    }
+    if (result.empty()) { fail(); }
+    return result;
+}
+
+string_o JoSIM::parent_parameter_scope(const string_o& scope) {
+    if (scope && !scope->empty() && scope->front() == '|') {
+        const auto separator = scope->find('|', 1);
+        if (separator != std::string::npos) { return scope->substr(separator); }
+    }
+    return std::nullopt;
+}
+
 void JoSIM::create_parameter(const tokens_t& s, param_map& parameters, string_o subc) {
-    // Temporary parameter which will be stored
-    Parameter temp;
-    // Check to ensure declaration is valid
     if (s.size() < 2) { Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s)); }
-    // Check to see if '=' exists
-    if (Misc::vector_to_string(s).find('=') == std::string::npos) {
-        Errors::parsing_errors(ParsingErrors::INVALID_DECLARATION, Misc::vector_to_string(s));
+    for (const auto& assignment : parameter_assignments(s, 1)) {
+        Parameter temp;
+        temp.set_expression(assignment.second);
+        const ParameterName name(assignment.first, subc);
+        if (parameters.count(name)) {
+            Errors::parsing_errors(ParsingErrors::EXPRESSION_ARLEADY_DEFINED, Misc::vector_to_string(s));
+        }
+        parameters[name] = temp;
     }
-    // Split the line/tokens int64_to the parameter name and expression
-    tokens_t tokens(s.begin() + 1, s.end());
-    // 1st token is parameter name, 2nd is the expression
-    tokens = Misc::tokenize(Misc::vector_to_string(tokens, ""), "=", true, true);
-    // Set the expresion for the temporary parameter
-    temp.set_expression(tokens.at(1));
-    // Warn user that duplicate parameter exists, this overwrites previous
-    if (parameters.count(ParameterName(tokens.at(0), subc)) != 0) {
-        Errors::parsing_errors(ParsingErrors::EXPRESSION_ARLEADY_DEFINED, Misc::vector_to_string(s));
-    }
-    // Insert the parameter int64_to a map of known parameters for parsing
-    parameters.insert({ParameterName(tokens.at(0), subc), temp});
 }
 
 // Possible functions that can be called
@@ -85,12 +137,14 @@ double JoSIM::parse_param(const std::string& expr, const param_map& params, stri
         return name;
     };
     auto parameter = [&](const std::string& name) {
-        auto found = params.find(ParameterName(name, subc));
+        auto scope = subc;
         const auto upper = uppercase(name);
-        if (found == params.end() && upper != name) { found = params.find(ParameterName(upper, subc)); }
-        if (found == params.end() && subc) { found = params.find(ParameterName(name, std::nullopt)); }
-        if (found == params.end() && subc && upper != name) { found = params.find(ParameterName(upper, std::nullopt)); }
-        return found;
+        for (;;) {
+            auto found = params.find(ParameterName(name, scope));
+            if (found == params.end() && upper != name) { found = params.find(ParameterName(upper, scope)); }
+            if (found != params.end() || !scope) { return found; }
+            scope = parent_parameter_scope(scope);
+        }
     };
     auto resolved = [&](const Parameter& value) {
         if (!value.get_value()) {
@@ -288,51 +342,35 @@ double JoSIM::parse_operator(const std::string& op, double val1, double val2, in
 }
 
 void JoSIM::parse_parameters(param_map& parameters) {
-    // Double parsed value that will be stored for each parameter
-    double value;
-    // Counter to ensure that we do not get stuck in a loop
-    size_t parsedCounter = 0;
-    // Parse parameters while counter is less than total parameter count
-    while (parsedCounter < parameters.size()) {
-        // Set previous counter to counter to do sanity check
-        int64_t previous_counter = parsedCounter;
-        // Loop through the parameters parsing them if possible
-        for (auto& i : parameters) {
-            // If the parameter does not yet have a value (double)
-            if (!i.second.get_value()) {
-                // Parse this parameter if expression if possible
-                value = parse_param(i.second.get_expression(), parameters, i.first.subcircuit(), false);
-                // If the returned value is not NaN
-                if (!std::isnan(value)) {
-                    // Set the parameter value (double) to the parsed value (double)
-                    i.second.set_value(value);
-                    // Increase the counter
-                    parsedCounter++;
-                }
-            }
-        }
-        // If we reach this then there are parameters that could not be parsed
-        if (previous_counter == parsedCounter) {
-            // Temporary string that will contain the parameter to complain about
-            std::string unknownParams;
-            // Loop through the parameters
-            for (auto& i : parameters) {
-                // If there are parameters with no value (double)
-                if (!i.second.get_value()) {
-                    // Create a string with the name and subcircuit
-                    unknownParams += i.first.name() + " " + i.first.subcircuit().value_or("") + "\n";
-                }
-            }
-            // Complain about all the unknown parameters only once
-            Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, unknownParams);
+    std::vector<ParameterName> names;
+    for (const auto& parameter : parameters) { names.push_back(parameter.first); }
+    parse_parameters(parameters, names);
+}
+
+void JoSIM::parse_parameters(param_map& parameters, const std::vector<ParameterName>& names) {
+    std::vector<ParameterName> pending;
+    for (const auto& name : names) {
+        if (!parameters.at(name).get_value()) { pending.push_back(name); }
+    }
+    while (!pending.empty()) {
+        const auto previous = pending.size();
+        pending.erase(std::remove_if(pending.begin(), pending.end(), [&](const ParameterName& name) {
+            auto& parameter = parameters.at(name);
+            const double value = parse_param(parameter.get_expression(), parameters, name.subcircuit(), false);
+            if (std::isnan(value)) { return false; }
+            parameter.set_value(value);
+            return true;
+        }), pending.end());
+        if (pending.size() == previous) {
+            std::string unknown;
+            for (const auto& name : pending) { unknown += name.name() + " " + name.subcircuit().value_or("") + "\n"; }
+            Errors::parsing_errors(ParsingErrors::UNIDENTIFIED_PART, unknown);
         }
     }
 }
 
 void JoSIM::update_parameters(param_map& parameters) {
-    // Reset all the paraemeter values (doubles)
-    for (auto i : parameters) { i.second.set_value(std::nan("")); }
-    // Parse all the parameters again
+    for (auto& parameter : parameters) { parameter.second.reset_value(); }
     parse_parameters(parameters);
 }
 

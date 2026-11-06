@@ -70,6 +70,20 @@ void IV::setup_iv(const tokens_t& i, const Input& iObj) {
     // Create an input object for this simulation
     Input ivInp = iObj;
     ivInp.controls.clear();
+    // A type-level model IV uses that definition's defaults, independently of
+    // any instantiated copies and their overrides. Resolve only this scope.
+    std::vector<ParameterName> defaultNames;
+    if (subc) {
+        for (const auto& parameter : ivInp.parameters) {
+            if (parameter.first.subcircuit() == subc) { defaultNames.push_back(parameter.first); }
+        }
+        parse_parameters(ivInp.parameters, defaultNames);
+    }
+    if (!Model::find_model(model, ivInp.netlist.models_new, subc) || subc) {
+        Model::parse_model({ivInp.netlist.models.at({model, subc}), subc},
+                           ivInp.netlist.models_new, ivInp.parameters);
+    }
+
     if (gtjj) {
         tokens_t          jj = {"B01", "1", "0", model, "AREA=1", "GC=GTVG"};
         // tokens_t ib = {"IB01", "0", "1", "DC", "2.5U"};

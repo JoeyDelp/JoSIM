@@ -137,6 +137,43 @@ void default_phase_history_for_postprocessing() {
         }
     }
 }
+
+void scoped_and_legacy_expansion() {
+    for (bool scoped : {false, true}) {
+        auto run = input();
+        run.netlist.argMin = true;
+        run.netlist.maindesign = {{"X1", "CELL", "N", "0"}, {"I1", "0", "N", "DC", "1"}};
+        auto& cell = run.netlist.subcircuits["CELL"];
+        cell.io = {"IN", "RET"};
+        cell.lines = {{{"R1", "IN", "RET", "RES"}, "CELL"}};
+        JoSIM::create_parameter({".PARAM", scoped ? "RES=5" : "RES=12"}, run.parameters, "CELL");
+        if (scoped) {
+            JoSIM::create_parameter({".PARAM", "RES=6"}, run.parameters);
+            run.netlist.maindesign[0].push_back("RES={RES*2}");
+            run.netlist.expand_maindesign(run.parameters);
+            JoSIM::update_parameters(run.parameters);
+        }
+        else {
+            JoSIM::parse_parameters(run.parameters);
+            run.netlist.expand_subcircuits();
+            run.netlist.expand_maindesign();
+        }
+        JoSIM::Matrix matrix;
+        matrix.create_matrix(run);
+        JoSIM::Simulation simulation(run, matrix);
+        for (double voltage : *simulation.results.xVector.at(matrix.nm.at("N"))) {
+            if (std::abs(voltage - 12) > 1e-11) { throw std::runtime_error("Library expansion lost local parameters"); }
+        }
+    }
+    auto run = input();
+    run.netlist.argMin = true;
+    run.netlist.maindesign = {{"X1", "CELL", "N", "0"}, {"I1", "0", "N", "DC", "1"}};
+    auto& cell = run.netlist.subcircuits["CELL"];
+    cell.io = {"IN", "RET"};
+    cell.lines = {{{"R1", "IN", "RET", "RES"}, "CELL"}};
+    JoSIM::create_parameter({".PARAM", "RES=UNKNOWN"}, run.parameters, "CELL");
+    must_throw([&] { run.netlist.expand_maindesign(run.parameters); }, "RES |X1");
+}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -151,6 +188,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
+            if (selected == "all" || selected == "parameters") { scoped_and_legacy_expansion(); }
             if (selected == "all" || selected == "phase") { default_phase_history_for_postprocessing(); }
             valid_simulation();
         }

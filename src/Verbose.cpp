@@ -103,7 +103,8 @@ void Verbose::print_parameters(const Input& iObj) {
         tokens_t sortedParams;
         for (auto i : iObj.parameters) {
             std::stringstream value;
-            value << std::scientific << std::setprecision(6) << i.second.get_value().value();
+            if (i.second.get_value()) { value << std::scientific << std::setprecision(6) << *i.second.get_value(); }
+            else { value << "default expression: " << i.second.get_expression(); }
             sortedParams.emplace_back(i.first.subcircuit().value_or("") + " : " + i.first.name() + " = " + value.str());
         }
         std::sort(sortedParams.begin(), sortedParams.end());

@@ -103,7 +103,10 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | PHI             | 0, $2\pi$             | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
 | CPR             | {$-\infty$, $\infty$} | {1}             | Sets the Current Phase Relationship harmonic amplitudes.     |
 
-The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
+The `.model` line belongs to its containing subcircuit. Separate subcircuits can
+use the same model name. Lookup checks the current instance, its containing
+instances, then globals. A missing model is an error; it does not select a
+default model.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
 
@@ -351,7 +354,49 @@ A subcircuit can be used in the main netlist or another subcircuit (nesting) usi
 
 **X**Label&emsp;*IO Nodes*&emsp;*SubcktName*&emsp;(WRspice (normal SPICE) mode)
 
-Additionally, keywords in the form of **LABEL=VALUE** can be appended to the end of the subcircuit declaration line which when instantiated will replace the value of the **LABEL** component within the subcircuit with the associated **VALUE**. This allows for unique subcircuit instantiations which would prove useful in testing various parameters without altering the original subcircuit or having multiple instances of the same subcircuit definition. This could open the door for potential future margin and optimization software.
+Named parameters can be supplied on each instance, with optional defaults in
+its `.subckt` header. `PARAMS:` is optional. Spaces around `=` and expressions
+in braces are accepted.
+
+```cir
+.param BASE=10
+X1 CELL A 0 RES={BASE*2}
+X2 B 0 CELL RES=5
+I1 0 A 1
+I2 0 B 1
+.subckt CELL IN RET PARAMS: RES=10 SCALE=2
+.param TOTAL=RES*SCALE
+R1 IN RET TOTAL
+.ends
+```
+
+The two resistances are 40 ohm and 10 ohm. An instance override is evaluated in
+the caller's environment before binding the child; `RES={RES*2}` uses the
+caller's `RES`. Other assignments on the same instance are not visible while
+its override expressions are evaluated. The child's defaults and local `.param`
+expressions then resolve using the bound values. Lookup proceeds from that
+instance through its containing instances to global parameters. Local names
+shadow inherited names; each instance remains independent. Undefined names and
+parameter dependency cycles fail with a parsing diagnostic.
+
+An override can introduce a local name without a header default, as in
+`X1 CELL A 0 RES=10` with `R1 IN RET RES` in `CELL`. Prefer explicit defaults
+when a reusable circuit has a useful default value. Numeric local definitions
+are evaluated when instantiated or requested by a model IV command. Structural
+subcircuit cycles and unknown child types are rejected even in unused definitions.
+
+Legacy **component-label** overrides also remain available: `X1 CELL A 0 R1=5`
+replaces the value of resistor `R1`. A nested label uses inside-to-outside order,
+such as `R1|XCH=5`. This applies to R/L/C/K values, E/F/G/H gains, T delay, and
+an existing B `AREA=` or `IC=` assignment. An explicitly declared parameter of
+the same name takes precedence over this legacy shortcut. Duplicate assignments
+on one header or instance are errors; a later separate `.param` declaration
+replaces an earlier expression with a warning.
+
+Local JJ models are evaluated separately for each instance. Model lookup checks
+that instance, then containing instances, then globals. A local model always
+shadows a global model of the same name. Parameter values are never substituted
+into node names, filenames or model identifiers.
 
 ### Noise
 
@@ -396,7 +441,12 @@ JoSIM allows the user to output an IV curve for a specified JJ model within the 
 
 This command outputs a comma seperated value (CSV) at the *filepath* specified which contains the IV curve data for the *modelname* from negative *max_current* to positive *max_current*.
 
-Subcircuit models can be output using the `.`(period) or `|`(vertical bar) as separator between the *modelname* and the subcircuit NAME.
+Subcircuit models can be output using `.` or `|` between the model name and
+subcircuit **definition name**, for example `.iv JM.CELL 350u iv.csv STEP=175u`.
+This evaluates the definition's default parameters with global fallback. It
+uses no particular instance's overrides or caller environment; missing required
+defaults are errors. This command draws a model IV curve, rather than sweeping
+an arbitrary connected circuit.
 
 ### Output
 

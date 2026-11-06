@@ -83,6 +83,22 @@ class GateRegression(unittest.TestCase):
                 traces, _ = self.simulate(deck, mode)
                 self.assertAlmostEqual(traces[-1][1], 50e-6, delta=1e-8)
 
+    def test_positional_gate_uses_the_scoped_model(self):
+        deck = ("P1 A 0 DC 1.5707963267948966\nP2 B 0 DC 1.5707963267948966\n"
+                "VG G 0 DC 5m\nX1 GATED A G\nX2 PLAIN B G\n"
+                ".model JM JJ(RTYPE=0 IC=900u RN=10 CAP=0.1p)\n"
+                ".subckt GATED IN CTRL WIDTH=10m\n"
+                ".model JM JJ(RTYPE=0 IC=100u RN=10 CAP=0.1p GWIDTH=WIDTH)\n"
+                "B1 IN 0 CTRL JM\n.ends\n"
+                ".subckt PLAIN IN CTRL\n.model JM JJ(RTYPE=0 IC=100u RN=10 CAP=0.1p)\n"
+                "B1 IN 0 CTRL JM\n.ends\n"
+                ".tran 0.1p 20p\n.print I(B1.X1) I(B1.X2)\n.end\n")
+        for mode in (0, 1):
+            traces, _ = self.simulate(deck, mode)
+            for row in traces[-10:]:
+                self.assertAlmostEqual(row[1], 50e-6, delta=1e-10)
+                self.assertAlmostEqual(row[2], 100e-6, delta=2e-10)
+
     def test_invalid_gate(self):
         for junction in ("B1 n 0 jm GC=missing", "B1 n 0 jm GC=g GC=g"):
             self.simulate(self.deck(junction=junction), success=False)
@@ -105,6 +121,18 @@ class GateRegression(unittest.TestCase):
                     for row, current in zip(iv, expected):
                         self.assertTrue(all(math.isfinite(v) for v in row))
                         self.assertAlmostEqual(row[1], current, delta=1e-11)
+
+    def test_local_model_iv_uses_definition_defaults(self):
+        deck = ("P1 N 0 DC 1.5707963267948966\nX1 CELL N CRIT=100u\n"
+                ".subckt CELL IN CRIT=300u\n"
+                ".model JM JJ(RTYPE=0 IC=CRIT RN=10 CAP=0.1p)\nB1 IN 0 JM\n.ends\n"
+                ".tran 0.1p 20p\n.print I(B1.X1)\n.iv JM.CELL 350u iv.csv STEP=175u\n.end\n")
+        traces, iv = self.simulate(deck)
+        self.assertAlmostEqual(traces[-1][1], 100e-6, delta=1e-10)
+        reference = deck.replace(".iv JM.CELL", ".iv DEFAULT").replace(
+            ".end\n", ".model DEFAULT JJ(RTYPE=0 IC=300u RN=10 CAP=0.1p)\n.end\n")
+        _, reference_iv = self.simulate(reference)
+        self.assertEqual(iv, reference_iv)
 
     def test_invalid_iv(self):
         for maximum, option in (("5u", "STEP=0"), ("5u", "UNKNOWN=1"), ("-5u", "STEP=1u")):

@@ -329,6 +329,92 @@ class CliRegression(unittest.TestCase):
         self.assertEqual([row[:2] for row in plain], [row[:2] for row in captured])
         self.assertGreater(len({row[3] for row in captured[1:]}), 1)
 
+    def test_named_subcircuit_parameters_issue_81(self):
+        for mode in (0, 1):
+            for defaults, override, expected in (("", "RES=10.0", 10),
+                                                   (" RES=10", "RES=5.0", 5),
+                                                   (" PARAMS: RES = 10", "", 10)):
+                with self.subTest(mode=mode, defaults=defaults, override=override):
+                    deck = (f"X1 TEST 1 0 {override}\nI1 0 1 1.0\n"
+                            f".subckt TEST IN GND{defaults}\nR1 IN GND RES\n.ends\n"
+                            ".tran 0.25p 5n 0 1p\n.print V(1) V(IN.X1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    for row in rows[1:]:
+                        for value in map(float, row[1:]):
+                            self.assertAlmostEqual(value, expected, delta=2e-6 * expected)
+
+    def test_nested_parameter_scopes_and_independent_instances(self):
+        deck = (".param RES=7\n.param EXTRA=1\n"
+                "X1 A 0 OUTER RES={RES+3}\nX2 OUTER B 0 RES=20\n"
+                "I1 0 A 1\nI2 0 B 1\n"
+                ".subckt OUTER IN GND RES=1\n.param DERIVED=RES+EXTRA\n"
+                "XCH IN GND CHILD RES = {RES*2}\n.ends\n"
+                ".subckt CHILD IN GND RES=2\n.param TOTAL=RES+DERIVED\n"
+                "R1 IN GND TOTAL\n.ends\n"
+                ".tran 1p 8p\n.print V(A) V(B) V(IN.XCH.X1) V(IN.XCH.X2)\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(deck, extra=("-a", str(mode), "-V", "2"))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for row in rows[1:]:
+                for value, expected in zip(map(float, row[1:]), (31, 61, 31, 61)):
+                    self.assertAlmostEqual(value, expected, delta=2e-6 * expected)
+
+    def test_legacy_component_overrides_and_parameter_precedence(self):
+        deck = (".param SCALE=2\nX1 CELL A 0 R1={3*SCALE}\n"
+                "X2 PARENT B 0 R1|XC=9\nX3 DECLARED C 0 R1=12\n"
+                "I1 0 A 1\nI2 0 B 1\nI3 0 C 1\n"
+                ".subckt CELL IN RET\nR1 IN RET 10\n.ends\n"
+                ".subckt PARENT IN RET\nXC IN RET CELL\n.ends\n"
+                ".subckt DECLARED IN RET R1=5\nR1 IN RET {2*R1}\n.ends\n"
+                ".tran 1p 8p\n.print V(A) V(B) V(C)\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for row in rows[1:]:
+                for value, expected in zip(map(float, row[1:]), (6, 9, 24)):
+                    self.assertAlmostEqual(value, expected, delta=2e-6 * expected)
+
+    def test_scoped_junction_models_and_global_shadowing(self):
+        deck = (".param BASE=100u\n.model JM JJ(RTYPE=0 IC=900u RN=10 CAP=0.1p)\n"
+                "P1 A 0 DC 1.5707963267948966\nP2 B 0 DC 1.5707963267948966\n"
+                "X1 CELL A 0 CRIT={BASE}\nX2 CELL B 0 CRIT={2*BASE}\n"
+                ".subckt CELL IN RET CRIT=300u\n.param SCALE=2\n"
+                ".model JM JJ(RTYPE=0 IC={CRIT*SCALE} RN=10 CAP=0.1p)\n"
+                "B1 IN RET JM\nXCH IN RET CHILD\n.ends\n"
+                ".subckt CHILD IN RET\nB1 IN RET JM AREA=0.5\n.ends\n"
+                ".tran 0.1p 20p\n.print I(B1.X1) I(B1.X2) I(B1.XCH.X1) I(B1.XCH.X2)\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for row in rows[-10:]:
+                for value, expected in zip(map(float, row[1:]), (200e-6, 400e-6, 100e-6, 200e-6)):
+                    self.assertAlmostEqual(value, expected, delta=2e-6 * expected)
+
+    def test_instance_scope_does_not_collide_with_type_name(self):
+        deck = ("X1 X1 N 0 RES=12\nI1 0 N 1\n"
+                ".subckt X1 IN RET RES=5\nR1 IN RET RES\n.ends\n"
+                ".subckt UNUSED IN RET\nR1 IN RET REQUIRED_AT_INSTANCE\n.ends\n"
+                ".tran 1p 5p\n.print V(N)\n.end\n")
+        result, rows = self.run_deck(deck, extra=("-V", "2"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(all(abs(float(row[1]) - 12) < 24e-6 for row in rows[1:]))
+
+    def test_invalid_instance_parameters(self):
+        base = ("X1 CELL N 0 {}\nI1 0 N 1\n.subckt CELL IN RET RES=10\n"
+                "R1 IN RET RES\n.ends\n.tran 1p 5p\n.print V(N)\n.end\n")
+        for assignment in ("RES=", "RES=1 RES=2", "RES=MISSING", "RES={1+}", "RES={1+2", "RES==1"):
+            with self.subTest(assignment=assignment):
+                result, rows = self.run_deck(base.format(assignment), timeout=3)
+                self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                self.assertIsNone(rows)
+                self.assertIn("Parsing", result.stdout + result.stderr)
+        cycle = base.format("").replace("RES=10", "RES=OTHER OTHER=RES")
+        result, rows = self.run_deck(cycle, timeout=3)
+        self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+        self.assertIn("RES", result.stdout + result.stderr)
+        self.assertIsNone(rows)
+
     def test_initial_phase_voltage_output_matches_ideal_source(self):
         for startup in ("", " DST"):
             for timing in ("1p 5p", "1p 1p", "1p 5p 0 1p 2p", "1e-30 5e-30"):

@@ -215,9 +215,16 @@ void Input::parse_input(string_o fileName) {
                             netlist.subcircuits[subckt.value()].io.clear();
                             netlist.subcircuits[subckt.value()].lines.clear();
                         }
-                        // Populate the a subcircuit at given name with its IO nodes
-                        for (auto j = 2; j < fileLines.at(i).size(); ++j) {
+                        // Header defaults are parameters, not additional pins.
+                        const auto firstParameter = parameter_start(fileLines.at(i), 2);
+                        for (size_t j = 2; j < firstParameter; ++j) {
                             netlist.subcircuits[subckt.value()].io.push_back(fileLines.at(i).at(j));
+                        }
+                        if (firstParameter == 2) { Errors::input_errors(InputErrors::MISSING_SUBCKT_IO); }
+                        if (firstParameter < fileLines.at(i).size()) {
+                            tokens_t declaration{".PARAM"};
+                            declaration.insert(declaration.end(), fileLines.at(i).begin() + firstParameter, fileLines.at(i).end());
+                            create_parameter(declaration, parameters, subckt);
                         }
                         // Complain if no IO is found
                     } else {

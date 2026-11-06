@@ -105,12 +105,41 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## A08a — Named subcircuit parameter overrides (#81)
 
-- **Classification:** confirmed compatibility defect.
-- **Current reproduction/result:** Open; audit reproducer remains unsupported.
-- **Required outcome:** Define scoped defaults/overrides, nested instances and test exact supplied circuits.
-- **Implementation/owner:** src/Netlist.cpp; src/Parameters.cpp.
-- **Verification:** named-parameter parser/numerical regressions.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** confirmed compatibility defect; locally repaired.
+- **Reproduction:** both supplied named-parameter circuits failed: RES was
+  undefined without a default, and RES=10 in a header was treated as an IO pin.
+  Preserved six red cases cover both modes and spaced header assignments.
+- **Implementation:** bind parameters/models before descending into each
+  instance. Evaluate overrides in the caller; resolve local defaults/derived
+  parameters against bound values, enclosing instances and globals. Keep
+  iterative expansion, structural cycle detection, IO/pin aliases, and legacy
+  component-label overrides. Instance contexts are distinct from type defaults.
+  Define exact semantics in syntax.md and the library migration in API.md.
+- **Associated repairs:** local models now take deterministic precedence over
+  globals; gate shape detection uses the same scoped lookup. Model IV commands
+  resolve type defaults independently of instances. Re-parsing resolved
+  parameters no longer fails; update_parameters resets actual stored values,
+  and redefinitions now perform the replacement their warning promises.
+- **Verification:** exact #81 circuits return 10/5 V (default-only 10 V) in both
+  modes; independent/nested instances return 31/61 V and legacy overrides return
+  6/9 V. Declared-name precedence returns 24 V. JJ currents at imposed pi/2
+  phase are 200/400/100/200 uA for local and inherited models. Scoped positional
+  gate tests give 50/100 uA. Scalar CSV tolerances are 2e-6 relative; gate checks
+  allow 1e-10/2e-10 A (CSV and steady-state rounding). Type-level local model IV
+  samples equal an explicitly identical global reference exactly, while the
+  connected instance retains its different critical current. Malformed/duplicate,
+  unresolved and cyclic expressions fail within bounded tests. Library and fresh
+  installed consumers exercise both legacy and parameter-aware expansion, plus
+  recoverable resolution failures. GCC16/Clang23 Debug and Release pass 30/30;
+  final seven regression groups pass in all four configurations. Full
+  ASan/UBSan/leaks passes 30/30 in 144.95 s; final binding/reparse checks also
+  pass under sanitizers. Native CI remains pending for this commit.
+- **Evidence:** build/audit-resolution/named-parameters-red.log;
+  named-parameters-four-config.log; named-parameters-tests.xml and final targeted
+  library/gate/installed-consumer logs; named-parameters-sanitizer-tests.xml and
+  named-parameters-final-sanitizer-tests.xml. Quantitative decks, sample hashes
+  and source identity: artifacts/audit-resolution/named-parameters.json.
+  No device/integration equations changed.
 
 ## A08b — Hierarchical pin-alias output (#81)
 
@@ -570,7 +599,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   https://physics.nist.gov/cgi-bin/cuu/Value?flxquhs2e.
   Repeated library/installed-consumer tests verify deferred trace selection.
 - **Results:** GCC16/Clang23 Release pass 30/30; full ASan/UBSan with leak
-  detection passes 30/30 in 136.28 s. Native CI remains pending for this commit.
+  detection passes 30/30 in 136.28 s. Commit 100a64307bf1 passed all ten native jobs in CI 42227543389.
 - **Owners:** Simulation results/history and Output phase differentiation.
 - **Evidence:** build/audit-resolution/output-history-red.json,
   startup-overflow-red.json; artifacts/audit-resolution/phase-output-history.json;

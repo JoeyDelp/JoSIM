@@ -101,6 +101,9 @@ class Model {
 
     static void
     parse_model(const std::pair<tokens_t, string_o>& s, vector_pair_t<Model, string_o>& models, const param_map& p);
+
+    static const Model* find_model(const std::string& name, const vector_pair_t<Model, string_o>& models,
+                                  string_o scope);
 };
 } // namespace JoSIM
 

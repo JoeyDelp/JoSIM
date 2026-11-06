@@ -147,6 +147,19 @@ int main() {
         near(parse_param("G+R", parameters, "CELL"), 5.0, "global lookup must not depend on operand order");
         near(parse_param("R+G", parameters), 13.0, "global expression remains independent");
     });
+    check("parameter reparsing and resolved input", [&] {
+        param_map parameters;
+        create_parameter({".PARAM", "BASE=2", "DERIVED={BASE*3}"}, parameters);
+        parse_parameters(parameters);
+        parse_parameters(parameters); // Previously failed when values were already present.
+        near(parse_param("DERIVED", parameters), 6, "resolved parameters are reusable");
+        parameters.at(ParameterName("BASE", std::nullopt)).set_expression("4");
+        update_parameters(parameters);
+        near(parse_param("DERIVED", parameters), 12, "recompute dependent values after update");
+        create_parameter({".PARAM", "BASE=5"}, parameters);
+        update_parameters(parameters);
+        near(parse_param("DERIVED", parameters), 15, "a redefinition replaces the previous expression");
+    });
     check("engineering suffixes in waveform file", [&] {
         write("1m 3m 5m 7m");
         Function source;
