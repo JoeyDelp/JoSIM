@@ -1,0 +1,8 @@
+* Five independent transients for RX=1,2,3,4,5 ohms (#84).
+.param RX=@VALUE@
+.option seed=123
+I1 0 N DC 1
+R1 N 0 RX
+.tran 1p 20p DST
+.print V(N)
+.end

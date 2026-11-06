@@ -7,6 +7,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Safe one-parameter external circuit sweeps with fresh processes, preserved
+  templates/includes, isolated outputs, checked failures, effective seeds/grids
+  and time-weighted measurement windows (#84/#82). Add tested resistance and
+  complete SQUID circuit-IV templates in both analysis modes.
 - Validated floating flux-line and weak-noise SQUID examples for #107/#108,
   with independent flux equilibrium, Josephson/plasma-frequency guidance,
   controlled-seed PSD uncertainty and timestep/output-sampling refinement.
@@ -35,6 +39,10 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Retire the unsafe `ivcurve.py` prototype. It overwrote existing temporary
+  netlists and ignored simulator failures, repeatedly reading stale output.
+  Its entry point now fails with model-IV/circuit-sweep alternatives and
+  changes no files.
 - Select output samples from direct print-grid targets with roundoff-safe ties.
   Cumulative target addition previously produced 9/10/11 ps output gaps for a
   requested 10 ps interval on a 1 ps internal grid. Nonintegral grids still

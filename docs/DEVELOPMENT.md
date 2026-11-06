@@ -63,6 +63,9 @@ CTest runs the existing circuit examples and focused regression groups:
 - `regression::buffer`: finite-capacitance switching in the #101 buffer,
   independent continuous references, flux conservation and timestep refinement.
   See [the buffer study](qualification/2026-11-06-buffer.md).
+- `regression::sweep`: safe fresh-process circuit sweeps, source preservation,
+  independent Ohm/RSJ means, include/custom paths, failures and timeouts.
+  See [the sweep guide](sweeps.md).
 - `regression::build_options`: retired solver/parallel configuration and macro rejection.
 - `regression::library`: repeated recoverable errors followed by valid runs.
 - `regression::installed_package`: installs the library, then builds and runs a

@@ -13,6 +13,7 @@ nav:
   - Gate-Controlled Junctions: 'gate_junctions.md'
   - Noise Sources: 'noise_sources.md'
   - Floating Flux Lines and SQUID Noise: 'squid_noise.md'
+  - Parameter Sweeps and Circuit IV: 'sweeps.md'
   - Development: 'DEVELOPMENT.md'
   - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'

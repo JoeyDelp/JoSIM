@@ -338,20 +338,31 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## I084 — Parameter sweeps #84
 
 - **Classification:** scope/support decision.
-- **Current reproduction/result:** Example/policy pending.
-- **Required outcome:** Document external sweep policy with tested safe parameter example.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/84.
-- **Verification:** five-resistance analytic sweep example.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Disposition:** `.PARAM` defines one run; range/Cartesian orchestration remains
+  external. A safe one-marker helper supplies explicit fresh-process points,
+  isolated output, checked inputs/failures and explicit time-weighted windows.
+- **Result:** R=1/2/3/4/5 ohm at 1 A agrees with IR within 1 nV in both modes.
+  Input/existing-temp/result-directory bytes remain unchanged; actual seed/grid
+  are recorded. Native binary/library qualification requires regression::sweep.
+- **Evidence:** [sweep guide](sweeps.md), [study](qualification/2026-11-06-sweeps.md),
+  tools/circuit_sweep.py and test/param/sweep_resistance.cir.in. Four local full
+  configurations pass 34/34; final focused/native checks recorded in F20.
 
 ## I082 — IV script and circuit sweeps #82
 
-- **Classification:** confirmed unsafe utility plus support questions.
-- **Current reproduction/result:** Open; script rewrites input.
-- **Required outcome:** Preserve input netlist; distinguish model .iv from circuit sweeps; test maintained workflow.
-- **Implementation/owner:** scripts/ivcurve.py; https://github.com/JoeyDelp/JoSIM/issues/82.
-- **Verification:** input-byte-preservation and model/circuit sweep assertions.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** confirmed unsafe prototype, plus support/model questions.
+- **Result/disposition:** F20 reproduces an existing-temp-file overwrite and
+  ignored failures/stale CSV reuse; retire the prototype with a safe explanatory
+  entry point. Distinguish model `.IV`, fresh circuit points and one-transient
+  history. A tested complete-circuit SQUID sweep is the practical alternative.
+- **Measurements:** +/-200 uA gives +/-1.13153468 mV against independent
+  +/-1.13137085 mV (0.0145% error, <=1% finite-window/timestep budget), both modes.
+  Zero current gives zero voltage. Source/include/custom data and pre-existing
+  files are preserved; failures and timeouts cannot produce a successful summary.
+- **Evidence:** [guide](sweeps.md), [study](qualification/2026-11-06-sweeps.md),
+  test/regression_sweep.py, tools/circuit_sweep.py and the retained red witness.
+  Model-IV numerical protocol and broader gate/IV physical review remain
+  explicit separate limits; no adaptive-error/Newton guarantee is asserted.
 
 ## D01 — Numerical regression breadth
 
@@ -959,3 +970,26 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** squid-example/print-grid/{red.json,red-tests.log,green-tests.log};
   [study](qualification/2026-11-06-squid-noise.md). All four local configurations
   pass 33/33; full ASan/UBSan/leaks pass 33/33 in 209.52 s. Native pending.
+
+## F20 — Unsafe positional IV prototype and fresh circuit sweeps
+
+- **Classification:** confirmed utility overwrite/failure-handling defect.
+- **Reproduction:** Existing input_tmp.cir is overwritten. A task-owned simulator
+  wrapper runs the real CLI once then returns17; the prototype makes 292 calls
+  in five seconds while reusing the first CSV. Exact hash/deck/log witness:
+  sweeps/unsafe-iv/red.json. Original main file remains unchanged in this probe.
+- **Repair/disposition:** Formally retire the positional prototype; entry point
+  returns2 with useful model/circuit alternatives and modifies nothing. The
+  replacement one-parameter helper preserves templates/includes/custom data,
+  preflights output directives, isolates point outputs and checks every result.
+  Average by time, including explicit interpolated boundaries; no stale reuse.
+- **Verification:** Nine focused tests cover both-mode five-R/whole-SQUID
+  references, source/existing-file preservation, include/CUS/continuation paths,
+  data hashes, output-control/CR normalization, invalid/cyclic input, failed
+  simulator/timeout witnesses, and independent nonuniform-ramp integration.
+- **Compatibility/evidence:** stdlib-only new helper; model `.IV` retained;
+  retired script no longer simulates. New required regression::sweep group.
+  All four local full configurations pass34/34; final nine-test sweep group
+  passes all four and ASan/UBSan/leaks in4.02s. No production C++ change;
+  preceding full sanitizer33/33 passed209.52s. Native pending.
+  [Study](qualification/2026-11-06-sweeps.md) owns bounds.
