@@ -61,11 +61,20 @@ Optional frequency parameter sets the noise effective bandwidth during noise ana
 
 The value of an inductor is in Henry.
 
+L is constant during simulation; a parameter expression is evaluated once.
+Current-dependent L(I) is not supported. See the
+[model boundary](model_limits.md#nonlinear-inductance) for flux-linkage
+semantics and the limits of constant-L approximations.
+
 ### Capacitor
 
 **C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
 The value of a capacitor is in Farad.
+
+Capacitor `IC=` is unsupported and produces an error. Prepare a nonzero voltage
+with an explicit charging interval before measurement. See the
+[tested precharge example](model_limits.md#capacitor-voltage).
 
 ### Josephson Junction (JJ)
 
@@ -107,6 +116,10 @@ The `.model` line belongs to its containing subcircuit. Separate subcircuits can
 use the same model name. Lookup checks the current instance, its containing
 instances, then globals. A missing model is an error; it does not select a
 default model.
+
+For a Stewart–McCumber parameter, use the
+[tested parameter conversion](model_limits.md#beta-c).
+It defines which resistance enters beta_c; there is no direct `BETA_C=` field.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
 

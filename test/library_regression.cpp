@@ -106,6 +106,13 @@ void invalid_transient() {
     must_throw([&] { matrix.create_matrix(run); }, "Invalid transient analysis");
 }
 
+void unsupported_capacitor_ic() {
+    auto run = input();
+    run.netlist.expNetlist = {{{"R1", "N", "0", "10"}, std::nullopt},
+                             {{"C1", "N", "0", "1P", "IC=1M"}, std::nullopt}};
+    must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, "Capacitor IC is not supported");
+}
+
 void unrequested_source_history() {
     auto run = input();
     run.netlist.expNetlist = {{{"I1", "0", "N", "NOISE(1P", "0", "1P)"}, std::nullopt},
@@ -224,6 +231,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "invalid") { invalid_matrix(); }
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
+            if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
             if (selected == "all" || selected == "parameters") { scoped_and_legacy_expansion(); }
             if (selected == "all" || selected == "phase") {

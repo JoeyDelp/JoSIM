@@ -182,12 +182,22 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I109 — Capacitor initial voltage #109
 
-- **Classification:** optional feature request.
-- **Current reproduction/result:** Disposition and alternative pending; do not advertise unsupported IC syntax.
-- **Required outcome:** Define supported startup boundary and tested practical alternative, or implement explicit IC semantics.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/109; src/Capacitor.cpp.
-- **Verification:** startup/history analytic regressions.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** optional arbitrary-state feature; existing silent IC handling
+  is a separate confirmed defect F12.
+- **Disposition:** No arbitrary capacitor initial-voltage solver semantics are
+  added. Define zero stored histories, finite negative startup and DST explicitly;
+  use a physical charging interval before measurement. A future IC feature must
+  initialize coupled states and histories consistently in both modes/on retries.
+- **Alternative/verification:** test/comp/capacitor_precharge.cir charges for
+  20 RC time constants, then discharges after a prescribed finite source fall.
+  Independent closed-form response, KCL/KVL and three-step refinement pass in
+  both modes. Voltage errors are 114.502/29.7314/7.59995 nV; KCL is zero at CSV
+  precision. All four compiler/configurations pass 33/33; affected sanitizer
+  groups pass with leak detection. Native qualification pending. F12 rejects
+  unsupported IC syntax.
+- **Evidence:** [support guide](model_limits.md#capacitor-voltage) and
+  [model-boundary study](qualification/2026-11-06-model-boundaries.md) define
+  equations, h^2 bounds, rounding allowance, commands and practical limits.
 
 ## I108a — Finite-cycle sine #108
 
@@ -243,12 +253,18 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I093 — Stewart–McCumber parameter #93
 
-- **Classification:** optional model convenience.
-- **Current reproduction/result:** Disposition pending.
-- **Required outcome:** State resistance convention and test a conversion example or implement supported semantics.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/93.
-- **Verification:** beta_c conversion/example numerical test.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** optional model convenience; explicit supported alternative.
+- **Disposition:** Use ordinary parameter expressions to set
+  R=sqrt(beta_c*sigma/(Ic*C)). RTYPE=0 uses RN as its constant shunt. RTYPE=1
+  has state-dependent conductance; R0/RN choices describe different damping
+  assumptions, so no ambiguous global BETA_C field is added.
+- **Verification:** test/comp/jj_beta_c.cir derives R for beta=0.2/1/5. Both modes
+  satisfy Ic*sin(phi)+V/R+C*dV/dt, with current errors below 9.40e-13 A against
+  1e-10 A allowance; KCL residual is zero. All four compiler/configurations pass
+  33/33; affected sanitizer groups pass with leak detection. Native checks pending.
+- **Evidence:** [conversion guide](model_limits.md#beta-c) and
+  [study](qualification/2026-11-06-model-boundaries.md); exact SI constants,
+  positive-domain restrictions and zero-C boundary are explicit.
 
 ## I091 — Long-run JJ artifacts #91
 
@@ -267,12 +283,19 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I088 — Nonlinear inductor #88
 
-- **Classification:** optional substantial solver feature.
-- **Current reproduction/result:** Disposition pending.
-- **Required outcome:** Define flux-linkage semantics/support boundary and practical alternative without promising L(I) substitution.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/88.
-- **Verification:** technical disposition and justified example if applicable.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** optional substantial solver feature; outside current support.
+- **Disposition:** JoSIM supports constant Phi=L*I. Define whether the requested
+  L(I)=L0*(1+a*I^2) means differential inductance or Phi/I: their differential
+  laws differ by a factor of three in the nonlinear term. No per-step L(I)
+  substitution is advertised as a nonlinear solver. Full support requires a
+  flux law/derivative, consistent initial bias/mutual semantics and convergence
+  qualification in both modes.
+- **Alternative/limits:** A constant-L approximation can be used only within
+  an assessed excursion. For the differential interpretation, abs(a*I^2)<=0.01
+  bounds departure from L0 to 1% at the element level; this does not bound
+  long-line phase/gain error. Constant-L RL/RLC dynamics already have independent
+  analytic/refinement tests. Large-signal nonlinear/JTWPA behaviour remains outside
+  the supported model. See [the derivation](model_limits.md#nonlinear-inductance).
 
 ## I084 — Parameter sweeps #84
 
@@ -312,10 +335,11 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Additional finite-capacitance reference:** The #101 buffer study covers
   two clocked input pulses, both directions/modes, continuous RCSJ references,
   phase-slip counts, flux area and step refinement. See I101 for measurements
-  and pending native qualification. Nonzero precharge remains separate.
-- **Required outcome:** Complete the remaining startup/precharge scope and
-  final qualification. These bounded studies do not establish general
-  scientific correctness.
+  and pending native qualification. Six RC precharge/discharge and six explicit
+  beta_c conversion cases now extend the numerical owner; see I109/I093.
+- **Required outcome:** Complete final integrated qualification and resolve
+  any remaining confirmed numerical defects. These bounded studies do not
+  establish general scientific correctness.
 - **Implementation/owner:** test/regression_numerics.py; release/library owners
   require its CTest group. No solver/device equations changed by this study.
 - **Verification:** GCC16/Clang23 Debug and Release pass the numerical group.
@@ -733,3 +757,22 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   passes 33/33 in 212.16 s. All three controlled red cases now agree between
   modes at CSV precision. Green measurements and source/binary hashes:
   artifacts/audit-resolution/phase-source/measurements.json.
+
+## F12 — Silently ignored capacitor initial-voltage syntax
+
+- **Classification:** confirmed user-input defect; repaired locally, native checks pending.
+- **Reproduction:** Adding IC=1m or IC = 1m to an uncharged RC circuit succeeds
+  and produces the same zero voltage as no IC option. It does not apply the
+  requested initial state. Exact red decks/output/binary hash:
+  build/audit-resolution/optional-features/capacitor-ic-red.json.
+- **Repair:** Capacitor construction rejects a trailing IC assignment with a
+  useful diagnostic and recommends an explicit charging interval. This does
+  not implement IC semantics. A node named IC remains valid.
+- **Verification:** Six CLI rejection cases (both modes, three spellings),
+  recoverable direct-library error followed by valid runs, and independent
+  precharge/discharge alternatives. Red CLI assertions fail all six before
+  repair. GCC16/Clang23 Debug/Release pass 33/33; affected CLI/numerics/library
+  ASan/UBSan/leak checks pass in 5.19 s. Native qualification pending.
+- **Evidence:** optional-features/ic-red.log and candidate.patch; the
+  [boundary study](qualification/2026-11-06-model-boundaries.md) defines support
+  and quantitative regression acceptance.

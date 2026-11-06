@@ -7,6 +7,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Added
 
+- Tested capacitor precharge/discharge and explicit Stewart–McCumber parameter
+  conversion examples. Document initial-state and nonlinear-inductor boundaries
+  (#109, #93, #88).
 - Independent finite-capacitance buffer references, pulse-flux/conservation
   and timestep-refinement checks in both modes (#101). The reverse bipolar
   response agrees with the independent physical model. Native tests use compact
@@ -26,6 +29,8 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Reject unsupported capacitor `IC=` requests explicitly; older builds silently
+  ignored the requested voltage. Explicit charging intervals remain supported.
 - Preserve voltage-mode nodal phase accumulated during startup, so node and
   junction phase traces agree. Phase sources now retain their actual preceding
   samples, fixing stateful noise differentiation and false t=0 voltage pulses

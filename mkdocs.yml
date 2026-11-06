@@ -9,6 +9,7 @@ nav:
   - Example Usage: 'ex_usage.md'
   - Component Stamps: 'comp_stamps.md'
   - Syntax Guide: 'syntax.md'
+  - Initial States and Model Parameters: 'model_limits.md'
   - Gate-Controlled Junctions: 'gate_junctions.md'
   - Noise Sources: 'noise_sources.md'
   - Development: 'DEVELOPMENT.md'

@@ -40,6 +40,12 @@ Capacitor::Capacitor(const std::pair<tokens_t, string_o>& s,
                      Spread&                              spread,
                      int64_t&                             bi) {
     double spr = 1.0;
+    for (size_t i = 4; i < s.first.size(); ++i) {
+        if (s.first[i] == "IC" || s.first[i].rfind("IC=", 0) == 0) {
+            Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                Misc::vector_to_string(s.first) + "\nCapacitor IC is not supported; add a charging interval before measurement.");
+        }
+    }
     for (auto i : s.first) {
         if (i.find("SPREAD=") != std::string::npos) {
             spr = parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);

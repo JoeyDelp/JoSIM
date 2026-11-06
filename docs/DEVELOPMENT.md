@@ -50,6 +50,8 @@ CTest runs the existing circuit examples and focused regression groups:
 - `regression::numerics`: independent analytic RC/RL/RLC responses, KCL/KVL,
   timestep refinement and comparison of both modes with warm/cold startup;
   an independently derived biased JJ/inductor equilibrium checks flux history.
+  Analytic precharge/discharge and beta_c conversion examples are also required;
+  see [the model-boundary study](qualification/2026-11-06-model-boundaries.md).
   See [the linear-circuit study](qualification/2026-11-06-linear-circuits.md).
 - `regression::buffer`: finite-capacitance switching in the #101 buffer,
   independent continuous references, flux conservation and timestep refinement.

@@ -19,6 +19,7 @@ parser.add_argument("--report", type=pathlib.Path)
 options, remaining = parser.parse_known_args()
 BINARY = options.binary.resolve()
 MEASUREMENTS = []
+ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def analytic(kind, t):
@@ -45,6 +46,82 @@ def analytic(kind, t):
 
 
 class NumericalRegression(unittest.TestCase):
+    def run_example(self, deck, mode):
+        with tempfile.TemporaryDirectory(prefix="numeric-example-", dir=pathlib.Path.cwd()) as tmp:
+            directory = pathlib.Path(tmp)
+            (directory / "input.cir").write_text(deck)
+            result = subprocess.run([str(BINARY), "-m", "1", "-a", str(mode), "-o", "output.csv", "input.cir"],
+                                    cwd=directory, capture_output=True, text=True, timeout=15)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            with (directory / "output.csv").open() as stream:
+                rows = [[float(value) for value in row] for row in list(csv.reader(stream))[1:]]
+        self.assertTrue(rows and all(math.isfinite(v) for row in rows for v in row))
+        return rows
+
+    def test_explicit_capacitor_precharge_and_discharge(self):
+        # RC response to A - (A/d)*(t-t1)*H(t-t1) + (A/d)*(t-t2)*H(t-t2).
+        # The initial step transient has decayed before the measurement window.
+        amplitude, tau, capacitance = 1e-3, 10e-12, 1e-12
+        ramp = amplitude / 2e-12
+        def g(t):
+            return t - tau + tau * math.exp(-t / tau) if t > 0 else 0
+        def dg(t):
+            return 1 - math.exp(-t / tau) if t > 0 else 0
+        original = (ROOT / "test/comp/capacitor_precharge.cir").read_text()
+        for mode in (0, 1):
+            previous = None
+            for h in (.1, .05, .025):
+                with self.subTest(mode=mode, h=h):
+                    deck = original.replace(".tran 0.1p", f".tran {h}p")
+                    rows = self.run_example(deck, mode)
+                    error_v = error_i = kcl = 0.0
+                    for t, vin, voltage, resistor, current, source in rows:
+                        if t < 190e-12:
+                            continue
+                        expected_v = (amplitude * (1 - math.exp(-t / tau))
+                                      - ramp * g(t - 200e-12) + ramp * g(t - 202e-12))
+                        expected_i = capacitance * (amplitude / tau * math.exp(-t / tau)
+                                                   - ramp * dg(t - 200e-12) + ramp * dg(t - 202e-12))
+                        error_v = max(error_v, abs(voltage - expected_v))
+                        error_i = max(error_i, abs(current - expected_i))
+                        kcl = max(kcl, abs(resistor - current), abs(resistor + source))
+                        self.assertAlmostEqual(vin - voltage, 10 * resistor, delta=2e-9)
+                    bound = 2 * amplitude * (h * 1e-12 / tau) ** 2
+                    self.assertLess(error_v, bound + 1e-9)
+                    self.assertLess(error_i, bound / 10 + 1e-10)
+                    self.assertLess(kcl, 1e-15)
+                    if previous is not None:
+                        self.assertLess(error_v, .4 * previous[0] + 1e-9)
+                        self.assertLess(error_i, .4 * previous[1] + 1e-10)
+                    previous = error_v, error_i
+                    MEASUREMENTS.append({"kind": "RC_PRECHARGE", "mode": mode, "h_ps": h, "deck": deck,
+                                         "maximum_voltage_error_V": error_v, "maximum_current_error_A": error_i,
+                                         "maximum_KCL_residual_A": kcl, "window_start_s": 190e-12})
+
+    def test_beta_c_resistance_conversion(self):
+        # beta_c = Ic*C*R^2/sigma, for the constant resistance in RTYPE=0.
+        sigma = 6.62607015e-34 / (4 * math.pi * 1.602176634e-19)
+        ic, capacitance, ramp = 1e-6, .1e-12, 1e7
+        original = (ROOT / "test/comp/jj_beta_c.cir").read_text()
+        for beta in (.2, 1., 5.):
+            resistance = math.sqrt(beta * sigma / (ic * capacitance))
+            deck = original.replace("BETA=1", f"BETA={beta}")
+            for mode in (0, 1):
+                with self.subTest(beta=beta, mode=mode):
+                    rows = self.run_example(deck, mode)
+                    error = kcl = 0.0
+                    for t, voltage, phase, current, source in rows:
+                        if t < 1e-12:
+                            continue
+                        expected = ic * math.sin(phase) + voltage / resistance + capacitance * ramp
+                        error = max(error, abs(current - expected))
+                        kcl = max(kcl, abs(current + source))
+                    self.assertLess(error, 1e-10)
+                    self.assertLess(kcl, 1e-15)
+                    MEASUREMENTS.append({"kind": "JJ_BETA_C", "mode": mode, "beta_c": beta, "deck": deck,
+                                         "resistance_ohm": resistance, "maximum_constitutive_error_A": error,
+                                         "maximum_KCL_residual_A": kcl})
+
     def simulate(self, kind, mode, h, startup):
         parts = "R1 IN OUT 10\n"
         if kind == "RC":
@@ -171,8 +248,8 @@ if __name__ == "__main__":
         options.report.write_text(json.dumps({
             "passed": result.wasSuccessful(), "binary_sha256": hashlib.sha256(BINARY.read_bytes()).hexdigest(),
             "test_sha256": hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
-            "reference": "Closed-form R/L/C ramps and KCL/zero-flux JJ/L equilibrium; SI units",
-            "scope": "Linear dynamics and static JJ/L equilibrium; switching and long-run studies have separate owners",
+            "reference": "Closed-form R/L/C ramps, RC precharge, KCL/zero-flux JJ/L equilibrium and beta_c conversion; SI units",
+            "scope": "Linear dynamics, static JJ/L equilibrium and specified constitutive response; switching/long-run studies have separate owners",
             "cases": MEASUREMENTS,
         }, indent=2) + "\n")
     sys.exit(not result.wasSuccessful())

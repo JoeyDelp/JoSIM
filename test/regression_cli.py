@@ -513,6 +513,20 @@ class CliRegression(unittest.TestCase):
                                 tolerance = 3e-6 * max(abs(a), abs(b)) + (1e-9 if column < 2 else 1e-13)
                                 self.assertAlmostEqual(a, b, delta=tolerance)
 
+    def test_unsupported_capacitor_initial_voltage_is_explicit(self):
+        for assignment in ("IC=1m", "IC = 1m", "IC={2*0.5m}"):
+            for mode in (0, 1):
+                with self.subTest(assignment=assignment, mode=mode):
+                    deck = f"R1 N 0 10\nC1 N 0 1p {assignment}\n.tran 0.1p 2p DST\n.print V(N)\n.end\n"
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                    self.assertIn("Capacitor IC is not supported", result.stdout + result.stderr)
+                    self.assertIsNone(rows)
+        # IC remains a valid node name; the diagnostic applies to trailing options.
+        result, rows = self.run_deck("R1 IC 0 10\nC1 IC 0 1p\n.tran 0.1p 2p DST\n.print V(IC)\n.end\n")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(all(float(row[1]) == 0 for row in rows[1:]))
+
     def test_phase_step_flux_quantum_area(self):
         # Phi0=h/(2e), exact SI definitions; NIST physics.nist.gov/cuu/Constants/
         flux_quantum = 6.62607015e-34 / (2 * 1.602176634e-19)

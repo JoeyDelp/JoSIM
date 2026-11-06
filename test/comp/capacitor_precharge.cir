@@ -1,0 +1,7 @@
+* Explicit precharge followed by RC discharge; tau=10 ps. No capacitor IC syntax.
+V1 IN 0 PWL(0 1m 200p 1m 202p 0 300p 0)
+R1 IN OUT 10
+C1 OUT 0 1p
+.tran 0.1p 300p DST
+.print V(IN) V(C1) I(R1) I(C1) I(V1)
+.end
