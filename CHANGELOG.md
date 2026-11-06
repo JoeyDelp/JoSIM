@@ -41,6 +41,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Preserve the requested model-IV bias through timestep retries. Only the active
+  function was updated previously; rebuilding from the stale testbench could
+  replace every sweep point with 2.5 µA.
 - Detect failed writes and final flush/close errors for CSV, DAT, RAW, model-IV
   files and standard output. These paths previously returned success after a
   destination rejected writes. Report the destination and retain recoverable

@@ -139,6 +139,26 @@ class GateRegression(unittest.TestCase):
             deck = self.deck().replace(".end\n", f".iv jm {maximum} iv.csv {option}\n.end\n")
             self.simulate(deck, success=False)
 
+    def test_ohmic_iv_preserves_bias_through_timestep_retry(self):
+        # Ic=C=0 gives the independent constitutive law V=RN*I. At 100mV,
+        # h=.05ps advances ~15.2rad, forcing several .2-cycle guard retries.
+        for gate in (False, True):
+            model_gate = " GWIDTH=10m" if gate else ""
+            option = " GTJJ=5m" if gate else ""
+            deck = ("RMAIN N 0 1\n"
+                    f".model M JJ(RTYPE=0 ICrit=0 RN=100 CAP=0{model_gate})\n"
+                    f".iv M 1m iv.csv STEP=1m{option}\n"
+                    ".tran 1p 5p DST\n.print V(N)\n.end\n")
+            for mode in (0, 1):
+                with self.subTest(gate=gate, caller_mode=mode):
+                    _, rows = self.simulate(deck, mode)
+                    self.assertEqual(len(rows), 4)
+                    for (voltage, current), expected in zip(rows, (1e-3, 0, -1e-3, 0)):
+                        self.assertAlmostEqual(current, expected, delta=1e-12)
+                        # CSV has six digits; the exact Ohmic steady state is
+                        # reached long before the latter-half averaging window.
+                        self.assertAlmostEqual(voltage, 100 * expected, delta=1e-8)
+
 
 if __name__ == "__main__":
     unittest.main()

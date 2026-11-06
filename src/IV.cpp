@@ -113,31 +113,39 @@ std::vector<std::pair<double, double>> IV::generate_iv(double maxC, double curre
     double                                 currentCurr = 0.0;
     Matrix                                 ivMat;
     ivMat.create_matrix(ivInp);
+    const auto set_bias = [&](double initial, double target) {
+        // A timestep retry reconstructs the matrix from Input, so keep the
+        // generated three-knot PWL declaration and its active function in sync.
+        auto& bias = ivInp.netlist.expNetlist.back().first;
+        bias.at(6) = Misc::precise_to_string(initial);
+        bias.at(8) = Misc::precise_to_string(target) + ")";
+        ivMat.sourcegen.back().ampValues({0, initial, target});
+    };
     auto step_towards = [](double cur, double target, double step) {
         return (cur < target) ? std::min(cur + step, target) : std::max(cur - step, target);
     };
 
     while (currentCurr < maxC) {
         currentCurr = step_towards(currentCurr, maxC, currentIncrement);
-        ivMat.sourcegen.back().ampValues({0, 0, currentCurr});
+        set_bias(0, currentCurr);
         iv_data.emplace_back(do_simulate(ivInp, ivMat));
     }
 
     while (currentCurr > 0.0) {
         currentCurr = step_towards(currentCurr, 0.0, currentIncrement);
-        ivMat.sourcegen.back().ampValues({0, maxC, currentCurr});
+        set_bias(maxC, currentCurr);
         iv_data.emplace_back(do_simulate(ivInp, ivMat));
     }
 
     while (currentCurr > -maxC) {
         currentCurr = step_towards(currentCurr, -maxC, currentIncrement);
-        ivMat.sourcegen.back().ampValues({0, 0, currentCurr});
+        set_bias(0, currentCurr);
         iv_data.emplace_back(do_simulate(ivInp, ivMat));
     }
 
     while (currentCurr < 0.0) {
         currentCurr = step_towards(currentCurr, 0.0, currentIncrement);
-        ivMat.sourcegen.back().ampValues({0, -maxC, currentCurr});
+        set_bias(-maxC, currentCurr);
         iv_data.emplace_back(do_simulate(ivInp, ivMat));
     }
     return iv_data;

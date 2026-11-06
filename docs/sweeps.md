@@ -83,6 +83,9 @@ The built-in `.IV` uses a fixed single-junction transient protocol: 0/10/50 ps
 bias knots, 0.05 ps internal step, 500 ps duration and mean voltage over the
 second half. Returning branches first visit +/-Imax. It does not sweep an
 arbitrary circuit and does not provide conventional DC/Newton tolerance control.
+The generated bias declaration is kept in sync with each point's active source,
+so a timestep retry retains the requested point rather than restoring a stale
+testbench current.
 Use explicit circuit transients when the required settling/measurement protocol
 differs. The timestep-restart guard alone does not guarantee numerical accuracy.
 

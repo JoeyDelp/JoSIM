@@ -1038,3 +1038,37 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [output study](qualification/2026-11-06-output-completion.md),
   artifacts/audit-resolution/output-write/{red,stdout-red,green}.json,
   source-sha256.json, four build/test receipts and sanitizer JUnit.
+
+## F22 — Model-IV timestep retry loses the requested bias
+
+- **Classification:** reproduced numerical/control defect, repaired.
+- **Reproduction:** Ic=C=0, RN100Ω, Imax1mA/STEP1mA forces repeated phase-guard
+  retries. All four rows incorrectly became2.5µA/250µV, returning success.
+- **Implementation:** IV::generate_iv keeps each generated PWL declaration and
+  active function synchronized. Input remains the source of retry reconstruction.
+  No signature/layout/timing-default or physical-equation change.
+- **Verification:** regression::gate four ordinary/gated/caller-mode cases assert
+  Ohm's law and requested [+1mA,0,-1mA,0] points: [+0.1V,0,-0.1V,0], with1e-12A
+  and1e-8V absolute bounds for exactly representable CSV reference literals.
+- **Measurements:** local4 full34/34; affected ASan/UBSan/leak groups4/4 in34.52s.
+  Full sanitizer34/34 in211.84s immediately precedes this targeted IV repair;
+  final integrated full/native qualification remains required.
+- **Evidence:** [IV retry study](qualification/2026-11-06-iv-retry.md),
+  artifacts/audit-resolution/iv-physics/retry-{probe,green}.json, source hashes,
+  four build/test receipts and retry-sanitizer.xml.
+
+## F23 — Model-IV initial state and finite averaging protocol
+
+- **Classification:** open numerical/configuration investigation; not resolved by F22.
+- **Reproduction:** RTYPE0,Ic100µA,C0,RN1mΩ,Ib±150µA; independent RSJ DC mean
+  ±1.118034e-7V has period18.5ns, far longer than the fixed500ps protocol.
+  Default means+1.351658e-7/-1.384165e-7V differ by21–24% from the converged
+  DC mean, and paired excursions are not exactly odd. The latter is inconsistent
+  with the odd constitutive equation and sign-reversed generated ramps from
+  zero state; cached per-device histories across Simulation objects need review.
+- **Required outcome:** isolate initial-state behavior; provide and qualify
+  meaningful timestep/settling/measurement refinement for model IV. Preserve
+  existing API/default compatibility where valid; no automatic DC-accuracy claim.
+- **Evidence:** build/audit-resolution/iv-physics/initial-probes.json and decks;
+  copied compact receipt artifacts/audit-resolution/iv-physics/initial-probes.json.
+  Investigation/implementation and final qualification remain open.
