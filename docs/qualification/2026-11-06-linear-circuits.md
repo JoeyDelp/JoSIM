@@ -79,8 +79,8 @@ python3 -B test/regression_numerics.py build/dev/josim-cli --report artifacts/rl
 ```
 
 Local GCC16/Clang23 Debug and Release checks pass. ASan/UBSan with leak detection
-passes the same 36 cases in 0.60 s. Native-platform results are recorded in the
-ledger as they complete. Release and installed-library
+passes the same 36 cases in 0.60 s. Commit `c8a24427ac01` passes all ten native
+binary/library jobs in [CI 42231286897](https://github.com/JoeyDelp/JoSIM/actions/runs/42231286897). Release and installed-library
 qualification owners require this test group alongside their other checks.
 
 Local detailed evidence: `artifacts/audit-resolution/rlc.json` and

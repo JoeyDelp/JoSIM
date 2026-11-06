@@ -236,12 +236,18 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## I091 — Long-run JJ artifacts #91
 
-- **Classification:** unresolved numerical investigation.
-- **Current reproduction/result:** Open; report contains no reproducer, requiring a structured study.
-- **Required outcome:** Multiple quantified long-phase probes with analytic/convergence/mode evidence; repair demonstrated cause.
-- **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/91; src/Simulation.cpp.
-- **Verification:** long-run RSJ/phase-driven JJ regression studies.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Classification:** confirmed numerical cause identified; repair under qualification.
+- **Result:** a controlled raw-precision study reproduces growing voltage-mode
+  phase drift over four lengths, with mode/step/polarity comparisons. An
+  independent 70-digit prediction establishes inconsistent matrix/history
+  constants as the cause, rather than an inference from a single run.
+- **Implementation:** use the existing SIGMA consistently in JJ::phaseConst_.
+  See F09 for red/green measurements, tolerances and completed local checks.
+- **Required outcome:** Finish native qualification and current-driven nonlinear
+  period/switching/pulse checks. The original report has no circuit; do not
+  claim to have reconstructed that undocumented case or explained all artifacts.
+- **Evidence:** [phase accumulation study](qualification/2026-11-06-junction-phase.md);
+  regression::junction_numerics. Other #101/thermal/noise studies remain separate.
 
 ## I088 — Nonlinear inductor #88
 
@@ -285,8 +291,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Implementation/owner:** test/regression_numerics.py; release/library owners
   require its CTest group. No solver/device equations changed by this study.
 - **Verification:** GCC16/Clang23 Debug and Release pass the numerical group.
-  ASan/UBSan with leaks also passes all 36 cases (0.60 s). Native checks
-  remain pending for this test addition.
+  ASan/UBSan with leaks also passes all 36 cases (0.60 s). Commit c8a24427ac01
+  passes all ten native jobs in CI 42231286897.
 - **Evidence/tolerances:** [linear-circuit study](qualification/2026-11-06-linear-circuits.md)
   derives the independent continuous references, h^2-scaled bounds, refinement
   requirement and rounding allowances. artifacts/audit-resolution/rlc.json records
@@ -620,3 +626,23 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   startup-overflow-red.json; artifacts/audit-resolution/phase-output-history.json;
   phase-history-{gcc-,}tests.xml and phase-history-sanitizer-tests.xml.
   Broader RLC, #91 and #101 studies remain open independently.
+
+## F09 — Inconsistent JJ phase constants and long-run drift
+
+- **Classification:** confirmed numerical defect, directly relevant to #91.
+- **Reproduction:** ideal 1mV, rtype=0 JJ loses 1.61822 rad over 1m steps/10ns,
+  and 161.771 rad over 10m steps/100ns, in voltage mode. Raw results avoid CSV
+  rounding. Phase mode lacks this artificial decay. Four independent
+  high-precision recurrence predictions match measured errors within 2.4ppm.
+- **Cause/repair:** JJ matrix coefficients used HBAR/(2EV), while phase-history
+  RHS used the separately rounded SIGMA. Derive both coefficients from the
+  existing SIGMA; no constant values changed and no phase wrapping introduced.
+- **Verification:** 24 raw double-result cases cover both modes, both bias
+  polarities, three lengths and two timesteps. Assertions check Josephson's
+  relation, steady constitutive current, KCL and voltage. GCC16/Clang23 Debug
+  and Release pass 32/32. Full ASan/UBSan/leaks passes 32/32 in 175.12 s.
+  Extended 10m-step voltage-mode drift falls from 161.771 to 8.736e-5 rad;
+  phase mode is 8.844e-5 rad. Native qualification remains pending.
+- **Evidence/tolerances:** [junction phase study](qualification/2026-11-06-junction-phase.md)
+  derives the cause and rounding allowance, identifies the physical-constant
+  precision separately, and points to preserved red/green measurements.

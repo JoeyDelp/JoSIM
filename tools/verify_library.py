@@ -74,7 +74,7 @@ def main():
              "--no-tests=error", "--output-junit", junit], output / (mode + "-tests.log"))
         cases = ET.parse(junit).getroot().findall(".//testcase")
         executed = {case.attrib["name"] for case in cases}
-        required = {"regression::numerics", "regression::installed_package", "regression::library", "regression::build_options"}
+        required = {"regression::junction_numerics", "regression::numerics", "regression::installed_package", "regression::library", "regression::build_options"}
         if not declared or executed != declared or not required.issubset(executed):
             fail("Declared and executed tests differ, or package/recovery checks are absent")
         if any(case.find(tag) is not None for case in cases for tag in ("skipped", "failure", "error")):

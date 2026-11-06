@@ -20,6 +20,12 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Use one Josephson phase scale in JJ matrix and history equations. Separately
+  rounded constants previously caused growing voltage-mode phase error during
+  long runs (#91). Keep all physical constant values and unwrapped phase.
+  Add raw-result phase/current/conservation regressions across durations,
+  timesteps, bias polarities and both analysis modes.
+
 - Bind named subcircuit parameters per instance, with optional header defaults,
   caller-evaluated overrides, nested scopes and dependent local expressions
   (#81). Preserve hierarchical aliases and legacy component-value overrides.

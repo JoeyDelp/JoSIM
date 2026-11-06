@@ -168,6 +168,11 @@ if(BUILD_TESTING)
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_cli.py
                    $<TARGET_FILE:josim-cli>)
   set_tests_properties(regression::cli PROPERTIES TIMEOUT 90)
+  add_executable(josim-junction-regression junction_numerics.cpp)
+  target_link_libraries(josim-junction-regression PRIVATE josim)
+  josim_instrument_target(josim-junction-regression)
+  add_test(NAME regression::junction_numerics COMMAND josim-junction-regression)
+  set_tests_properties(regression::junction_numerics PROPERTIES TIMEOUT 90)
   add_test(NAME regression::numerics
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_numerics.py
                    $<TARGET_FILE:josim-cli>)
@@ -190,7 +195,7 @@ if(BUILD_TESTING)
     # Scope DLL discovery to these test processes; do not alter the host PATH.
     set(josim_test_path "$<TARGET_FILE_DIR:josim>;$ENV{PATH}")
     string(REPLACE ";" "\\;" josim_test_path "${josim_test_path}")
-    set_tests_properties(regression::library regression::functions regression::noise
+    set_tests_properties(regression::library regression::functions regression::noise regression::junction_numerics
       PROPERTIES ENVIRONMENT "PATH=${josim_test_path}")
   endif()
 endif()

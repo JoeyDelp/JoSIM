@@ -43,6 +43,9 @@ CTest runs the existing circuit examples and focused regression groups:
   flux units, fractional critical-current noise and phase-step reduction.
 - `regression::cli`: invalid transient settings and recursive subcircuits.
 - `regression::functions`: waveform alignment, interpolation and expressions.
+- `regression::junction_numerics`: raw constant-bias JJ phase accumulation,
+  constitutive current and conservation over multiple lengths/timesteps.
+  See [the phase study](qualification/2026-11-06-junction-phase.md).
 - `regression::numerics`: independent analytic RC/RL/RLC responses, KCL/KVL,
   timestep refinement and comparison of both modes with warm/cold startup.
   See [the linear-circuit study](qualification/2026-11-06-linear-circuits.md).

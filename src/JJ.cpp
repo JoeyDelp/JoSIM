@@ -187,11 +187,10 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
     set_model(t, iObj.netlist.models_new, s.second);
     // Set the phase constant
     if (at_ == AnalysisType::Voltage) {
-        // If voltage mode set this to (3 * hbar) / (4 * h * eV)
-        phaseConst_ = (3 * Constants::HBAR) / (4 * h_ * Constants::EV);
+        // Use the same Josephson scale as the phase-history RHS.
+        phaseConst_ = (3 * Constants::SIGMA) / (2 * h_);
     } else if (at_ == AnalysisType::Phase) {
-        // If phase mode set this to (4 * h * eV) / (3 * hbar)
-        phaseConst_ = (4 * h_ * Constants::EV) / (3 * Constants::HBAR);
+        phaseConst_ = (2 * h_) / (3 * Constants::SIGMA);
     }
     // Set the node configuration type
     indexInfo.nodeConfig_   = ncon;
