@@ -487,9 +487,16 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   and artifacts/audit-resolution/performance/reserve/{summary,decision}.json.
   All four local configurations pass 34/34; full ASan/UBSan/leaks pass 34/34
   in 229.86 s. Native qualification remains required for this revision.
-- **Remaining measured costs:** Callgrind identifies per-JJ CPR and per-inductor
-  coupling-vector allocations. Default progress reporting doubles CPU in a
-  controlled case. Isolate and qualify their repairs before closing this item.
+- **Copying result:** CPR/coupling hot-loop allocation counts drop from
+  262,144/524,288 to zero in 2,048-step profiles. A separate seven-pair campaign
+  holding reservation constant gives JJ/coupled-bank wall reductions of 15.3%/
+  20.9%, noise 7.6%, exact CSVs and at most 1.4% wall/1.2% RSS increases elsewhere.
+  Existing copy getters/layouts remain; Model adds a const-reference CPR accessor.
+  All four local configurations pass 34/34; focused ASan/UBSan/leak groups
+  pass 9/9 in 102.46 s. Native/final integrated checks remain required for this
+  revision. Evidence: performance/views/ receipts.
+- **Remaining measured cost:** default progress reporting doubles CPU in a
+  controlled case. Qualify its repair before closing this item.
 
 ## D07 — Source manuals and support claims
 

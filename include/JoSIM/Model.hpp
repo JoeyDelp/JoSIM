@@ -47,6 +47,8 @@ class Model {
 
     std::vector<double> cpr() const { return cpr_; }
 
+    const std::vector<double>& cpr_view() const noexcept { return cpr_; }
+
     void                cpr(const std::vector<double>& i) { cpr_ = i; }
 
     int64_t             rtype() const { return rtype_; }

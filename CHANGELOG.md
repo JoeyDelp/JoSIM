@@ -44,6 +44,9 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Remove one CPR/coupling-vector allocation per device per timestep through
+  borrowed reads. Wall time falls about 15%/21% in controlled JJ/coupled-inductor
+  cases with identical output. Existing copying getters remain available.
 - Reserve retained transient histories from the known sample count, preserving
   unrequested-history omission and exact output. Controlled runs use about
   13–20% less peak memory in representative long/wide cases. Report impossible

@@ -343,7 +343,7 @@ void Simulation::handle_inductors(Matrix& mObj, double factor) {
                               * x_.at(temp.indexInfo.currentIndex_.value())
                       + ((temp.netlistInfo.value_ / (2.0 * (stepSize_ * factor))) * temp.In2_);
             // -2M/h Im + M/2h Im2
-            for (const auto& m : temp.get_mutualInductance()) {
+            for (const auto& m : temp.mutualInductances_) {
                 Inductor& mi = std::get<Inductor>(mObj.components.devices.at(m.first));
                 b_.at(temp.indexInfo.currentIndex_.value())
                         += (-((2 * m.second) / (stepSize_ * factor)) * x_.at(mi.indexInfo.currentIndex_.value())
@@ -472,7 +472,7 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
         if (temp.icNoise) { dIc = temp.icNoise.value().value(step); }
         if (dIc < -0.99) { dIc = -0.99; }
         const double Ic_eff = gateFactor * temp.model_.ic() * (1.0 + dIc);
-        const auto harmonics = model.cpr();
+        const auto& harmonics = model.cpr_view();
 
         // ---- RHS2 (junction current equation row) ----
         if (!temp.model_.tDep()) {

@@ -67,6 +67,13 @@ histories. Allocation/size failures during reservation throw a recoverable
 existing values or layouts. Output decimation does not shrink internal histories.
 See [memory planning](performance.md) for payload scaling and OS memory limits.
 
+`Model::cpr()` still returns an owned coefficient copy. `cpr_view()` adds a
+read-only reference for callers that keep the Model alive; changes to the Model
+can change its contents or invalidate element pointers/iterators. Do not mutate
+the model during simulation. The engine borrows these coefficients and the
+inductor's existing coupling vector without per-step allocations. Existing
+copying getters and public layouts remain unchanged.
+
 `Input` records the main netlist and included files. Normal output and `.iv`
 generation reject destinations that refer to those inputs, including existing
 hard-link aliases. Keep this provenance when using the normal input parser.

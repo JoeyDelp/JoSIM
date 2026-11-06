@@ -1,9 +1,9 @@
 # Runtime and storage qualification — 6 November 2026
 
-This study addresses D06 through measured changes. The first stage reserves
-retained histories; separately profiled per-step vector copies and progress
-reporting remain distinct follow-up work. No simulation equation or operation
-order changes in the reservation stage.
+This study addresses D06 through measured changes. Separate stages reserve
+retained histories and remove profiled per-step vector copies. Progress
+reporting remains distinct follow-up work. No simulation equation or operation
+order changes in these two stages.
 
 ## Storage change
 
@@ -87,6 +87,43 @@ runtime cost. The decision receipt states the missed heuristic explicitly;
 no numerical assertion or performance-regression limit was relaxed. This is a
 bounded engineering result, not a universal speed or memory guarantee.
 
+## Per-step vector copies
+
+Callgrind 3.25.1 identified two allocation sites in otherwise read-only loops.
+For 2,048 steps, a 128-JJ profile performed 262,144 allocations/frees inside
+`handle_jj`; a 256-inductor profile performed 524,288 inside `handle_inductors`.
+These counts equal one vector copy per device per step. Parser/setup allocations
+are separate. Removing these copies makes both hot-function allocation counts
+zero; the profiled CSV outputs remain byte-identical.
+
+The engine borrows CPR coefficients through `Model::cpr_view()` and reads the
+inductor's existing public coupling vector directly. Existing copying getters
+retain their signatures and behavior. The new CPR accessor returns a const
+reference tied to its live Model; no class layout or numerical formula changes.
+The engine does not mutate either collection while using it.
+
+A separate seven-pair campaign holds reservation constant on both sides,
+using clean source `ca3c516` as its baseline. It repeats the same eight fixtures
+and assertions with the corrected clock. All 112 timed runs pass and all paired
+CSVs match exactly:
+
+| Workload | Before seconds | Borrowed-read seconds | Wall reduction |
+|---|---:|---:|---:|
+| 128 JJs | 0.3089 | 0.2616 | 15.3% |
+| 128 coupled RL pairs | 0.6164 | 0.4877 | 20.9% |
+| Long noisy SQUID | 0.5174 | 0.4780 | 7.6% |
+
+JJ/coupled-bank CPU medians fall about 17%/21%. The largest wall increase among
+the other fixtures is 1.4%, within the predeclared 5% regression limit. Peak RSS
+stays within 1.2% on every case. Both target banks exceed the predeclared 5%
+improvement requirement. These are separate measurements, not sums of percentage
+gains from different stages.
+
+`artifacts/audit-resolution/performance/views/` retains the exact comparison
+owners, all per-run receipts, source/binary identities, profiles and annotated
+call trees. Its baseline already includes reservation, so these gains isolate
+the two copying sites through the pure-JJ and pure-inductor fixtures.
+
 ## Verification and evidence
 
 All four local GCC/Clang Debug/Release configurations pass 34/34 CTest groups,
@@ -94,6 +131,11 @@ including new CLI and repeated embedding storage-limit checks. Full Clang Debug
 ASan/UBSan and leak detection pass **34/34 in 229.86 s**. Native-platform
 qualification remains required for the pushed revision; it is not inferred
 from the benchmark's Release runs.
+
+The vector-copy stage also passes all four local 34/34 suites. Its focused
+ASan/UBSan/leak campaign passes **9/9 groups in 102.46 s**, covering junction,
+coupling, noise, installed-consumer and recovery paths. Final integrated full
+sanitizer/native qualification remains required separately.
 
 `artifacts/audit-resolution/performance/reserve/` contains `summary.json`, the
 explicit `decision.json`, all per-repetition receipts, fixtures and exact
