@@ -279,8 +279,17 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
         Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
     }
     model_ = *model;
+    model_.validate();
+    if (!std::isfinite(area_) || area_ <= 0 || (Ic_ && model_.ic() == 0)) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+            netlistInfo.label_ + ": AREA must be finite and positive; IC override requires a nonzero model IC");
+    }
     // Change the area if ic was defined
     if (Ic_) { area_ = Ic_.value() / model_.ic(); }
+    if (!std::isfinite(area_) || area_ <= 0) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                                        netlistInfo.label_ + ": effective AREA must be finite and positive");
+    }
     // Set the model critical current for this JJ instance
     model_.ic(model_.ic() * area_);
     if (model_.tDep()) {
@@ -289,8 +298,8 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
         // Set the del parameter
         del_  = del0_ * sqrt(cos((Constants::PI / 2) * (model_.t() / model_.tc()) * (model_.t() / model_.tc())));
         // Set the temperature dependent normal resistance
-        model_.rn(((Constants::PI * del_) / (2 * Constants::EV * model_.ic()))
-                  * tanh(del_ / (2 * Constants::BOLTZMANN * model_.t())));
+        const double thermal = model_.t() == 0 ? 1.0 : tanh(del_ / (2 * Constants::BOLTZMANN * model_.t()));
+        model_.rn(((Constants::PI * del_) / (2 * Constants::EV * model_.ic())) * thermal);
     } else {
         // Set the model normal resistance for this JJ instance
         model_.rn(model_.rn() / area_);
@@ -299,6 +308,7 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
     model_.c(model_.c() * area_);
     // Set the model subgap resistance for this JJ instance
     model_.r0(model_.r0() / area_);
+    model_.validate();
     // Set the lower boundary for the transition region
     lowerB_ = model_.vg() - 0.5 * model_.deltaV();
     // Set the upper boundary for the transition region

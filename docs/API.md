@@ -90,6 +90,14 @@ rejects empty/inconsistent arrays, invalid indices and non-finite coefficients
 before calling KLU. Changing public arrays is the caller's responsibility;
 normal applications should use `Matrix::create_matrix`.
 
+`Model::validate()` checks physical/numerical parameter domains. Parsing and
+junction construction call it, including after area/temperature scaling, so
+directly constructed models receive the same checks. This adds a nonvirtual
+method without changing object layout. See the [model domains](model_limits.md#model-domains).
+Updated matrices are checked before refactorization, and every solved unknown
+must be finite. Invalid models or unrepresentable solutions throw before
+output; discard the failed run as described above.
+
 ## Random state and concurrent runs
 
 JoSIM currently has process-global random engines and a per-thread Gaussian

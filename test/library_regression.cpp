@@ -113,6 +113,27 @@ void unsupported_capacitor_ic() {
     must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, "Capacitor IC is not supported");
 }
 
+void invalid_models() {
+    const auto rejects = [](JoSIM::Model model, const std::string& diagnostic, const JoSIM::tokens_t& attributes = {}) {
+        auto run = input();
+        model.modelName("JM");
+        run.netlist.models_new.emplace_back(model, std::nullopt);
+        JoSIM::tokens_t junction{"B1", "N", "0", "JM"};
+        junction.insert(junction.end(), attributes.begin(), attributes.end());
+        run.netlist.expNetlist = {{{"V1", "N", "0", "DC", "0"}, std::nullopt}, {junction, std::nullopt}};
+        must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, diagnostic);
+    };
+    JoSIM::Model model;
+    model.rtype(2); rejects(model, "RTYPE");
+    model = {}; model.d(2); rejects(model, "D must");
+    model = {}; model.c(-1e-12); rejects(model, "CAP");
+    model = {}; model.rn(std::numeric_limits<double>::infinity()); rejects(model, "RN");
+    model = {}; model.cpr({std::numeric_limits<double>::quiet_NaN()}); rejects(model, "CPR");
+    model = {}; rejects(model, "AREA", {"AREA=0"});
+    model = {}; model.ic(0); rejects(model, "IC override", {"IC=1U"});
+    model = {}; model.ic(1e308); rejects(model, "IC must be finite", {"AREA=1E308"});
+}
+
 void unrequested_source_history() {
     auto run = input();
     run.netlist.expNetlist = {{{"I1", "0", "N", "NOISE(1P", "0", "1P)"}, std::nullopt},
@@ -232,6 +253,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "cli") { cli_values(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
             if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
+            if (selected == "all" || selected == "model") { invalid_models(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
             if (selected == "all" || selected == "parameters") { scoped_and_legacy_expansion(); }
             if (selected == "all" || selected == "phase") {

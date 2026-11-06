@@ -527,6 +527,98 @@ class CliRegression(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue(all(float(row[1]) == 0 for row in rows[1:]))
 
+    def test_invalid_junction_model_domains(self):
+        for assignment, diagnostic in (("RTYPE=1e30", "RTYPE"), ("RTYPE=0.5", "RTYPE"),
+                                       ("RTYPE=2", "RTYPE"), ("D=2", "D must"), ("D=-0.1", "D must"),
+                                       ("RN=0", "RN"), ("RN=-1", "RN"), ("R0=0", "R0"),
+                                       ("CAP=-0.1p", "CAP"), ("TC=0", "TC"), ("T=-1", "T must"),
+                                       ("T=10 TC=9.1", "T must"), ("DELV=0", "DELV"), ("ICFCT=0", "ICFCT")):
+            for mode in (0, 1):
+                with self.subTest(assignment=assignment, mode=mode):
+                    deck = ("P1 N 0 DC 0.3\nB1 N 0 JM\n"
+                            f".model JM JJ(IC=100u RN=10 CAP=0.1p {assignment})\n"
+                            ".tran 0.1p 1p\n.print I(B1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                    self.assertIn(diagnostic, result.stdout + result.stderr)
+                    self.assertIsNone(rows)
+
+    def test_transparent_junction_finite_temperature_limit(self):
+        tc, ic = 9.1, 100e-6
+        for transparency in (0, .5, .99, 1):
+            for temperature in (.1, 4.2, 8.0):
+                alpha = 1.76 * tc / (2 * temperature) * math.sqrt(math.cos(math.pi / 2 * (temperature / tc) ** 2))
+                for phase in (.3, math.pi - 1e-4, math.pi, math.pi + 1e-4, 1.7 * math.pi):
+                    q = math.sqrt(max(0, 1 - transparency * math.sin(phase / 2) ** 2))
+                    ratio = alpha if q == 0 else math.tanh(alpha * q) / q
+                    expected = ic * math.sin(phase) * ratio / math.tanh(alpha)
+                    deck = (f"P1 N 0 DC {phase:.17g}\nB1 N 0 JM\n"
+                            f".model JM JJ(RTYPE=0 IC=100u CAP=0.1p D={transparency} T={temperature} TC={tc})\n"
+                            ".tran 0.1p 1p\n.print I(B1) V(N) P(B1)\n.end\n")
+                    for mode in (0, 1):
+                        with self.subTest(D=transparency, T=temperature, phase=phase, mode=mode):
+                            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                            for row in rows[1:]:
+                                _, current, voltage, observed_phase = map(float, row)
+                                self.assertTrue(all(math.isfinite(float(v)) for v in row))
+                                self.assertAlmostEqual(current, expected, delta=3e-6 * abs(expected) + 1e-12)
+                                self.assertLess(abs(voltage), 1e-12)
+                                self.assertAlmostEqual(observed_phase, phase, delta=3e-6 * abs(phase))
+
+    def test_invalid_runtime_cpr_domain_fails(self):
+        deck = ("P1 N 0 DC 1.5707963267948966\nB1 N 0 JM\n"
+                ".model JM JJ(RTYPE=0 D=1 CPR={2})\n.tran 0.1p 1p\n.print I(B1)\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+            self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+            self.assertIn("CPR", result.stdout + result.stderr)
+            self.assertIsNone(rows)
+
+    def test_zero_temperature_limit_and_singular_cusp(self):
+        for transparency in (0, .5, 1):
+            for phase in (.3, 2.9, math.pi - 1e-8, math.pi + 1e-8, 3.4):
+                # The fully transparent zero-T law has one-sided limits +/-2*Ic;
+                # use the half-angle identity, avoiding subtractive cancellation.
+                expected = (2 * 100e-6 * math.sin(phase / 2) * math.copysign(1, math.cos(phase / 2))
+                            if transparency == 1 else
+                            100e-6 * math.sin(phase) / math.sqrt(1 - transparency * math.sin(phase / 2) ** 2))
+                deck = (f"P1 N 0 DC {phase}\nB1 N 0 JM\n"
+                        f".model JM JJ(RTYPE=0 IC=100u CAP=0 D={transparency} T=0)\n"
+                        ".tran 0.1p 1p\n.print I(B1)\n.end\n")
+                for mode in (0, 1):
+                    with self.subTest(D=transparency, phase=phase, mode=mode):
+                        result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                        self.assertAlmostEqual(float(rows[-1][1]), expected, delta=3e-6 * abs(expected) + 1e-12)
+        singular = ("P1 N 0 DC 3.141592653589793\nB1 N 0 JM\n"
+                    ".model JM JJ(RTYPE=0 IC=100u D=1 T=0)\n.tran 0.1p 1p\n.print I(B1)\n.end\n")
+        for mode in (0, 1):
+            result, rows = self.run_deck(singular, extra=("-a", str(mode)))
+            self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+            self.assertIn("zero-temperature CPR is singular", result.stdout + result.stderr)
+            self.assertIsNone(rows)
+
+    def test_zero_capacitance_and_signed_sinusoidal_critical_current(self):
+        for critical in (0, -1e-6):
+            deck = ("P1 N 0 DC 1.5707963267948966\nB1 N 0 JM\n"
+                    f".model JM JJ(RTYPE=0 IC={critical} CAP=0)\n.tran 0.1p 1p\n.print I(B1)\n.end\n")
+            for mode in (0, 1):
+                result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertAlmostEqual(float(rows[-1][1]), critical, delta=3e-12)
+
+    def test_nonfinite_solution_fails_before_output(self):
+        for mode in (0, 1):
+            for startup in ("", " DST"):
+                with self.subTest(mode=mode, startup=startup):
+                    deck = ("V1 N 0 DC 1e308\nR1 N 0 1e-300\n"
+                            f".tran 1p 2p{startup}\n.print V(N) I(R1)\n.end\n")
+                    result, rows = self.run_deck(deck, extra=("-a", str(mode)))
+                    self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+                    self.assertIn("Non-finite solution", result.stdout + result.stderr)
+                    self.assertIsNone(rows)
+
     def test_phase_step_flux_quantum_area(self):
         # Phi0=h/(2e), exact SI definitions; NIST physics.nist.gov/cuu/Constants/
         flux_quantum = 6.62607015e-34 / (2 * 1.602176634e-19)

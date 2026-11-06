@@ -99,6 +99,8 @@ class Model {
 
     void                tDep(bool b) { tDep_ = b; }
 
+    void                validate() const;
+
     static void
     parse_model(const std::pair<tokens_t, string_o>& s, vector_pair_t<Model, string_o>& models, const param_map& p);
 

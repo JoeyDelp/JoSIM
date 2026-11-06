@@ -1,5 +1,32 @@
 # Initial states and model parameters
 
+## Junction model domains {#model-domains}
+
+Model values must be finite. RTYPE is exactly 0 or 1; RN, R0, DELV, ICFCT,
+GWIDTH and TC are positive. C can be zero. D is in [0,1]. The ordinary sinusoidal
+model permits signed or zero Ic. The temperature-dependent CPR additionally
+requires positive Ic and `0<=T<TC`. Effective junction area must be positive;
+an IC override requires a nonzero model Ic. C++ model objects receive the same
+validation as parsed netlists, including after area/temperature scaling.
+
+At finite positive temperature, D=1 is supported, including the regularized
+current limit at phase pi. At zero temperature, the fully transparent CPR has
+a discontinuous cusp. A point numerically at that cusp is rejected; finite
+positive temperature or a resolved point on either side has a defined value.
+Arbitrary harmonic/transparency combinations must keep their square-root
+argument nonnegative throughout the run. See the
+[model-validity study](qualification/2026-11-06-model-validity.md) for equations,
+limits, tolerances and quantitative checks.
+
+The temperature-dependent superconducting expression does not model operation
+at or above Tc. For a prescribed normal-state RC junction, use `RTYPE=0 IC=0`
+with the chosen RN and C, without enabling that temperature-dependent CPR.
+Instance `TEMP=`/global `.temp` controls thermal noise separately; it does not
+create a temperature trajectory or automatically switch superconductivity at Tc.
+
+An invalid model or non-finite solved state fails the simulation. Discard a
+failed run's objects/results; a solver success flag is insufficient on its own.
+
 ## Capacitor voltage (#109) {#capacitor-voltage}
 
 JoSIM does not implement capacitor `IC=` or general SPICE initial-condition

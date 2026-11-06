@@ -29,6 +29,14 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Validate JJ model domains before numeric casts and after instance scaling,
+  including direct C++ model construction. Invalid RTYPE values no longer
+  truncate silently or cause undefined behaviour. Preserve zero capacitance
+  and signed/zero critical current in the ordinary sinusoidal model.
+- Evaluate the finite-temperature transparent-junction CPR limit without NaN,
+  and avoid cancellation near the zero-temperature cusp. Report singular or
+  non-real CPR states explicitly. Check every solved unknown for finiteness
+  and reject numerical overflow before output.
 - Reject unsupported capacitor `IC=` requests explicitly; older builds silently
   ignored the requested voltage. Explicit charging intervals remain supported.
 - Preserve voltage-mode nodal phase accumulated during startup, so node and

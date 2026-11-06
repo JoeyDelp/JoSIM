@@ -776,3 +776,31 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** optional-features/ic-red.log and candidate.patch; the
   [boundary study](qualification/2026-11-06-model-boundaries.md) defines support
   and quantitative regression acceptance.
+
+## F13 — Model domains, transparent CPR and non-finite solver states
+
+- **Classification:** confirmed model/input/numerical defects; repaired locally,
+  native qualification pending.
+- **Reproduction:** RTYPE=1e30 triggers UBSan floating-to-integer overflow;
+  fractional/unknown RTYPE silently changes behaviour. Invalid D=2 and valid
+  D=1 at finite T/phase pi report success with NaN current. Extreme finite V/R
+  reports success with infinite solved current. Zero-T near-cusp tests also
+  expose cancellation in 1-sin^2. Four initial methods fail in 39 subcases;
+  four further near-cusp subcases fail before the stable expression.
+- **Repair:** Validate parsed/direct models before casts and after effective
+  scaling. Evaluate tanh(alpha*q)/q using its finite positive-T limit; use an
+  equivalent single-harmonic cosine radicand near the zero-T cusp. Preserve D=1,
+  zero C and signed/zero sinusoidal Ic. Diagnose singular/non-real CPR states.
+  Revalidate updated matrices and require every solved unknown to be finite.
+  No constants/layouts/formats change; Model::validate adds a nonvirtual method.
+- **Verification:** 120 independent steady phase-bias cases cover four D values,
+  three temperatures and five phases in both modes. Maximum current error is
+  4.793e-12 A; limit 3 ppm plus 1 pA (largest error/budget 0.0534). Zero-T
+  one-sided currents at pi +/-1e-8 are +/-200 uA for Ic=100 uA. Domain, overflow,
+  direct-model and repeated recovery tests pass. GCC16/Clang23 Debug/Release
+  pass 33/33; final full ASan/UBSan/leaks passes 33/33 in 180.87 s.
+- **Evidence:** [model-validity study](qualification/2026-11-06-model-validity.md)
+  derives limits, domains and numeric-cusp handling. Exact red inputs/sanitizer
+  witnesses: build/audit-resolution/model-validation. Green measurements/source
+  hashes and compact compiler/sanitizer receipts:
+  artifacts/audit-resolution/model-validation/.

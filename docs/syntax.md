@@ -103,8 +103,8 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | IC or ICRIT     | -$\infty$, $\infty$   | 1E-3            | Junction critical current                                    |
 | RN              | 0, $\infty$           | 5               | Junction normal resistance                                   |
 | R0              | 0, $\infty$           | 30              | Junction subgap resistance                                   |
-| C or CAP        | 0, $\infty$           | 2.5E-12         | Junction capacitance                                         |
-| T               | 0, $\infty$           | 4.2             | Junction temperature in K                                    |
+| C or CAP        | $0 \le C < \infty$   | 2.5E-12         | Junction capacitance                                         |
+| T               | $0 \le T < T_C$      | 4.2             | Temperature-dependent CPR temperature in K                    |
 | TC              | 0, $\infty$           | 9.1             | Critical temperature of superconducting material             |
 | DELV            | 0, $\infty$           | 0.1E-3          | Transitional voltage from subgap to normal                   |
 | D               | 0.0, 1                | 0.0             | Point of contact transparency affecting current phase relationship |
@@ -120,6 +120,12 @@ default model.
 For a Stewart–McCumber parameter, use the
 [tested parameter conversion](model_limits.md#beta-c).
 It defines which resistance enters beta_c; there is no direct `BETA_C=` field.
+
+All values must be finite. RN/R0/DELV/ICFCT/TC are strictly positive; D is in
+[0,1]. Temperature-dependent models require positive Ic; ordinary sinusoidal
+models retain signed/zero Ic support. D=1 uses its finite positive-temperature
+limit, while the zero-temperature cusp is singular. See
+[model domains](model_limits.md#model-domains) for the checked boundaries.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
 

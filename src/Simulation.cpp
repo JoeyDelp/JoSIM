@@ -11,8 +11,10 @@
 #include "JoSIM/ProgressBar.hpp"
 #include "JoSIM/Rng.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 using namespace JoSIM;
 
@@ -52,6 +54,12 @@ void validate_matrix(const Matrix& matrix) {
         if (matrix.ci[i] < 0 || matrix.ci[i] >= n || !std::isfinite(matrix.nz[i])) {
             Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Invalid column index or non-finite coefficient.");
         }
+    }
+}
+
+void validate_solution(const std::vector<double>& solution) {
+    if (!std::all_of(solution.begin(), solution.end(), [](double value) { return std::isfinite(value); })) {
+        Errors::simulation_errors(SimulationErrors::SOLVER_FAILURE, "Non-finite solution; model or numerical range exceeded");
     }
 }
 } // namespace
@@ -161,6 +169,7 @@ void Simulation::trans_sim(Matrix& mObj) {
             simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
             // If anything is a amiss, complain about it
             if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
+            validate_solution(x_);
             for (auto& history : results.phaseBefore) {
                 const auto node = x_.at(history.first);
                 const double phase = atyp_ == AnalysisType::Phase ? node
@@ -185,6 +194,7 @@ void Simulation::trans_sim(Matrix& mObj) {
         simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
         // If anything is a amiss, complain about it
         if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
+        validate_solution(x_);
         // Store results (only requested, to prevent massive memory usage)
         for (auto j = 0; j < results.xVector.size(); ++j) {
             if (results.xVector.at(j)) { results.xVector.at(j).value().emplace_back(x_.at(j)); }
@@ -229,6 +239,7 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
     // Re-factorize the LU if any jj transitions
     if (needsLU_) {
         mObj.create_nz();
+        validate_matrix(mObj);
         klu_l_free_numeric(&Numeric_, &Common_);
         Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
         if (!Numeric_) { solver_failure(Common_); }
@@ -443,13 +454,14 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
         if (temp.icNoise) { dIc = temp.icNoise.value().value(step); }
         if (dIc < -0.99) { dIc = -0.99; }
         const double Ic_eff = gateFactor * temp.model_.ic() * (1.0 + dIc);
+        const auto harmonics = model.cpr();
 
         // ---- RHS2 (junction current equation row) ----
         if (!temp.model_.tDep()) {
             // sum_h CPR_h * sin((h+1)*(phi0 - phiOff))
             double s = 0.0;
-            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
-                s += temp.model_.cpr().at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
+            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+                s += harmonics.at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
             }
 
             // Josephson current with fractional critical-current noise
@@ -462,21 +474,46 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
                          + ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + temp.it_);
         } else {
             double sin2_half_phi = 0.0;
-            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
-                sin2_half_phi += temp.model_.cpr().at(harm)
+            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+                sin2_half_phi += harmonics.at(harm)
                                  * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()) / 2.0);
             }
             sin2_half_phi  = sin2_half_phi * sin2_half_phi;
 
             double sin_phi = 0.0;
-            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
-                sin_phi += temp.model_.cpr().at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
+            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+                sin_phi += harmonics.at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
             }
 
-            const double sqrt_part = std::sqrt(1.0 - model.d() * sin2_half_phi);
-
-            double pref = ((Constants::PI * temp.del_) / (2.0 * Constants::EV * temp.model_.rn())) * (1.0 / sqrt_part)
-                          * std::tanh(temp.del_ / (2.0 * Constants::BOLTZMANN * model.t()) * sqrt_part);
+            const double term = model.d() * sin2_half_phi;
+            double radicand = 1.0 - term;
+            if (harmonics.size() == 1) {
+                const double beta = model.d() * harmonics.front() * harmonics.front();
+                if (std::isfinite(beta)) {
+                    const double cosine = std::cos((temp.phi0_ - model.phiOff()) / 2.0);
+                    // Equivalent form without loss of 1-sin^2 near the zero-T cusp.
+                    radicand = (1.0 - beta) + beta * cosine * cosine;
+                }
+            }
+            if (!std::isfinite(term)
+                || radicand < -8 * std::numeric_limits<double>::epsilon() * std::max(1.0, std::abs(term))) {
+                Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                    temp.netlistInfo.label_ + ": D and CPR give a negative square-root argument at this phase");
+            }
+            const double sqrt_part = std::sqrt(std::max(0.0, radicand));
+            double ratio;
+            if (model.t() == 0) {
+                if (sqrt_part <= 8 * std::numeric_limits<double>::epsilon()) {
+                    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                        temp.netlistInfo.label_ + ": zero-temperature CPR is singular at this phase");
+                }
+                ratio = 1.0 / sqrt_part;
+            } else {
+                const double alpha = temp.del_ / (2.0 * Constants::BOLTZMANN * model.t());
+                // tanh(alpha*q)/q -> alpha as q -> 0. Avoid 0*infinity at D=1.
+                ratio = sqrt_part == 0 ? alpha : std::tanh(alpha * sqrt_part) / sqrt_part;
+            }
+            const double pref = ((Constants::PI * temp.del_) / (2.0 * Constants::EV * temp.model_.rn())) * ratio;
 
             const double scale = gateFactor * (1.0 + dIc);
 

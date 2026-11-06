@@ -7,6 +7,8 @@
 #include "JoSIM/Misc.hpp"
 #include "JoSIM/TypeDefines.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <regex>
 
 using namespace JoSIM;
@@ -152,7 +154,10 @@ void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
         } else if (key == "IC" || key == "ICRIT") {
             temp.ic(value);
         } else if (key == "RTYPE") {
-            temp.rtype((int64_t) value);
+            if (value != 0.0 && value != 1.0) {
+                Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, "RTYPE must be 0 or 1");
+            }
+            temp.rtype(static_cast<int64_t>(value));
         } else if (key == "RN") {
             temp.rn(value);
         } else if (key == "R0") {
@@ -186,7 +191,31 @@ void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
         }
     }
 
+    temp.validate();
     models.emplace_back(std::make_pair(temp, s.second));
+}
+
+void Model::validate() const {
+    const auto require = [&](bool valid, const char* diagnostic) {
+        if (!valid) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, modelName_ + ": " + diagnostic); }
+    };
+    require(rtype_ == 0 || rtype_ == 1, "RTYPE must be 0 or 1");
+    require(std::isfinite(rn_) && rn_ > 0, "RN must be finite and positive");
+    require(std::isfinite(r0_) && r0_ > 0, "R0 must be finite and positive");
+    require(std::isfinite(c_) && c_ >= 0, "CAP must be finite and non-negative");
+    require(std::isfinite(ic_), "IC must be finite");
+    require(std::isfinite(vg_), "VG must be finite");
+    require(std::isfinite(phiOff_), "PHI must be finite");
+    require(std::isfinite(deltaV_) && deltaV_ > 0, "DELV must be finite and positive");
+    require(std::isfinite(icFct_) && icFct_ > 0, "ICFCT must be finite and positive");
+    require(std::isfinite(t_) && t_ >= 0, "T must be finite and non-negative");
+    require(std::isfinite(tc_) && tc_ > 0, "TC must be finite and positive");
+    require(!tDep_ || t_ < tc_, "T must be below TC for the temperature-dependent model");
+    require(!tDep_ || ic_ > 0, "IC must be positive for the temperature-dependent model");
+    require(std::isfinite(d_) && d_ >= 0 && d_ <= 1, "D must be in [0, 1]");
+    require(std::isfinite(gwidth_) && gwidth_ > 0, "GWIDTH must be finite and positive");
+    require(std::all_of(cpr_.begin(), cpr_.end(), [](double x) { return std::isfinite(x); }),
+            "CPR coefficients must be finite");
 }
 
 const Model* Model::find_model(const std::string& name, const vector_pair_t<Model, string_o>& models, string_o scope) {
