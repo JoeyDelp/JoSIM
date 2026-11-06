@@ -21,6 +21,7 @@ class CliRegression(unittest.TestCase):
             root = pathlib.Path(tmp)
             (root / "input.cir").write_text(deck)
             for name, contents in (files or {}).items():
+                (root / name).parent.mkdir(parents=True, exist_ok=True)
                 (root / name).write_text(contents)
             result = subprocess.run(
                 [str(BINARY), "-m", "1", *extra, "-o", "output.csv", *([] if stdin else ["input.cir"])],
@@ -41,6 +42,26 @@ class CliRegression(unittest.TestCase):
                 self.assertGreater(len(rows), 1)
                 for row in rows[1:]:
                     self.assertAlmostEqual(float(row[1]), 1.0, delta=1e-9)
+
+    def test_custom_waveform_filename_case(self):
+        for filename in ("Waveform.Data", "MixedDir/Waveform.Data"):
+            for function in (f"CUS({filename} 1p)", f"cus ( {filename} 1p)",
+                             f"CUS(\n+ {filename} 1p)", f"CUS(\n+{filename} 1p)"):
+                with self.subTest(filename=filename, function=function):
+                    deck = f"V1 N 0 {function}\nR1 N 0 1k\n.tran 0.25p 2p DST\n.print V(N)\n.end\n"
+                    result, rows = self.run_deck(deck, files={filename: "1 1 1 1\n"}, extra=("-a", "0"))
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertGreater(len(rows), 1)
+                    self.assertTrue(all(abs(float(row[1]) - 1.0) < 1e-9 for row in rows[1:]))
+
+    def test_continuation_without_preceding_line(self):
+        result, _ = self.run_deck("+ V1 N 0 DC 1\n" + self.SIMPLE + ".end\n", timeout=3)
+        self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
+        self.assertIn("Continuation has no preceding line", result.stdout + result.stderr)
+
+    def test_blank_and_indented_comment_lines(self):
+        result, _ = self.run_deck("\t\t\n\t* ignored comment\n\t# ignored comment\n" + self.SIMPLE + ".end\n", timeout=3)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_invalid_command_line(self):
         for args in (("--analysis=2",), ("--zebra", "1"), ("--aardvark=0",),

@@ -274,7 +274,10 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
         auto stem = WFline.filename().string();
         std::transform(stem.begin(), stem.end(), stem.begin(), ::tolower);
         WFline = std::filesystem::path(pp.append(stem));
-        if (!std::filesystem::exists(WFline)) { Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, t.at(0)); }
+        if (!std::filesystem::exists(WFline)) {
+            Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND,
+                                    WFline.string() + " (requested " + t.at(0) + ")");
+        }
     }
     // Default values for the arguments
     miscValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));

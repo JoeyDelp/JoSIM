@@ -13,7 +13,7 @@ BINARY = pathlib.Path(sys.argv.pop(1)).resolve()
 
 
 class GateRegression(unittest.TestCase):
-    def simulate(self, deck, mode=0, success=True):
+    def simulate(self, deck, mode=0, success=True, iv_filename="iv.csv"):
         with tempfile.TemporaryDirectory(prefix="gate-", dir=pathlib.Path.cwd()) as tmp:
             directory = pathlib.Path(tmp)
             (directory / "input.cir").write_text(deck)
@@ -30,8 +30,8 @@ class GateRegression(unittest.TestCase):
                 rows = list(csv.reader(stream))
             traces = [[float(value) for value in row] for row in rows[1:]]
             iv = None
-            if (directory / "IV.CSV").exists():
-                with (directory / "IV.CSV").open() as stream:
+            if (directory / iv_filename).exists():
+                with (directory / iv_filename).open() as stream:
                     iv = [[float(v) for v in row] for row in list(csv.reader(stream))[1:]]
             return traces, iv
 
@@ -95,13 +95,16 @@ class GateRegression(unittest.TestCase):
 
     def test_iv_step_and_endpoints(self):
         for option in ("STEP=3u", "ISTEP=3u"):
-            deck = self.deck().replace(".end\n", f".iv jm 5u iv.csv {option} GTJJ=5m\n.end\n")
-            _, iv = self.simulate(deck)
-            expected = [3e-6, 5e-6, 2e-6, 0, -3e-6, -5e-6, -2e-6, 0]
-            self.assertEqual(len(iv), len(expected))
-            for row, current in zip(iv, expected):
-                self.assertTrue(all(math.isfinite(v) for v in row))
-                self.assertAlmostEqual(row[1], current, delta=1e-11)
+            for filename in ("iv.csv", "MixedCase.CSV"):
+                with self.subTest(option=option, filename=filename):
+                    deck = self.deck().replace(".end\n", f".iv jm 5u {filename} {option} GTJJ=5m\n.end\n")
+                    _, iv = self.simulate(deck, iv_filename=filename)
+                    expected = [3e-6, 5e-6, 2e-6, 0, -3e-6, -5e-6, -2e-6, 0]
+                    self.assertIsNotNone(iv)
+                    self.assertEqual(len(iv), len(expected))
+                    for row, current in zip(iv, expected):
+                        self.assertTrue(all(math.isfinite(v) for v in row))
+                        self.assertAlmostEqual(row[1], current, delta=1e-11)
 
     def test_invalid_iv(self):
         for maximum, option in (("5u", "STEP=0"), ("5u", "UNKNOWN=1"), ("-5u", "STEP=1u")):

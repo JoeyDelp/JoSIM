@@ -403,3 +403,25 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** build/audit-resolution/cli-red-probes.json, cli-red-tests.log,
   cli-{green,gcc,sanitizer}-tests.xml. Final supported-platform verification and
   the remaining trace/malformed-input corpus stay open under A08b/D11.
+
+## F04 — Filename case and logical-line normalization
+
+- **Classification:** supported input defects exposed by platform qualification.
+- **Reproduction:** CI 42212510827 passed four targets but failed AArch64's CUS
+  relative-file test after the parser changed `wave.dat` to `WAVE.DAT`.
+  Independently, six local cases with mixed-case basenames/directories fail
+  through the same lossy normalization. Blank tab-only lines also crash.
+- **Implementation:** normalize electrical syntax after joining continuations;
+  preserve CUS paths and `.iv` output filenames. Retain the legacy lowercase
+  CUS fallback, with resolved-path diagnostics on failure. Ignore whitespace
+  before comments and reject a continuation without a preceding logical line.
+  Existing C++ layouts and diagnostic enum values are retained.
+- **Verification:** eight CUS basename/directory/spacing/continuation variants
+  must produce 1 V (absolute tolerance 1e-9 for CSV rounding). Model-IV endpoint
+  expectations remain unchanged and now check the requested filename case.
+  Whitespace/comment input must simulate; leading continuations must fail
+  normally. GCC16 and Clang23 Release pass 30/30.
+- **Evidence:** build/audit-resolution/cus-case-red.log, whitespace-red.log,
+  cli-arm64-failure.txt and cus-case-{gcc-,}tests.xml. All seven regression
+  groups pass ASan/UBSan with leaks (5.08 s); cus-case-sanitizer-tests.xml.
+  Supported-platform reruns must pass before closing the exposed CI failure.

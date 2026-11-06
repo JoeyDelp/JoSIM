@@ -7,6 +7,7 @@
 #include "JoSIM/Rng.hpp"
 
 #include <charconv>
+#include <cctype>
 #include <cmath>
 #include <cstring>
 #include <ctime>
@@ -17,6 +18,26 @@
 #include <thread>
 
 using namespace JoSIM;
+
+namespace {
+void normalize_netlist_line(tokens_t& tokens) {
+    if (tokens.front() == ".FILE" || tokens.front() == "FILE") { return; }
+    const bool iv = tokens.front() == ".IV" || tokens.front() == "IV";
+    const std::string filename = iv && tokens.size() > 3 ? tokens[3] : "";
+    const auto original = Misc::vector_to_string(tokens);
+    auto normalized = original;
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
+    // CUS paths are filesystem names, including on continued logical lines.
+    static const std::regex custom_file(R"(\bCUS\s*\(\s*([^\s,)]+))", std::regex::icase);
+    for (auto match = std::sregex_iterator(original.begin(), original.end(), custom_file);
+         match != std::sregex_iterator(); ++match) {
+        normalized.replace(match->position(1), match->length(1), match->str(1));
+    }
+    tokens = Misc::tokenize(normalized);
+    if (iv && tokens.size() > 3) { tokens[3] = filename; }
+}
+} // namespace
 
 std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
     struct IncludeStackGuard {
@@ -52,16 +73,21 @@ std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
         line = input.line();
         // Remove all Carriage Return characters
         line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+        line.erase(line.begin(), std::find_if(line.begin(), line.end(),
+                                             [](unsigned char c) { return !std::isspace(c); }));
         // Remove all the leading, trailing and extra white spaces
         line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
         if (!line.empty() && line.at(0) != '*' && line.at(0) != '#') {
             // Tokenize the line
             tokens = Misc::tokenize(line);
+            if (tokens.empty()) { continue; }
             // Uppercase just the first token for ".INCLUDE" and ".FILE" check
-            std::transform(tokens.begin(), tokens.begin() + 1, tokens.begin(), [](std::string& c) -> std::string {
-                std::transform(c.begin(), c.end(), c.begin(), toupper);
-                return c;
-            });
+            if (tokens.front().front() != '+') {
+                std::transform(tokens.begin(), tokens.begin() + 1, tokens.begin(), [](std::string& c) -> std::string {
+                    std::transform(c.begin(), c.end(), c.begin(), toupper);
+                    return c;
+                });
+            }
             // If the line contains a "INCLUDE" statement
             if (tokens.at(0) == ".INCLUDE" || tokens.at(0) == "INCLUDE") {
                 if (tokens.size() != 2) {
@@ -102,13 +128,9 @@ std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
                 break;
                 // If the line does not contain an "INCLUDE", "FILE" or "END" statement
             } else {
-                // Transform the entire line to upper case
-                std::transform(tokens.begin() + 1, tokens.end(), tokens.begin() + 1, [](std::string& c) -> std::string {
-                    std::transform(c.begin(), c.end(), c.begin(), toupper);
-                    return c;
-                });
                 // If the line starts with a '+' append it to the previous line.
                 if (tokens.at(0).at(0) == '+') {
+                    if (fileLines.empty()) { Errors::input_errors(InputErrors::INVALID_CONTINUATION, line); }
                     // Remove the '+'
                     tokens.at(0) = tokens.at(0).substr(1);
                     if (tokens.at(0).empty()) {
@@ -128,6 +150,7 @@ std::vector<tokens_t> Input::read_input(LineInput& input, string_o fileName) {
         Errors::input_errors(InputErrors::EMPTY_FILE, fileName);
         // Return the read in file lines.
     } else {
+        for (auto& logical_line : fileLines) { normalize_netlist_line(logical_line); }
         return fileLines;
     }
     // Return to satisfy return type. This should never be reached.

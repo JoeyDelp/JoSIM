@@ -116,6 +116,8 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
         case InputErrors::INVALID_INCLUDE:
             formattedMessage += "Include requires exactly one filename: " + message.value_or("");
             throw std::runtime_error(formattedMessage);
+        case InputErrors::INVALID_CONTINUATION:
+            throw std::runtime_error(formattedMessage + "Continuation has no preceding line: " + message.value_or(""));
         case InputErrors::MISSING_SUBCKT_IO:
             formattedMessage += "Missing subcircuit io.\n";
             formattedMessage += "Please recheck the netlist and try again.";

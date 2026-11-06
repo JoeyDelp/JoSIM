@@ -67,6 +67,9 @@ work prepared for the next release, not binaries already available on GitHub.
 - Effective seeds are printed with `-V 1` even with `-m 1`. Reject seed
   expressions at or above 2^64 before integer conversion; the exact integer
   literal 18446744073709551615 remains supported.
+- Preserve custom-waveform paths and model-IV output filenames exactly, including
+  mixed case and continued lines. Blank tab lines and indented comments are
+  handled safely; a continuation without a preceding line fails cleanly.
 
 - Retired the non-functional SuperLU selection. `SLU=ON` and manual `SLU` macro
   definitions now fail explicitly instead of implying that another solver runs.

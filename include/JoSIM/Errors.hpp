@@ -40,7 +40,8 @@ enum class InputErrors : int64_t {
     IO_MISMATCH,
     UNKNOWN_CONTROL,
     DUPLICATE_SUBCIRCUIT,
-    INVALID_INCLUDE
+    INVALID_INCLUDE,
+    INVALID_CONTINUATION
 };
 
 enum class ComponentErrors : int64_t {
