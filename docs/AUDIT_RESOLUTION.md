@@ -36,11 +36,22 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A04 — Installed CMake package
 
 - **Classification:** confirmed defect; prior repair.
-- **Current reproduction/result:** Existing fresh-consumer test passes in all four baseline builds; relocation/modes pending.
+- **Current reproduction/result:** Default/shared/static GNU16 builds pass
+  30/30 each, including fresh consumers after moving the installation to a
+  path with spaces. GNU8.3.1 in the pinned CentOS6.10 userspace also passes
+  default/shared 30/30 each. Separate vendor shared-library setup failed from
+  an unset PIC flag and duplicate DLONG symbols; shared JoSIM now explicitly
+  embeds the working static KLU dependencies.
 - **Required outcome:** Verify dependency discovery, relocation and every supported configuration.
-- **Implementation/owner:** 30c8fbb; cmake/josim-config.cmake.in; test/consumer.
+- **Implementation/owner:** 30c8fbb; CMakeLists.txt; test_installed_package.cmake;
+  test/consumer; tools/verify_library.py and native library CI matrix.
 - **Verification:** ctest -R regression::installed_package.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** artifacts/audit-resolution/library-owner
+  and library-legacy contain commands, source/toolchain identities and all test
+  results. The relocated CLI runs and consumers check 1 V plus repeated error
+  recovery; original prefix is absent. ELF loader path is $ORIGIN/../lib.
+  Windows exports/DLL discovery and macOS loader paths require native CI;
+  these are not accepted solely from the local Linux result.
 
 ## A05 — Silently ineffective SLU=ON
 
@@ -66,7 +77,10 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A06 — Moving dependency URL and stale linkage
 
 - **Classification:** confirmed maintenance/portability defect; partial prior repair.
-- **Current reproduction/result:** Fresh GCC Release acquisition/build passed. Filesystem linkage review pending.
+- **Current reproduction/result:** Fresh GCC Release acquisition/build passed.
+  Filesystem link probes confirm GNU8 needs stdc++fs and GNU16 does not. Both
+  default/shared installed consumers pass with the respective public link
+  requirements. Linux rt linkage is retained for pre-glibc2.17 clock_gettime.
 - **Required outcome:** Verify immutable acquisition and remove stale links only with compiler/runtime evidence.
 - **Implementation/owner:** da8998d; cceac6c; cmake/dependency_sources.cmake.
 - **Verification:** clean-cache configure/build; installed consumers; five-platform ABI checks.
@@ -424,4 +438,5 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** build/audit-resolution/cus-case-red.log, whitespace-red.log,
   cli-arm64-failure.txt and cus-case-{gcc-,}tests.xml. All seven regression
   groups pass ASan/UBSan with leaks (5.08 s); cus-case-sanitizer-tests.xml.
-  Supported-platform reruns must pass before closing the exposed CI failure.
+  CI 42214652354 for fcb4e1f722 passes all five supported targets, including the
+  previously failed AArch64 test. The original failure remains in the evidence.

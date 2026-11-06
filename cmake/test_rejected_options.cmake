@@ -37,14 +37,18 @@ file(WRITE "${TEST_BINARY_DIR}/rejected-options/macro.log" "${output}\n${error}"
 if(result EQUAL 0 OR NOT "${output}\n${error}" MATCHES "SuperLU backend has been retired")
   message(FATAL_ERROR "SLU macro was not explicitly rejected (${result}):\n${output}\n${error}")
 endif()
-foreach(option IN ITEMS SLU USING_OPENMP)
+foreach(option IN ITEMS SLU USING_OPENMP STATIC_SHARED_CONFLICT)
+  set(option_flags "-D${option}=ON")
   if(option STREQUAL "SLU")
     set(diagnostic "SuperLU backend has been retired")
-  else()
+  elseif(option STREQUAL "USING_OPENMP")
     set(diagnostic "Parallel processing is unsupported")
+  else()
+    set(diagnostic "BUILD_SHARED_LIBS and MAKING_STATIC_BUILD are mutually exclusive")
+    set(option_flags -DBUILD_SHARED_LIBS=ON -DMAKING_STATIC_BUILD=ON)
   endif()
   execute_process(COMMAND "${CMAKE_COMMAND}" ${arguments}
-                  -B "${TEST_BINARY_DIR}/rejected-options/${option}" "-D${option}=ON"
+                  -B "${TEST_BINARY_DIR}/rejected-options/${option}" ${option_flags}
                   RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
                   TIMEOUT 45)
   file(MAKE_DIRECTORY "${TEST_BINARY_DIR}/rejected-options")

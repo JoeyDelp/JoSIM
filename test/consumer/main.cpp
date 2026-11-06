@@ -8,6 +8,8 @@
 #include <cmath>
 
 int main() {
+    JoSIM::OutputFile output("probe.CSV");
+    if (output.type() != JoSIM::FileOutputType::Csv) { return 1; }
     JoSIM::Input input(JoSIM::AnalysisType::Voltage, 0, true);
     input.transSim.tstep(1e-12);
     input.transSim.tstop(5e-12);

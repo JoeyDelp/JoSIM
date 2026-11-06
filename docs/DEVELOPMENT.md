@@ -107,6 +107,43 @@ Consumers set `CMAKE_PREFIX_PATH` to that prefix, call
 loads its solver dependencies and propagates C++17 and public headers.
 See [embedding guidance](API.md) for error recovery and random-state ownership.
 
+Supported source-library configurations:
+
+| Configuration | Result |
+|---|---|
+| Default | Static JoSIM and KLU libraries; platform's default C++ runtime |
+| `-DBUILD_SHARED_LIBS=ON` | Shared JoSIM with static, position-independent KLU dependencies |
+| `-DMAKING_STATIC_BUILD=ON` | Static JoSIM/KLU; static MSVC runtime on Windows, static C++ runtime with GNU/Linux |
+
+The last two options are mutually exclusive. macOS keeps its system runtime.
+These options do not promise a fully static executable including glibc. Shared
+solver DLLs are not part of the supported package: the old wrappers lack that
+interface. JoSIM's shared-library mode retains the same KLU backend.
+
+The installed CLI locates shared JoSIM relative to its own installation.
+External Windows applications must make the installation's `bin` directory
+available to their DLL loader. Do not mix headers, DLLs and import libraries
+from different builds.
+
+Reproduce the library-mode CI checks with:
+
+```bash
+python3 -B tools/verify_library.py --build-root build/library \
+  --dependencies build/dependencies --output artifacts/library
+```
+
+On Windows add `--generator "Visual Studio 17 2022"`. Add `--modes static` to
+check the static-runtime configuration separately. Each mode runs all declared
+CTest tests, refuses missing/skipped tests, moves the installation into a path
+with spaces, removes the original prefix, builds fresh external consumers and
+checks the relocated CLI's loader path. Summary JSON records source, toolchains,
+commands and test counts. CI covers default/shared libraries on all five native
+targets; release packaging also checks each target's declared runtime policy.
+
+Legacy GNU toolchains need `stdc++fs` for C++17 filesystem functions. A link probe
+retains that public requirement only where needed by JoSIM and its headers;
+modern toolchains no longer receive the stale unconditional link flag.
+
 Keep fixes focused and add regression checks for non-trivial defects. Record
 user-visible behavior in [CHANGELOG.md](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md).
 See [the release procedure](RELEASE_POLICY.md) for portable binary builds.

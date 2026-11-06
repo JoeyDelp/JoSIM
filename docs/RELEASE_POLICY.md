@@ -49,6 +49,12 @@ Each successful run must:
 4. Extract the resulting archive, verify its hashes and run a numerical smoke
    test using the extracted executable.
 
+The workflow also requires default/shared library-mode qualification on all
+five native targets, including fresh consumers after installation relocation.
+`tools/verify_library.py` owns these checks. Released archives use the static
+JoSIM/runtime configuration stated above; shared-library source-build checks
+do not change the published binary format or runtime baseline.
+
 Archives include `MANIFEST.json`. A sidecar manifest records source identity,
 compiler versions, dependency hashes, configuration, test count and binary ABI
 inspection. A `.sha256` file identifies the archive itself.

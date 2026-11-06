@@ -51,6 +51,14 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Build and distribution
 
+- Added default/shared/static library qualification with relocated installations
+  and fresh consumers. Shared JoSIM embeds static KLU dependencies, exports
+  Windows entry points and uses relative installed CLI loader paths. Conflicting
+  shared/static requests fail explicitly. Native default/shared checks now gate
+  release publication on all five platforms.
+- Detect whether C++17 filesystem functions need `stdc++fs`; retain the public
+  dependency on legacy GNU toolchains and remove it from modern builds.
+
 - Library `.iv` model lookup now throws instead of exiting the host process.
   Check KLU setup/factorization failures and sparse-array validity; release
   solver allocations on exceptions and timestep retries. Added repeated
