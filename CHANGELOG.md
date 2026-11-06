@@ -39,6 +39,16 @@ work prepared for the next release, not binaries already available on GitHub.
 - Static Linux runtime flags now apply during linking. Static Windows builds use
   the same MSVC runtime for JoSIM, its solvers and installed-library consumers.
 
+### Build and distribution
+
+- One release script builds, tests, installs and verifies all platform packages.
+- GitHub Actions targets Linux x86_64 with glibc 2.12, Linux AArch64 with glibc
+  2.17, Windows x64, and separate macOS ARM and Intel binaries.
+- Packages include source/toolchain manifests and SHA-256 checksums. Each archive
+  is extracted, checked and executed before upload. Release tags publish only
+  after every target passes.
+- Replaced obsolete setup instructions with current build and release guides.
+
 ## 2.7 — 2025-12-19
 
 - Added deterministic noise and component spread through `.option seed=value`.

@@ -35,7 +35,18 @@ or via \
 
 ---
 
+## Building and current changes
+
+- [Build and test instructions](docs/DEVELOPMENT.md)
+- [Binary targets and release procedure](docs/RELEASE_POLICY.md)
+- [Changes prepared for the next release](CHANGELOG.md)
+- [Gate-controlled junctions](docs/gate_junctions.md) and [noise sources](docs/noise_sources.md)
+
 ## Changelog
+
+The historical release notes below describe published versions. Current changes
+are maintained in [CHANGELOG.md](CHANGELOG.md).
+
 ### v2.7
 - Added ability to specify seed for RNG through `.option seed=` command.
 - Current run seed can be shown using verbose command.

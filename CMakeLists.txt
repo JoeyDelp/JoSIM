@@ -161,6 +161,8 @@ foreach(dependency CMakeSuperLU CMakeCBLAS)
 endforeach()
 
 install(FILES LICENSE README.md CHANGELOG.md DESTINATION .)
+install(FILES docs/gate_junctions.md docs/noise_sources.md
+              docs/DEVELOPMENT.md docs/RELEASE_POLICY.md DESTINATION docs)
 
 # Install targets
 install(

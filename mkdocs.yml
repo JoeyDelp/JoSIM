@@ -9,6 +9,10 @@ nav:
   - Example Usage: 'ex_usage.md'
   - Component Stamps: 'comp_stamps.md'
   - Syntax Guide: 'syntax.md'
+  - Gate-Controlled Junctions: 'gate_junctions.md'
+  - Noise Sources: 'noise_sources.md'
+  - Development: 'DEVELOPMENT.md'
+  - Release Procedure: 'RELEASE_POLICY.md'
   - Development Schedule and Bugs: 'bugs.md'
   - Japanese 日本語版:
     - Home: 'jp/index_jp.md'

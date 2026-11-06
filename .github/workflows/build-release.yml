@@ -1,279 +1,184 @@
-name: Build binaries (Win/macOS/Linux) + Release assets
+name: Build, qualify and package JoSIM
 
 on:
   push:
-    branches: [ "master" ]
-    tags:     [ "v*" ]
+    branches: [master, 'codex/**']
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
-jobs:
-  # ---------------------------
-  # Linux builds (RHEL7 baseline) via docker run (NOT job.container)
-  # ---------------------------
-  build_linux:
-    name: Build (${{ matrix.name }})
-    runs-on: ${{ matrix.runs_on }}
+permissions:
+  contents: read
 
+concurrency:
+  group: josim-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+
+jobs:
+  build_linux:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: linux-x64-rhel7
-            runs_on: ubuntu-24.04
-            image: quay.io/pypa/manylinux2014_x86_64
-          - name: linux-arm64-rhel7
-            runs_on: ubuntu-24.04-arm
-            image: quay.io/pypa/manylinux2014_aarch64
-
+          - target: linux-x64-rhel6
+            runner: ubuntu-24.04
+            image: quay.io/pypa/manylinux2010_x86_64@sha256:3b5eb5ab9bc73b93740ae4eda9962078951cd3bb7efe837b770360e78c7366fb
+          - target: linux-arm64-rhel7
+            runner: ubuntu-24.04-arm
+            image: quay.io/pypa/manylinux2014_aarch64@sha256:db68ee9e5e879da5945dfbc8cab446f02245da6522aca0a9e4cda9256c911d2f
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
-
-      - name: Cache CMake deps (best-effort)
-        uses: actions/cache@v4
+          persist-credentials: false
+      - name: Cache verified source archives
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: |
-            build/_deps
-            .cpm-cache
-            ~/.cache
-          key: linux-${{ matrix.name }}-${{ hashFiles('**/CMakeLists.txt','**/*.cmake') }}
-          restore-keys: |
-            linux-${{ matrix.name }}-
-            linux-
-
-      - name: Compute version label
+          path: build/dependencies/archives
+          key: ${{ runner.os }}-sources-${{ hashFiles('cmake/dependency_sources.cmake') }}
+      - name: Prepare pinned dependencies on the host
         shell: bash
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
-          else
-            echo "VERSION=master-${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
-          fi
-
-      - name: Build inside manylinux2014 (RHEL7/glibc 2.17)
+        run: cmake -DJOSIM_DEPENDENCY_DIR="$GITHUB_WORKSPACE/build/dependencies" -P cmake/prepare_dependencies.cmake
+      - name: Build, test and verify the package in the target userspace
         shell: bash
         env:
-          CPM_SOURCE_CACHE: ${{ github.workspace }}/.cpm-cache
+          BUILD_IMAGE: ${{ matrix.image }}
+          BUILD_TARGET: ${{ matrix.target }}
         run: |
-          set -euxo pipefail
-
-          HOST_UID="$(id -u)"
-          HOST_GID="$(id -g)"
-          IMAGE="${{ matrix.image }}"
-
-          docker pull "$IMAGE"
-
-          docker run --rm \
-            -e HOST_UID="$HOST_UID" \
-            -e HOST_GID="$HOST_GID" \
-            -e CPM_SOURCE_CACHE="/work/.cpm-cache" \
-            -v "$GITHUB_WORKSPACE:/work" \
-            -w /work \
-            "$IMAGE" \
-            bash -lc '
-              set -euxo pipefail
-
-              # Ensure tools exist (manylinux images usually have these; install if missing)
-              command -v objdump >/dev/null 2>&1 || yum -y install binutils
-              command -v git >/dev/null 2>&1 || yum -y install git
-              command -v make >/dev/null 2>&1 || yum -y install make
-              command -v cmake >/dev/null 2>&1 || (yum -y install cmake3 || true)
-
-              CMAKE=cmake
-              command -v cmake3 >/dev/null 2>&1 && CMAKE=cmake3
-
-              # Clean any previous outputs (optional)
-              rm -rf build stage
-
-              $CMAKE -S . -B build \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_INSTALL_PREFIX=stage \
-                -DMAKING_STATIC_BUILD=ON \
-                -DBUILD_SHARED_LIBS=OFF \
-                -DUSING_OPENMP=OFF \
-                -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc"
-
-              $CMAKE --build build --config Release --parallel
-              ctest --test-dir build -C Release --output-on-failure
-              $CMAKE --install build --config Release
-
-              cp -f LICENSE stage/ || true
-              cp -f README.md stage/ || true
-
-              # Sanity check: ensure we did not accidentally require newer than glibc 2.17 (RHEL7)
-              bin="stage/bin/josim-cli"
-              max_ver=$(objdump -T "$bin" 2>/dev/null \
-                | sed -n "s/.*GLIBC_\\([0-9.]*\\).*/\\1/p" \
-                | sort -V | tail -1 || true)
-              echo "Max GLIBC required: ${max_ver:-<none found>}"
-              if [[ -n "$max_ver" ]]; then
-                highest=$(printf "2.17\n%s\n" "$max_ver" | sort -V | tail -1)
-                if [[ "$highest" != "2.17" ]]; then
-                  echo "ERROR: binary requires GLIBC_$max_ver (newer than 2.17) => not RHEL7 compatible"
-                  exit 1
-                fi
+          set -euo pipefail
+          docker pull "$BUILD_IMAGE"
+          docker run --rm --network none --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e GITHUB_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e BUILD_TARGET \
+            -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" \
+            "$BUILD_IMAGE" bash -c '
+              set -euo pipefail
+              export PATH="/opt/python/cp310-cp310/bin:$PATH"
+              tag_args=()
+              if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+                tag_args=(--release-tag "$GITHUB_REF_NAME")
               fi
-
-              # Fix ownership so the runner can package/clean the workspace
-              chown -R "$HOST_UID:$HOST_GID" /work/build /work/stage /work/.cpm-cache || true
+              python3 -B tools/build_release.py --target "$BUILD_TARGET" \
+                --build-dir "build/$BUILD_TARGET" --dependencies build/dependencies \
+                --artifacts artifacts --revision "$GITHUB_SHA" --parallel 4 \
+                "${tag_args[@]}"
             '
-
-      - name: Package (tar.gz)
-        shell: bash
-        run: |
-          set -euxo pipefail
-          tar -czf "JoSIM-${VERSION}-${{ matrix.name }}.tar.gz" -C stage .
-
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload verified archives, manifests and checksums
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: JoSIM-${{ env.VERSION }}-${{ matrix.name }}
-          path: JoSIM-${{ env.VERSION }}-${{ matrix.name }}.tar.gz
+          name: JoSIM-${{ matrix.target }}
+          path: artifacts/JoSIM-*
+          if-no-files-found: error
+          compression-level: 0
+      - name: Retain failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: diagnostics-${{ matrix.target }}
+          path: |
+            build/**/configure.log
+            build/**/build.log
+            build/**/test.log
+            build/**/test-results.xml
+            build/**/install.log
+            build/**/package-smoke.log
+          if-no-files-found: ignore
 
-  # ---------------------------
-  # macOS builds: arm64 + x64
-  # ---------------------------
-  build_macos:
-    name: Build (${{ matrix.name }})
-    runs-on: ${{ matrix.os }}
-
+  build_native:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos-15
-            name: macos-arm64
-          - os: macos-15-intel
-            name: macos-x64
-
+          - target: windows-x64
+            runner: windows-2025
+          - target: macos-arm64
+            runner: macos-15
+          - target: macos-x86_64
+            runner: macos-15-intel
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
-
-      - name: Compute version label
-        shell: bash
+          persist-credentials: false
+      - name: Cache verified source archives
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/dependencies/archives
+          key: ${{ runner.os }}-sources-${{ hashFiles('cmake/dependency_sources.cmake') }}
+      - name: Build and qualify Windows package
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          BUILD_TARGET: ${{ matrix.target }}
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
-          else
-            echo "VERSION=master-${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
+          $ErrorActionPreference = 'Stop'
+          $tagArgs = @()
+          if ($env:GITHUB_REF.StartsWith('refs/tags/v')) {
+            $tagArgs = @('--release-tag', $env:GITHUB_REF_NAME)
+          }
+          python -B tools/build_release.py --target $env:BUILD_TARGET `
+            --build-dir "build/$env:BUILD_TARGET" --dependencies build/dependencies `
+            --artifacts artifacts --revision $env:GITHUB_SHA `
+            --generator 'Visual Studio 17 2022' --parallel 4 @tagArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build and qualify macOS package
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          BUILD_TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          tag_args=()
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            tag_args=(--release-tag "$GITHUB_REF_NAME")
           fi
-
-      - name: Configure
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=stage \
-            -DMAKING_STATIC_BUILD=OFF
-
-      - name: Build
-        shell: bash
-        run: cmake --build build --config Release --parallel
-
-      - name: Test
-        shell: bash
-        run: ctest --test-dir build -C Release --output-on-failure
-
-      - name: Install to staging folder
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cmake --install build --config Release
-          cp -f LICENSE stage/ || true
-          cp -f README.md stage/ || true
-
-      - name: Package (tar.gz)
-        shell: bash
-        run: tar -czf "JoSIM-${VERSION}-${{ matrix.name }}.tar.gz" -C stage .
-
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+          python3 -B tools/build_release.py --target "$BUILD_TARGET" \
+            --build-dir "build/$BUILD_TARGET" --dependencies build/dependencies \
+            --artifacts artifacts --revision "$GITHUB_SHA" --parallel 4 \
+            "${tag_args[@]}"
+      - name: Upload verified archives, manifests and checksums
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: JoSIM-${{ env.VERSION }}-${{ matrix.name }}
-          path: JoSIM-${{ env.VERSION }}-${{ matrix.name }}.tar.gz
-
-  # ---------------------------
-  # Windows build: x64
-  # ---------------------------
-  build_windows:
-    name: Build (windows-x64)
-    runs-on: windows-2025
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          name: JoSIM-${{ matrix.target }}
+          path: artifacts/JoSIM-*
+          if-no-files-found: error
+          compression-level: 0
+      - name: Retain failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          fetch-depth: 0
+          name: diagnostics-${{ matrix.target }}
+          path: |
+            build/**/configure.log
+            build/**/build.log
+            build/**/test.log
+            build/**/test-results.xml
+            build/**/install.log
+            build/**/package-smoke.log
+          if-no-files-found: ignore
 
-      - name: Compute version label
-        shell: pwsh
-        run: |
-          if ($env:GITHUB_REF -like 'refs/tags/*') { $v = $env:GITHUB_REF_NAME }
-          else { $v = "master-$($env:GITHUB_SHA.Substring(0,7))" }
-          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Configure
-        shell: pwsh
-        run: |
-          cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_INSTALL_PREFIX=stage `
-            -DMAKING_STATIC_BUILD=ON
-
-      - name: Build
-        shell: pwsh
-        run: cmake --build build --config Release --parallel
-
-      - name: Test
-        shell: pwsh
-        run: ctest --test-dir build -C Release --output-on-failure
-
-      - name: Install to staging folder
-        shell: pwsh
-        run: |
-          cmake --install build --config Release
-          cmake -E copy_if_different LICENSE   stage/ || exit 0
-          cmake -E copy_if_different README.md stage/ || exit 0
-
-      - name: Package (zip)
-        shell: pwsh
-        run: Compress-Archive -Path "stage\*" -DestinationPath "JoSIM-$env:VERSION-windows-x64.zip"
-
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: JoSIM-${{ env.VERSION }}-windows-x64
-          path: JoSIM-${{ env.VERSION }}-windows-x64.zip
-
-  # ---------------------------
-  # Release: attach all artifacts on tag pushes
-  # ---------------------------
   release:
-    name: Create GitHub Release (tags only)
+    name: Publish tagged release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - build_linux
-      - build_macos
-      - build_windows
+    needs: [build_linux, build_native]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - name: Download qualified packages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
+          pattern: JoSIM-*
           path: artifacts
           merge-multiple: true
-
-      - name: Publish release + attach binaries
-        uses: softprops/action-gh-release@v2
+      - name: Publish all qualified targets
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
-          files: artifacts/**
+          files: artifacts/JoSIM-*
+          fail_on_unmatched_files: true
+          generate_release_notes: true

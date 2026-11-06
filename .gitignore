@@ -327,4 +327,11 @@ Screenshot 2020-09-18 at 15.17.27.png
 /test/dcsfq.svg
 /test/jtl.svg
 
+# Build outputs, local project context and Python caches.
+/build/
+/artifacts/
+/docs/context/
+__pycache__/
+*.pyc
+
 test_internal
