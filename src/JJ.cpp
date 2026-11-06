@@ -50,7 +50,34 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
        int64_t&                             bi) {
     double   spr = 1.0;
     tokens_t t;
-    for (auto i = 3; i < s.first.size(); ++i) {
+    bool gateGiven = false;
+    auto set_gate = [&](const std::string& node) {
+        if (gateGiven) {
+            Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                                             s.first.front() + ": duplicate gate control");
+        }
+        gateGiven = true;
+        if (node == "0" || node == "GND") { return; }
+        auto found = nm.find(node);
+        if (found == nm.end()) {
+            Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                                             s.first.front() + ": unknown gate node " + node);
+        }
+        gateIndex_ = found->second;
+    };
+    size_t firstAttribute = 3;
+    // The experimental branch also accepted B+ B- gate model ordering.
+    if (s.first.size() > 4 && s.first.at(3).find('=') == std::string::npos) {
+        for (const auto& model : iObj.netlist.models_new) {
+            if (model.first.modelName() == s.first.at(4) && model.first.gateWidthSpecified()) {
+                // WRspice decks may contain an unused phase-node field here.
+                if (nm.count(s.first.at(3)) != 0) { set_gate(s.first.at(3)); }
+                firstAttribute = 4;
+                break;
+            }
+        }
+    }
+    for (size_t i = firstAttribute; i < s.first.size(); ++i) {
         auto& ti = s.first.at(i);
         if (ti.rfind("SPREAD=", 0) == 0) {
             spr = parse_param(ti.substr(7), iObj.parameters, s.second);
@@ -60,6 +87,8 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
             neb_ = parse_param(ti.substr(4), iObj.parameters, s.second);
         } else if (ti.rfind("AREA=", 0) == 0) {
             area_ = spread.spread_value(parse_param(ti.substr(5), iObj.parameters, s.second), Spread::JJ, spr);
+        } else if (ti.rfind("GC=", 0) == 0) {
+            set_gate(ti.substr(3));
         } else if (ti.rfind("IC=", 0) == 0) {
             Ic_ = spread.spread_value(parse_param(ti.substr(3), iObj.parameters, s.second), Spread::JJ, spr);
         } else {

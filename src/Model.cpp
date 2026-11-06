@@ -86,6 +86,11 @@ void Model::parse_model(const std::pair<tokens_t, string_o>& s,
                 temp.tDep(true);
             } else if (tokens.at(i) == "DELV") {
                 temp.deltaV(value);
+            } else if (tokens.at(i) == "GWIDTH") {
+                if (!std::isfinite(value) || value <= 0.0) {
+                    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, "GWIDTH must be finite and positive");
+                }
+                temp.gwidth(value);
             } else if (tokens.at(i) == "D") {
                 temp.d(value);
                 temp.tDep(true);

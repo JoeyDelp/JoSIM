@@ -24,12 +24,14 @@ class Model {
     double              d_;
     double              icFct_;
     double              phiOff_;
+    double              gwidth_;
+    bool                gateWidthSpecified_ = false;
     bool                tDep_;
 
   public:
     Model()
         : vg_(2.8E-3), ic_(1E-3), cpr_({1.0}), rtype_(1), rn_(5), r0_(30), c_(2.5E-12), t_(4.2), tc_(9.1),
-          deltaV_(0.1E-3), d_(0), icFct_(Constants::PI / 4), phiOff_(0), tDep_(false) {};
+          deltaV_(0.1E-3), d_(0), icFct_(Constants::PI / 4), phiOff_(0), gwidth_(0.1E-3), tDep_(false) {};
 
     std::string         modelName() const { return modelName_; }
 
@@ -86,6 +88,12 @@ class Model {
     double              phiOff() const { return phiOff_; }
 
     void                phiOff(const double& o) { phiOff_ = o; }
+
+    double              gwidth() const { return gwidth_; }
+
+    void                gwidth(double value) { gwidth_ = value; gateWidthSpecified_ = true; }
+
+    bool                gateWidthSpecified() const { return gateWidthSpecified_; }
 
     bool                tDep() { return tDep_; }
 

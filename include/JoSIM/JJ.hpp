@@ -54,6 +54,8 @@ class JJ : public BasicComponent {
     double  h_       = 0.0;
 
   public:
+    std::optional<int64_t>  gateIndex_;
+    double                  gatePn1_ = 0.0, gatePn2_ = 0.0;
     int64_t                 variableIndex_ = 0;
     double                  area_          = 1.0;
     std::optional<double>   Ic_, temp_, neb_, spAmp_;

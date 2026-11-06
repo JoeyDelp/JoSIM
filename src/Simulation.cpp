@@ -350,10 +350,22 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
             auto testLU = temp.update_value(v0);
             if (testLU && !needsLU_) { needsLU_ = true; }
         }
+        double gateFactor = 1.0;
+        if (temp.gateIndex_) {
+            const double signal = x_.at(temp.gateIndex_.value());
+            double voltage = signal;
+            if (atyp_ == AnalysisType::Phase) {
+                voltage = Constants::SIGMA * (3.0 * signal - 4.0 * temp.gatePn1_ + temp.gatePn2_)
+                          / (2.0 * stepSize_);
+                temp.gatePn2_ = temp.gatePn1_;
+                temp.gatePn1_ = signal;
+            }
+            gateFactor = std::clamp(1.0 - std::abs(voltage) / model.gwidth(), 0.0, 1.0);
+        }
         // Ic * sin (phi * (φ0 - φ))
         double ic_sin_phi = 0.0;
         for (int harm = 0; harm < temp.model_.cpr().size(); ++harm) {
-            ic_sin_phi += temp.model_.ic()
+            ic_sin_phi += gateFactor * temp.model_.ic()
                           * (temp.model_.cpr().at(harm) * sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff())));
         }
         if (!temp.model_.tDep()) {
@@ -378,7 +390,7 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
                     (temp.matrixInfo.nonZeros_.back())
                     * ((
                                // (π * Δ / 2 * e * Rn)
-                               ((Constants::PI * temp.del_) / (2 * Constants::EV * temp.model_.rn()))
+                               (gateFactor * (Constants::PI * temp.del_) / (2 * Constants::EV * temp.model_.rn()))
                                // * (sin(φ0 - φ) / √(1 - D * sin²((φ0 - φ) / 2))
                                * (sin_phi / sqrt_part)
                                // * tanh(Δ / (2 * kB * T) * √(1 - D * sin²((φ0 - φ) / 2)))

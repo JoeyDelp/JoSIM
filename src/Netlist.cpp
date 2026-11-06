@@ -76,6 +76,23 @@ void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, con
         int64_t nodeCount = 2;
         // If device type identifier is any of "EFGHT" check the next two nodes
         if (std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) { nodeCount = 4; }
+        if (tokens.front().front() == 'B' && tokens.size() > 4) {
+            for (const auto& model : models_new) {
+                if (model.first.modelName() == tokens.at(4) && model.first.gateWidthSpecified()) {
+                    nodeCount = 3;
+                    break;
+                }
+            }
+        }
+        for (auto& token : tokens) {
+            if (token.rfind("GC=", 0) == 0) {
+                std::string node = token.substr(3);
+                if (node != "0" && node != "GND" && !rename_io_nodes(node, subc.io, io)) {
+                    node += "|" + label;
+                }
+                token = "GC=" + node;
+            }
+        }
         // Loop through all the nodes changing where necessary
         for (int64_t n = 1; n < nodeCount + 1; ++n) {
             // Ensure nodes don't identify as ground

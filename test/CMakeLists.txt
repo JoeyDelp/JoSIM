@@ -131,3 +131,11 @@ add_integration_test(
   NAME test_output
   CIR syntax/test_output.cir
 )
+
+if(BUILD_TESTING)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  add_test(NAME regression::gate
+           COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_gate.py
+                   $<TARGET_FILE:josim-cli>)
+  set_tests_properties(regression::gate PROPERTIES TIMEOUT 90)
+endif()
