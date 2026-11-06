@@ -130,3 +130,11 @@ Repeatability means replay with the same build, netlist, seed, timestep and
 sampling settings. Changing the timestep can change stochastic sample timing.
 Bit-identical floating-point output across platforms or toolchains is not a
 supported guarantee.
+
+PNOISE/FNOISE/ICNOISE share one OU-bank initializer. Corrected power-law weights,
+endpoint limits and sampled-pole gain change their seeded waveforms. This adds
+a private method without changing class/struct layouts or existing signatures.
+`PNoiseState::scale` is now 1 because the variances already include amplitude;
+`S1Hz` remains a continuous-OU diagnostic before sampling/interpolation. It is
+not the actual interpolated PSD or a normalization guarantee at an out-of-band
+frequency. See the [colored-noise conventions](noise_sources.md#power-law-noise).

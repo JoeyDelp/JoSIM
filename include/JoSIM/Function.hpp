@@ -46,7 +46,7 @@ struct PNoiseState {
 
     // Helpful for debug/verification
     double              scale = 1.0; // variance scaling applied to base weights
-    double              S1Hz  = 0.0; // achieved one-sided PSD at 1 Hz (analytic)
+    double              S1Hz  = 0.0; // continuous-OU diagnostic PSD at 1 Hz, before sampling/interpolation
 };
 
 class Function {
@@ -62,6 +62,7 @@ class Function {
     void                       parse_sin(const tokens_t& t, const Input& iObj, const string_o& s);
     void                       parse_cus(const tokens_t& t, const Input& iObj, const string_o& s);
     void                       parse_noise(const tokens_t& t, const Input& iObj, const string_o& s);
+    void                       initialize_pnoise(PNoiseState& state);
     void                       parse_pnoise(const tokens_t& t, const Input& iObj, const string_o& s);
     void                       parse_fnoise(const tokens_t& t, const Input& iObj, const string_o& s);
     void                       parse_icnoise(const tokens_t& t, const Input& iObj, const string_o& s);

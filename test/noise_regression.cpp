@@ -56,7 +56,7 @@ static void white_noise() {
 }
 
 static void reseed_and_rewind() {
-    for (int count : {1, 2, 3, 5}) {
+    for (int count : {1, 2, 3, 4, 5, 6}) {
         Rng::start_run(123456);
         std::vector<double> expected;
         for (int i = 0; i < count; ++i) { expected.push_back(Rng::normal01_noise()); }
@@ -231,18 +231,153 @@ static void power_law_spectrum() {
     }
 }
 
+static void power_law_normalization() {
+    // 31 Hann segments/seed, eight seeds: effective M~235, relative SE~6.5%.
+    // A 40% bound exceeds five SE plus the <2% interior approximation error.
+    const int count = 32768;
+    const double dt = 1.0 / 512;
+    for (double alpha : {0., .5, 1., 1.5, 2.}) {
+        std::vector<double> spectra(3, 0);
+        for (uint64_t seed : {101, 202, 303, 404, 505, 606, 707, 808}) {
+            auto input = source_input();
+            Rng::start_run(seed);
+            Function source;
+            source.parse_function("PNOISE(1," + Misc::precise_to_string(alpha) + ",0,0.001953125,1)", input, std::nullopt);
+            std::vector<double> values;
+            for (int i = 0; i < count; ++i) { values.push_back(source.value(i * dt)); }
+            for (int j = 0; j < 3; ++j) { spectra[j] += spectral_density(values, 32 * (j + 1)); }
+        }
+        for (int j = 0; j < 3; ++j) {
+            const double frequency = 8 * (j + 1), ratio = spectra[j] / 8 * std::pow(frequency, alpha);
+            std::cout << "colored alpha=" << alpha << " frequency=" << frequency << " PSD/ideal=" << ratio << '\n';
+            require(std::abs(ratio - 1) < .40, "Colored ASD normalization changes with exponent or a band edge near 1 Hz");
+        }
+    }
+}
+
+static void power_law_band_scaling() {
+    for (double alpha : {0., .5, 1., 1.5, 2.}) {
+        auto input = source_input();
+        Rng::start_run(9876);
+        Function slow;
+        slow.parse_function("PNOISE(1," + Misc::precise_to_string(alpha) + ",0,0.001953125,100,48)", input, std::nullopt);
+        std::vector<double> samples;
+        for (int i = 0; i < 1024; ++i) { samples.push_back(slow.value(i / 512.0)); }
+        // Scaling frequency by c changes a power-law process's variance by c^(1-alpha).
+        for (double scale : {1e-9, 1e6}) {
+            input.transSim.tstep(1.0 / (512 * scale));
+            input.transSim.tstop(128 / scale);
+            Rng::start_run(9876);
+            Function shifted;
+            shifted.parse_function("PNOISE(1," + Misc::precise_to_string(alpha) + ",0,"
+                    + Misc::precise_to_string(1.0 / (512 * scale)) + ","
+                    + Misc::precise_to_string(100 / scale) + ",48)", input, std::nullopt);
+            for (int i = 0; i < samples.size(); ++i) {
+                const double normalized = shifted.value(i / (512 * scale)) / std::pow(scale, (1 - alpha) / 2);
+                require(std::abs(normalized - samples[i]) < 1e-8 * (1 + std::abs(samples[i])),
+                        "Power-law normalization changes when 1 Hz crosses the band's edge");
+            }
+        }
+    }
+}
+
+static void power_law_variance_and_timing() {
+    const double pi = std::acos(-1.0), dt = 1.0 / 512;
+    const int processes = 48, knots = 16384;
+    for (int alpha : {0, 2}) {
+        // At alpha=0/2 only the fast/slow endpoint pole remains. These closed
+        // limits give independent variance/covariance expectations, including
+        // exact AR sampling and the linear interpolation phase.
+        const double half_spacing = std::log(256.0) / (2 * processes);
+        const double tau = alpha == 0 ? std::exp(half_spacing) / (2 * pi * 256)
+                                      : std::exp(-half_spacing) / (2 * pi);
+        const double q = dt / (2 * tau), a = std::exp(-dt / tau);
+        const double grid_variance = alpha == 0 ? std::tanh(q) / (2 * dt)
+                                               : pi * pi * tau * std::tanh(q) / q;
+        for (int samples : {1, 4}) {
+            double sum = 0, squares = 0;
+            for (uint64_t seed : {101, 202, 303, 404, 505, 606, 707, 808}) {
+                auto input = source_input();
+                input.transSim.tstep(dt / samples);
+                Rng::start_run(seed);
+                Function noise;
+                noise.parse_function("PNOISE(1," + std::to_string(alpha) + ",0,0.001953125,1)", input, std::nullopt);
+                for (int i = 0; i < knots * samples; ++i) {
+                    const double value = noise.value(i * dt / samples);
+                    sum += value; squares += value * value;
+                }
+            }
+            const double mean = sum / (8.0 * knots * samples);
+            const double variance = squares / (8.0 * knots * samples) - mean * mean;
+            const double expected = grid_variance * (1 - (1 - a) * (samples * samples - 1) / (3.0 * samples * samples));
+            std::cout << "colored alpha=" << alpha << " samples/interval=" << samples
+                      << " variance=" << variance << " expected=" << expected << '\n';
+            // Total 256 s across seeds; longest tau<0.16 s gives relative
+            // variance SE<=sqrt(4*tau/T)<5%. The 30% bound exceeds six SE.
+            require(std::abs(variance / expected - 1) < .30, "Colored endpoint variance disagrees with analytic covariance");
+            require(std::abs(mean) < .2 * std::sqrt(expected), "Colored endpoint mean is inconsistent with zero");
+        }
+    }
+    for (int count : {4, 48, 512}) {
+        auto input = source_input();
+        input.transSim.tstep(dt / 4);
+        const std::string expression = "PNOISE(1,1,0.125,0.001953125,1," + std::to_string(count) + ")";
+        Rng::start_run(9876);
+        Function dense;
+        dense.parse_function(expression, input, std::nullopt);
+        std::vector<double> expected;
+        for (int i = 0; i < 1024; ++i) {
+            const double value = dense.value(i * dt / 4);
+            if (i % 13 == 0) { expected.push_back(value); }
+        }
+        Rng::start_run(9876);
+        Function sparse;
+        sparse.parse_function(expression, input, std::nullopt);
+        for (int i = 0; i < expected.size(); ++i) {
+            require(sparse.value(13 * i * dt / 4) == expected[i], "Skipped colored-noise ticks change the forward realization");
+        }
+    }
+    auto input = source_input();
+    Rng::start_run(5544);
+    Function floored;
+    floored.parse_function("PNOISE(1,1,0,1e-9,1)", input, std::nullopt);
+    std::vector<double> expected;
+    for (int i = 0; i < 100; ++i) { expected.push_back(floored.value(i * dt)); }
+    Rng::start_run(5544);
+    Function explicit_step;
+    explicit_step.parse_function("PNOISE(1,1,0,0.001953125,1)", input, std::nullopt);
+    for (int i = 0; i < 100; ++i) {
+        require(explicit_step.value(i * dt) == expected[i], "Colored timestep floor changes its effective-band realization");
+    }
+    Function disabled;
+    disabled.parse_function("PNOISE(0,1,0,0.001953125,1)", input, std::nullopt);
+    require(disabled.value(0) == 0 && disabled.value(1) == 0, "Zero colored ASD produces noise");
+}
+
 static void flux_units_and_delay() {
-    auto     input = source_input();
-    Function flux, phase;
-    Rng::start_run(13579);
-    flux.parse_function("FNOISE(0.001 1 0.25 0.1 0.001953125 100 64)", input, std::nullopt);
-    std::vector<double> values;
-    for (int i = 0; i < 1024; ++i) { values.push_back(flux.value(i / 512.0)); }
-    Rng::start_run(13579);
-    phase.parse_function("PNOISE(0.001 1 0.1 0.001953125 100 64)", input, std::nullopt);
-    for (int i = 0; i < values.size(); ++i) {
-        const double expected = 2.0 * Constants::PI * (0.25 + phase.value(i / 512.0));
-        require(std::abs(values[i] - expected) < 1e-11, "FNOISE flux-to-phase mapping differs from 2*pi");
+    auto input = source_input();
+    for (double alpha : {0., .5, 1., 1.5, 2.}) {
+        const std::string exponent = Misc::precise_to_string(alpha);
+        Function flux, phase, fraction;
+        Rng::start_run(13579);
+        flux.parse_function("FNOISE(0.001," + exponent + ",0.25,0.1,0.001953125,100,64)", input, std::nullopt);
+        std::vector<double> values;
+        for (int i = 0; i < 1024; ++i) { values.push_back(flux.value(i / 512.0)); }
+        Rng::start_run(13579);
+        phase.parse_function("PNOISE(0.001," + exponent + ",0.1,0.001953125,100,64)", input, std::nullopt);
+        std::vector<double> fractional;
+        for (int i = 0; i < values.size(); ++i) {
+            const double value = phase.value(i / 512.0);
+            if (i / 512.0 < .1) { require(value == 0, "Colored noise is nonzero before its delay"); }
+            fractional.push_back(value);
+            const double expected = 2 * std::acos(-1.0) * (.25 + value);
+            require(std::abs(values[i] - expected) < 1e-11, "FNOISE flux-to-phase mapping differs from 2*pi");
+        }
+        Rng::start_run(13579);
+        fraction.parse_function("ICNOISE(0.001," + exponent + ",0.1,0.001953125,100,64)", input, std::nullopt);
+        for (int i = 0; i < fractional.size(); ++i) {
+            require(fraction.value(i / 512.0) == fractional[i], "Standalone ICNOISE changes dimensionless PNOISE normalization");
+        }
     }
 }
 
@@ -265,34 +400,41 @@ static void normalization_outside_band() {
 }
 
 static void fractional_critical_current() {
-    Input input(AnalysisType::Phase, 0, true);
-    input.transSim.tstep(1.0 / 512.0);
-    input.transSim.tstop(1.0);
-    input.transSim.startup(false);
-    Model model;
-    model.modelName("JM");
-    model.rtype(0);
-    model.gwidth(0.01);
-    input.netlist.models_new.emplace_back(model, std::nullopt);
-    input.netlist.expNetlist
-            = {{{"P1", "N", "0", "DC", "1.5707963267948966"}, std::nullopt},
-               {{"VG", "G", "0", "DC", "0.005"}, std::nullopt},
-               {{"B1", "N", "0", "JM", "GC=G", "ICNOISE=PNOISE(0.001,1,0,0.001953125,100,64)"}, std::nullopt}};
-    Rng::start_run(445566);
-    Matrix matrix;
-    matrix.create_matrix(input);
-    Simulation  simulation(input, matrix);
-    const auto& junction = std::get<JJ>(matrix.components.devices.at(matrix.components.junctionIndices.at(0)));
-    const auto& currents = simulation.results.xVector.at(junction.indexInfo.currentIndex_.value()).value();
-    Rng::start_run(445566);
-    Function reference;
-    reference.parse_function("PNOISE(0.001 1 0 0.001953125 100 64)", input, std::nullopt);
-    for (int i = 0; i < currents.size(); ++i) {
-        const double fraction = reference.value(i / 512.0);
-        if (i < 20) { continue; }
-        const double expected = 0.5 * model.ic() * (1.0 + fraction);
-        require(std::abs(currents[i] - expected) < 1e-10,
-                "ICNOISE does not scale the gated Josephson current fractionally");
+    for (auto mode : {AnalysisType::Voltage, AnalysisType::Phase}) {
+        for (double amplitude : {.001, 1.}) {
+            Input input(mode, 0, true);
+            input.transSim.tstep(1.0 / 512.0);
+            input.transSim.tstop(1.0);
+            input.transSim.startup(false);
+            Model model;
+            model.modelName("JM");
+            model.rtype(0);
+            model.gwidth(0.01);
+            input.netlist.models_new.emplace_back(model, std::nullopt);
+            const std::string expression = "PNOISE(" + Misc::precise_to_string(amplitude) + ",1,0,0.001953125,100,64)";
+            input.netlist.expNetlist = {{{"P1", "N", "0", "DC", "1.5707963267948966"}, std::nullopt},
+                                       {{"VG", "G", "0", "DC", "0.005"}, std::nullopt},
+                                       {{"B1", "N", "0", "JM", "GC=G", "ICNOISE=" + expression}, std::nullopt}};
+            Rng::start_run(445566);
+            Matrix matrix;
+            matrix.create_matrix(input);
+            Simulation simulation(input, matrix);
+            const auto& junction = std::get<JJ>(matrix.components.devices.at(matrix.components.junctionIndices.at(0)));
+            const auto& currents = *simulation.results.xVector.at(*junction.indexInfo.currentIndex_);
+            Rng::start_run(445566);
+            Function reference;
+            reference.parse_function(expression, input, std::nullopt);
+            int clipped = 0;
+            for (int i = 0; i < currents.size(); ++i) {
+                const double fraction = reference.value(i / 512.0);
+                if (i < 20) { continue; }
+                if (fraction < -.99) { ++clipped; }
+                const double expected = .5 * model.ic() * std::max(.01, 1 + fraction);
+                require(std::abs(currents[i] - expected) < 1e-10,
+                        "ICNOISE does not scale/clamp the gated Josephson current fractionally");
+            }
+            require(amplitude < 1 || clipped > 0, "Fractional clipping test did not reach its lower bound");
+        }
     }
 }
 
@@ -302,6 +444,9 @@ static void invalid_noise_parameters() {
                                          "NOISE(1 -1 0.01)",
                                          "PNOISE(1 3 0 0.01 100 64)",
                                          "PNOISE(1 1 0 0.01 -1 64)",
+                                         "PNOISE(1 1 0 1 1 64)",
+                                         "PNOISE(1 1 0 1e-9 1e-4 64)",
+                                         "PNOISE(1 1 0 0.01 1e-309 64)",
                                          "PNOISE(1 1 0 0.01 100 4.5)",
                                          "FNOISE(1 1 0 0 0.01 100 1000)"}) {
         bool rejected = false;
@@ -553,11 +698,14 @@ int main(int argc, char** argv) {
     try {
         std::cout << std::setprecision(17);
         const std::string selection = argc == 1 ? "all" : argv[1];
-        require(argc <= 2 && (selection == "all" || selection == "neb" || selection == "amplitude" || selection == "thermal"),
+        require(argc <= 2 && (selection == "all" || selection == "neb" || selection == "amplitude" || selection == "thermal" || selection == "colored"),
                 "Unknown noise test selection");
         if (selection == "all" || selection == "neb") { effective_white_bandwidth(); noise_sampling_variance(); }
         if (selection == "all" || selection == "amplitude") { applied_noise_amplitude(); }
         if (selection == "all" || selection == "thermal") { thermal_resistive_states(); thermal_injection(); }
+        if (selection == "all" || selection == "colored") {
+            power_law_normalization(); power_law_band_scaling(); power_law_variance_and_timing();
+        }
         if (selection != "all") { return 0; }
         white_noise();
         reseed_and_rewind();

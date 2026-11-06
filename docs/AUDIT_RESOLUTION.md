@@ -9,11 +9,18 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A01 — Same-process Gaussian RNG cache
 
 - **Classification:** confirmed defect; prior repair.
-- **Current reproduction/result:** Existing replay tests pass in four fresh builds; retry/ownership coverage remains open.
+- **Current reproduction/result:** Exact replay after odd/even draw counts,
+  same-process independent runs and full-cycle timestep retry is protected.
+  Retry includes white current, phase/flux and automatic thermal noise.
 - **Required outcome:** Reseed/rewind after odd and even draws; independent runs and retries.
 - **Implementation/owner:** 64df21c; src/Rng.cpp; test/noise_regression.cpp.
 - **Verification:** ctest -R regression::noise.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** Draw counts 1–6 reset/replay exactly;
+  retry results/history must match a fresh explicit-final-step run bit-for-bit.
+  `regression::noise` and `regression::library` protect replay. Process-global
+  ownership/concurrency limits are explicit in API.md. F07/F11/F16/F17 and their
+  qualification reports record full numerical/build evidence; final integrated
+  qualification remains required.
 
 ## A02 — State-dependent JJ thermal amplitude
 
@@ -28,7 +35,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [white/thermal study](qualification/2026-11-06-white-thermal-noise.md).
   Six circuit cases give max 5.114e-13 A error against independent SI amplitudes;
   bound 1 ppm plus 1e-14 A. Full retry must replay bit-for-bit. Broader #107/#108
-  measurement/example qualification remains separate.
+  measurement/example qualification remains separate. All ten native jobs
+  pass for 078f091a1f53 in CI 42268024783, including default/shared libraries.
 
 ## A03 — Modern C compiler incompatibility
 
@@ -854,7 +862,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   test/noise_regression.cpp; artifacts/audit-resolution/white-thermal-noise/.
   New static API method, no layout change; corrected NEB changes seeded waves.
   GCC16/Clang23 Debug/Release pass 33/33; full ASan/UBSan/leaks pass 33/33 in
-  198.80 s. Native checks pending for this revision.
+  198.80 s. All ten native jobs pass for 078f091a1f53 in CI 42268024783.
 
 ## F16 — Thermal sample scaling, transition state and invalid controls
 
@@ -874,4 +882,30 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** stochastic/{red,invalid-red}.json and failed pre-fix assertions;
   [study](qualification/2026-11-06-white-thermal-noise.md). All four local
   configurations pass 33/33; full ASan/UBSan/leaks pass 33/33 in 198.80 s.
-  Native checks pending; broader colored/SQUID work remains open.
+  All ten native jobs pass for 078f091a1f53 in CI 42268024783; broader
+  colored/SQUID work remains separate.
+
+## F17 — Power-law normalization, endpoints and sampled-pole gain
+
+- **Classification:** confirmed stochastic-normalization defect.
+- **Reproduction:** Eight seeds in the 1–256 Hz band give PSD/ideal at 16 Hz
+  1.929505 for alpha=1 and 7.916022 for alpha=2. Nearest-edge normalization
+  anchors to rolloff; missing relaxation tails distort endpoint exponents.
+- **Repair:** Keep OU/AR(1) architecture, derive weights from the power-law
+  integral, fold missing tails into endpoint poles, use analytic alpha=0/2
+  limits and compensate exact sampled-pole DC gain. One initializer owns
+  PNOISE/FNOISE/ICNOISE. Syntax/layouts/units retained; seeded waves change.
+- **Verification:** Eight seeds/five exponents/three frequencies give ideal-PSD
+  ratios 0.865612–1.082230; justified predeclared 40% short-run statistical
+  limit. Independent endpoint covariance variances agree within 0.9%.
+  Band shifts across 1 Hz obey c^(1-alpha) variance scaling; delays, skipped
+  ticks, timestep floors and N4/48/512 common-time replay pass. Flux units and
+  dimensionless ICNOISE identity pass; actual gated fractional current/clipping
+  in both modes agrees within 1e-10 A.
+- **Approximation:** Exact finite-bank spectrum scan gives default N48 interior
+  ideal-PSD ratios 0.975331–1.000137 for specified 2–8-decade bands/exponents.
+  N4 may err about 50%; near-edge/narrow-band rolloff limits are explicit.
+- **Evidence:** [colored-noise study](qualification/2026-11-06-colored-noise.md),
+  test/noise_regression.cpp; build/audit-resolution/colored-noise and compact
+  artifacts/audit-resolution/colored-noise. GCC16/Clang23 Debug/Release pass
+  33/33; full ASan/UBSan/leaks pass 33/33 in 210.03 s. Native checks pending.

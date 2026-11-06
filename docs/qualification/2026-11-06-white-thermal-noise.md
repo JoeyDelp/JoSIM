@@ -116,8 +116,10 @@ ctest --test-dir build/dev -R 'regression::(noise|cli|installed_package)' \
 ```
 
 GCC16/Clang23 Debug and Release pass all 33 CTest groups. The complete
-ASan/UBSan suite with leak detection passes 33/33 in 198.80 s. Native
-qualification remains pending for the implementing revision. Exact red decks, binary hashes and
+ASan/UBSan suite with leak detection passes 33/33 in 198.80 s. All ten native
+binary/default/shared-library jobs pass for `078f091a1f53a25947134b5f39cff5e336b2176c`
+in [CI 42268024783](https://github.com/JoeyDelp/JoSIM/actions/runs/42268024783).
+Exact red decks, binary hashes and
 failed assertions are preserved under `build/audit-resolution/stochastic/`.
 Compact green measurements, source hashes and qualification receipts are under
 `artifacts/audit-resolution/white-thermal-noise/`. The native group also checks

@@ -29,6 +29,12 @@ work prepared for the next release, not binaries already available on GitHub.
 
 ### Fixed
 
+- Correct power-law noise weights and normalization, including exponent 0/2
+  limits, missing relaxation tails and exact sampled-pole gain. Earlier rolling
+  band-edge normalization could give several times the requested interior PSD.
+  PNOISE, FNOISE and fractional ICNOISE share the corrected bank; seeded
+  waveforms change. Add multi-seed PSD/variance, band-shift, timing, unit and
+  both-mode fractional-current/clipping checks. Document finite-band accuracy.
 - Correct `.NEB` for the time-averaged power of linearly interpolated white
   noise: the update interval is `1/(3*NEB)`, retaining the simulation-step floor.
   The old interval supplied only two-thirds of the requested effective power.

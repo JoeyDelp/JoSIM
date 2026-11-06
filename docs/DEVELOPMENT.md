@@ -41,6 +41,11 @@ CTest runs the existing circuit examples and focused regression groups:
 - `regression::gate`: gate units, both analysis modes, subcircuits and IV sweeps.
 - `regression::noise`: seeded replay, white-noise variance, colored spectra,
   flux units, fractional critical-current noise and phase-step reduction.
+  Multi-seed white/colored PSD and variance bounds are derived in the
+  [white/thermal](qualification/2026-11-06-white-thermal-noise.md) and
+  [colored-noise](qualification/2026-11-06-colored-noise.md) studies. Colored
+  tests cover five exponents, band shifts across 1 Hz, delay, skipped ticks,
+  process-count limits, both-mode fractional injection and clipping.
 - `regression::cli`: invalid transient settings and recursive subcircuits.
 - `regression::functions`: waveform alignment, interpolation and expressions.
 - `regression::junction_numerics`: raw constant-bias JJ phase accumulation,

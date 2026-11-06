@@ -8,6 +8,7 @@
 #include "JoSIM/Parameters.hpp"
 #include "spline.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <filesystem>
@@ -382,6 +383,85 @@ void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o&
     }
 }
 
+void Function::initialize_pnoise(PNoiseState& st) {
+    st.fL = 1.0 / st.tcorr;
+    st.fH = 0.5 / st.dt;
+    if (!std::isfinite(st.fL) || !std::isfinite(st.fH) || !(st.fL > 0) || !(st.fH > st.fL)
+        || !std::isfinite(st.td + st.dt) || !(st.td + st.dt > st.td)) {
+        Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS,
+                                "Colored noise requires finite positive band edges with TCORR>2*TSTEP");
+    }
+    st.tau.resize(st.N);
+    st.a.resize(st.N);
+    st.b.resize(st.N);
+    st.var.resize(st.N);
+    st.y.resize(st.N);
+
+    const double logTwoPi = std::log(2 * Constants::PI);
+    const double logFast = -logTwoPi - std::log(st.fH);
+    const double logSlow = -logTwoPi - std::log(st.fL);
+    const double logStep = (logSlow - logFast) / st.N;
+    const double logAmplitude = st.A1 > 0 ? 2 * std::log(st.A1) : 0;
+    // Integral identity: 4*C*integral(tau^alpha/(1+(2*pi*f*tau)^2), dlog(tau))
+    // equals A1^2/f^alpha, C=A1^2*(2*pi)^alpha*sin(pi*alpha/2)/(2*pi).
+    // Fold the missing fast/slow tails into the corresponding endpoint pole.
+    const double logC = st.alpha > 0 && st.alpha < 2
+        ? logAmplitude + (st.alpha - 1) * logTwoPi
+          + std::log(std::sin(Constants::PI * std::min(st.alpha, 2 - st.alpha) / 2)) : 0;
+    st.scale = 1; // Amplitude is already included in the stationary variances.
+    st.S1Hz = 0;
+    for (int k = 0; k < st.N; ++k) {
+        const double logTau = logFast + (k + .5) * logStep;
+        const double tau = std::exp(logTau);
+        if (!std::isfinite(tau) || tau <= 0) {
+            Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "Colored relaxation time is not representable");
+        }
+        st.tau[k] = tau;
+        const double ratio = st.dt / tau;
+        const double q = ratio / 2;
+        // Exact AR(1) sampling raises a continuous OU pole's DC PSD by q*coth(q).
+        // Compensate that gain before interpolation, rather than renormalizing
+        // an arbitrary reference frequency at a rolling band edge.
+        const double logCorrection = q == 0 ? 0 : std::log(std::tanh(q) / q);
+        double variance = 0;
+        if (st.A1 > 0) {
+            if (st.alpha == 0) {
+                if (k == 0) { variance = std::exp(logAmplitude - std::log(4.0) - logTau + logCorrection); }
+            } else if (st.alpha == 2) {
+                if (k == st.N - 1) { variance = std::exp(logAmplitude + 2 * std::log(Constants::PI) + logTau + logCorrection); }
+            } else {
+                variance = std::exp(logC + (st.alpha - 1) * logTau + std::log(logStep) + logCorrection);
+                if (k == 0) {
+                    variance += std::exp(logC + st.alpha * logFast - std::log(st.alpha) - logTau + logCorrection);
+                }
+                if (k == st.N - 1) {
+                    variance += std::exp(logC + (st.alpha - 2) * logSlow - std::log(2 - st.alpha) + logTau + logCorrection);
+                }
+            }
+        }
+        if (!std::isfinite(variance)) {
+            Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "Colored variance is not representable");
+        }
+        st.var[k] = variance;
+        st.a[k] = std::exp(-ratio);
+        st.b[k] = std::sqrt(variance) * std::sqrt(-std::expm1(-2 * ratio));
+        st.y[k] = std::sqrt(variance) * Misc::grand();
+        const double wTau = 2 * Constants::PI * tau;
+        const double shape = wTau <= 1 ? tau / (1 + wTau * wTau)
+            : ((1 / (2 * Constants::PI)) / wTau) / (1 + (1 / wTau) * (1 / wTau));
+        st.S1Hz += variance * (4 * shape);
+    }
+
+    double y1 = 0, y2 = 0;
+    for (int k = 0; k < st.N; ++k) {
+        y1 += st.y[k];
+        st.y[k] = st.a[k] * st.y[k] + st.b[k] * Misc::grand();
+        y2 += st.y[k];
+    }
+    miscValues_ = {y1, y2, st.td, st.td + st.dt};
+    pnoise_ = std::move(st);
+}
+
 void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
     // PNOISE(A1, ALPHA, TD[0], TSTEP[iObj.transSim.tstep()], TCORR[iObj.transSim.tstop()], N[48])
     // A1: ASD at 1 Hz, one-sided, units/sqrt(Hz)
@@ -432,123 +512,9 @@ void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o
     if (st.N < 4) { st.N = 4; }
     if (st.N > 512) { st.N = 512; }
 
-    // Band edges
-    st.fL = 1.0 / st.tcorr;
-    st.fH = 1.0 / (2.0 * st.dt);
-
-    if (!(st.fL > 0.0) || !(st.fH > st.fL)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
-                                "PNOISE invalid band: fL=" + std::to_string(st.fL) + " fH=" + std::to_string(st.fH));
-        return;
-    }
-
-    double fref = 1.0;
-    if (fref < st.fL) { fref = st.fL; }
-    if (fref > st.fH) { fref = st.fH; }
-
-    // Optional warning
-    if (iObj.argVerb && std::abs(fref - 1.0) > 0.0) {
-        std::cerr << "Warning: PNOISE normalization: 1 Hz is outside band [" << st.fL << ", " << st.fH << "] Hz. "
-                  << "Using the 1 Hz power-law normalization at fref=" << fref << " Hz.\n";
-    }
-
-    // Store for debug/inspection
-    ampValues_.push_back(st.A1);
-    ampValues_.push_back(st.alpha);
-    timeValues_.push_back(st.td);
-    timeValues_.push_back(st.dt);
-    timeValues_.push_back(st.tcorr);
-
-    // Build OU bank
-    st.tau.resize(st.N);
-    st.a.resize(st.N);
-    st.b.resize(st.N);
-    st.var.resize(st.N);
-    st.y.resize(st.N);
-
-    const double        logfL = std::log(st.fL);
-    const double        logfH = std::log(st.fH);
-
-    // Base (unscaled) variances ~ tau^(alpha-1)
-    // Then scale all variances so Sx(1Hz) == A1^2 (one-sided).
-    std::vector<double> baseVar(st.N);
-
-    for (int k = 0; k < st.N; ++k) {
-        const double frac = (static_cast<double>(k) + 0.5) / static_cast<double>(st.N); // midpoints
-        const double fk   = std::exp(logfL + frac * (logfH - logfL));
-        st.tau.at(k)      = 1.0 / (2.0 * Constants::PI * fk);
-
-        // baseVar ~ tau^(alpha-1)
-        baseVar.at(k)     = std::pow(st.tau.at(k), st.alpha - 1.0);
-        if (!std::isfinite(baseVar.at(k)) || baseVar.at(k) < 0.0) { baseVar.at(k) = 0.0; }
-    }
-
-    // Analytic one-sided PSD at 1 Hz of the OU sum:
-    // Sx(f) = sum_k 4*var_k*tau_k / (1 + (2*pi*f*tau_k)^2)
-    auto Sx_analytic = [&](double f, const std::vector<double>& v) -> double {
-        const double w = 2.0 * Constants::PI * f;
-        double       S = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            const double tau    = st.tau.at(k);
-            const double denom  = 1.0 + (w * tau) * (w * tau);
-            S                  += (4.0 * v.at(k) * tau) / denom;
-        }
-        return S;
-    };
-
-    const double targetS1 = st.A1 * st.A1 * std::pow(fref, -st.alpha); // extrapolated power-law PSD at fref
-
-    const double S1_base  = Sx_analytic(fref, baseVar);
-    if (!(S1_base > 0.0) || !std::isfinite(S1_base)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, "PNOISE scaling failed (S1_base)");
-        return;
-    }
-
-    st.scale = targetS1 / S1_base;
-
-    for (int k = 0; k < st.N; ++k) {
-        st.var.at(k)              = st.scale * baseVar.at(k);
-
-        const double tau          = st.tau.at(k);
-        const double ak           = std::exp(-st.dt / tau);
-        st.a.at(k)                = ak;
-
-        const double one_minus_a2 = 1.0 - ak * ak;
-        st.b.at(k)                = (one_minus_a2 > 0.0) ? std::sqrt(st.var.at(k) * one_minus_a2) : 0.0;
-
-        // Start in stationarity to avoid long burn-in
-        st.y.at(k)                = std::sqrt(st.var.at(k)) * Misc::grand();
-    }
-
-    st.S1Hz        = Sx_analytic(1.0, st.var);
-
-    // Initialize interpolation state (miscValues_ = {y1,y2,x1,x2})
-    auto step_once = [&]() -> double {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            st.y.at(k)  = st.a.at(k) * st.y.at(k) + st.b.at(k) * Misc::grand();
-            sum        += st.y.at(k);
-        }
-        return sum;
-    };
-
-    const double x1 = st.td;
-    const double x2 = st.td + st.dt;
-
-    const double y1 = [&]() {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) { sum += st.y.at(k); }
-        return sum;
-    }();
-
-    const double y2 = step_once();
-
-    miscValues_.push_back(y1);
-    miscValues_.push_back(y2);
-    miscValues_.push_back(x1);
-    miscValues_.push_back(x2);
-
-    pnoise_ = std::move(st);
+    ampValues_ = {st.A1, st.alpha};
+    timeValues_ = {st.td, st.dt, st.tcorr};
+    initialize_pnoise(st);
 }
 
 void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
@@ -615,119 +581,10 @@ void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o
     if (st.N < 4) { st.N = 4; }
     if (st.N > 512) { st.N = 512; }
 
-    st.fL = 1.0 / st.tcorr;
-    st.fH = 1.0 / (2.0 * st.dt);
-
-    if (!(st.fL > 0.0) || !(st.fH > st.fL)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
-                                "FNOISE invalid band: fL=" + std::to_string(st.fL) + " fH=" + std::to_string(st.fH));
-        return;
-    }
-
-    double fref = 1.0;
-    if (fref < st.fL) { fref = st.fL; }
-    if (fref > st.fH) { fref = st.fH; }
-
-    // Optional warning
-    if (iObj.argVerb && std::abs(fref - 1.0) > 0.0) {
-        std::cerr << "Warning: FNOISE normalization: 1 Hz is outside band [" << st.fL << ", " << st.fH << "] Hz. "
-                  << "Using the 1 Hz power-law normalization at fref=" << fref << " Hz.\n";
-    }
-
-    // Store user-facing knobs for inspection/debug
-    // (Aphi0 in Phi0/sqrtHz, alpha, PHIDC in Phi0, plus timing)
-    ampValues_.push_back(Aphi0);
-    ampValues_.push_back(alpha);
-    ampValues_.push_back(phiDC); // store in radians for easy return
-
-    timeValues_.push_back(st.td);
-    timeValues_.push_back(st.dt);
-    timeValues_.push_back(st.tcorr);
-
-    // Build OU bank (identical to parse_pnoise)
-    st.tau.resize(st.N);
-    st.a.resize(st.N);
-    st.b.resize(st.N);
-    st.var.resize(st.N);
-    st.y.resize(st.N);
-
-    const double        logfL = std::log(st.fL);
-    const double        logfH = std::log(st.fH);
-
-    std::vector<double> baseVar(st.N);
-
-    for (int k = 0; k < st.N; ++k) {
-        const double frac = (static_cast<double>(k) + 0.5) / static_cast<double>(st.N);
-        const double fk   = std::exp(logfL + frac * (logfH - logfL));
-        st.tau.at(k)      = 1.0 / (2.0 * Constants::PI * fk);
-
-        baseVar.at(k)     = std::pow(st.tau.at(k), st.alpha - 1.0);
-        if (!std::isfinite(baseVar.at(k)) || baseVar.at(k) < 0.0) { baseVar.at(k) = 0.0; }
-    }
-
-    auto Sx_analytic = [&](double f, const std::vector<double>& v) -> double {
-        const double w = 2.0 * Constants::PI * f;
-        double       S = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            const double tau    = st.tau.at(k);
-            const double denom  = 1.0 + (w * tau) * (w * tau);
-            S                  += (4.0 * v.at(k) * tau) / denom; // one-sided
-        }
-        return S;
-    };
-
-    const double targetS1 = st.A1 * st.A1 * std::pow(fref, -st.alpha);
-    const double S1_base  = Sx_analytic(fref, baseVar);
-
-    if (!(S1_base > 0.0) || !std::isfinite(S1_base)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, "FNOISE scaling failed (S1_base)");
-        return;
-    }
-
-    st.scale = targetS1 / S1_base;
-
-    for (int k = 0; k < st.N; ++k) {
-        st.var.at(k)              = st.scale * baseVar.at(k);
-
-        const double tau          = st.tau.at(k);
-        const double ak           = std::exp(-st.dt / tau);
-        st.a.at(k)                = ak;
-
-        const double one_minus_a2 = 1.0 - ak * ak;
-        st.b.at(k)                = (one_minus_a2 > 0.0) ? std::sqrt(st.var.at(k) * one_minus_a2) : 0.0;
-
-        st.y.at(k)                = std::sqrt(st.var.at(k)) * Misc::grand();
-    }
-
-    st.S1Hz        = Sx_analytic(1.0, st.var);
-
-    auto step_once = [&]() -> double {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            st.y.at(k)  = st.a.at(k) * st.y.at(k) + st.b.at(k) * Misc::grand();
-            sum        += st.y.at(k);
-        }
-        return sum;
-    };
-
-    const double x1 = st.td;
-    const double x2 = st.td + st.dt;
-
-    const double y1 = [&]() {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) { sum += st.y.at(k); }
-        return sum;
-    }();
-
-    const double y2 = step_once();
-
-    // Interpolation state: y1,y2,x1,x2
-    miscValues_.push_back(y1);
-    miscValues_.push_back(y2);
-    miscValues_.push_back(x1);
-    miscValues_.push_back(x2);
-
-    pnoise_ = std::move(st);
+    // Public amplitudes retain flux units; the process state uses radians.
+    ampValues_ = {Aphi0, alpha, phiDC};
+    timeValues_ = {st.td, st.dt, st.tcorr};
+    initialize_pnoise(st);
 }
 
 void Function::parse_icnoise(const tokens_t& t, const Input& iObj, const string_o& s) {

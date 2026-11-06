@@ -99,26 +99,46 @@ I1 out 0 PNOISE(1p 1 0 1u 1 64)
 ```
 
 `PNOISE(A1 ALPHA TD TSTEP TCORR N)` approximates the one-sided power spectral
-density `A1^2/f^ALPHA`. `A1` is the amplitude normalization at 1 Hz, with the
-source's units per sqrt(Hz). The implementation sums independent
-Ornstein–Uhlenbeck processes with logarithmically spaced relaxation times.
+density `A1^2/f^ALPHA`, with frequency expressed in Hz. `A1` specifies the
+**ideal interior power law's** amplitude at 1 Hz, in the source's units per
+sqrt(Hz). The implementation sums independent Ornstein–Uhlenbeck (OU) processes
+with logarithmically spaced relaxation times. Finite-band rolloff means the
+actual PSD at 1 Hz need not equal `A1^2` when 1 Hz is near or outside the band.
 
 - `ALPHA` is between 0 and 2; 1 gives a 1/f approximation.
 - `TD` defaults to zero; output before the delay is zero.
 - `TSTEP` defaults to the simulation timestep and cannot be smaller than it.
 - `TCORR` defaults to the simulation stop time; zero selects that default.
-- `N` defaults to 48 and must be an integer from 4 to 512.
+- `N` defaults to 48 and must be an integer from 4 to 512. Increase it when
+  spanning many decades; the minimum count is not an accuracy guarantee.
 
 The nominal band is `1/TCORR` to `1/(2*TSTEP)`. It must have positive width.
 Its edges have smooth rolloffs, with power outside the nominal band. The total
 variance therefore differs from the integral of an ideal power law cut off
 sharply at those edges.
 
-The continuous process bank is normalized at 1 Hz when that frequency is in
-the nominal band. Otherwise it is normalized at the nearest band edge using
-the extrapolated 1 Hz power law. Moving the band does not reinterpret `A1` as
-the amplitude at a different reference frequency. Sampling and interpolation
-still affect measured spectra near the band edges.
+The OU weights follow the power-law integral, including endpoint approximations
+for the omitted fast/slow tails. Exponents 0 and 2 use the corresponding fast
+and slow single-pole limits. Exact sampled-OU gain is compensated before linear
+interpolation. This avoids normalizing to the wrong part of a rolling band
+edge. It corrects earlier large interior amplitude errors and changes seeded
+PNOISE/FNOISE/ICNOISE waveforms.
+
+Use frequencies comfortably inside the band and verify refinement for the
+measurement of interest. With the default 48 processes, the documented analytic
+scan across 2–8 decades gives less than 2.5% interior PSD error between
+`10/TCORR` and `1/(20*TSTEP)`, for the tested exponents. A four-process bank can
+have about 50% interior error over eight decades. Narrow bands may have no
+well-separated interior at all. These are quantified approximation boundaries,
+not a rectangular-band filter or a universal error bound.
+
+Changing `TSTEP` changes the upper turnover frequency and total variance;
+changing `TCORR` changes the low-frequency plateau. Moving the entire band by a
+factor `c`, at fixed `A1`, scales variance by `c^(1-ALPHA)`. In particular,
+1/f variance is unchanged. Linear interpolation, simulation sampling and output
+aliasing still matter near the upper edge. See the
+[colored-noise study](qualification/2026-11-06-colored-noise.md) for the equations,
+statistical acceptance criteria and controlled-seed measurements.
 
 ## Flux noise
 
