@@ -1,10 +1,19 @@
 # JoSIM audit-resolution ledger
 
-Status: **in progress**. [Initial measurements](qualification/2026-11-06-audit-baseline.md). Baseline: `53b6a426570eafb53d3673f79254157a4ae2c001`.
+Status: **resolved for the supported 3.0.0 scope**. See the [final qualification](qualification/v3.0.0.md). [Initial measurements](qualification/2026-11-06-audit-baseline.md). Baseline: `53b6a426570eafb53d3673f79254157a4ae2c001`.
 
-This ledger owns the disposition of the [original audit](qualification/2026-11-06-repository-audit.md) and continues the [consolidation qualification](qualification/2026-11-06-consolidation.md). Earlier passing tests do not close the remaining scientific or compatibility questions. A completed resolution must identify its implementation and measured verification; pending work stays open.
+This ledger owns the disposition of the [original audit](qualification/2026-11-06-repository-audit.md) and continues the [consolidation qualification](qualification/2026-11-06-consolidation.md). Earlier passing tests do not close the remaining scientific or compatibility questions. Each resolution identifies its implementation, verification and scope. Optional features and documented model boundaries are distinct from repaired defects.
 
-Baseline commands and logs are recorded under `build/audit-resolution/baseline/<compiler-configuration>/`. Each directory has exact commands/source identity in `run.json`, compiler/configuration/build/test logs, and CTest JUnit results. Generated reports will be published with the final qualification; local paths are not durable public evidence until linked to that publication.
+Baseline commands and logs are recorded under `build/audit-resolution/baseline/<compiler-configuration>/`. Each directory has exact commands/source identity in `run.json`, compiler/configuration/build/test logs, and CTest JUnit results. The final qualification links the published evidence archive, actual public-download receipts and accepted source identities. Local paths below identify the original repair campaigns; their results remain separate from final integrated acceptance.
+
+## Final integrated acceptance
+
+- Released source: `cb1c42d6fc3cf36f3053f594ba81b7d3290d1164`, tag `v3.0.0`.
+- [CI42322270740](https://github.com/JoeyDelp/JoSIM/actions/runs/42322270740): all 13 prepublication gates, publication and five actual public-download/native execution jobs pass. Each download passes 63 CLI methods and 200 numerical cases.
+- Four local GCC/Clang Debug/Release suites pass 35/35; full ASan/UBSan/leaks pass 35/35 in 229.02 s. Runtime/test/tool sources are byte-identical across the final documentation correction. Exact release commit also passes local 35/35 and all 13 master gates.
+- Local line/function/branch coverage: 82.431178%/89.230769%/79.378682%; all source/mapping/test-inventory and reviewed risk guards pass. Static review retains exactly 45 assessed locations with zero command errors.
+- The updated release manual is deployed with normal history, externally byte-checked on all 55 pages and browser-checked for math/navigation/examples. The final report refresh and durable receipts are linked from [qualification](qualification/v3.0.0.md).
+- Earlier per-repair counts and failed attempts below are historical measurements. This acceptance closes their later integrated/native requirements without changing numerical or statistical tolerances. All 11 GitHub issues remain open for maintainer triage.
 
 ## A01 — Same-process Gaussian RNG cache
 
@@ -20,11 +29,11 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   `regression::noise` and `regression::library` protect replay. Process-global
   ownership/concurrency limits are explicit in API.md. F07/F11/F16/F17 and their
   qualification reports record full numerical/build evidence; final integrated
-  qualification remains required.
+  qualification is recorded above.
 
 ## A02 — State-dependent JJ thermal amplitude
 
-- **Classification:** confirmed defect; prior stored-source repair incomplete.
+- **Classification:** confirmed defect; repaired and qualified.
 - **Result:** F16 reproduces and repairs retained old interpolation amplitudes,
   missing transition amplitude and sampling before the active slope update.
   Both transition directions/polarities and six actual circuit cases pass.
@@ -41,11 +50,11 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## A03 — Modern C compiler incompatibility
 
 - **Classification:** confirmed defect; prior repair.
-- **Current reproduction/result:** All four compile and pass 27/27; C11 and C++17 selected.
+- **Current reproduction/result:** All four final local configurations pass 35/35; C11 and C++17 selected.
 - **Required outcome:** Explicit compatible C/C++ standards, clean-cache build and compiler warnings.
 - **Implementation/owner:** 08fd5b6; CMakeLists.txt.
 - **Verification:** fresh GCC/Clang Debug/Release builds.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** Fresh acquisition and four local GCC16/Clang23 configurations pass; final suites run 35/35. C11/C++17 and native compiler/runtime checks pass in the final qualification.
 
 ## A04 — Installed CMake package
 
@@ -91,11 +100,11 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   preprocessor output is byte-identical before/after retirement.
 - **Evidence:** build/audit-resolution/backend-retirement-evidence.json,
   klu-only-tests.xml and fresh-klu/tests.xml; first-party numerical tests retain
-  their existing tolerances. Final platform verification remains required.
+  their existing tolerances. Final platform verification passes; see integrated acceptance above.
 
 ## A06 — Moving dependency URL and stale linkage
 
-- **Classification:** confirmed maintenance/portability defect; partial prior repair.
+- **Classification:** confirmed maintenance/portability defect; repaired and qualified.
 - **Current reproduction/result:** Fresh GCC Release acquisition/build passed.
   Filesystem link probes confirm GNU8 needs stdc++fs and GNU16 does not. Both
   default/shared installed consumers pass with the respective public link
@@ -103,7 +112,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Required outcome:** Verify immutable acquisition and remove stale links only with compiler/runtime evidence.
 - **Implementation/owner:** da8998d; cceac6c; cmake/dependency_sources.cmake.
 - **Verification:** clean-cache configure/build; installed consumers; five-platform ABI checks.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** Immutable archives and hashes are exercised from an empty cache. GNU8/16 filesystem link probes, old-userspace binary execution and relocated consumers pass; final five-platform manifests record their effective toolchains.
 
 ## A07 — Invalid transient and recursive subcircuits
 
@@ -115,11 +124,11 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Required outcome:** Clean finite/bounds errors, direct/indirect cycle rejection; no hangs/crashes.
 - **Implementation/owner:** c36ea8a; 3a11500; src/Transient.cpp; src/Netlist.cpp.
 - **Verification:** ctest -R regression::cli; sanitizers; malformed-input corpus.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** Bounded direct/indirect recursion and finite/domain/overflow time-grid failures are covered by CLI/library regressions; final full sanitizer suite passes 35/35. See F06 and final qualification.
 
 ## A08a — Named subcircuit parameter overrides (#81)
 
-- **Classification:** confirmed compatibility defect; locally repaired.
+- **Classification:** confirmed compatibility defect; repaired and native-qualified.
 - **Reproduction:** both supplied named-parameter circuits failed: RES was
   undefined without a default, and RES=10 in a header was treated as an IO pin.
   Preserved six red cases cover both modes and spaced header assignments.
@@ -168,7 +177,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   resolution; Output.cpp primitive trace differences. See F05 for accompanying
   ground-name/output defects, compatibility and measured evidence.
 - **Verification:** hierarchical output and malformed trace regressions.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** Exact hierarchical pin alias returns 10 V in both modes; malformed requested traces fail explicitly. F05 records scalar/rounding tolerances and additional alias/ground cases; final native gates pass.
 
 ## A09 — Effective seed absent from -V 1
 
@@ -183,7 +192,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   --verbose=1, exact uint64 maximum reporting, and rejection of overflow,
   fractional/negative seeds. Both Release compilers pass 30/30; seven regression
   groups pass ASan/UBSan/leaks. See F03; same-build replay is an exact comparison,
-  not a cross-platform bit-identity claim. Final native-platform checks pending.
+  not a cross-platform bit-identity claim. Final native-platform checks pass; see integrated acceptance above.
 
 ## I110 — Original seed support report #110
 
@@ -192,7 +201,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Required outcome:** Document required version and supported option; independently verify reporting/replay.
 - **Implementation/owner:** https://github.com/JoeyDelp/JoSIM/issues/110.
 - **Verification:** seed CLI and in-process tests.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** Explicit/auto seeds and effective reporting replay exactly within the same build. Uint64 maximum is accepted and malformed/overflow values rejected; A01/F03 and final native CLI/library suites protect the separate cache repair.
 
 ## I109 — Capacitor initial voltage #109
 
@@ -242,7 +251,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   study quantifies NEB/fJ, timestep, output sampling and physical limits.
 - **Evidence:** [worked guide](squid_noise.md), [study](qualification/2026-11-06-squid-noise.md),
   tools/qualify_squid_noise.py and native numerical fixtures. Final implementing
-  revision's native qualification remains pending; no universal NEB>fP claim.
+  revision passes native qualification; no universal NEB>fP claim.
 
 ## I107 — Floating reference and SQUID noise #107
 
@@ -260,7 +269,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   loading/noise, NEB/interpolation/output and Josephson/plasma frequencies.
   Strongly overdamped classical example; no general bandwidth or quantum claim.
   F15/F19 repair bandwidth/output defects encountered. Native checks of the
-  final example revision remain pending.
+  final example revision pass in the accepted release workflow.
 
 ## I101 — JJ-buffer reverse response #101
 
@@ -366,7 +375,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 
 ## D01 — Numerical regression breadth
 
-- **Classification:** architecture/testing concern; partially qualified.
+- **Classification:** architecture/testing concern; bounded independent qualification complete.
 - **Current result:** Independent RC/RL/RLC ramp responses, KCL/KVL and Ohm's
   law pass for 36 cases: both modes, startup on/off, and 1/0.5/0.25 ps steps.
   At 0.25 ps maximum voltage error is 13.1534/13.1534/14.0995 nV;
@@ -384,7 +393,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Additional finite-capacitance reference:** The #101 buffer study covers
   two clocked input pulses, both directions/modes, continuous RCSJ references,
   phase-slip counts, flux area and step refinement. See I101 for measurements
-  and pending native qualification. Six RC precharge/discharge and six explicit
+  and completed native qualification. Six RC precharge/discharge and six explicit
   beta_c conversion cases now extend the numerical owner; see I109/I093.
 - **Required outcome:** Complete final integrated qualification and resolve
   any remaining confirmed numerical defects. These bounded studies do not
@@ -403,7 +412,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 ## D02 — Coverage and high-risk gaps
 
 - **Classification:** testing/maintenance concern.
-- **Local result:** 81.30% lines, 88.95% functions and 78.80% branches under
+- **Local result:** 82.43% lines, 89.23% functions and 79.38% branches under
   Clang/LLVM23.1.4, up from 57.54%/72.81%/52.47%. All compiled first-party
   source/header mappings remain included; 35/35 declared tests execute without
   skips. LLVM zero-hash diagnostics retain exact live execution counts.
@@ -422,16 +431,16 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** [coverage study](qualification/2026-11-07-coverage.md),
   artifacts/audit-resolution/coverage-policy/ reports/HTML/counters/owners;
   earlier campaigns remain separate. Local policy passes. CI42307801289
-  LLVM18 passes all35 tests, mappings and risk floors (81.32/88.95/78.77%); its
+  LLVM18 passes all35 tests, mappings and risk floors (81.32/88.95/78.77% in that earlier campaign); its
   reference is reviewed. The new guard initially used native path separators
   and failed its positive fixture on Windows; canonical report paths repair
-  that tool defect. The subsequent complete native/guard run remains pending.
+  that tool defect. The final complete native/guard runs pass, including the Windows archive-name follow-up; see integrated acceptance.
 
 ## D03 — Sanitizers, warnings and static analysis
 
 - **Classification:** verification concern.
-- **Result:** full Clang Debug ASan/UBSan/leak detection passes 35/35 through
-  F27 in 212.87 s. Solver dependencies are instrumented too; leak checks remain
+- **Result:** full Clang Debug ASan/UBSan/leak detection passes 35/35 for the
+  integrated runtime source in 229.02 s. Solver dependencies are instrumented too; leak checks remain
   enabled. Earlier failures and per-repair runs are retained separately.
 - **Static review:** all 49 initial locations have individual dispositions:
   44 constructor/topology/immediate-guard invariants, one generated-IV helper
@@ -442,7 +451,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   artifacts/audit-resolution/static-analysis/{initial-dispositions,review-summary,compiler-warnings}.json
   and current/dispositions.json/raw logs. Existing compiler warning options
   are recorded, including their unused/sign-compare suppressions. Final clean
-  compiler builds and integrated sanitizer/native checks remain separate gates.
+  compiler builds and integrated sanitizer/native checks pass as recorded above.
   The F27 ten-owner rerun retains exactly the same 45 reviewed locations with
   zero command errors; final/ holds its current source hashes and diagnostics.
 
@@ -467,7 +476,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** build/audit-resolution/library-red.json, library-green-tests.xml
   and library-gcc-tests.xml. Full ASan/UBSan with leak detection passes 30/30
   (131.47 s); library-sanitizer-tests.xml. Final native-platform and RNG
-  retry/replay qualification remain required.
+  retry/replay qualification pass as recorded above.
 
 ## D05 — Maintained Python utilities
 
@@ -514,7 +523,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Owner/evidence:** Simulation::setup; library/CLI regressions; [runtime study](qualification/2026-11-06-runtime-storage.md)
   and artifacts/audit-resolution/performance/reserve/{summary,decision}.json.
   All four local configurations pass 34/34; full ASan/UBSan/leaks pass 34/34
-  in 229.86 s. Native qualification remains required for this revision.
+  in 229.86 s. Native qualification passes in the final accepted release workflow.
 - **Copying result:** CPR/coupling hot-loop allocation counts drop from
   262,144/524,288 to zero in 2,048-step profiles. A separate seven-pair campaign
   holding reservation constant gives JJ/coupled-bank wall reductions of 15.3%/
@@ -531,8 +540,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Independent header compilation and two-worker lifetime failures are repaired;
   repeated completion/destruction and fresh installed consumers protect them.
   Recompile ProgressBar users because its synchronization state changes layout.
-  Evidence: performance/progress/. Final integrated/native qualification remains
-  required separately; storage scaling and model equations are unchanged.
+  Evidence: performance/progress/. Final integrated/native qualification passes
+  as recorded above; storage scaling and model equations are unchanged.
 
 ## D07 — Source manuals and support claims
 
@@ -548,37 +557,37 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   within 1.24e-5 rad of 2π (bounds 10 ppm/1e-4 rad). Real HTML plotting export.
 - **Evidence:** [manual/version study](qualification/2026-11-07-manual-version.md),
   artifacts/audit-resolution/documentation/, minimum-tool/library receipts.
-  Final integrated-source/native/release/deployed-site checks remain separate.
+  Final integrated-source/native/release/deployed-site checks pass as recorded above.
 
 ## D08 — Versioning and qualified release
 
 - **Classification:** publication/packaging concern.
-- **Current reproduction/result:** Source version 3.0.0 selected for public C++ layout/support changes; v2.7 immutable. Publication remains pending qualification/integration.
+- **Current reproduction/result:** Source version 3.0.0 selected for public C++ layout/support changes; v2.7 immutable. Normal PR integration and qualified publication are complete.
 - **Required outcome:** Select justified new version after audit, build exact commit, publish and verify downloaded assets on relevant platforms.
 - **Implementation/owner:** CMakeLists.txt; tools/build_release.py; docs/RELEASE_POLICY.md.
 - **Verification:** five-platform release gates and download checksums/execution.
 - **Preparation:** [public-download owner and checks](qualification/2026-11-07-public-download.md)
   add the documentation gate, reviewed notes, preserved-asset publishing and
   native verification of actual downloads. Synthetic contracts/live metadata
-  pass; actual release/integration/native download results remain pending.
+  pass; actual release/integration and all five native public-download results now pass.
 
 ## D09 — Published GitHub Pages
 
 - **Classification:** confirmed stale public documentation.
-- **Current reproduction/result:** Source manual rebuilt/checked; retained public site is older. Deployment and external verification remain pending.
+- **Current reproduction/result:** The updated 3.0.0 manual is deployed; all 55 HTML pages match the strict build, and browser math/navigation checks pass.
 - **Required outcome:** Build and deploy updated manual through existing process; externally verify navigation/examples/version/download links.
 - **Implementation/owner:** gh-pages; mkdocs.yml; https://joeydelp.github.io/JoSIM/.
 - **Verification:** MkDocs build plus deployed-site checks.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** The release manual passes strict build, 2,368 local links, all 55 externally byte-matched HTML pages and browser navigation/math checks. Final report refresh receipts remain attached to the release evidence.
 
 ## D10 — Branches and preserved research
 
 - **Classification:** completed consolidation; verify preservation.
-- **Current reproduction/result:** 53b6a42 retained; remote master/gh-pages and preservation refs unchanged.
+- **Current reproduction/result:** 53b6a42 remains an ancestor; master and gh-pages advance normally. Existing archive refs, v2.7 and original stashes remain unchanged.
 - **Required outcome:** Preserve established integrations, rejected modulo guard reasoning and archived precision/research history.
 - **Implementation/owner:** docs/BRANCH_CONSOLIDATION.md; archive/* tags.
 - **Verification:** ancestry/tag/stash identities and existing gate/noise regressions.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Measurements/tolerances/evidence:** v2.7 resolves to 02a34ee5; all three archive refs and original stash object IDs are preserved. Final remote-ref and release-asset receipts verify source/history preservation; no force push or protection change occurred.
 
 ## D11 — Output and malformed-input failures
 
@@ -593,7 +602,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   bounded timeouts and explicit diagnostics, not smoke tests alone.
 - **Evidence:** [output study](qualification/2026-11-06-output-completion.md)
   and the individual F reports. Final integrated native/coverage qualification
-  remains required; no arbitrary-input fuzzing claim is made.
+  passes as recorded above; no arbitrary-input fuzzing claim is made.
 
 ## F01 — CUS waveform path, alignment and malformed data
 
@@ -1042,7 +1051,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Evidence:** build/audit-resolution/noise-input/{red,green}-tests.log,
   regression::noise/cli and [SQUID study](qualification/2026-11-06-squid-noise.md).
   Full four compiler/configurations pass 33/33; full ASan/UBSan/leaks pass
-  33/33 in 209.52 s. Native final-revision qualification pending.
+  33/33 in 209.52 s. Native final-revision qualification passes; see integrated acceptance.
 
 ## F19 — Roundoff jitter in decimated output timestamps
 
@@ -1060,7 +1069,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   PSD refinement bounds pass. General nonintegral grids remain nonuniform.
 - **Evidence:** squid-example/print-grid/{red.json,red-tests.log,green-tests.log};
   [study](qualification/2026-11-06-squid-noise.md). All four local configurations
-  pass 33/33; full ASan/UBSan/leaks pass 33/33 in 209.52 s. Native pending.
+  pass 33/33; full ASan/UBSan/leaks pass 33/33 in 209.52 s. Native qualification passes; see integrated acceptance.
 
 ## F20 — Unsafe positional IV prototype and fresh circuit sweeps
 
@@ -1082,7 +1091,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   retired script no longer simulates. New required regression::sweep group.
   All four local full configurations pass34/34; final nine-test sweep group
   passes all four and ASan/UBSan/leaks in4.02s. No production C++ change;
-  preceding full sanitizer33/33 passed209.52s. Native pending.
+  preceding full sanitizer33/33 passed209.52s. Native qualification passes; see integrated acceptance.
   [Study](qualification/2026-11-06-sweeps.md) owns bounds.
 
 ## F21 — False success after output-write/close failure
@@ -1098,8 +1107,8 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   destination diagnostics; portable regression::library fails only at flush,
   catches/reuses output state and runs valid simulations in eight cycles.
 - **Measurements:** GCC 16.2.1/Clang 23.1.4 Debug/Release all 34/34; full Clang
-  ASan/UBSan/leaks 34/34 in 211.84 s. No numerical tolerances changed. Native CI
-  remains required for the pushed revision; non-Linux file fault injection is
+  ASan/UBSan/leaks 34/34 in 211.84 s. No numerical tolerances changed. Final native CI
+  passes; non-Linux file fault injection is
   not inferred from the portable stream test.
 - **Evidence:** [output study](qualification/2026-11-06-output-completion.md),
   artifacts/audit-resolution/output-write/{red,stdout-red,green}.json,
@@ -1119,7 +1128,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   and 1e-8 V absolute bounds for exactly representable CSV reference literals.
 - **Measurements:** four local configurations pass 34/34; affected ASan/UBSan/leak groups 4/4 in 34.52 s.
   Full sanitizer 34/34 in 211.84 s immediately precedes this targeted IV repair;
-  final integrated full/native qualification remains required.
+  final integrated full/native qualification passes as recorded above.
 - **Evidence:** [IV retry study](qualification/2026-11-06-iv-retry.md),
   artifacts/audit-resolution/iv-physics/retry-{probe,green}.json, source hashes,
   four build/test receipts and retry-sanitizer.xml.
@@ -1145,7 +1154,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   Independent finite-window Phi0/W + 0.1 nV discretization allowance gives 0.617 nV;
   h=20→10 ps difference 0.0002 nV. All eight campaign runs pass, source/binary unchanged.
   All four local configurations pass 34/34; full ASan/UBSan/leaks pass 34/34 in 237.00 s. Native/final
-  integrated qualification remains required for the pushed revision.
+  integrated qualification passes as recorded above.
 - **Evidence:** [model-IV study](qualification/2026-11-06-model-iv-physics.md),
   artifacts/audit-resolution/iv-physics/state-{red,green}.json and timing/
   report.json with exact owner/decks/CSV/logs, source hashes and build/test receipts.
@@ -1172,7 +1181,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   artifacts/audit-resolution/performance/progress/{decision,source-sha256}.json,
   both campaign summaries/per-run receipts and header/lifetime red/green logs.
   All ten native binary/library jobs and the utility job pass for 7ff6d8b in
-  CI42301997059. Final integrated checks remain a separate requirement.
+  CI42301997059. Final integrated checks pass as recorded above.
 
 ## F25 — Coupled-inductor component timestep hook
 
@@ -1193,7 +1202,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   ASan/UBSan/leak checks pass the same four groups in 27.92 s.
 - **Evidence:** artifacts/audit-resolution/inductor-hook/ red/green receipts and
   test/library_regression.cpp::inductor_timestep_stamp. Final full/native checks
-  remain required for the integrated source.
+  pass for the integrated source as recorded above.
 
 ## F26 — False success after derived-output overflow
 
@@ -1215,7 +1224,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   commands/CSV/log witnesses, test/regression_cli.py and library_regression.cpp.
   All four local GCC/Clang Debug/Release suites pass 34/34; full Clang Debug
   ASan/UBSan/leak detection passes 34/34 in 216.72 s. Native/final integration
-  checks remain required for this revision.
+  checks pass for the accepted release as recorded above.
 
 ## F27 — Unordered piecewise grids from negative first times
 
@@ -1253,7 +1262,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
   median wall increases 1.28%/0.41%, below the predeclared 5% bound.
 - **Evidence:** [pulse study](qualification/2026-11-07-pulse-domain.md),
   artifacts/audit-resolution/pulse-domain/. Full ASan/UBSan/leaks pass 35/35
-  in 223.26 s. Native qualification remains; no high-frequency sampling claim.
+  in 223.26 s. Native qualification passes; no high-frequency sampling claim.
 
 ## F29 — Help advertises rejected long options
 
@@ -1263,7 +1272,7 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Repair:** print the accepted lowercase names, correct verbosity/output help.
   Do not change parsing, numerical behavior or public API.
 - **Verification:** extract and execute all eight advertised long options;
-  CLI plus fresh installed consumer pass 2/2. Full native checks remain separate.
+  CLI plus fresh installed consumer pass 2/2. Full native checks pass in integrated acceptance.
 - **Evidence:** test/regression_cli.py, src/CliOptions.cpp;
   artifacts/audit-resolution/documentation/help/ and the manual/version study.
 

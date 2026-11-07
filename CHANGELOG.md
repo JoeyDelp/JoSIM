@@ -8,6 +8,9 @@ published binaries; see GitHub Releases for qualified downloads.
 The historical `v2.7` tag is unchanged. Recompile C++ applications against
 matching headers and libraries: public type layouts changed. See [migration guidance](docs/compatibility.md).
 
+The [3.0.0 qualification report](docs/qualification/v3.0.0.md) records the released
+source, five-platform public-download execution, numerical evidence and limits.
+
 ### Added
 
 - Qualification of actual public release downloads on all five targets, including

@@ -56,7 +56,8 @@ or via \
 
 - [Build and test instructions](docs/DEVELOPMENT.md)
 - [Binary targets and release procedure](docs/RELEASE_POLICY.md)
-- [Changes prepared for the next release](CHANGELOG.md)
+- [Changelog](CHANGELOG.md)
+- [3.0.0 qualification and audit resolutions](docs/qualification/v3.0.0.md)
 - [Gate-controlled junctions](docs/gate_junctions.md) and [noise sources](docs/noise_sources.md)
 
 ## Changelog
