@@ -54,3 +54,25 @@ results, workflow syntax receipts, live API metadata scope, source/owner hashes
 and exact commands. Actual release runs will retain their own public URLs,
 downloads, native execution results and numerical reports; these are separate
 from prepublication package extraction and the synthetic contracts above.
+
+## Windows archive-name follow-up
+
+The first 9ae6f0a Windows CI run passed 34/35 groups but failed the new archive
+fixture: `ZipInfo` changed `bin\escape` to `bin/escape` before the asserted
+rejection. The fixture therefore did not contain its intended raw name on
+Windows. The reader also exposes the original stored name separately.
+
+The fixture now writes the literal header name, and the verifier checks
+`orig_filename` before normalization. The same unsafe bytes are rejected with
+both native and Windows-normalizing readers; no assertion or path rule is
+relaxed. All thirteen guard methods pass on native x870-win10/Python 3.12.10
+in 0.547 s and in all five local compiler/sanitizer test configurations. Native
+PowerShell parsing also accepts the workflow's 4 PowerShell blocks; it does
+not execute release commands. `public-download-preparation/windows/` retains
+old/new normalization witnesses, CI failure scope and native source/hash receipts.
+
+Before this tooling-only repair, the unchanged first-party C++ source passes
+four fresh local 35-group configurations, full ASan/UBSan/leaks 35/35 in
+216.85 s, the reviewed 45 static-warning locations, and coverage requirements at
+82.43%/89.23%/79.38% line/function/branch. Final native/integrated qualification
+of the corrected verifier remains required.

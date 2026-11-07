@@ -77,7 +77,8 @@ def extract_archive(archive, destination):
                 kind = (entry.external_attr >> 16) & 0o170000
                 if kind not in (0, 0o100000, 0o040000):
                     raise RuntimeError("Package contains a link or special file")
-                path = target(entry.filename, entry.is_dir())
+                # ZipInfo normalizes backslashes on Windows; validate the stored name.
+                path = target(entry.orig_filename, entry.is_dir())
                 if entry.is_dir():
                     path.mkdir(exist_ok=True)
                 else:

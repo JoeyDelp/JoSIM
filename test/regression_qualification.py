@@ -180,9 +180,14 @@ class QualificationRegression(unittest.TestCase):
             sidecar.write_text("0" * 64 + "  fixture.zip\n")
             with self.assertRaisesRegex(RuntimeError, "checksum"): verify_checksum(archive, sidecar)
             for i, name in enumerate(("../outside", "/absolute", "C:/drive", "bin\\escape")):
-                with zipfile.ZipFile(archive, "w") as stream: stream.writestr(name, "invalid")
+                # Keep the unsafe bytes: ZipInfo's constructor normalizes them on Windows.
+                entry = zipfile.ZipInfo("fixture")
+                entry.filename = entry.orig_filename = name
+                with zipfile.ZipFile(archive, "w") as stream: stream.writestr(entry, "invalid")
                 with self.subTest(name=name), self.assertRaisesRegex(RuntimeError, "Unsafe"):
                     extract_archive(archive, root / ("invalid" + str(i)))
+                with mock.patch("zipfile.os.sep", "\\"), self.assertRaisesRegex(RuntimeError, "Unsafe"):
+                    extract_archive(archive, root / ("windows-reader" + str(i)))
             tar = root / "fixture.tar.gz"
             with tarfile.open(tar, "w:gz") as stream:
                 member = tarfile.TarInfo("bin/example.txt");member.size = 7;member.mode = 0o644
