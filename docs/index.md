@@ -2,7 +2,7 @@
 
 User and developer documentation for the current source tree. For published
 binaries, see [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases).
-Changes prepared for the next release are listed in the
+Fixes and compatibility changes are recorded in the
 [changelog](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md).
 
 The 3.0.0 source line includes the completed branch consolidation and audit

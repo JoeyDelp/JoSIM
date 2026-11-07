@@ -24,6 +24,7 @@ nav:
   - Runtime and Memory: 'performance.md'
   - Development: 'DEVELOPMENT.md'
   - Compatibility and Migration: 'compatibility.md'
+  - 3.0.0 Qualification: 'qualification/v3.0.0.md'
   - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'
   - Development Schedule and Bugs: 'bugs.md'

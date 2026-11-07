@@ -345,3 +345,6 @@ test_internal
 # Reviewed release notes, not generated release archives.
 !/docs/releases/
 !/docs/releases/*.md
+
+# Versioned final qualification index; generated bulk stays in artifacts.
+!/docs/qualification/v3.0.0.json

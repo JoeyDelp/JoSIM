@@ -1,0 +1,2341 @@
+{
+  "schema": "josim.qualification.v1",
+  "project": "JoSIM",
+  "version": "3.0.0",
+  "released_source": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+  "tag": "v3.0.0",
+  "report_revision": "Containing Git commit; documentation produced after the immutable release",
+  "release_url": "https://github.com/JoeyDelp/JoSIM/releases/tag/v3.0.0",
+  "ci": {
+    "id": 42322270740,
+    "head_sha": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+    "conclusion": "success",
+    "html_url": "https://github.com/JoeyDelp/JoSIM/actions/runs/42322270740"
+  },
+  "local": {
+    "revision": "68da5a71475465e434b6e1948f885e944532b5fa",
+    "tracked_source_diff_at_campaign_start": "empty",
+    "untracked_optional_config": "preserved and not included; coverage dirty flag includes this untracked directory",
+    "compiler_configurations": {
+      "gcc-release": {
+        "compiler": "GCC16.2.1",
+        "tests": {
+          "name": "Linux-g++",
+          "tests": "35",
+          "failures": "0",
+          "disabled": "0",
+          "skipped": "0",
+          "hostname": "x870-arch",
+          "time": "17",
+          "timestamp": "2026-11-07T02:49:24"
+        }
+      },
+      "gcc-debug": {
+        "compiler": "GCC16.2.1",
+        "tests": {
+          "name": "Linux-g++",
+          "tests": "35",
+          "failures": "0",
+          "disabled": "0",
+          "skipped": "0",
+          "hostname": "x870-arch",
+          "time": "60",
+          "timestamp": "2026-11-07T02:50:00"
+        }
+      },
+      "clang-release": {
+        "compiler": "Clang23.1.4",
+        "tests": {
+          "name": "Linux-clang++",
+          "tests": "35",
+          "failures": "0",
+          "disabled": "0",
+          "skipped": "0",
+          "hostname": "x870-arch",
+          "time": "16",
+          "timestamp": "2026-11-07T02:50:38"
+        }
+      },
+      "clang-debug": {
+        "compiler": "Clang23.1.4",
+        "tests": {
+          "name": "Linux-clang++",
+          "tests": "35",
+          "failures": "0",
+          "disabled": "0",
+          "skipped": "0",
+          "hostname": "x870-arch",
+          "time": "67",
+          "timestamp": "2026-11-07T02:49:10"
+        }
+      }
+    },
+    "sanitizers": {
+      "options": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      },
+      "tests": {
+        "name": "Linux-clang++",
+        "tests": "35",
+        "failures": "0",
+        "disabled": "0",
+        "skipped": "0",
+        "hostname": "x870-arch",
+        "time": "229",
+        "timestamp": "2026-11-07T02:49:09"
+      },
+      "wall_seconds": 229.02
+    },
+    "exact_release_gcc_release": {
+      "tests": 35,
+      "failed": 0,
+      "skipped": 0,
+      "wall_seconds": 15.2
+    }
+  },
+  "pretag_source_equivalence": {
+    "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+    "qualified_full_local_source": "68da5a71475465e434b6e1948f885e944532b5fa",
+    "changed_paths": [
+      "docs/DEVELOPMENT.md"
+    ],
+    "changes": "two documented find_package requests from2.7 to3.0 only",
+    "candidate": "4e1c173c759183a154b64ca2260c9088d8328c27",
+    "candidate_tree": "3fea63e26976ac7d9c034fb4468c64b5080b979a",
+    "integrated_tree": "3fea63e26976ac7d9c034fb4468c64b5080b979a",
+    "tracked_dirty": false,
+    "CI": "All13 prerequisites pass in both push42320975773 andPR42321024644. ExacttagCI will rebuild before any binarypublication."
+  },
+  "coverage": {
+    "local": {
+      "revision": "68da5a71475465e434b6e1948f885e944532b5fa",
+      "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty": true,
+      "first_party_source_sha256": "811d6bc37df5a0e0e175ecbbf44d23095ece9002e3bf1052e73bcc0932d346d1",
+      "scope": [
+        "src/*.cpp",
+        "include/JoSIM/*.hpp"
+      ],
+      "exclusions": [
+        "vendored solver sources",
+        "vendored include/spline.h",
+        "generated code",
+        "test implementation"
+      ],
+      "limitations": [
+        "LLVM measures compiled functions and branches; declarations, disabled preprocessor paths and uninstantiated templates do not acquire counters.",
+        "Files with no recorded mapping are listed with null coverage; they are not silently treated as covered."
+      ],
+      "tests": {
+        "status": "passed",
+        "entries": 35,
+        "declared": [
+          "integration::ex_dcsfq_jtl_sink",
+          "integration::ex_gen_pp_ipht",
+          "integration::ex_jtl_basic",
+          "integration::ex_jtl_string",
+          "integration::ex_ksa4bit",
+          "integration::ex_mitll_dff_wr",
+          "integration::ex_mitll_xor",
+          "integration::test_capacitor",
+          "integration::test_cccs",
+          "integration::test_ccvs",
+          "integration::test_inductor",
+          "integration::test_jj",
+          "integration::test_line_comment",
+          "integration::test_line_cont",
+          "integration::test_output",
+          "integration::test_param_nest",
+          "integration::test_param_undef",
+          "integration::test_ps",
+          "integration::test_resistor",
+          "integration::test_tx",
+          "integration::test_vccs",
+          "integration::test_vcvs",
+          "integration::test_vs",
+          "regression::buffer",
+          "regression::build_options",
+          "regression::cli",
+          "regression::functions",
+          "regression::gate",
+          "regression::installed_package",
+          "regression::junction_numerics",
+          "regression::library",
+          "regression::noise",
+          "regression::numerics",
+          "regression::qualification",
+          "regression::sweep"
+        ],
+        "executed": [
+          "integration::ex_dcsfq_jtl_sink",
+          "integration::ex_gen_pp_ipht",
+          "integration::ex_jtl_basic",
+          "integration::ex_jtl_string",
+          "integration::ex_ksa4bit",
+          "integration::ex_mitll_dff_wr",
+          "integration::ex_mitll_xor",
+          "integration::test_capacitor",
+          "integration::test_cccs",
+          "integration::test_ccvs",
+          "integration::test_inductor",
+          "integration::test_jj",
+          "integration::test_line_comment",
+          "integration::test_line_cont",
+          "integration::test_output",
+          "integration::test_param_nest",
+          "integration::test_param_undef",
+          "integration::test_ps",
+          "integration::test_resistor",
+          "integration::test_tx",
+          "integration::test_vccs",
+          "integration::test_vcvs",
+          "integration::test_vs",
+          "regression::buffer",
+          "regression::build_options",
+          "regression::cli",
+          "regression::functions",
+          "regression::gate",
+          "regression::installed_package",
+          "regression::junction_numerics",
+          "regression::library",
+          "regression::noise",
+          "regression::numerics",
+          "regression::qualification",
+          "regression::sweep"
+        ],
+        "required": [
+          "regression::buffer",
+          "regression::build_options",
+          "regression::cli",
+          "regression::functions",
+          "regression::gate",
+          "regression::installed_package",
+          "regression::junction_numerics",
+          "regression::library",
+          "regression::noise",
+          "regression::numerics",
+          "regression::qualification",
+          "regression::sweep"
+        ],
+        "exit": 0
+      },
+      "mapping_diagnostics": "validated",
+      "totals": {
+        "lines": {
+          "count": 6466,
+          "covered": 5330,
+          "percent": 82.43117847200743
+        },
+        "functions": {
+          "count": 390,
+          "covered": 348,
+          "percent": 89.23076923076924
+        },
+        "branches": {
+          "count": 3734,
+          "covered": 2964,
+          "notcovered": 770,
+          "percent": 79.37868237814676
+        }
+      },
+      "modules": [
+        {
+          "path": "src/CCCS.cpp",
+          "coverage": {
+            "lines": {
+              "count": 81,
+              "covered": 76,
+              "percent": 93.82716049382715
+            },
+            "functions": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "branches": {
+              "count": 38,
+              "covered": 28,
+              "notcovered": 10,
+              "percent": 73.68421052631578
+            }
+          }
+        },
+        {
+          "path": "src/CCVS.cpp",
+          "coverage": {
+            "lines": {
+              "count": 114,
+              "covered": 103,
+              "percent": 90.35087719298247
+            },
+            "functions": {
+              "count": 4,
+              "covered": 3,
+              "percent": 75
+            },
+            "branches": {
+              "count": 56,
+              "covered": 40,
+              "notcovered": 16,
+              "percent": 71.42857142857143
+            }
+          }
+        },
+        {
+          "path": "src/Capacitor.cpp",
+          "coverage": {
+            "lines": {
+              "count": 39,
+              "covered": 28,
+              "percent": 71.7948717948718
+            },
+            "functions": {
+              "count": 2,
+              "covered": 1,
+              "percent": 50
+            },
+            "branches": {
+              "count": 20,
+              "covered": 13,
+              "notcovered": 7,
+              "percent": 65
+            }
+          }
+        },
+        {
+          "path": "src/CliOptions.cpp",
+          "coverage": {
+            "lines": {
+              "count": 216,
+              "covered": 203,
+              "percent": 93.98148148148148
+            },
+            "functions": {
+              "count": 5,
+              "covered": 5,
+              "percent": 100
+            },
+            "branches": {
+              "count": 140,
+              "covered": 119,
+              "notcovered": 21,
+              "percent": 85
+            }
+          }
+        },
+        {
+          "path": "src/CurrentSource.cpp",
+          "coverage": {
+            "lines": {
+              "count": 22,
+              "covered": 20,
+              "percent": 90.9090909090909
+            },
+            "functions": {
+              "count": 2,
+              "covered": 2,
+              "percent": 100
+            },
+            "branches": {
+              "count": 12,
+              "covered": 10,
+              "notcovered": 2,
+              "percent": 83.33333333333334
+            }
+          }
+        },
+        {
+          "path": "src/Errors.cpp",
+          "coverage": {
+            "lines": {
+              "count": 774,
+              "covered": 267,
+              "percent": 34.49612403100775
+            },
+            "functions": {
+              "count": 16,
+              "covered": 13,
+              "percent": 81.25
+            },
+            "branches": {
+              "count": 306,
+              "covered": 190,
+              "notcovered": 116,
+              "percent": 62.091503267973856
+            }
+          }
+        },
+        {
+          "path": "src/Function.cpp",
+          "coverage": {
+            "lines": {
+              "count": 667,
+              "covered": 615,
+              "percent": 92.20389805097452
+            },
+            "functions": {
+              "count": 32,
+              "covered": 31,
+              "percent": 96.875
+            },
+            "branches": {
+              "count": 464,
+              "covered": 372,
+              "notcovered": 92,
+              "percent": 80.17241379310344
+            }
+          }
+        },
+        {
+          "path": "src/IV.cpp",
+          "coverage": {
+            "lines": {
+              "count": 187,
+              "covered": 181,
+              "percent": 96.79144385026738
+            },
+            "functions": {
+              "count": 7,
+              "covered": 7,
+              "percent": 100
+            },
+            "branches": {
+              "count": 98,
+              "covered": 86,
+              "notcovered": 12,
+              "percent": 87.75510204081633
+            }
+          }
+        },
+        {
+          "path": "src/Inductor.cpp",
+          "coverage": {
+            "lines": {
+              "count": 43,
+              "covered": 39,
+              "percent": 90.69767441860465
+            },
+            "functions": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "branches": {
+              "count": 18,
+              "covered": 14,
+              "notcovered": 4,
+              "percent": 77.77777777777779
+            }
+          }
+        },
+        {
+          "path": "src/Input.cpp",
+          "coverage": {
+            "lines": {
+              "count": 263,
+              "covered": 239,
+              "percent": 90.8745247148289
+            },
+            "functions": {
+              "count": 10,
+              "covered": 10,
+              "percent": 100
+            },
+            "branches": {
+              "count": 170,
+              "covered": 142,
+              "notcovered": 28,
+              "percent": 83.52941176470588
+            }
+          }
+        },
+        {
+          "path": "src/JJ.cpp",
+          "coverage": {
+            "lines": {
+              "count": 276,
+              "covered": 252,
+              "percent": 91.30434782608695
+            },
+            "functions": {
+              "count": 11,
+              "covered": 11,
+              "percent": 100
+            },
+            "branches": {
+              "count": 132,
+              "covered": 102,
+              "notcovered": 30,
+              "percent": 77.27272727272727
+            }
+          }
+        },
+        {
+          "path": "src/Matrix.cpp",
+          "coverage": {
+            "lines": {
+              "count": 305,
+              "covered": 262,
+              "percent": 85.90163934426229
+            },
+            "functions": {
+              "count": 13,
+              "covered": 12,
+              "percent": 92.3076923076923
+            },
+            "branches": {
+              "count": 130,
+              "covered": 111,
+              "notcovered": 19,
+              "percent": 85.38461538461539
+            }
+          }
+        },
+        {
+          "path": "src/Misc.cpp",
+          "coverage": {
+            "lines": {
+              "count": 189,
+              "covered": 93,
+              "percent": 49.2063492063492
+            },
+            "functions": {
+              "count": 21,
+              "covered": 8,
+              "percent": 38.095238095238095
+            },
+            "branches": {
+              "count": 102,
+              "covered": 60,
+              "notcovered": 42,
+              "percent": 58.82352941176471
+            }
+          }
+        },
+        {
+          "path": "src/Model.cpp",
+          "coverage": {
+            "lines": {
+              "count": 193,
+              "covered": 172,
+              "percent": 89.11917098445595
+            },
+            "functions": {
+              "count": 11,
+              "covered": 11,
+              "percent": 100
+            },
+            "branches": {
+              "count": 184,
+              "covered": 148,
+              "notcovered": 36,
+              "percent": 80.43478260869566
+            }
+          }
+        },
+        {
+          "path": "src/Netlist.cpp",
+          "coverage": {
+            "lines": {
+              "count": 295,
+              "covered": 266,
+              "percent": 90.16949152542372
+            },
+            "functions": {
+              "count": 18,
+              "covered": 18,
+              "percent": 100
+            },
+            "branches": {
+              "count": 230,
+              "covered": 179,
+              "notcovered": 51,
+              "percent": 77.82608695652173
+            }
+          }
+        },
+        {
+          "path": "src/Noise.cpp",
+          "coverage": {
+            "lines": {
+              "count": 39,
+              "covered": 39,
+              "percent": 100
+            },
+            "functions": {
+              "count": 4,
+              "covered": 4,
+              "percent": 100
+            },
+            "branches": {
+              "count": 38,
+              "covered": 36,
+              "notcovered": 2,
+              "percent": 94.73684210526315
+            }
+          }
+        },
+        {
+          "path": "src/Output.cpp",
+          "coverage": {
+            "lines": {
+              "count": 425,
+              "covered": 383,
+              "percent": 90.11764705882352
+            },
+            "functions": {
+              "count": 7,
+              "covered": 7,
+              "percent": 100
+            },
+            "branches": {
+              "count": 248,
+              "covered": 215,
+              "notcovered": 33,
+              "percent": 86.69354838709677
+            }
+          }
+        },
+        {
+          "path": "src/Parameters.cpp",
+          "coverage": {
+            "lines": {
+              "count": 392,
+              "covered": 361,
+              "percent": 92.09183673469387
+            },
+            "functions": {
+              "count": 26,
+              "covered": 26,
+              "percent": 100
+            },
+            "branches": {
+              "count": 350,
+              "covered": 294,
+              "notcovered": 56,
+              "percent": 84
+            }
+          }
+        },
+        {
+          "path": "src/PhaseSource.cpp",
+          "coverage": {
+            "lines": {
+              "count": 14,
+              "covered": 12,
+              "percent": 85.71428571428571
+            },
+            "functions": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "branches": {
+              "count": 2,
+              "covered": 1,
+              "notcovered": 1,
+              "percent": 50
+            }
+          }
+        },
+        {
+          "path": "src/RelevantTrace.cpp",
+          "coverage": {
+            "lines": {
+              "count": 338,
+              "covered": 311,
+              "percent": 92.01183431952663
+            },
+            "functions": {
+              "count": 15,
+              "covered": 14,
+              "percent": 93.33333333333333
+            },
+            "branches": {
+              "count": 216,
+              "covered": 190,
+              "notcovered": 26,
+              "percent": 87.96296296296296
+            }
+          }
+        },
+        {
+          "path": "src/Resistor.cpp",
+          "coverage": {
+            "lines": {
+              "count": 45,
+              "covered": 37,
+              "percent": 82.22222222222221
+            },
+            "functions": {
+              "count": 2,
+              "covered": 1,
+              "percent": 50
+            },
+            "branches": {
+              "count": 24,
+              "covered": 16,
+              "notcovered": 8,
+              "percent": 66.66666666666666
+            }
+          }
+        },
+        {
+          "path": "src/Rng.cpp",
+          "coverage": {
+            "lines": {
+              "count": 67,
+              "covered": 58,
+              "percent": 86.56716417910447
+            },
+            "functions": {
+              "count": 11,
+              "covered": 9,
+              "percent": 81.81818181818183
+            },
+            "branches": {
+              "count": 14,
+              "covered": 7,
+              "notcovered": 7,
+              "percent": 50
+            }
+          }
+        },
+        {
+          "path": "src/Simulation.cpp",
+          "coverage": {
+            "lines": {
+              "count": 684,
+              "covered": 647,
+              "percent": 94.5906432748538
+            },
+            "functions": {
+              "count": 22,
+              "covered": 22,
+              "percent": 100
+            },
+            "branches": {
+              "count": 382,
+              "covered": 329,
+              "notcovered": 53,
+              "percent": 86.12565445026178
+            }
+          }
+        },
+        {
+          "path": "src/Spread.cpp",
+          "coverage": {
+            "lines": {
+              "count": 43,
+              "covered": 20,
+              "percent": 46.51162790697674
+            },
+            "functions": {
+              "count": 2,
+              "covered": 2,
+              "percent": 100
+            },
+            "branches": {
+              "count": 44,
+              "covered": 18,
+              "notcovered": 26,
+              "percent": 40.909090909090914
+            }
+          }
+        },
+        {
+          "path": "src/Transient.cpp",
+          "coverage": {
+            "lines": {
+              "count": 66,
+              "covered": 62,
+              "percent": 93.93939393939394
+            },
+            "functions": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "branches": {
+              "count": 62,
+              "covered": 54,
+              "notcovered": 8,
+              "percent": 87.09677419354838
+            }
+          }
+        },
+        {
+          "path": "src/TransmissionLine.cpp",
+          "coverage": {
+            "lines": {
+              "count": 96,
+              "covered": 80,
+              "percent": 83.33333333333334
+            },
+            "functions": {
+              "count": 4,
+              "covered": 3,
+              "percent": 75
+            },
+            "branches": {
+              "count": 46,
+              "covered": 33,
+              "notcovered": 13,
+              "percent": 71.73913043478261
+            }
+          }
+        },
+        {
+          "path": "src/VCCS.cpp",
+          "coverage": {
+            "lines": {
+              "count": 77,
+              "covered": 69,
+              "percent": 89.6103896103896
+            },
+            "functions": {
+              "count": 4,
+              "covered": 3,
+              "percent": 75
+            },
+            "branches": {
+              "count": 40,
+              "covered": 29,
+              "notcovered": 11,
+              "percent": 72.5
+            }
+          }
+        },
+        {
+          "path": "src/VCVS.cpp",
+          "coverage": {
+            "lines": {
+              "count": 98,
+              "covered": 88,
+              "percent": 89.79591836734694
+            },
+            "functions": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "branches": {
+              "count": 52,
+              "covered": 38,
+              "notcovered": 14,
+              "percent": 73.07692307692307
+            }
+          }
+        },
+        {
+          "path": "src/Verbose.cpp",
+          "coverage": {
+            "lines": {
+              "count": 87,
+              "covered": 56,
+              "percent": 64.36781609195403
+            },
+            "functions": {
+              "count": 4,
+              "covered": 3,
+              "percent": 75
+            },
+            "branches": {
+              "count": 46,
+              "covered": 32,
+              "notcovered": 14,
+              "percent": 69.56521739130434
+            }
+          }
+        },
+        {
+          "path": "src/VoltageSource.cpp",
+          "coverage": {
+            "lines": {
+              "count": 14,
+              "covered": 12,
+              "percent": 85.71428571428571
+            },
+            "functions": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "branches": {
+              "count": 2,
+              "covered": 1,
+              "notcovered": 1,
+              "percent": 50
+            }
+          }
+        },
+        {
+          "path": "src/josim.cpp",
+          "coverage": {
+            "lines": {
+              "count": 27,
+              "covered": 25,
+              "percent": 92.5925925925926
+            },
+            "functions": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "branches": {
+              "count": 2,
+              "covered": 2,
+              "notcovered": 0,
+              "percent": 100
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/AnalysisType.hpp",
+          "coverage": {
+            "lines": {
+              "count": 7,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/BasicComponent.hpp",
+          "coverage": {
+            "lines": {
+              "count": 60,
+              "covered": 54,
+              "percent": 90
+            },
+            "functions": {
+              "count": 6,
+              "covered": 4,
+              "percent": 66.66666666666666
+            },
+            "branches": {
+              "count": 32,
+              "covered": 25,
+              "notcovered": 7,
+              "percent": 78.125
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/CCCS.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/CCVS.hpp",
+          "coverage": {
+            "lines": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Capacitor.hpp",
+          "coverage": {
+            "lines": {
+              "count": 5,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/CliOptions.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Components.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Constants.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/CurrentSource.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Errors.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/FileOutputType.hpp",
+          "coverage": {
+            "lines": {
+              "count": 23,
+              "covered": 21,
+              "percent": 91.30434782608695
+            },
+            "functions": {
+              "count": 6,
+              "covered": 5,
+              "percent": 83.33333333333334
+            },
+            "branches": {
+              "count": 8,
+              "covered": 7,
+              "notcovered": 1,
+              "percent": 87.5
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Function.hpp",
+          "coverage": {
+            "lines": {
+              "count": 4,
+              "covered": 3,
+              "percent": 75
+            },
+            "functions": {
+              "count": 4,
+              "covered": 3,
+              "percent": 75
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/IV.hpp",
+          "coverage": {
+            "lines": {
+              "count": 3,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Inductor.hpp",
+          "coverage": {
+            "lines": {
+              "count": 3,
+              "covered": 1,
+              "percent": 33.33333333333333
+            },
+            "functions": {
+              "count": 3,
+              "covered": 1,
+              "percent": 33.33333333333333
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Input.hpp",
+          "coverage": {
+            "lines": {
+              "count": 9,
+              "covered": 9,
+              "percent": 100
+            },
+            "functions": {
+              "count": 2,
+              "covered": 2,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/JJ.hpp",
+          "coverage": {
+            "lines": {
+              "count": 5,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/LUSolve.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/LineInput.hpp",
+          "coverage": {
+            "lines": {
+              "count": 11,
+              "covered": 11,
+              "percent": 100
+            },
+            "functions": {
+              "count": 7,
+              "covered": 7,
+              "percent": 100
+            },
+            "branches": {
+              "count": 2,
+              "covered": 1,
+              "notcovered": 1,
+              "percent": 50
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Matrix.hpp",
+          "coverage": {
+            "lines": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "functions": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Misc.hpp",
+          "coverage": {
+            "lines": {
+              "count": 5,
+              "covered": 5,
+              "percent": 100
+            },
+            "functions": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Model.hpp",
+          "coverage": {
+            "lines": {
+              "count": 36,
+              "covered": 35,
+              "percent": 97.22222222222221
+            },
+            "functions": {
+              "count": 35,
+              "covered": 34,
+              "percent": 97.14285714285714
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Netlist.hpp",
+          "coverage": {
+            "lines": {
+              "count": 8,
+              "covered": 8,
+              "percent": 100
+            },
+            "functions": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Noise.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Output.hpp",
+          "coverage": {
+            "lines": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "functions": {
+              "count": 3,
+              "covered": 3,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/ParameterName.hpp",
+          "coverage": {
+            "lines": {
+              "count": 14,
+              "covered": 14,
+              "percent": 100
+            },
+            "functions": {
+              "count": 5,
+              "covered": 5,
+              "percent": 100
+            },
+            "branches": {
+              "count": 4,
+              "covered": 2,
+              "notcovered": 2,
+              "percent": 50
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Parameters.hpp",
+          "coverage": {
+            "lines": {
+              "count": 6,
+              "covered": 6,
+              "percent": 100
+            },
+            "functions": {
+              "count": 6,
+              "covered": 6,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/PhaseSource.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/ProgressBar.hpp",
+          "coverage": {
+            "lines": {
+              "count": 48,
+              "covered": 48,
+              "percent": 100
+            },
+            "functions": {
+              "count": 14,
+              "covered": 14,
+              "percent": 100
+            },
+            "branches": {
+              "count": 12,
+              "covered": 12,
+              "notcovered": 0,
+              "percent": 100
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/RelevantTrace.hpp",
+          "coverage": {
+            "lines": {
+              "count": 21,
+              "covered": 21,
+              "percent": 100
+            },
+            "functions": {
+              "count": 4,
+              "covered": 4,
+              "percent": 100
+            },
+            "branches": {
+              "count": 8,
+              "covered": 8,
+              "notcovered": 0,
+              "percent": 100
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Resistor.hpp",
+          "coverage": {
+            "lines": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Rng.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Simulation.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Spread.hpp",
+          "coverage": {
+            "lines": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "functions": {
+              "count": 1,
+              "covered": 1,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/Transient.hpp",
+          "coverage": {
+            "lines": {
+              "count": 13,
+              "covered": 13,
+              "percent": 100
+            },
+            "functions": {
+              "count": 13,
+              "covered": 13,
+              "percent": 100
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/TransmissionLine.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/TypeDefines.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/VCCS.hpp",
+          "coverage": {
+            "lines": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        },
+        {
+          "path": "include/JoSIM/VCVS.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/Verbose.hpp",
+          "coverage": null
+        },
+        {
+          "path": "include/JoSIM/VoltageSource.hpp",
+          "coverage": {
+            "lines": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "functions": {
+              "count": 1,
+              "covered": 0,
+              "percent": 0
+            },
+            "branches": {
+              "count": 0,
+              "covered": 0,
+              "notcovered": 0,
+              "percent": 0
+            }
+          }
+        }
+      ]
+    },
+    "tagged_native_llvm18": {
+      "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+      "llvm_major": 18,
+      "totals": {
+        "lines": {
+          "count": 6466,
+          "covered": 5330,
+          "percent": 82.43117847200743
+        },
+        "functions": {
+          "count": 390,
+          "covered": 348,
+          "percent": 89.23076923076924
+        },
+        "branches": {
+          "count": 3762,
+          "covered": 2985,
+          "notcovered": 777,
+          "percent": 79.34609250398724
+        }
+      },
+      "tests": {
+        "status": "passed",
+        "entries": 35,
+        "declared": [
+          "integration::ex_dcsfq_jtl_sink",
+          "integration::ex_gen_pp_ipht",
+          "integration::ex_jtl_basic",
+          "integration::ex_jtl_string",
+          "integration::ex_ksa4bit",
+          "integration::ex_mitll_dff_wr",
+          "integration::ex_mitll_xor",
+          "integration::test_capacitor",
+          "integration::test_cccs",
+          "integration::test_ccvs",
+          "integration::test_inductor",
+          "integration::test_jj",
+          "integration::test_line_comment",
+          "integration::test_line_cont",
+          "integration::test_output",
+          "integration::test_param_nest",
+          "integration::test_param_undef",
+          "integration::test_ps",
+          "integration::test_resistor",
+          "integration::test_tx",
+          "integration::test_vccs",
+          "integration::test_vcvs",
+          "integration::test_vs",
+          "regression::buffer",
+          "regression::build_options",
+          "regression::cli",
+          "regression::functions",
+          "regression::gate",
+          "regression::installed_package",
+          "regression::junction_numerics",
+          "regression::library",
+          "regression::noise",
+          "regression::numerics",
+          "regression::qualification",
+          "regression::sweep"
+        ],
+        "executed": [
+          "integration::ex_dcsfq_jtl_sink",
+          "integration::ex_gen_pp_ipht",
+          "integration::ex_jtl_basic",
+          "integration::ex_jtl_string",
+          "integration::ex_ksa4bit",
+          "integration::ex_mitll_dff_wr",
+          "integration::ex_mitll_xor",
+          "integration::test_capacitor",
+          "integration::test_cccs",
+          "integration::test_ccvs",
+          "integration::test_inductor",
+          "integration::test_jj",
+          "integration::test_line_comment",
+          "integration::test_line_cont",
+          "integration::test_output",
+          "integration::test_param_nest",
+          "integration::test_param_undef",
+          "integration::test_ps",
+          "integration::test_resistor",
+          "integration::test_tx",
+          "integration::test_vccs",
+          "integration::test_vcvs",
+          "integration::test_vs",
+          "regression::buffer",
+          "regression::build_options",
+          "regression::cli",
+          "regression::functions",
+          "regression::gate",
+          "regression::installed_package",
+          "regression::junction_numerics",
+          "regression::library",
+          "regression::noise",
+          "regression::numerics",
+          "regression::qualification",
+          "regression::sweep"
+        ],
+        "required": [
+          "regression::buffer",
+          "regression::build_options",
+          "regression::cli",
+          "regression::functions",
+          "regression::gate",
+          "regression::installed_package",
+          "regression::junction_numerics",
+          "regression::library",
+          "regression::noise",
+          "regression::numerics",
+          "regression::qualification",
+          "regression::sweep"
+        ],
+        "exit": 0
+      },
+      "mapping_diagnostics": "validated"
+    }
+  },
+  "public_execution": {
+    "linux-x64-rhel6": {
+      "status": "passed",
+      "tag": "v3.0.0",
+      "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+      "target": "linux-x64-rhel6",
+      "release_url": "https://github.com/JoeyDelp/JoSIM/releases/tag/v3.0.0",
+      "archive": "JoSIM-v3.0.0-linux-x64-rhel6.tar.gz",
+      "archive_sha256": "6e17864ad788d287d1b1195981fd6d04deca12c2620a7ff20aa82844cee3271f",
+      "binary_sha256": "b6f92f95e52af1ba48cd6d2a7ce335d81f6e56204691f2929e1970f1faf2bf99",
+      "downloads": [
+        {
+          "name": "JoSIM-v3.0.0-linux-x64-rhel6.tar.gz",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-linux-x64-rhel6.tar.gz",
+          "size": 2460504,
+          "sha256": "6e17864ad788d287d1b1195981fd6d04deca12c2620a7ff20aa82844cee3271f",
+          "api_digest": "sha256:6e17864ad788d287d1b1195981fd6d04deca12c2620a7ff20aa82844cee3271f"
+        },
+        {
+          "name": "JoSIM-v3.0.0-linux-x64-rhel6.tar.gz.sha256",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-linux-x64-rhel6.tar.gz.sha256",
+          "size": 102,
+          "sha256": "a2209b891416e4ba81e7f12faaa1419778b5e51a4678d5e47d0e8102feb7b704",
+          "api_digest": "sha256:a2209b891416e4ba81e7f12faaa1419778b5e51a4678d5e47d0e8102feb7b704"
+        },
+        {
+          "name": "JoSIM-v3.0.0-linux-x64-rhel6.manifest.json",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-linux-x64-rhel6.manifest.json",
+          "size": 30608,
+          "sha256": "c99f8ca3db86a9be930945fb7190a756be8f4147067ac253e7a5e9f135ee03aa",
+          "api_digest": "sha256:c99f8ca3db86a9be930945fb7190a756be8f4147067ac253e7a5e9f135ee03aa"
+        }
+      ],
+      "runtime": {
+        "system": "Linux",
+        "machine": "x86_64",
+        "release": "7.0.0-1017-azure",
+        "libc": [
+          "glibc",
+          "2.12"
+        ],
+        "python": "3.10.6 (main, Aug  2 2022, 15:51:51) [GCC 8.3.1 20190311 (Red Hat 8.3.1-3)]"
+      },
+      "numerical_cases": 200,
+      "owners_sha256": {
+        "tools/verify_release.py": "3f7d26cabb924deb41976a97110550ecc8c55db86905fa494bb7e1aafc2b02d0",
+        "test/regression_cli.py": "68d3590f6b6b40376372a117e3605c0189cdae4a63b616ba2b517e03b605bf8c",
+        "test/regression_numerics.py": "043fa3204d74a636feb46ea4b5dccc2d53bf301cc0720a6d38f88cdbfc2201ad"
+      },
+      "verification_source": {
+        "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+        "working_tree_sha256": "6b822539e5a1644f472a2f3e3e99645fe8db83492e7b15009f08a080a2e7a7c5",
+        "dirty": false
+      },
+      "test_methods": {
+        "cli": 63,
+        "numerics": 8
+      }
+    },
+    "linux-arm64-rhel7": {
+      "status": "passed",
+      "tag": "v3.0.0",
+      "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+      "target": "linux-arm64-rhel7",
+      "release_url": "https://github.com/JoeyDelp/JoSIM/releases/tag/v3.0.0",
+      "archive": "JoSIM-v3.0.0-linux-arm64-rhel7.tar.gz",
+      "archive_sha256": "9f699692d279a95fba2d7a0d3cd24c051ff6fcd147cb9c0f4c8eeac2281feffd",
+      "binary_sha256": "fb181288505afadc824a02ad8fe0ac0a62e309eb42ec453e4bdd25bb4112a46a",
+      "downloads": [
+        {
+          "name": "JoSIM-v3.0.0-linux-arm64-rhel7.tar.gz",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-linux-arm64-rhel7.tar.gz",
+          "size": 2405527,
+          "sha256": "9f699692d279a95fba2d7a0d3cd24c051ff6fcd147cb9c0f4c8eeac2281feffd",
+          "api_digest": "sha256:9f699692d279a95fba2d7a0d3cd24c051ff6fcd147cb9c0f4c8eeac2281feffd"
+        },
+        {
+          "name": "JoSIM-v3.0.0-linux-arm64-rhel7.tar.gz.sha256",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-linux-arm64-rhel7.tar.gz.sha256",
+          "size": 104,
+          "sha256": "a124a687a345327f2df1abf0437b4e3080836e8a1857be1b9cc277e8fab52114",
+          "api_digest": "sha256:a124a687a345327f2df1abf0437b4e3080836e8a1857be1b9cc277e8fab52114"
+        },
+        {
+          "name": "JoSIM-v3.0.0-linux-arm64-rhel7.manifest.json",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-linux-arm64-rhel7.manifest.json",
+          "size": 30616,
+          "sha256": "2073b87a31b0170a6372c2e0536044d8075288775800468525c31f9b289414e3",
+          "api_digest": "sha256:2073b87a31b0170a6372c2e0536044d8075288775800468525c31f9b289414e3"
+        }
+      ],
+      "runtime": {
+        "system": "Linux",
+        "machine": "aarch64",
+        "release": "7.0.0-1017-azure",
+        "libc": [
+          "glibc",
+          "2.17"
+        ],
+        "python": "3.10.22 (main, Nov  1 2026, 13:25:49) [GCC 10.2.1 20210130 (Red Hat 10.2.1-11)]"
+      },
+      "numerical_cases": 200,
+      "owners_sha256": {
+        "tools/verify_release.py": "3f7d26cabb924deb41976a97110550ecc8c55db86905fa494bb7e1aafc2b02d0",
+        "test/regression_cli.py": "68d3590f6b6b40376372a117e3605c0189cdae4a63b616ba2b517e03b605bf8c",
+        "test/regression_numerics.py": "043fa3204d74a636feb46ea4b5dccc2d53bf301cc0720a6d38f88cdbfc2201ad"
+      },
+      "verification_source": {
+        "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+        "working_tree_sha256": "6b822539e5a1644f472a2f3e3e99645fe8db83492e7b15009f08a080a2e7a7c5",
+        "dirty": false
+      },
+      "test_methods": {
+        "cli": 63,
+        "numerics": 8
+      }
+    },
+    "windows-x64": {
+      "status": "passed",
+      "tag": "v3.0.0",
+      "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+      "target": "windows-x64",
+      "release_url": "https://github.com/JoeyDelp/JoSIM/releases/tag/v3.0.0",
+      "archive": "JoSIM-v3.0.0-windows-x64.zip",
+      "archive_sha256": "989327f4aa925feb8e448760039dc5a81eda110883bc2d57ac252eb4995a1fc4",
+      "binary_sha256": "cdd0b8862a4ece81c46eb17041d4b21683c8226b6a79051b77a47c8ca082de3b",
+      "downloads": [
+        {
+          "name": "JoSIM-v3.0.0-windows-x64.zip",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-windows-x64.zip",
+          "size": 3342532,
+          "sha256": "989327f4aa925feb8e448760039dc5a81eda110883bc2d57ac252eb4995a1fc4",
+          "api_digest": "sha256:989327f4aa925feb8e448760039dc5a81eda110883bc2d57ac252eb4995a1fc4"
+        },
+        {
+          "name": "JoSIM-v3.0.0-windows-x64.zip.sha256",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-windows-x64.zip.sha256",
+          "size": 96,
+          "sha256": "5ffd13c91811e96d39ce9bf335ef38e433df59fe6e0e41453ef8a2af703474da",
+          "api_digest": "sha256:5ffd13c91811e96d39ce9bf335ef38e433df59fe6e0e41453ef8a2af703474da"
+        },
+        {
+          "name": "JoSIM-v3.0.0-windows-x64.manifest.json",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-windows-x64.manifest.json",
+          "size": 31553,
+          "sha256": "e487648b16ff1d65c3709ee621d112b77da300b6e3f36b62f311c49dc183bf8c",
+          "api_digest": "sha256:e487648b16ff1d65c3709ee621d112b77da300b6e3f36b62f311c49dc183bf8c"
+        }
+      ],
+      "runtime": {
+        "system": "Windows",
+        "machine": "AMD64",
+        "release": "2022Server",
+        "libc": [
+          "",
+          ""
+        ],
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+      },
+      "numerical_cases": 200,
+      "owners_sha256": {
+        "tools/verify_release.py": "f88b85a04aec6e9a3b457349d15895c000cb958c947b1453c54c9252077b337a",
+        "test/regression_cli.py": "3b6d9ebccbf275e8ff0f9d9545969f2114a553877bbf3838477e074ba2ad19e8",
+        "test/regression_numerics.py": "6035642cc109b1056e649f8c17bdf724fa89f9465d2bcfbb4c83719cc75d6afe"
+      },
+      "verification_source": {
+        "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+        "working_tree_sha256": "c35e196051017737eb02edc397946388c821bd2f23bf793f1d93e847fc2f01be",
+        "dirty": false
+      },
+      "test_methods": {
+        "cli": 63,
+        "numerics": 8
+      }
+    },
+    "macos-arm64": {
+      "status": "passed",
+      "tag": "v3.0.0",
+      "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+      "target": "macos-arm64",
+      "release_url": "https://github.com/JoeyDelp/JoSIM/releases/tag/v3.0.0",
+      "archive": "JoSIM-v3.0.0-macos-arm64.tar.gz",
+      "archive_sha256": "ac461e67e7ec659379e2c7d6a1eaaa075992f10f275217c27ded25afd6eebf29",
+      "binary_sha256": "31e7998c75d3b1ca1cbc08617649aeeea1c1ff8696c38b4838ed8f0fc3bf575d",
+      "downloads": [
+        {
+          "name": "JoSIM-v3.0.0-macos-arm64.tar.gz",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-macos-arm64.tar.gz",
+          "size": 1580930,
+          "sha256": "ac461e67e7ec659379e2c7d6a1eaaa075992f10f275217c27ded25afd6eebf29",
+          "api_digest": "sha256:ac461e67e7ec659379e2c7d6a1eaaa075992f10f275217c27ded25afd6eebf29"
+        },
+        {
+          "name": "JoSIM-v3.0.0-macos-arm64.tar.gz.sha256",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-macos-arm64.tar.gz.sha256",
+          "size": 98,
+          "sha256": "ee844fb7b028c5e13e42be54c177fb1bbe956711ab0ff5b0b9f7604493dd9027",
+          "api_digest": "sha256:ee844fb7b028c5e13e42be54c177fb1bbe956711ab0ff5b0b9f7604493dd9027"
+        },
+        {
+          "name": "JoSIM-v3.0.0-macos-arm64.manifest.json",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-macos-arm64.manifest.json",
+          "size": 30510,
+          "sha256": "58053e92b68b53ae171ccd62672f22231ca43393deabd9d91ae3e25eb703306f",
+          "api_digest": "sha256:58053e92b68b53ae171ccd62672f22231ca43393deabd9d91ae3e25eb703306f"
+        }
+      ],
+      "runtime": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "release": "24.6.0",
+        "libc": [
+          "",
+          ""
+        ],
+        "python": "3.15.2 (main, Oct 25 2026, 16:57:51) [Clang 17.0.0 (clang-1700.6.4.2)]"
+      },
+      "numerical_cases": 200,
+      "owners_sha256": {
+        "tools/verify_release.py": "3f7d26cabb924deb41976a97110550ecc8c55db86905fa494bb7e1aafc2b02d0",
+        "test/regression_cli.py": "68d3590f6b6b40376372a117e3605c0189cdae4a63b616ba2b517e03b605bf8c",
+        "test/regression_numerics.py": "043fa3204d74a636feb46ea4b5dccc2d53bf301cc0720a6d38f88cdbfc2201ad"
+      },
+      "verification_source": {
+        "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+        "working_tree_sha256": "6b822539e5a1644f472a2f3e3e99645fe8db83492e7b15009f08a080a2e7a7c5",
+        "dirty": false
+      },
+      "test_methods": {
+        "cli": 63,
+        "numerics": 8
+      }
+    },
+    "macos-x86_64": {
+      "status": "passed",
+      "tag": "v3.0.0",
+      "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+      "target": "macos-x86_64",
+      "release_url": "https://github.com/JoeyDelp/JoSIM/releases/tag/v3.0.0",
+      "archive": "JoSIM-v3.0.0-macos-x86_64.tar.gz",
+      "archive_sha256": "d878d7d83ef76bea6c9ec7cc634cb81bf87299a037919603addc25b8d5cc7be1",
+      "binary_sha256": "007bb5af10d598d4d102667c87ac684323df579c6d612c4977d070f0b93bbf0a",
+      "downloads": [
+        {
+          "name": "JoSIM-v3.0.0-macos-x86_64.tar.gz",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-macos-x86_64.tar.gz",
+          "size": 1718457,
+          "sha256": "d878d7d83ef76bea6c9ec7cc634cb81bf87299a037919603addc25b8d5cc7be1",
+          "api_digest": "sha256:d878d7d83ef76bea6c9ec7cc634cb81bf87299a037919603addc25b8d5cc7be1"
+        },
+        {
+          "name": "JoSIM-v3.0.0-macos-x86_64.tar.gz.sha256",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-macos-x86_64.tar.gz.sha256",
+          "size": 99,
+          "sha256": "fe0db72e4a0b794aa8521e1e38cb92758a63370dd712db908f968bd092145aa0",
+          "api_digest": "sha256:fe0db72e4a0b794aa8521e1e38cb92758a63370dd712db908f968bd092145aa0"
+        },
+        {
+          "name": "JoSIM-v3.0.0-macos-x86_64.manifest.json",
+          "url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-macos-x86_64.manifest.json",
+          "size": 30516,
+          "sha256": "57502c3e204afbe28774aba37b75e6919c1e37a11fc892f2a12f0ef99a795182",
+          "api_digest": "sha256:57502c3e204afbe28774aba37b75e6919c1e37a11fc892f2a12f0ef99a795182"
+        }
+      ],
+      "runtime": {
+        "system": "Darwin",
+        "machine": "x86_64",
+        "release": "24.6.0",
+        "libc": [
+          "",
+          ""
+        ],
+        "python": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 17.0.0 (clang-1700.6.4.2)]"
+      },
+      "numerical_cases": 200,
+      "owners_sha256": {
+        "tools/verify_release.py": "3f7d26cabb924deb41976a97110550ecc8c55db86905fa494bb7e1aafc2b02d0",
+        "test/regression_cli.py": "68d3590f6b6b40376372a117e3605c0189cdae4a63b616ba2b517e03b605bf8c",
+        "test/regression_numerics.py": "043fa3204d74a636feb46ea4b5dccc2d53bf301cc0720a6d38f88cdbfc2201ad"
+      },
+      "verification_source": {
+        "revision": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+        "working_tree_sha256": "6b822539e5a1644f472a2f3e3e99645fe8db83492e7b15009f08a080a2e7a7c5",
+        "dirty": false
+      },
+      "test_methods": {
+        "cli": 63,
+        "numerics": 8
+      }
+    }
+  },
+  "pages_release_acceptance": {
+    "source": "cb1c42d6fc3cf36f3053f594ba81b7d3290d1164",
+    "gh_pages_commit": "7d1ed26b361df5e1cdeb56f57b204020e954af00",
+    "checked_at_utc": "2026-11-07T01:19:49.265408+00:00",
+    "context_http_status": 404,
+    "passed": true,
+    "html_pages_byte_matched": 55,
+    "browser_math": {
+      "rendered": 382,
+      "errors": 0,
+      "console_warnings_errors": 0
+    }
+  },
+  "dispositions": [
+    {
+      "id": "A01",
+      "title": "Same-process Gaussian RNG cache",
+      "classification": "confirmed defect; prior repair.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A01 \u2014 Same-process Gaussian RNG cache"
+    },
+    {
+      "id": "A02",
+      "title": "State-dependent JJ thermal amplitude",
+      "classification": "confirmed defect; repaired and qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A02 \u2014 State-dependent JJ thermal amplitude"
+    },
+    {
+      "id": "A03",
+      "title": "Modern C compiler incompatibility",
+      "classification": "confirmed defect; prior repair.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A03 \u2014 Modern C compiler incompatibility"
+    },
+    {
+      "id": "A04",
+      "title": "Installed CMake package",
+      "classification": "confirmed defect; prior repair.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A04 \u2014 Installed CMake package"
+    },
+    {
+      "id": "A05",
+      "title": "Silently ineffective SLU=ON",
+      "classification": "confirmed supported-behaviour defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A05 \u2014 Silently ineffective SLU=ON"
+    },
+    {
+      "id": "A06",
+      "title": "Moving dependency URL and stale linkage",
+      "classification": "confirmed maintenance/portability defect; repaired and qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A06 \u2014 Moving dependency URL and stale linkage"
+    },
+    {
+      "id": "A07",
+      "title": "Invalid transient and recursive subcircuits",
+      "classification": "confirmed defects; prior repairs.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A07 \u2014 Invalid transient and recursive subcircuits"
+    },
+    {
+      "id": "A08a",
+      "title": "Named subcircuit parameter overrides (#81)",
+      "classification": "confirmed compatibility defect; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A08a \u2014 Named subcircuit parameter overrides (#81)"
+    },
+    {
+      "id": "A08b",
+      "title": "Hierarchical pin-alias output (#81)",
+      "classification": "confirmed compatibility defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A08b \u2014 Hierarchical pin-alias output (#81)"
+    },
+    {
+      "id": "A09",
+      "title": "Effective seed absent from -V 1",
+      "classification": "confirmed observability defect; merged candidate.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "A09 \u2014 Effective seed absent from -V 1"
+    },
+    {
+      "id": "I110",
+      "title": "Original seed support report #110",
+      "classification": "answered support request; distinct from A01.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I110 \u2014 Original seed support report #110"
+    },
+    {
+      "id": "I109",
+      "title": "Capacitor initial voltage #109",
+      "classification": "optional arbitrary-state feature; existing silent IC handling is a separate confirmed defect F12.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I109 \u2014 Capacitor initial voltage #109"
+    },
+    {
+      "id": "I108a",
+      "title": "Finite-cycle sine #108",
+      "classification": "implemented request; analytically and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I108a \u2014 Finite-cycle sine #108"
+    },
+    {
+      "id": "I108b",
+      "title": "Switching-dependent noise #108",
+      "classification": "support/model question; state-amplitude defects repaired in F16.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I108b \u2014 Switching-dependent noise #108"
+    },
+    {
+      "id": "I107",
+      "title": "Floating reference and SQUID noise #107",
+      "classification": "support/model question with validated bounded alternatives.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I107 \u2014 Floating reference and SQUID noise #107"
+    },
+    {
+      "id": "I101",
+      "title": "JJ-buffer reverse response #101",
+      "classification": "physical response established; separate startup defect F10 repaired.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I101 \u2014 JJ-buffer reverse response #101"
+    },
+    {
+      "id": "I093",
+      "title": "Stewart\u2013McCumber parameter #93",
+      "classification": "optional model convenience; explicit supported alternative.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I093 \u2014 Stewart\u2013McCumber parameter #93"
+    },
+    {
+      "id": "I091",
+      "title": "Long-run JJ artifacts #91",
+      "classification": "confirmed numerical cause repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I091 \u2014 Long-run JJ artifacts #91"
+    },
+    {
+      "id": "I088",
+      "title": "Nonlinear inductor #88",
+      "classification": "optional substantial solver feature; outside current support.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I088 \u2014 Nonlinear inductor #88"
+    },
+    {
+      "id": "I084",
+      "title": "Parameter sweeps #84",
+      "classification": "scope/support decision.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I084 \u2014 Parameter sweeps #84"
+    },
+    {
+      "id": "I082",
+      "title": "IV script and circuit sweeps #82",
+      "classification": "confirmed unsafe prototype, plus support/model questions.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "I082 \u2014 IV script and circuit sweeps #82"
+    },
+    {
+      "id": "D01",
+      "title": "Numerical regression breadth",
+      "classification": "architecture/testing concern; bounded independent qualification complete.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D01 \u2014 Numerical regression breadth"
+    },
+    {
+      "id": "D02",
+      "title": "Coverage and high-risk gaps",
+      "classification": "testing/maintenance concern.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D02 \u2014 Coverage and high-risk gaps"
+    },
+    {
+      "id": "D03",
+      "title": "Sanitizers, warnings and static analysis",
+      "classification": "verification concern.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D03 \u2014 Sanitizers, warnings and static analysis"
+    },
+    {
+      "id": "D04",
+      "title": "Library recovery and RNG ownership",
+      "classification": "embedding/API concern.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D04 \u2014 Library recovery and RNG ownership"
+    },
+    {
+      "id": "D05",
+      "title": "Maintained Python utilities",
+      "classification": "repaired runtime/data/safety defects; obsolete noise preprocessor formally retired with native alternatives.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D05 \u2014 Maintained Python utilities"
+    },
+    {
+      "id": "D06",
+      "title": "Runtime/memory and trace retention",
+      "classification": "measured-performance concern.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D06 \u2014 Runtime/memory and trace retention"
+    },
+    {
+      "id": "D07",
+      "title": "Source manuals and support claims",
+      "classification": "documentation/maintenance concern, including repaired advertised-help (F29) and installed-manual (F30) defects.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D07 \u2014 Source manuals and support claims"
+    },
+    {
+      "id": "D08",
+      "title": "Versioning and qualified release",
+      "classification": "publication/packaging concern.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D08 \u2014 Versioning and qualified release"
+    },
+    {
+      "id": "D09",
+      "title": "Published GitHub Pages",
+      "classification": "confirmed stale public documentation.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D09 \u2014 Published GitHub Pages"
+    },
+    {
+      "id": "D10",
+      "title": "Branches and preserved research",
+      "classification": "completed consolidation; verify preservation.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D10 \u2014 Branches and preserved research"
+    },
+    {
+      "id": "D11",
+      "title": "Output and malformed-input failures",
+      "classification": "repaired CLI/input/output defects, including newly reproduced false success after output-write failure (F21).",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "D11 \u2014 Output and malformed-input failures"
+    },
+    {
+      "id": "F01",
+      "title": "CUS waveform path, alignment and malformed data",
+      "classification": "confirmed supported-behaviour defects uncovered by D03/D11.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F01 \u2014 CUS waveform path, alignment and malformed data"
+    },
+    {
+      "id": "F02",
+      "title": "Numeric literals, expression precedence and malformed input",
+      "classification": "confirmed numerical parsing and malformed-input defects.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F02 \u2014 Numeric literals, expression precedence and malformed input"
+    },
+    {
+      "id": "F03",
+      "title": "CLI parsing, input preservation, includes and seed bounds",
+      "classification": "confirmed crashes, silent argument errors and destructive output collisions uncovered while resolving D11/A09/D04.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F03 \u2014 CLI parsing, input preservation, includes and seed bounds"
+    },
+    {
+      "id": "F04",
+      "title": "Filename case and logical-line normalization",
+      "classification": "supported input defects exposed by platform qualification.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F04 \u2014 Filename case and logical-line normalization"
+    },
+    {
+      "id": "F05",
+      "title": "Pin aliases, ground classification and requested trace contents",
+      "classification": "confirmed supported-behaviour defects; resolves A08b independently of the still-open A08a named-parameter issue.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F05 \u2014 Pin aliases, ground classification and requested trace contents"
+    },
+    {
+      "id": "F06",
+      "title": "Checked library time grids and empty output windows",
+      "classification": "confirmed input/recovery defects extending A07/D04/D11.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F06 \u2014 Checked library time grids and empty output windows"
+    },
+    {
+      "id": "F07",
+      "title": "Stateful current-source output history",
+      "classification": "confirmed numerical output defect; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F07 \u2014 Stateful current-source output history"
+    },
+    {
+      "id": "F08",
+      "title": "Initial phase-to-voltage output history",
+      "classification": "confirmed numerical output/startup defect; repaired locally.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F08 \u2014 Initial phase-to-voltage output history"
+    },
+    {
+      "id": "F09",
+      "title": "Inconsistent JJ phase constants and long-run drift",
+      "classification": "confirmed numerical defect, directly relevant to #91.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F09 \u2014 Inconsistent JJ phase constants and long-run drift"
+    },
+    {
+      "id": "F10",
+      "title": "Junction history during negative startup",
+      "classification": "confirmed numerical startup defect; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F10 \u2014 Junction history during negative startup"
+    },
+    {
+      "id": "F11",
+      "title": "Phase-source and voltage-to-phase startup history",
+      "classification": "confirmed supported-output/source defects; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F11 \u2014 Phase-source and voltage-to-phase startup history"
+    },
+    {
+      "id": "F12",
+      "title": "Silently ignored capacitor initial-voltage syntax",
+      "classification": "confirmed user-input defect; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F12 \u2014 Silently ignored capacitor initial-voltage syntax"
+    },
+    {
+      "id": "F13",
+      "title": "Model domains, transparent CPR and non-finite solver states",
+      "classification": "confirmed model/input/numerical defects; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F13 \u2014 Model domains, transparent CPR and non-finite solver states"
+    },
+    {
+      "id": "F14",
+      "title": "Verbosity-dependent finite-sine validation",
+      "classification": "confirmed waveform-input defect; repaired and native-qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F14 \u2014 Verbosity-dependent finite-sine validation"
+    },
+    {
+      "id": "F15",
+      "title": "Interpolated white-noise effective bandwidth",
+      "classification": "confirmed noise-normalization defect uncovered in A02/I107.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F15 \u2014 Interpolated white-noise effective bandwidth"
+    },
+    {
+      "id": "F16",
+      "title": "Thermal sample scaling, transition state and invalid controls",
+      "classification": "confirmed amplitude/timing and input-abort defects.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F16 \u2014 Thermal sample scaling, transition state and invalid controls"
+    },
+    {
+      "id": "F17",
+      "title": "Power-law normalization, endpoints and sampled-pole gain",
+      "classification": "confirmed stochastic-normalization defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F17 \u2014 Power-law normalization, endpoints and sampled-pole gain"
+    },
+    {
+      "id": "F18",
+      "title": "Silently discarded noise-source arguments",
+      "classification": "confirmed malformed-input defect; separate diagnostic improvement.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F18 \u2014 Silently discarded noise-source arguments"
+    },
+    {
+      "id": "F19",
+      "title": "Roundoff jitter in decimated output timestamps",
+      "classification": "confirmed output-sampling defect uncovered in I107.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F19 \u2014 Roundoff jitter in decimated output timestamps"
+    },
+    {
+      "id": "F20",
+      "title": "Unsafe positional IV prototype and fresh circuit sweeps",
+      "classification": "confirmed utility overwrite/failure-handling defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F20 \u2014 Unsafe positional IV prototype and fresh circuit sweeps"
+    },
+    {
+      "id": "F21",
+      "title": "False success after output-write/close failure",
+      "classification": "reproduced supported-behavior defect, repaired.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F21 \u2014 False success after output-write/close failure"
+    },
+    {
+      "id": "F22",
+      "title": "Model-IV timestep retry loses the requested bias",
+      "classification": "reproduced numerical/control defect, repaired.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F22 \u2014 Model-IV timestep retry loses the requested bias"
+    },
+    {
+      "id": "F23",
+      "title": "Model-IV initial state and finite averaging protocol",
+      "classification": "reproduced device-history defect repaired; required model-IV timing refinement implemented and independently qualified.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F23 \u2014 Model-IV initial state and finite averaging protocol"
+    },
+    {
+      "id": "F24",
+      "title": "Busy progress workers and incomplete thread cleanup",
+      "classification": "confirmed runtime/header/lifetime defects.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F24 \u2014 Busy progress workers and incomplete thread cleanup"
+    },
+    {
+      "id": "F25",
+      "title": "Coupled-inductor component timestep hook",
+      "classification": "confirmed C++ component-helper defect, not a CLI retry defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F25 \u2014 Coupled-inductor component timestep hook"
+    },
+    {
+      "id": "F26",
+      "title": "False success after derived-output overflow",
+      "classification": "confirmed output/numerical-boundary defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F26 \u2014 False success after derived-output overflow"
+    },
+    {
+      "id": "F27",
+      "title": "Unordered piecewise grids from negative first times",
+      "classification": "confirmed source-grid validation defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F27 \u2014 Unordered piecewise grids from negative first times"
+    },
+    {
+      "id": "F28",
+      "title": "Invalid PULSE domains and out-of-range cycle conversion",
+      "classification": "confirmed validation and finite-input waveform defect.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F28 \u2014 Invalid PULSE domains and out-of-range cycle conversion"
+    },
+    {
+      "id": "F29",
+      "title": "Help advertises rejected long options",
+      "classification": "confirmed CLI help contract defect found during D07.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F29 \u2014 Help advertises rejected long options"
+    },
+    {
+      "id": "F30",
+      "title": "Installed manual omits linked guides",
+      "classification": "confirmed packaged documentation defect found during D07.",
+      "status": "resolved within stated support boundary",
+      "ledger_heading": "F30 \u2014 Installed manual omits linked guides"
+    }
+  ],
+  "evidence_url": "https://github.com/JoeyDelp/JoSIM/releases/download/v3.0.0/JoSIM-v3.0.0-qualification.tar.gz",
+  "full_receipts": "Exact commands, complete coverage reports/HTML, per-page hashes and full native receipts are retained separately in the linked evidence archive."
+}
