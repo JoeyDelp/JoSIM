@@ -1,8 +1,6 @@
-* Choose RTYPE=0 resistance from beta_c, Ic and C using exact SI h and e.
+* Set nominal RTYPE=0 damping directly with BETA_C.
 .param BETA=1 ICVAL=1u CVAL=0.1p
-.param SIGMA_SI={6.62607015e-34/(4*PI*1.602176634e-19)}
-.param RSHUNT={SQRT(BETA*SIGMA_SI/(ICVAL*CVAL))}
-.model JM JJ(RTYPE=0 IC=ICVAL CAP=CVAL RN=RSHUNT)
+.model JM JJ(RTYPE=0 IC=ICVAL CAP=CVAL BETA_C=BETA)
 V1 N 0 PWL(0 0 100p 1m)
 B1 N 0 JM
 .tran 0.01p 20p DST

@@ -66,29 +66,44 @@ R=\sqrt{\frac{\beta_c\sigma}{I_c C}},\qquad
 \sigma=\frac{h}{4\pi e}.
 \]
 
-R is in ohms, Ic in amperes and C in farads. Use ordinary `.param` expressions
-to calculate R:
+R is in ohms, Ic in amperes and C in farads. For `RTYPE=0`, set `BETA_C`
+directly; JoSIM calculates RN once after parsing the model:
 
 ```text
 .param BETA=1 ICVAL=1u CVAL=0.1p
-.param SIGMA_SI={6.62607015e-34/(4*PI*1.602176634e-19)}
-.param RSHUNT={SQRT(BETA*SIGMA_SI/(ICVAL*CVAL))}
-.model JM JJ(RTYPE=0 IC=ICVAL CAP=CVAL RN=RSHUNT)
+.model JM JJ(RTYPE=0 IC=ICVAL CAP=CVAL BETA_C=BETA)
 ```
 
-This gives R=57.3677591 ohm for beta_c=1. The conversion requires positive,
-finite beta_c, Ic and C. For C=0, beta_c=0 does not determine R; choose R
-separately. The [complete example](https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/jj_beta_c.cir)
-is checked through the physical current relation
-`I=Ic*sin(phi)+V/R+C*dV/dt` for beta_c=0.2, 1 and 5 in both modes.
+This gives R approximately 57.36776 ohms for beta_c=1, using JoSIM's
+Josephson constant `SIGMA=3.291059757e-16 V*s`. `BETA_C` accepts parameter
+expressions in the model's scope. Model defaults for Ic and C apply when omitted;
+all three values must be finite and positive, and the calculated RN must be
+finite and nonzero. For zero or negative Ic, or C=0, specify RN instead.
 
-`RTYPE=0` uses RN as its constant resistance. `RTYPE=1` has different subgap,
-transition and normal-state conductance. It has no single global damping
+Specify `RTYPE=0` explicitly: the default is 1. An explicit RN alongside
+`BETA_C`, duplicate `BETA_C` assignments, and temperature-dependent model
+parameters `T`, `TC` or `D` are errors. The temperature-dependent model derives
+its own RN, so it cannot also use this conversion. Instance `TEMP=` and global
+`.TEMP` control thermal noise separately and are compatible with `BETA_C`.
+
+Normal AREA and instance IC scaling still apply: Ic and C scale with area,
+while RN scales inversely. Their product `Ic*C*RN^2`, and hence nominal beta_c,
+is preserved. `RTYPE=0` uses RN throughout, including in place of R0.
+
+The [complete example](https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/jj_beta_c.cir)
+is checked against explicit RN and the physical current relation
+`I=Ic*sin(phi)+V/R+C*dV/dt` for beta_c=0.2, 1 and 5 in both modes, including
+AREA and instance IC overrides. To calculate RN in a parameter expression,
+use `SQRT(BETA*3.291059757e-16/(ICVAL*CVAL))`.
+
+`RTYPE=1` has different subgap, transition and normal-state conductance.
+It has no single global damping
 resistance: a beta_c quoted with R0 describes a different operating assumption
 from one quoted with RN. Gate control, critical-current noise, temperature and
-a non-sinusoidal CPR can also change the effective damping/stiffness. JoSIM
-does not currently accept `BETA_C=` as a model parameter; use the conversion above.
-Direct input is requested in [#93](https://github.com/JoeyDelp/JoSIM/issues/93).
+a non-sinusoidal CPR can also change the effective damping/stiffness. `BETA_C`
+therefore describes nominal damping based on the model Ic scale. Direct input
+for `RTYPE=1` remains unsupported; choose its resistances explicitly. The request
+is tracked in [#93](https://github.com/JoeyDelp/JoSIM/issues/93).
 
 ## Current-dependent inductance (#88) {#nonlinear-inductance}
 

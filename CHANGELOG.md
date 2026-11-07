@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Added `BETA_C` model input for `RTYPE=0` junctions. It calculates RN from the
+  nominal Stewart–McCumber parameter, Ic and C. See the
+  [damping guide](docs/model_limits.md#beta-c) for requirements and examples.
+
 ## 3.0.0
 
 This release adds gate-controlled junctions, additional noise sources and
