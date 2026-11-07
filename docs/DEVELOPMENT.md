@@ -92,6 +92,17 @@ coverage requirements.
 and the scripts used to regenerate it are described in the test directory.
 The [Python utilities](python_utilities.md) have a separate set of dependencies.
 
+To regenerate numerical reference data or run the longer noise comparisons,
+install the optional scientific dependencies:
+
+```bash
+python3 -m venv build/science
+build/science/bin/python -m pip install -r tools/requirements-qualification.txt
+```
+
+Use Python 3.11 or newer. The buffer and SQUID examples describe the comparison
+commands; these dependencies are not needed to build or run JoSIM.
+
 ## Build the manual
 
 Use Python 3.11 or newer:

@@ -61,8 +61,7 @@ or via \
 
 ## Changelog
 
-The historical release notes below describe published versions. Current changes
-are maintained in [CHANGELOG.md](CHANGELOG.md).
+See [CHANGELOG.md](CHANGELOG.md) for the full list of recent changes.
 
 ### v3.0.0
 - Added gate-controlled junctions, power-law and flux noise sources.
