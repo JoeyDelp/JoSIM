@@ -17,7 +17,7 @@ build/python-utilities/bin/python -m pip install -r tools/requirements-utilities
 
 The manifest pins the direct dependencies: NumPy 2.4.1, Pandas 3.0.0,
 Plotly 7.1.0, Kaleido 1.5.0 and Tabulate 0.10.0. Transitive dependencies are
-resolved by pip; qualification records their installed versions and wheel hashes.
+resolved by pip.
 On Windows use `build\python-utilities\Scripts\python.exe` in place of
 `build/python-utilities/bin/python` below.
 
@@ -100,18 +100,12 @@ for normalization, timestep limits and the classical physical assumptions.
 The old `ivcurve.py` prototype is also retired. Use the tested
 [model-IV and circuit-sweep workflows](sweeps.md).
 
-## Verification
+## Testing the tools
 
 ```bash
 build/python-utilities/bin/python -B test/regression_python_utilities.py \
   --report artifacts/python-utilities/report.json
 ```
 
-The suite requires a working image renderer. It checks all layouts, phase units,
-independent comparison timestamps, file preservation, nonuniform phase counts,
-invalid inputs, three HTML exports and actual exports in every advertised image
-format. The CI utility job installs a fresh environment and preserves the
-dependency, browser and test receipts. Release publication requires this job
-alongside native binary and library qualification. See the
-[qualification study](qualification/2026-11-06-python-utilities.md) for the
-measured scope.
+The tests require a working image renderer and cover plotting layouts, phase
+units, comparison timestamps, file handling, phase counts and export formats.

@@ -53,10 +53,9 @@ input's directory; `-o` paths are relative to the working directory.
 
 ### Parallel (-p):
 
-Retired. JoSIM has no parallel simulation path. `-p` and `-DUSING_OPENMP=ON`
-now fail explicitly; the earlier switch only reported whether an OpenMP runtime
-was linked. Use separate processes for independent circuit sweeps. Do not run
-concurrent simulations in one embedding process; see [the API guidance](API.md).
+JoSIM runs one simulation at a time. The old `-p` option is no longer supported.
+Use separate processes for independent [circuit sweeps](sweeps.md); see the
+[API guide](API.md) when embedding JoSIM.
 
 ### Sanity (-s):
 
@@ -78,8 +77,7 @@ Only displays the version string for **josim-cli** and then exits. This string i
 
 ### Solver (-x):
 
-Retired. KLU is the supported solver. `-x`, `-DSLU=ON` and manual `SLU` macro
-definitions fail explicitly. Earlier builds accepted `SLU=ON` while running KLU.
+JoSIM uses KLU. The old `-x` option and `SLU` build selection are no longer supported.
 
 ## Parse Input {#parse-input}
 

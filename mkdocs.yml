@@ -12,6 +12,7 @@ validation:
 nav:
   - Home: 'index.md'
   - Technical Discussion: 'tech_disc.md'
+  - Numerical Methods: 'numerics.md'
   - Example Usage: 'ex_usage.md'
   - Component Stamps: 'comp_stamps.md'
   - Syntax Guide: 'syntax.md'
@@ -23,8 +24,7 @@ nav:
   - Python Plotting and Specifications: 'python_utilities.md'
   - Runtime and Memory: 'performance.md'
   - Development: 'DEVELOPMENT.md'
-  - Compatibility and Migration: 'compatibility.md'
-  - 3.0.0 Qualification: 'qualification/v3.0.0.md'
+  - Updating to 3.0: 'compatibility.md'
   - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'
   - Development Schedule and Bugs: 'bugs.md'

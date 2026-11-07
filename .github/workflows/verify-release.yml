@@ -73,7 +73,7 @@ jobs:
                 --target "$RELEASE_TARGET" --work-dir build/public-release \
                 --output artifacts/public-release/summary.json --execute-only
             '
-      - name: Show public verification receipt
+      - name: Show download test results
         if: always()
         shell: bash
         run: |
@@ -82,7 +82,7 @@ jobs:
           elif test -f artifacts/public-release/download.md; then
             cat artifacts/public-release/download.md >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Retain public download and execution receipts
+      - name: Upload download test results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -133,21 +133,21 @@ jobs:
           python3 -B tools/verify_release.py --tag "$RELEASE_TAG" --revision "$RELEASE_REVISION" \
             --target "$RELEASE_TARGET" --work-dir build/public-release \
             --output artifacts/public-release/summary.json
-      - name: Show Windows public verification receipt
+      - name: Show Windows download test results
         if: always() && runner.os == 'Windows'
         shell: pwsh
         run: |
           if (Test-Path artifacts/public-release/summary.md) {
             Get-Content artifacts/public-release/summary.md | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           }
-      - name: Show macOS public verification receipt
+      - name: Show macOS download test results
         if: always() && runner.os == 'macOS'
         shell: bash
         run: |
           if test -f artifacts/public-release/summary.md; then
             cat artifacts/public-release/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Retain public download and execution receipts
+      - name: Upload download test results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

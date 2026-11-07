@@ -254,8 +254,7 @@ Notes:
 - `SIN` and `SINE` are aliases. Positive fractional cycle counts specify the
   corresponding fraction of a period. At the stop time output returns to the
   offset, including when a nonzero phase makes that return discontinuous.
-- For `SINE(0 315u 4g 20p 0 0 4)`, the stop is 1020 ps. See the
-  [finite-cycle qualification](qualification/2026-11-06-sine.md).
+- For `SINE(0 315u 4g 20p 0 0 4)`, the stop is 1020 ps.
 
 #### Custom Waveform
 
@@ -619,8 +618,7 @@ Parameter expressions resolve local names first and then global names for every
 operand. Undefined names and dependency cycles fail with a diagnostic. Component
 and source parsers that accept parameter expressions use the same evaluator;
 when an expression contains spaces, define it with `.param` and use its name so
-that component fields remain unambiguous. Hierarchical named overrides are
-tracked separately in the audit-resolution ledger.
+that component fields remain unambiguous.
 
 ### Control Block
 

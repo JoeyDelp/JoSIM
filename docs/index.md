@@ -1,14 +1,8 @@
 # JoSIM - Superconducting Circuit Simulator
 
-User and developer documentation for the current source tree. For published
-binaries, see [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases).
-Fixes and compatibility changes are recorded in the
-[changelog](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md).
-
-The 3.0.0 source line includes the completed branch consolidation and audit
-repairs. Read [compatibility and migration](compatibility.md) before reusing
-older results or C++ applications. JoSIM remains freely available under MIT;
-it is the open-source predecessor of JoSIM-Pro.
+Downloads are available from [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases).
+For source builds, see [Building JoSIM](DEVELOPMENT.md). The
+[changelog](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md) lists the changes in each version.
 
 ## Introduction
 
@@ -34,9 +28,9 @@ The JoSIM repository has the following layout. A quick description shows the pur
     include/
         JoSIM			# JoSIM header files.
     scripts				# Some Python3 scripts to automate testing and plotting
-    tools				# Build, qualification, sweep and documentation owners.
+    tools				# Build, test and circuit-sweep helpers.
     build/				# Generated builds and documentation (ignored).
-    artifacts/			# Local qualification results (ignored).
+    artifacts/			# Generated test results (ignored).
     src/
         ...				# JoSIM source files.
     test				# Folder containing various examples.
@@ -64,9 +58,9 @@ On multi-configuration Windows builds the executable is under
 
 To compile and test from source, follow [Developing JoSIM](DEVELOPMENT.md).
 The [release procedure](RELEASE_POLICY.md) describes binary targets, runtime
-baselines and package verification.
+requirements and packaging.
 
-Current source additions have separate guides:
+Further guides:
 
 - [Gate-controlled junctions](gate_junctions.md)
 - [Noise sources](noise_sources.md)

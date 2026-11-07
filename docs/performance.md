@@ -1,10 +1,10 @@
-# Runtime and result memory
+# Runtime and memory
 
-JoSIM retains every internal sample of each requested primitive trace before
-formatting or decimating output. A larger print interval reduces the output
-file, but does not reduce those internal histories.
+JoSIM stores every internal sample needed by the requested traces. Increasing
+the print interval makes the output file smaller, but does not reduce those
+internal histories.
 
-For effective timestep `h` and stop time `TSTOP`, the main double-array payload is
+For an internal step `h` and stop time `TSTOP`, the double arrays need roughly
 
 \[
 N=\lfloor TSTOP/h\rfloor,\qquad M=8N(1+U+S)\ \text{bytes},
@@ -12,28 +12,19 @@ N=\lfloor TSTOP/h\rfloor,\qquad M=8N(1+U+S)\ \text{bytes},
 
 where `U` is the number of retained matrix-unknown histories and `S` the number
 of requested applied-current-source histories. The extra history is time.
-These counts need not equal the number of displayed columns: a difference can
-need two operands, while repeated requests can share a primitive. With no
-explicit trace selection, the default retains all matrix unknowns.
+A difference trace may require two histories; repeated requests may share one.
+With no explicit trace selection, JoSIM retains all matrix unknowns.
 
-Matrix/solver/device state, custom waveform data, allocator overhead and
-formatted output add memory beyond this payload. Output conversion can also
-need working arrays. Timestep retries halve `h`, increasing the eventual sample
-count; planning from the requested step alone can underestimate memory.
+For example, 5.1 million samples with one retained unknown need about 81.6 MB
+for that unknown and time. Solver state, waveform data and output conversion
+need additional memory.
 
-For example, `N=5.1 million` with one retained unknown needs about 81.6 MB
-(77.8 MiB) for time and that unknown alone. Choose duration and requested traces
-deliberately. Reducing the timestep requires a numerical convergence decision;
-output decimation cannot substitute for that check.
+Choose the run duration and requested traces with this storage in mind. A
+timestep restart halves the step and increases the sample count. Use `-V 1`
+to see the final internal step and number of samples. A smaller timestep should
+be chosen to resolve the circuit dynamics, not compensated for by output
+sampling alone.
 
-The simulator reserves the known internal sample count for engaged histories.
-Unrequested histories remain absent. This avoids repeated growth/copying and
-reduces measured peak memory, while retaining the existing full-history result
-API. C++ allocation or vector-size failures produce a recoverable diagnostic
-with the requested sample count. They cannot catch an operating-system process
-kill under physical-memory exhaustion; no universal RAM capacity is promised.
-
-The [runtime/storage study](qualification/2026-11-06-runtime-storage.md) records
-the controlled workloads, source identities, wall time, peak resident memory,
-output comparisons and practical limits. Results depend on circuit, retained
-traces, toolchain and host; they are not a general throughput specification.
+JoSIM reserves storage for the known sample count and avoids storing
+unrequested histories. Allocation failures produce an error with the requested
+size. An operating-system out-of-memory termination cannot be caught by JoSIM.

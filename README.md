@@ -19,7 +19,7 @@ available through a command-line executable and a C++ library.
 
 JoSIM implements the RCSJ junction model, parameter expressions and hierarchical
 subcircuits. Results can be written as CSV, DAT or raw SPICE output. Gate-controlled
-junctions and white/colored noise have separate documented model and sampling limits.
+junctions and white/colored noise sources are also supported.
 
 JoSIM takes a *.cir* file as input and produces a *.dat/.csv* file as output.
 
@@ -39,7 +39,7 @@ build/dev/josim-cli -o build/example.csv test/ex_dcsfq_jtl_sink.cir
 Windows uses `build/dev/Release/josim-cli.exe` with a multi-configuration
 generator. See the [build instructions](docs/DEVELOPMENT.md) for dependencies
 and installed-library consumers, and [compatibility guidance](docs/compatibility.md)
-for runtime baselines, changed results and recompiling C++ applications.
+for changes affecting existing circuits and C++ applications.
 
 Referencing:
 
@@ -57,13 +57,19 @@ or via \
 - [Build and test instructions](docs/DEVELOPMENT.md)
 - [Binary targets and release procedure](docs/RELEASE_POLICY.md)
 - [Changelog](CHANGELOG.md)
-- [3.0.0 qualification and audit resolutions](docs/qualification/v3.0.0.md)
 - [Gate-controlled junctions](docs/gate_junctions.md) and [noise sources](docs/noise_sources.md)
 
 ## Changelog
 
 The historical release notes below describe published versions. Current changes
 are maintained in [CHANGELOG.md](CHANGELOG.md).
+
+### v3.0.0
+- Added gate-controlled junctions, power-law and flux noise sources.
+- Added circuit parameter sweeps and model IV timing controls.
+- Fixed subcircuit parameters, phase accumulation, startup and noise calculations.
+- Updated the C++ library, builds, plotting scripts and documentation.
+- See [CHANGELOG.md](CHANGELOG.md) for details.
 
 ### v2.7
 - Added ability to specify seed for RNG through `.option seed=` command.
