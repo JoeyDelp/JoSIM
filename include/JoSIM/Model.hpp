@@ -99,6 +99,8 @@ class Model {
 
     bool                tDep() { return tDep_; }
 
+    bool                tDep() const { return tDep_; }
+
     void                tDep(bool b) { tDep_ = b; }
 
     void                validate() const;

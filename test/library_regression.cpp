@@ -237,11 +237,12 @@ void invalid_transient() {
     must_throw([&] { matrix.create_matrix(run); }, "Invalid transient analysis");
 }
 
-void unsupported_capacitor_ic() {
+void capacitor_ic_requires_dst() {
     auto run = input();
+    run.transSim.startup(true);
     run.netlist.expNetlist = {{{"R1", "N", "0", "10"}, std::nullopt},
                              {{"C1", "N", "0", "1P", "IC=1M"}, std::nullopt}};
-    must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, "Capacitor IC is not supported");
+    must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, "capacitor IC requires .TRAN ... DST");
 }
 
 void invalid_models() {
@@ -444,7 +445,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "progress") { progress_worker_lifetime(); }
             if (selected == "all" || selected == "inductor") { inductor_timestep_stamp(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
-            if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
+            if (selected == "all" || selected == "transient") { capacitor_ic_requires_dst(); }
             if (selected == "all" || selected == "model") { invalid_models(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
             if (selected == "all" || selected == "parameters") { scoped_and_legacy_expansion(); }

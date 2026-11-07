@@ -88,6 +88,8 @@ class JJ : public BasicComponent {
     void   set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& models, const string_o& subc);
 
     bool   update_value(const double& v);
+    double supercurrent(double phase, double scale = 1.0) const;
+    double conductance() const;
 
     void   step_back() override {
         pn2_ = pn4_;

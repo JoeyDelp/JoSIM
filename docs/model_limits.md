@@ -26,15 +26,48 @@ An invalid model or non-finite solved state stops the simulation with an error.
 
 ## Capacitor voltage (#109) {#capacitor-voltage}
 
-JoSIM does not implement capacitor `IC=` or general SPICE initial-condition
-semantics. Capacitor `IC=` is rejected explicitly; earlier builds silently
-ignored it. `DST` disables negative-time startup and begins with zero stored
-histories. Default startup advances the circuit from that zero state for a
-finite settling interval; it does not calculate a DC operating point or set
-an arbitrary capacitor voltage.
+Set `IC=` on a capacitor to specify its voltage at physical time zero, in volts.
+The sign is `V(positive terminal)-V(negative terminal)`. Use `DST` on `.TRAN`
+to disable automatic settling, which would otherwise change the requested state:
 
-To prepare a nonzero capacitor voltage, include the charging circuit and a
-long enough charging interval before the event of interest. For example:
+```text
+R1 N 0 10
+C1 N 0 1p IC=1m
+.tran 0.1p 100p DST
+.print V(C1) I(C1) I(R1)
+.end
+```
+
+The first sample has V(C1)=1 mV and I(C1)=-100 uA. With tau=RC=10 ps,
+the ideal discharge is `V(t)=1m*exp(-t/10p)`. The
+[complete example](https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_initial_voltage.cir)
+is included in the source tree.
+
+`IC=` accepts finite signed values and scoped parameter expressions, including
+subcircuit instance parameters. Capacitance must be finite and positive. The
+initializer solves the coupled node voltages, branch currents and voltage
+derivatives, then constructs consistent integration histories in both analysis
+modes. A timestep restart reapplies the same initial conditions. A later print
+start omits samples from the output, without moving the physical initial time.
+
+Unspecified independent capacitor voltages start at zero. Constraints already
+imposed by other capacitors or ideal voltage sources take precedence, so parallel
+capacitors share their voltage and derivative. Conflicting capacitor loops or
+source voltages are errors. Inductor currents and junction phases start at zero;
+transmission lines start without incoming waves. The circuit still needs enough
+connections to determine its node voltages; IC does not supply a ground reference.
+
+This initial-voltage path currently rejects circuits containing phase sources
+or controlled sources. It does not provide a DC operating-point solve or general
+SPICE `.IC`/`UIC` semantics. `UIC` retains its existing behavior; `DST` is required.
+The request is tracked in [#109](https://github.com/JoeyDelp/JoSIM/issues/109).
+
+Without explicit capacitor IC, startup keeps its existing zero-history behavior.
+Default startup advances that state for a finite negative-time settling interval;
+`DST` disables the interval.
+
+If other circuit states need physical preparation, include the charging circuit
+and a long enough interval before the event of interest. For example:
 
 ```text
 V1 IN 0 PWL(0 1m 200p 1m 202p 0 300p 0)
@@ -53,8 +86,7 @@ other circuit states. A later print-start value can omit preparation from the
 output while retaining it in the simulation.
 
 A [complete charging example](https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_precharge.cir)
-is included in the source tree. Direct initial-voltage support is requested in
-[#109](https://github.com/JoeyDelp/JoSIM/issues/109).
+is included in the source tree.
 
 ## Stewart–McCumber parameter (#93) {#beta-c}
 

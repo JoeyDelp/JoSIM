@@ -180,6 +180,10 @@ if(BUILD_TESTING)
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_numerics.py
                    $<TARGET_FILE:josim-cli>)
   set_tests_properties(regression::numerics PROPERTIES TIMEOUT 90)
+  add_test(NAME regression::capacitor_ic
+           COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/regression_capacitor_ic.py
+                   $<TARGET_FILE:josim-cli>)
+  set_tests_properties(regression::capacitor_ic PROPERTIES TIMEOUT 45)
   add_test(NAME regression::buffer
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/regression_buffer.py
                    $<TARGET_FILE:josim-cli>)

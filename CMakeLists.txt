@@ -76,6 +76,7 @@ add_library(
   src/Errors.cpp
   src/Function.cpp
   src/Inductor.cpp
+  src/InitialState.cpp
   src/Input.cpp
   src/JJ.cpp
   src/Matrix.cpp

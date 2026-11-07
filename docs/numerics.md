@@ -26,8 +26,12 @@ noise bandwidth and output sampling need their own checks.
 
 Default startup advances the circuit through a finite negative-time interval
 from zero stored histories. It does not calculate a DC operating point.
-`DST` disables this interval. For a nonzero capacitor voltage, include the
-[charging circuit](model_limits.md#capacitor-voltage) before the event of interest.
+`DST` disables this interval. With explicit capacitor `IC=`, a coupled initial
+solve supplies the voltages, currents and voltage derivatives at t=0. These
+give linear voltage and quadratic phase histories for starting BDF2; the actual
+initial state is output before the first advance to h. Each timestep restart
+reconstructs that state. See the [initial-state guide](model_limits.md#capacitor-voltage)
+for supported circuits and the alternative of a physical charging interval.
 
 ## Junction phase {#junction-phase}
 

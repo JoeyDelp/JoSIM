@@ -37,6 +37,12 @@ constructed models receive the same parameter checks as parsed models. If you
 modify the public sparse arrays, keep their dimensions and indices consistent;
 normal applications should use `Matrix::create_matrix`.
 
+Capacitor `IC=` also applies to library simulations. Disable settling with
+`input.transSim.startup(false)` before creating the matrix; parsed `.TRAN ... DST`
+does this automatically. The [initial-state guide](model_limits.md#capacitor-voltage)
+describes the supported circuits. The capacitor component layout has changed;
+rebuild applications with the updated matching headers and library.
+
 ## Handling errors
 
 Catch `std::exception` around the complete operation. Parsing, model, solver

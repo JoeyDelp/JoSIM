@@ -70,13 +70,15 @@ semantics and the limits of constant-L approximations.
 
 ### Capacitor
 
-**C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
+**C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**&emsp;[**IC=**$V_0$]
 
 The value of a capacitor is in Farad.
 
-Capacitor `IC=` is unsupported and produces an error. Prepare a nonzero voltage
-with an explicit charging interval before measurement. See the
-[tested precharge example](model_limits.md#capacitor-voltage).
+`IC=` specifies the signed terminal voltage at t=0, in volts. It accepts
+parameter expressions and requires `.TRAN ... DST` and positive capacitance.
+The initial-voltage path supports RLC/junction circuits and unenergized lines;
+phase sources and controlled sources are currently rejected. See the
+[initial-state guide](model_limits.md#capacitor-voltage) for constraints and examples.
 
 ### Josephson Junction (JJ)
 

@@ -170,6 +170,7 @@ void Simulation::trans_sim(Matrix& mObj) {
     }
     // Initialize the b matrix
     b_.resize(mObj.rp.size(), 0.0);
+    capacitorIC_ = initialize_capacitors(mObj);
     if (startup_) {
         // Stabilize the simulation before starting at t=0
         const double proposed = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
@@ -199,7 +200,7 @@ void Simulation::trans_sim(Matrix& mObj) {
         }
     }
     // Start the simulation loop
-    for (int64_t i = 0; i < simSize_; ++i) {
+    for (int64_t i = capacitorIC_ ? 1 : 0; i < simSize_; ++i) {
         double step = i * stepSize_;
         // If not minimal printing report progress
         if (!minOut_) { bar.update(static_cast<float>(i)); }
@@ -349,6 +350,12 @@ void Simulation::handle_inductors(Matrix& mObj, double factor) {
                         += (-((2 * m.second) / (stepSize_ * factor)) * x_.at(mi.indexInfo.currentIndex_.value())
                             + (m.second / (2.0 * (stepSize_ * factor))) * mi.In2_);
             }
+        }
+    }
+    if (atyp_ == AnalysisType::Voltage) {
+        // Every coupled branch must read the same preceding current histories.
+        for (const auto& j : mObj.components.inductorIndices) {
+            auto& temp = std::get<Inductor>(mObj.components.devices.at(j));
             temp.In4_ = temp.In3_;
             temp.In3_ = temp.In2_;
             temp.In2_ = x_.at(temp.indexInfo.currentIndex_.value());
@@ -471,77 +478,13 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
         double dIc = 0.0;
         if (temp.icNoise) { dIc = temp.icNoise.value().value(step); }
         if (dIc < -0.99) { dIc = -0.99; }
-        const double Ic_eff = gateFactor * temp.model_.ic() * (1.0 + dIc);
-        const auto& harmonics = model.cpr_view();
 
         // ---- RHS2 (junction current equation row) ----
-        if (!temp.model_.tDep()) {
-            // sum_h CPR_h * sin((h+1)*(phi0 - phiOff))
-            double s = 0.0;
-            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
-                s += harmonics.at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
-            }
-
-            // Josephson current with fractional critical-current noise
-            const double Ij = Ic_eff * s;
-
-            // -(hR / (h + 2RC)) * ( Ij - 2C/h Vn-1 + C/2h Vn-2 + It )
-            b_.at(temp.indexInfo.currentIndex_.value())
-                    = (temp.matrixInfo.nonZeros_.back())
-                      * (Ij - (((2.0 * model.c()) / (stepSize_)) * temp.vn1_)
-                         + ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + temp.it_);
-        } else {
-            double sin2_half_phi = 0.0;
-            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
-                sin2_half_phi += harmonics.at(harm)
-                                 * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()) / 2.0);
-            }
-            sin2_half_phi  = sin2_half_phi * sin2_half_phi;
-
-            double sin_phi = 0.0;
-            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
-                sin_phi += harmonics.at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
-            }
-
-            const double term = model.d() * sin2_half_phi;
-            double radicand = 1.0 - term;
-            if (harmonics.size() == 1) {
-                const double beta = model.d() * harmonics.front() * harmonics.front();
-                if (std::isfinite(beta)) {
-                    const double cosine = std::cos((temp.phi0_ - model.phiOff()) / 2.0);
-                    // Equivalent form without loss of 1-sin^2 near the zero-T cusp.
-                    radicand = (1.0 - beta) + beta * cosine * cosine;
-                }
-            }
-            if (!std::isfinite(term)
-                || radicand < -8 * std::numeric_limits<double>::epsilon() * std::max(1.0, std::abs(term))) {
-                Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
-                    temp.netlistInfo.label_ + ": D and CPR give a negative square-root argument at this phase");
-            }
-            const double sqrt_part = std::sqrt(std::max(0.0, radicand));
-            double ratio;
-            if (model.t() == 0) {
-                if (sqrt_part <= 8 * std::numeric_limits<double>::epsilon()) {
-                    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
-                        temp.netlistInfo.label_ + ": zero-temperature CPR is singular at this phase");
-                }
-                ratio = 1.0 / sqrt_part;
-            } else {
-                const double alpha = temp.del_ / (2.0 * Constants::BOLTZMANN * model.t());
-                // tanh(alpha*q)/q -> alpha as q -> 0. Avoid 0*infinity at D=1.
-                ratio = sqrt_part == 0 ? alpha : std::tanh(alpha * sqrt_part) / sqrt_part;
-            }
-            const double pref = ((Constants::PI * temp.del_) / (2.0 * Constants::EV * temp.model_.rn())) * ratio;
-
-            const double scale = gateFactor * (1.0 + dIc);
-
-            const double Ij    = scale * (pref * sin_phi);
-
-            b_.at(temp.indexInfo.currentIndex_.value())
-                    = (temp.matrixInfo.nonZeros_.back())
-                      * (Ij - (((2.0 * model.c()) / stepSize_) * temp.vn1_)
-                         + ((model.c() / (2.0 * stepSize_)) * temp.vn2_) + temp.it_);
-        }
+        b_.at(temp.indexInfo.currentIndex_.value())
+                = temp.matrixInfo.nonZeros_.back()
+                  * (temp.supercurrent(temp.phi0_, gateFactor * (1.0 + dIc))
+                     - ((2.0 * model.c()) / stepSize_) * temp.vn1_
+                     + (model.c() / (2.0 * stepSize_)) * temp.vn2_ + temp.it_);
 
         // ---- Final history update (as in your original code) ----
         temp.vn2_ = temp.vn1_;
@@ -829,6 +772,21 @@ void Simulation::handle_tx(Matrix& mObj, const int64_t& i, double& step, double 
                     b_.at(curInd2) = (Z / Constants::SIGMA) * ((2.0 * stepSize_ * factor) / 3.0) * I1nk
                                      + (4.0 / 3.0) * temp.n1_2_ - (1.0 / 3.0) * temp.n2_2_ + temp.nk_1_
                                      - (4.0 / 3.0) * temp.nk1_1_ + (1.0 / 3.0) * temp.nk2_1_;
+                }
+                if (capacitorIC_ && i <= k + 1) {
+                    const auto before = [&](int_o positive, int_o negative, size_t sample) {
+                        return (positive ? results.phaseBefore.at(*positive).at(sample) : 0.0)
+                             - (negative ? results.phaseBefore.at(*negative).at(sample) : 0.0);
+                    };
+                    // Recover the launch voltage at t=0 from its consistent
+                    // phase history, while retaining zero incoming waves for t<TD.
+                    const auto correction = [&](int_o positive, int_o negative) {
+                        return i == k ? -(4.0 / 3.0) * before(positive, negative, 0)
+                                          + (1.0 / 3.0) * before(positive, negative, 1)
+                                      : (1.0 / 3.0) * before(positive, negative, 0);
+                    };
+                    b_.at(curInd) += correction(posInd2, negInd2);
+                    b_.at(curInd2) += correction(posInd, negInd);
                 }
             } else {
                 // I1 = (4/3)φ1n-1 - (1/3)φ1n-2

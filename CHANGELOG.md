@@ -5,6 +5,14 @@
 - Added `BETA_C` model input for `RTYPE=0` junctions. It calculates RN from the
   nominal Stewart–McCumber parameter, Ic and C. See the
   [damping guide](docs/model_limits.md#beta-c) for requirements and examples.
+- Added capacitor `IC=` for `.TRAN ... DST`, with consistent initial voltages,
+  currents and histories in both analysis modes and after timestep restarts.
+  Phase sources and controlled sources are not yet supported in these IC runs.
+  See the [initial-state guide](docs/model_limits.md#capacitor-voltage).
+- Corrected voltage-mode mutual-inductor history ordering so coupled branches
+  use the same preceding current samples.
+- Capacitor initialization changes public C++ component layouts. Rebuild
+  applications with matching updated headers and libraries.
 
 ## 3.0.0
 

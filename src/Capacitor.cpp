@@ -40,15 +40,23 @@ Capacitor::Capacitor(const std::pair<tokens_t, string_o>& s,
                      Spread&                              spread,
                      int64_t&                             bi) {
     double spr = 1.0;
-    for (size_t i = 4; i < s.first.size(); ++i) {
-        if (s.first[i] == "IC" || s.first[i].rfind("IC=", 0) == 0) {
-            Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
-                Misc::vector_to_string(s.first) + "\nCapacitor IC is not supported; add a charging interval before measurement.");
+    const auto attributes = parameter_assignments(s.first, 4);
+    for (const auto& attribute : attributes) {
+        if (attribute.first == "IC") {
+            const double voltage = parse_param(attribute.second, iObj.parameters, s.second);
+            if (!std::isfinite(voltage)) {
+                Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                    s.first.front() + ": capacitor IC must be finite");
+            }
+            initialVoltage_ = voltage;
+        } else if (attribute.first == "SPREAD") {
+            spr = parse_param(attribute.second, iObj.parameters, s.second);
         }
     }
-    for (auto i : s.first) {
-        if (i.find("SPREAD=") != std::string::npos) {
-            spr = parse_param(i.substr(i.find("SPREAD=") + 7), iObj.parameters, s.second);
+    if (initialVoltage_) {
+        if (iObj.transSim.startup()) {
+            Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                s.first.front() + ": capacitor IC requires .TRAN ... DST");
         }
     }
     at_ = iObj.argAnal;
@@ -62,6 +70,10 @@ Capacitor::Capacitor(const std::pair<tokens_t, string_o>& s,
     lm.emplace(s.first.at(0));
     // Set the value (Capacitance), this should be the 4th token
     netlistInfo.value_ = spread.spread_value(parse_param(s.first.at(3), iObj.parameters, s.second), Spread::CAP, spr);
+    if (initialVoltage_ && (!std::isfinite(netlistInfo.value_) || netlistInfo.value_ <= 0)) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+            s.first.front() + ": capacitor IC requires finite positive capacitance");
+    }
     // Set the node configuration type
     indexInfo.nodeConfig_   = ncon;
     // Set current index and increment it

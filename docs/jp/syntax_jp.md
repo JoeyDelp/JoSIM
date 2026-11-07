@@ -61,8 +61,8 @@ JoSIM の値は工学表記（Engineering Notation）またはサフィックス
 
 **C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
-コンデンサ値の単位はファラド（Farad）です。`IC=` は未対応でエラーになります。
-非零初期電圧には [明示的な充電区間](../model_limits.md#capacitor-voltage) を使用してください。
+コンデンサ値の単位はファラド（Farad）です。`IC=` で時刻 t=0 の端子間電圧をボルト単位で指定できます。
+`.TRAN ... DST` が必要です。対応する回路と制約は [初期状態の説明](../model_limits.md#capacitor-voltage) を参照してください。
 
 ### ジョセフソン接合（JJ） {#josephson-junction-jj}
 
