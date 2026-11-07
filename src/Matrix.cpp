@@ -34,6 +34,8 @@ void Matrix::create_matrix(Input& iObj) {
 }
 
 void Matrix::setup(Input& iObj) {
+    // Direct embedding callers use the same checked time grid as CLI callers.
+    (void)iObj.transSim.simsize();
     needsTR_ = false;
     spread.get_spreads(iObj);
     Noise::determine_global_temperature(iObj);
@@ -56,12 +58,12 @@ void Matrix::setup(Input& iObj) {
                                                  Misc::vector_to_string(i.first));
             }
             // Create a node map that maps the node names to numbers
-            if (i.first.at(1).find("GND") == std::string::npos && i.first.at(1) != "0") {
+            if (i.first.at(1) != "GND" && i.first.at(1) != "0") {
                 // Add the first node to the map if not ground
                 if (nm.count(i.first.at(1)) == 0) { nm[i.first.at(1)] = nodeCounter++; }
                 nodeConfig.at(cc) = NodeConfig::POSGND;
             }
-            if (i.first.at(2).find("GND") == std::string::npos && i.first.at(2) != "0") {
+            if (i.first.at(2) != "GND" && i.first.at(2) != "0") {
                 // Add the second node to the map if not ground
                 if (nm.count(i.first.at(2)) == 0) { nm[i.first.at(2)] = nodeCounter++; }
                 if (nodeConfig.at(cc) == NodeConfig::POSGND) {
@@ -78,12 +80,12 @@ void Matrix::setup(Input& iObj) {
                     Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
                                                      Misc::vector_to_string(i.first));
                 }
-                if (i.first.at(3).find("GND") == std::string::npos && i.first.at(3) != "0") {
+                if (i.first.at(3) != "GND" && i.first.at(3) != "0") {
                     // Add the third node to the map if not ground
                     if (nm.count(i.first.at(3)) == 0) { nm[i.first.at(3)] = nodeCounter++; }
                     nodeConfig2.at(cc) = NodeConfig::POSGND;
                 }
-                if (i.first.at(4).find("GND") == std::string::npos && i.first.at(4) != "0") {
+                if (i.first.at(4) != "GND" && i.first.at(4) != "0") {
                     // Add the fourth node to the map if not ground
                     if (nm.count(i.first.at(4)) == 0) { nm[i.first.at(4)] = nodeCounter++; }
                     if (nodeConfig2.at(cc) == NodeConfig::POSGND) {
@@ -106,12 +108,12 @@ void Matrix::create_components(Input& iObj) {
     int64_t     cc = 0;
     ProgressBar bar;
     if (!iObj.argMin) {
-        bar.create_thread();
         bar.set_bar_width(30);
         bar.fill_bar_progress_with("O");
         bar.fill_bar_remainder_with(" ");
         bar.set_status_text("Creating Matrix");
         bar.set_total((float) iObj.netlist.expNetlist.size());
+        bar.create_thread();
     }
     // Loop through all the components in the netlist
     for (auto it = iObj.netlist.expNetlist.begin(); it != iObj.netlist.expNetlist.end(); it++) {

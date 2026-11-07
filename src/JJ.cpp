@@ -9,6 +9,7 @@
 #include "JoSIM/Noise.hpp"
 
 #include <cmath>
+#include <limits>
 
 using namespace JoSIM;
 
@@ -131,13 +132,11 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
     size_t firstAttribute = 3;
     // The experimental branch also accepted B+ B- gate model ordering.
     if (s.first.size() > 4 && s.first.at(3).find('=') == std::string::npos) {
-        for (const auto& model : iObj.netlist.models_new) {
-            if (model.first.modelName() == s.first.at(4) && model.first.gateWidthSpecified()) {
-                // WRspice decks may contain an unused phase-node field here.
-                if (nm.count(s.first.at(3)) != 0) { set_gate(s.first.at(3)); }
-                firstAttribute = 4;
-                break;
-            }
+        const auto* model = Model::find_model(s.first.at(4), iObj.netlist.models_new, s.second);
+        if (model && model->gateWidthSpecified()) {
+            // WRspice decks may contain an unused phase-node field here.
+            if (nm.count(s.first.at(3)) != 0) { set_gate(s.first.at(3)); }
+            firstAttribute = 4;
         }
     }
     for (size_t i = firstAttribute; i < s.first.size(); ++i) {
@@ -171,7 +170,7 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
         }
     }
     if (!temp_ && iObj.globalTemp) { temp_ = iObj.globalTemp; }
-    if (!neb_ && iObj.neB) { neb_ = iObj.neB; }
+    if (!neb_) { neb_ = iObj.neB; }
     // Set component timestep
     h_     = iObj.transSim.tstep();
     at_    = iObj.argAnal;
@@ -189,11 +188,10 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
     set_model(t, iObj.netlist.models_new, s.second);
     // Set the phase constant
     if (at_ == AnalysisType::Voltage) {
-        // If voltage mode set this to (3 * hbar) / (4 * h * eV)
-        phaseConst_ = (3 * Constants::HBAR) / (4 * h_ * Constants::EV);
+        // Use the same Josephson scale as the phase-history RHS.
+        phaseConst_ = (3 * Constants::SIGMA) / (2 * h_);
     } else if (at_ == AnalysisType::Phase) {
-        // If phase mode set this to (4 * h * eV) / (3 * hbar)
-        phaseConst_ = (4 * h_ * Constants::EV) / (3 * Constants::HBAR);
+        phaseConst_ = (2 * h_) / (3 * Constants::SIGMA);
     }
     // Set the node configuration type
     indexInfo.nodeConfig_   = ncon;
@@ -209,7 +207,7 @@ JJ::JJ(const std::pair<tokens_t, string_o>& s,
         spAmp_ = Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
         Function tnoise;
         tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) + ", 0.0, "
-                                      + Misc::precise_to_string(1.0 / (2 * neb_.value())) + ")",
+                                      + Misc::precise_to_string(Noise::determine_sampling_interval(neb_.value(), iObj.transSim.tstep())) + ")",
                               iObj,
                               s.second);
         thermalNoise = tnoise;
@@ -277,33 +275,22 @@ void JJ::set_matrix_info() {
 }
 
 void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& models, const string_o& subc) {
-    bool found = false;
-    // Loop through all models
-    for (auto& i : models) {
-        // If the model name matches that of an identified model
-        if (i.first.modelName() == t.back()) {
-            // If both models belong to a subcircuit and the subcircuit names match
-            if ((i.second && subc) && (subc.value() == i.second.value())) {
-                // Set the model to the exact identified model
-                model_ = i.first;
-                found  = true;
-                break;
-                // JJ might be in a subcircuit but model in global scope6
-            } else if (!i.second) {
-                // Set the model to the globally identified model
-                model_ = i.first;
-                found  = true;
-                break;
-            }
-        }
-    }
-    // If no model was found
-    if (!found) {
-        // Complain about it
+    const auto* model = t.empty() ? nullptr : Model::find_model(t.back(), models, subc);
+    if (!model) {
         Errors::invalid_component_errors(ComponentErrors::MODEL_NOT_DEFINED, Misc::vector_to_string(t));
+    }
+    model_ = *model;
+    model_.validate();
+    if (!std::isfinite(area_) || area_ <= 0 || (Ic_ && model_.ic() == 0)) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+            netlistInfo.label_ + ": AREA must be finite and positive; IC override requires a nonzero model IC");
     }
     // Change the area if ic was defined
     if (Ic_) { area_ = Ic_.value() / model_.ic(); }
+    if (!std::isfinite(area_) || area_ <= 0) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION,
+                                        netlistInfo.label_ + ": effective AREA must be finite and positive");
+    }
     // Set the model critical current for this JJ instance
     model_.ic(model_.ic() * area_);
     if (model_.tDep()) {
@@ -312,8 +299,8 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
         // Set the del parameter
         del_  = del0_ * sqrt(cos((Constants::PI / 2) * (model_.t() / model_.tc()) * (model_.t() / model_.tc())));
         // Set the temperature dependent normal resistance
-        model_.rn(((Constants::PI * del_) / (2 * Constants::EV * model_.ic()))
-                  * tanh(del_ / (2 * Constants::BOLTZMANN * model_.t())));
+        const double thermal = model_.t() == 0 ? 1.0 : tanh(del_ / (2 * Constants::BOLTZMANN * model_.t()));
+        model_.rn(((Constants::PI * del_) / (2 * Constants::EV * model_.ic())) * thermal);
     } else {
         // Set the model normal resistance for this JJ instance
         model_.rn(model_.rn() / area_);
@@ -322,6 +309,7 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
     model_.c(model_.c() * area_);
     // Set the model subgap resistance for this JJ instance
     model_.r0(model_.r0() / area_);
+    model_.validate();
     // Set the lower boundary for the transition region
     lowerB_ = model_.vg() - 0.5 * model_.deltaV();
     // Set the upper boundary for the transition region
@@ -335,13 +323,16 @@ void JJ::set_model(const tokens_t& t, const vector_pair_t<Model, string_o>& mode
 bool JJ::update_value(const double& v) {
     // Shorthand for the model
     const Model& m = model_;
+    const auto update_noise = [&](double resistance) {
+        if (temp_) {
+            spAmp_ = Noise::determine_spectral_amplitude(resistance, *temp_);
+            thermalNoise.value().ampValuesRef().at(0) = *spAmp_;
+        }
+    };
     // If the absolute value of the voltage is less than lower bounds
     if (fabs(v) < lowerB_) {
         // Set temperature resistance
-        if (this->temp_) {
-            thermalNoise.value().ampValuesRef().at(0)
-                    = Noise::determine_spectral_amplitude(this->model_.r0(), temp_.value());
-        }
+        update_noise(model_.r0());
         // Set the transition current to 0
         it_ = 0.0;
         // If the non zero vector does not end with the subgap conductance
@@ -358,6 +349,8 @@ bool JJ::update_value(const double& v) {
         }
         // If the absolute value of the voltage is less than the upperbounds
     } else if (fabs(v) < upperB_) {
+        // Classical local-equilibrium approximation for the active slope.
+        update_noise(gLarge_ == 0 ? std::numeric_limits<double>::infinity() : 1.0 / gLarge_);
         // Set the transition current
         it_ = lowerB_ * ((1 / m.r0()) - gLarge_);
         // If the voltage is negative, current must be negative
@@ -377,10 +370,7 @@ bool JJ::update_value(const double& v) {
         // If neither of the above then it must be in normal operating region
     } else {
         // Set temperature resistance
-        if (this->temp_) {
-            thermalNoise.value().ampValuesRef().at(0)
-                    = Noise::determine_spectral_amplitude(this->model_.rn(), temp_.value());
-        }
+        update_noise(model_.rn());
         // Reset the transition current, transition has passed.
         it_ = 0.0;
         // If the back of the non zero vector is not the normal conductance

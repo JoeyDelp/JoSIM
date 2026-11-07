@@ -7,10 +7,8 @@
 #include "JoSIM/Components.hpp"
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
-#include "JoSIM/ProgressBar.hpp"
 
-#include <cstring> // for strcmp
-#include <thread>
+#include <algorithm>
 
 using namespace JoSIM;
 
@@ -20,90 +18,45 @@ void Netlist::id_io_subc_label(const tokens_t&                                  
                                std::string&                                       subcktName,
                                std::string&                                       label,
                                const std::unordered_map<std::string, Subcircuit>& subcircuits) {
-    // Id the label
-    label      = lineTokens.front();
-    // Found flag
-    bool found = false;
-    // Check the convention
-    // At this point in the program all subcircuits should have been identified
-    // Thus we can determine the convention from code
-    for (auto i = 1; i < lineTokens.size(); ++i) {
-        if (subcircuits.count(lineTokens.at(i)) != 0) {
-            found      = true;
-            subcktName = lineTokens.at(i);
-        } else if (lineTokens.at(i).find('=') != std::string::npos) {
-            std::string param, value;
-            param         = lineTokens.at(i).substr(0, lineTokens.at(i).find('='));
-            value         = lineTokens.at(i).substr(lineTokens.at(i).find('=') + 1);
-            params[param] = value;
-        } else {
-            io.emplace_back(lineTokens.at(i));
-        }
+    label = lineTokens.front();
+    const auto firstParameter = parameter_start(lineTokens, 1);
+    for (const auto& assignment : parameter_assignments(lineTokens, firstParameter)) {
+        params.emplace(assignment);
     }
-    if (!found) { Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, Misc::vector_to_string(lineTokens)); }
+    // Both documented instance conventions put the type at one end of the IO.
+    size_t type = firstParameter;
+    if (firstParameter > 1 && subcircuits.count(lineTokens[1])) { type = 1; }
+    else if (firstParameter > 1 && subcircuits.count(lineTokens[firstParameter - 1])) { type = firstParameter - 1; }
+    if (type == firstParameter) { Errors::input_errors(InputErrors::UNKNOWN_SUBCKT, Misc::vector_to_string(lineTokens)); }
+    subcktName = lineTokens[type];
+    for (size_t i = 1; i < firstParameter; ++i) {
+        if (i != type) { io.push_back(lineTokens[i]); }
+    }
 }
 
-bool Netlist::rename_io_nodes(std::string& node, const tokens_t& subIO, const tokens_t& parentIO) {
-    // If the subcircuit IO contains the first node
-    if (std::count(subIO.begin(), subIO.end(), node) != 0) {
-        // Loop through the subcircuit IO
-        for (auto l = 0; l < subIO.size(); ++l) {
-            // If the nodes match
-            if (::strcmp(node.c_str(), subIO.at(l).c_str()) == 0) {
-                // Replace the node with the IO node
-                node = parentIO.at(l);
-                // Return true
-                return true;
-            }
-        }
-    }
-    // Return false
-    return false;
+static std::string bind_node(const std::string& node, const tokens_t& formal, const tokens_t& actual,
+                             const std::string& label) {
+    const auto pin = std::find(formal.begin(), formal.end(), node);
+    if (pin != formal.end()) { return actual.at(static_cast<size_t>(pin - formal.begin())); }
+    if (label.empty() || node == "0" || node == "GND") { return node; }
+    return node + "|" + label;
 }
 
-void Netlist::expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, const std::string& label) {
-    // Sanity check
-    if (io.size() != subc.io.size()) { Errors::input_errors(InputErrors::IO_MISMATCH, label); }
-    // Loop through the identified subcircuit
-    for (auto k = 0; k < subc.lines.size(); ++k) {
-        // Set shorthand for long variable name
-        tokens_t& tokens = subc.lines.at(k).first;
-        // Check for value parameterization
-        if (params.count(tokens.front()) != 0) { insert_parameter(tokens, params); }
-        // Append the label of the parent to the subcircuit label
-        tokens.at(0)      = tokens.at(0) + "|" + label;
-        // Determine amount of nodes to process
-        int64_t nodeCount = 2;
-        // If device type identifier is any of "EFGHT" check the next two nodes
-        if (std::string("EFGHT").find(tokens.at(0).at(0)) != std::string::npos) { nodeCount = 4; }
-        if (tokens.front().front() == 'B' && tokens.size() > 4) {
-            for (const auto& model : models_new) {
-                if (model.first.modelName() == tokens.at(4) && model.first.gateWidthSpecified()) {
-                    nodeCount = 3;
-                    break;
-                }
-            }
-        }
-        for (auto& token : tokens) {
-            if (token.rfind("GC=", 0) == 0) {
-                std::string node = token.substr(3);
-                if (node != "0" && node != "GND" && !rename_io_nodes(node, subc.io, io)) {
-                    node += "|" + label;
-                }
-                token = "GC=" + node;
-            }
-        }
-        // Loop through all the nodes changing where necessary
-        for (int64_t n = 1; n < nodeCount + 1; ++n) {
-            // Ensure nodes don't identify as ground
-            if (tokens.at(n) != "0" && tokens.at(n) != "GND") {
-                // Ensure the node is not part of the IO
-                if (!rename_io_nodes(tokens.at(n), subc.io, io)) {
-                    // Append the label to the node number to make it unique
-                    tokens.at(n) = tokens.at(n) + "|" + label;
-                }
-            }
-        }
+void Netlist::expand_line(tokens_t& tokens, const tokens_t& formal, const tokens_t& actual,
+                          const std::string& label, const string_o& scope) {
+    const auto map_node = [&](const std::string& node) { return bind_node(node, formal, actual, label); };
+    if (!label.empty()) { tokens.front() += "|" + label; }
+    size_t nodeCount = std::string("EFGHT").find(tokens.front().front()) != std::string::npos ? 4 : 2;
+    if (tokens.front().front() == 'B' && tokens.size() > 4) {
+        const auto* model = Model::find_model(tokens[4], models_new, scope);
+        if (model && model->gateWidthSpecified()) { nodeCount = 3; }
+    }
+    if (tokens.size() <= nodeCount) {
+        Errors::invalid_component_errors(ComponentErrors::INVALID_COMPONENT_DECLARATION, Misc::vector_to_string(tokens));
+    }
+    for (size_t n = 1; n <= nodeCount; ++n) { tokens[n] = map_node(tokens[n]); }
+    for (auto& token : tokens) {
+        if (token.rfind("GC=", 0) == 0) { token = "GC=" + map_node(token.substr(3)); }
     }
 }
 
@@ -132,143 +85,175 @@ void Netlist::insert_parameter(tokens_t& t, s_map& params) {
 }
 
 void Netlist::expand_subcircuits() {
-    // std::vector<std::pair<tokens_t, string_o>> moddedLines;
-    std::string subcktName, label;
-    // Loop through subcircuits, line by line
-    for (const auto& i : subcircuits) {
-        for (const auto& j : i.second.lines) {
-            // If a line is found that starts with an 'X'
-            if (j.first.front().at(0) == 'X') {
-                // This subcircuit contains a subcircuit
-                subcircuits.at(i.first).containsSubckt = true;
-                // Increase the expansion counter
-                subcircuits.at(i.first).subcktCounter++;
-                // Increase the nest depth
-                nestedSubcktCount++;
-            }
+    // Check every definition, including unused ones, without destroying the
+    // templates needed to bind each instance's parameters before its children.
+    std::unordered_map<std::string, std::unordered_set<std::string>> dependencies;
+    subcktNodeCounts.clear();
+    for (const auto& entry : subcircuits) {
+        auto& required = dependencies[entry.first];
+        if (sanityCheck && sanityCheckSubckts.count(entry.first)) {
+            for (const auto& pin : entry.second.io) { increment_subcircuit_node_count(entry.first, pin); }
         }
-    }
-    ProgressBar bar;
-    if (!argMin) {
-        bar.create_thread();
-        bar.set_bar_width(30);
-        bar.fill_bar_progress_with("O");
-        bar.fill_bar_remainder_with(" ");
-        bar.set_status_text("Expanding Subcircuits");
-        bar.set_total((float) nestedSubcktCount);
-    }
-    // If not minimal printing
-    int64_t cc = 0;
-    // While we are nested (depth not zero)
-    while (nestedSubcktCount != 0) {
-        const auto previousCount = nestedSubcktCount;
-        // If not minimal printing
-        if (!argMin) {
-            // Report progress
-            bar.update((float) cc);
-        }
-        // Loop through subcircuits
-        for (const auto& i : subcircuits) {
-            if (sanityCheck && sanityCheckSubckts.count(i.first) != 0) {
-                for (auto node : i.second.io) { increment_subcircuit_node_count(i.first, node); }
-            }
-            for (auto j = 0; j < subcircuits.at(i.first).lines.size(); ++j) {
-                // Shorthand for the current subcircuit
-                Subcircuit& subcircuit      = subcircuits.at(i.first);
-                // Shorthand for the current subcircuit line
-                tokens_t&   subcCurrentLine = subcircuit.lines.at(j).first;
-                // If the line denotes a subcircuit
-                if (subcCurrentLine.front().at(0) == 'X') {
-                    // Variable to store io and parameters
-                    tokens_t io;
-                    s_map    params;
-                    id_io_subc_label(subcCurrentLine, io, params, subcktName, label, subcircuits);
-                    if (sanityCheck && sanityCheckSubckts.count(i.first) != 0) {
-                        for (auto node : io) { increment_subcircuit_node_count(i.first, node); }
-                    }
-                    // Create a copy of the subircuit for this instance
-                    Subcircuit subc = subcircuits.at(subcktName);
-                    // If not nested
-                    if (!subc.containsSubckt) {
-                        // Expand the IO nodes of the subcircuit for this instance
-                        expand_io(subc, params, io, label);
-                        // Erase the current line (tokens)
-                        subcircuit.lines.erase(subcircuit.lines.begin() + j);
-                        // Insert the subcircuit token lines at the erased line position
-                        subcircuit.lines.insert(subcircuit.lines.begin() + j, subc.lines.begin(), subc.lines.end());
-                        // Reduce the total amound of subcircuits in this subcircuit by 1
-                        --subcircuit.subcktCounter;
-                        ++cc;
-                        // Reduce the total nested subcircuit count by 1
-                        --nestedSubcktCount;
-                        // If this subcircuit subcircuit counter becomes zero
-                        if (subcircuit.subcktCounter == 0) {
-                            // This subcircuit no longer contains subcircuits
-                            subcircuit.containsSubckt = false;
-                        }
+        for (const auto& line : entry.second.lines) {
+            if (line.first.front().front() != 'X') {
+                if (sanityCheck && sanityCheckSubckts.count(entry.first)) {
+                    for (size_t node = 1; node < std::min(size_t(3), line.first.size()); ++node) {
+                        increment_subcircuit_node_count(entry.first, line.first[node]);
                     }
                 }
+                continue;
             }
-        }
-        if (nestedSubcktCount == previousCount) {
-            tokens_t unresolved;
-            for (const auto& subcircuit : subcircuits) {
-                if (subcircuit.second.containsSubckt) { unresolved.push_back(subcircuit.first); }
+            tokens_t io;
+            s_map parameters;
+            std::string type, label;
+            id_io_subc_label(line.first, io, parameters, type, label, subcircuits);
+            if (io.size() != subcircuits.at(type).io.size()) { Errors::input_errors(InputErrors::IO_MISMATCH, label); }
+            required.insert(type);
+            if (sanityCheck && sanityCheckSubckts.count(entry.first)) {
+                for (const auto& node : io) { increment_subcircuit_node_count(entry.first, node); }
             }
-            Errors::netlist_errors(NetlistErrors::RECURSIVE_SUBCIRCUIT, Misc::vector_to_string(unresolved));
         }
     }
-    // Let the user know subcircuit expansion is complete
-    if (!argMin) {
-        bar.complete();
-        std::cout << "\n";
+    while (!dependencies.empty()) {
+        tokens_t ready;
+        for (const auto& entry : dependencies) {
+            if (entry.second.empty()) { ready.push_back(entry.first); }
+        }
+        if (ready.empty()) {
+            tokens_t unresolved;
+            for (const auto& entry : dependencies) { unresolved.push_back(entry.first); }
+            Errors::netlist_errors(NetlistErrors::RECURSIVE_SUBCIRCUIT, Misc::vector_to_string(unresolved));
+        }
+        for (const auto& type : ready) { dependencies.erase(type); }
+        for (auto& entry : dependencies) {
+            for (const auto& type : ready) { entry.second.erase(type); }
+        }
     }
 }
 
 void Netlist::expand_maindesign() {
-    // std::vector<std::pair<std::string, std::string>> moddedLines;
-    ProgressBar bar;
-    if (!argMin) {
-        bar.create_thread();
-        bar.set_bar_width(30);
-        bar.fill_bar_progress_with("O");
-        bar.fill_bar_remainder_with(" ");
-        bar.set_status_text("Expanding Main Circuit");
-        bar.set_total((float) maindesign.size());
+    param_map parameters;
+    expand_design(parameters, false);
+}
+
+void Netlist::expand_maindesign(param_map& parameters) {
+    expand_design(parameters, true);
+}
+
+void Netlist::expand_design(param_map& parameters, bool scoped) {
+    expand_subcircuits();
+    std::unordered_map<std::string, std::vector<std::pair<std::string, Parameter>>> definitions;
+    std::vector<ParameterName> globals;
+    for (const auto& entry : parameters) {
+        if (!entry.first.subcircuit()) { globals.push_back(entry.first); }
+        else { definitions[*entry.first.subcircuit()].emplace_back(entry.first.name(), entry.second); }
     }
-    // Loop through the identified main design, line by line
-    for (auto i = 0; i < maindesign.size(); ++i) {
-        std::string subcktName, label;
-        // If not minimal printing
-        if (!argMin) {
-            // Report progress
-            bar.update((float) i);
-        }
-        // If the line denotes a subcircuit
-        if (maindesign.at(i).front().at(0) == 'X') {
-            // Variable to store io and parameters
-            tokens_t io;
-            s_map    params;
-            id_io_subc_label(maindesign.at(i), io, params, subcktName, label, subcircuits);
-            if (sanityCheck) {
-                for (auto node : io) { increment_maindesign_node_count(node); }
+    parse_parameters(parameters, globals);
+    const auto parsedModels = models_new;
+    if (scoped) { models_new.clear(); }
+    for (const auto& entry : parsedModels) {
+        if (scoped && !entry.second && !models.count({entry.first.modelName(), std::nullopt})) { models_new.push_back(entry); }
+    }
+    std::unordered_map<std::string, std::vector<tokens_t>> localModels;
+    for (const auto& entry : models) {
+        if (entry.first.second) { localModels[*entry.first.second].push_back(entry.second); }
+        else if (scoped) { Model::parse_model({entry.second, std::nullopt}, models_new, parameters); }
+    }
+    struct Frame {
+        const Subcircuit* definition = nullptr;
+        tokens_t io;
+        std::string path;
+        string_o scope;
+        size_t next = 0;
+        size_t first = 0;
+        s_map componentOverrides;
+    };
+    std::vector<Frame> stack(1);
+    expNetlist.clear();
+    nodeAliases.clear();
+    mainNodeCounts.clear();
+    while (!stack.empty()) {
+        auto& frame = stack.back();
+        const auto size = frame.definition ? frame.definition->lines.size() : maindesign.size();
+        if (frame.next == size) {
+            // Legacy component-value overrides apply after child expansion,
+            // preserving an outer instance's precedence over an inner one.
+            for (size_t i = frame.first; !frame.componentOverrides.empty() && i < expNetlist.size(); ++i) {
+                auto& tokens = expNetlist[i].first;
+                if (frame.componentOverrides.count(tokens.front())) { insert_parameter(tokens, frame.componentOverrides); }
             }
-            // Copy of subcircuit for this instance
-            Subcircuit subc = subcircuits.at(subcktName);
-            // Expand the appropriate IO nodes of the subcircuit for this instance
-            expand_io(subc, params, io, label);
-            // Add the expanded subcircuit lines to the expanded netlist
-            expNetlist.insert(expNetlist.end(), subc.lines.begin(), subc.lines.end());
-            // If the line is not a subcircuit
-        } else {
-            // Add the line tokens to the expanded netlist
-            expNetlist.push_back(std::make_pair(maindesign.at(i), std::nullopt));
+            stack.pop_back();
+            continue;
         }
-    }
-    // Let the user know main design expansion is complete
-    if (!argMin) {
-        bar.complete();
-        std::cout << "\n";
+        auto tokens = frame.definition ? frame.definition->lines[frame.next++].first : maindesign[frame.next++];
+        if (tokens.front().front() != 'X') {
+            const tokens_t empty;
+            const auto& formal = frame.definition ? frame.definition->io : empty;
+            expand_line(tokens, formal, frame.io, frame.path, frame.scope);
+            expNetlist.emplace_back(std::move(tokens), frame.scope);
+            continue;
+        }
+        tokens_t io;
+        s_map assignments;
+        std::string type, label;
+        id_io_subc_label(tokens, io, assignments, type, label, subcircuits);
+        const auto& definition = subcircuits.at(type);
+        if (io.size() != definition.io.size()) { Errors::input_errors(InputErrors::IO_MISMATCH, tokens.front()); }
+        if (sanityCheck && !frame.definition) {
+            for (const auto& node : io) { increment_maindesign_node_count(node); }
+        }
+        if (frame.definition) {
+            for (auto& node : io) { node = bind_node(node, frame.definition->io, frame.io, frame.path); }
+        }
+        Frame child;
+        child.definition = &definition;
+        child.io = std::move(io);
+        child.path = label + (frame.path.empty() ? "" : "|" + frame.path);
+        // Leading '|' distinguishes instance environments from type defaults.
+        child.scope = scoped ? "|" + child.path : type;
+        child.first = expNetlist.size();
+        std::vector<ParameterName> names;
+        const auto locals = definitions.find(type);
+        if (locals != definitions.end()) {
+            for (const auto& entry : locals->second) {
+                const ParameterName name(entry.first, child.scope);
+                parameters[name] = entry.second;
+                parameters[name].reset_value();
+                names.push_back(name);
+            }
+        }
+        for (const auto& assignment : assignments) {
+            // Overrides are evaluated in the caller, before local shadowing.
+            if (!scoped) {
+                child.componentOverrides[assignment.first + "|" + child.path] = assignment.second;
+                continue;
+            }
+            const double value = parse_param(assignment.second, parameters, frame.scope);
+            const ParameterName name(assignment.first, child.scope);
+            auto& parameter = parameters[name];
+            // The bound value is fixed; reparsing must not capture a child
+            // variable with the same name as the caller expression.
+            parameter.set_expression(Misc::precise_to_string(value));
+            parameter.set_value(value);
+            const bool declared = locals != definitions.end()
+                && std::any_of(locals->second.begin(), locals->second.end(), [&](const auto& entry) { return entry.first == assignment.first; });
+            if (!declared) {
+                child.componentOverrides[assignment.first + "|" + child.path] = Misc::precise_to_string(value);
+            }
+        }
+        parse_parameters(parameters, names);
+        if (scoped) {
+            for (const auto& entry : localModels[type]) { Model::parse_model({entry, child.scope}, models_new, parameters); }
+        }
+        for (const auto& entry : parsedModels) {
+            if (scoped && entry.second == string_o(type) && !models.count({entry.first.modelName(), type})) {
+                models_new.emplace_back(entry.first, child.scope);
+            }
+        }
+        for (size_t pin = 0; pin < definition.io.size(); ++pin) {
+            nodeAliases[definition.io[pin] + "|" + child.path] = child.io[pin];
+        }
+        stack.push_back(std::move(child));
     }
     subcktTotal = subcircuits.size();
     subcircuits.clear();

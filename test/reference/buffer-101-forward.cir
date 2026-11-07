@@ -1,0 +1,13 @@
+* Issue #101 forward: same active two-pulse drive; swap only the ports.
+L1 N1 N2 0.125p
+B01 N2 0 JM1
+B02 N2 N3 JM2
+.model JM1 JJ(RTYPE=1 VG=2.8m CAP=0.007p R0=160m RN=16m ICRIT=2m)
+.model JM2 JJ(RTYPE=1 VG=2.8m CAP=0.007p R0=160m RN=16m ICRIT=1.5m)
+L2 N3 N4 0.125p
+Igate N3 0 0.02m
+Rout N4 0 2
+VIN N1 0 PWL(0 0 300p 0 302.5p 827.13u 305p 0 600p 0 602.5p 827.13u 605p 0)
+.tran 0.01p 800p
+.print V(VIN) V(Rout) V(B01) V(B02) P(B01) P(B02) I(L1) I(L2) I(B01) I(B02) I(Igate)
+.end

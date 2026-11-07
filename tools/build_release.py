@@ -17,7 +17,8 @@ import sys
 import tarfile
 import tempfile
 import zipfile
-import xml.etree.ElementTree as ET
+
+from ctest_results import verify_ctest
 
 
 TARGETS = {
@@ -247,8 +248,11 @@ def main():
     command([cmake, "--build", build, "--config", "Release", "--parallel", args.parallel], log=build / "build.log")
     ctest = pathlib.Path(cmake).with_name("ctest.exe" if os.name == "nt" else "ctest")
     junit = build / "test-results.xml"
+    inventory = build / "test-inventory.json"
+    command([ctest, "--test-dir", build, "-C", "Release", "--show-only=json-v1"], log=inventory)
     command([ctest, "--test-dir", build, "-C", "Release", "--output-on-failure", "--timeout", "90",
-             "--output-junit", junit], log=build / "test.log")
+             "--no-tests=error", "--output-junit", junit], log=build / "test.log")
+    tests = verify_ctest(inventory, junit)
     stage = build / "stage"
     if stage.exists():
         shutil.rmtree(stage)
@@ -269,13 +273,6 @@ def main():
         label = declared_version + "-dev." + identity["revision"][:7]
         if identity.get("dirty"):
             label += ".dirty"
-    tests = ET.parse(junit).getroot()
-    cases = tests.findall(".//testcase")
-    required = {"regression::noise", "regression::gate", "regression::cli", "regression::installed_package"}
-    if not required.issubset({case.attrib.get("name") for case in cases}):
-        raise RuntimeError("Required numerical, CLI or installed-package regressions did not run")
-    if any(case.find("skipped") is not None or case.find("failure") is not None or case.find("error") is not None for case in cases):
-        raise RuntimeError("A qualification test was skipped or failed")
     registry = (source / "cmake/dependency_sources.cmake").read_text()
     dependencies = {}
     for name, url in re.findall(r'set\(JOSIM_(\w+)_URL "([^"]+)"\)', registry):
@@ -290,7 +287,7 @@ def main():
                               "compilers": compiler_metadata(build)},
                 "dependencies": dependencies,
                 "configuration": {key: cache.get(key) for key in ["CMAKE_GENERATOR", "CMAKE_BUILD_TYPE", "BUILD_SHARED_LIBS", "MAKING_STATIC_BUILD", "USING_OPENMP", "CMAKE_OSX_ARCHITECTURES", "CMAKE_OSX_DEPLOYMENT_TARGET"]},
-                "tests": {"entries": len(cases), "status": "passed"}, "abi": abi}
+                "tests": tests, "abi": abi}
     output = package(stage, artifacts, build, "JoSIM-" + label + "-" + args.target, manifest)
     print("Verified artifact:", output)
     print("SHA256:", sha256(output))

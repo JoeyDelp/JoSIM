@@ -47,6 +47,8 @@ class Model {
 
     std::vector<double> cpr() const { return cpr_; }
 
+    const std::vector<double>& cpr_view() const noexcept { return cpr_; }
+
     void                cpr(const std::vector<double>& i) { cpr_ = i; }
 
     int64_t             rtype() const { return rtype_; }
@@ -99,8 +101,13 @@ class Model {
 
     void                tDep(bool b) { tDep_ = b; }
 
+    void                validate() const;
+
     static void
     parse_model(const std::pair<tokens_t, string_o>& s, vector_pair_t<Model, string_o>& models, const param_map& p);
+
+    static const Model* find_model(const std::string& name, const vector_pair_t<Model, string_o>& models,
+                                  string_o scope);
 };
 } // namespace JoSIM
 

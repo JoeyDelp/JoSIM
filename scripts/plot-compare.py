@@ -3,13 +3,12 @@
 import os, math, sys, argparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import pandas as pd
-import plotly
+from plot_common import dimensions, read_trace, validate_output, validate_subset, write_plot
 
 # Main function
 def main():
   # Version info
-  vers = "JoSIM Comapre Plot - 1.0 - CSV/DAT plot comparison script"
+  vers = "JoSIM Compare Plot - 1.1 - CSV/DAT plot comparison script"
 
   # Initiate the parser
   parser = argparse.ArgumentParser(description=vers)
@@ -17,7 +16,8 @@ def main():
   # Add possible parser arguments
   parser.add_argument("input1", help="the first CSV input file")
   parser.add_argument("input2", help="the second CSV input file")
-  parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, webp, svg, eps, pdf")
+  parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, jpg, webp, svg, pdf")
+  parser.add_argument("-d", "--dimensions", type=dimensions, default=(3508, 2480), help="image WIDTHxHEIGHT; default: 3508x2480")
   parser.add_argument("-x", "--html", help="save the output as an html file for later viewing")
   parser.add_argument("-s", "--subset", nargs='+', help="subset of traces to plot. specify list of column names (as shown in csv file header), ie. \"V(1)\" \"V(2)\". Default: None")
   parser.add_argument("-c", "--color", help="set the output plot color scheme to one of the following: light, dark, presentation. Default: dark", default='dark')
@@ -27,25 +27,13 @@ def main():
   # Read arguments from the command line
   args = parser.parse_args()
 
-  outformats = [".png", ".jpeg", ".webp", ".svg", ".eps", ".pdf"]
-
-  if (os.path.splitext(args.input1)[1] == ".csv"):
-    df = pd.read_csv(args.input1, sep=',')
-  elif (os.path.splitext(args.input1)[1] == ".dat"):
-    df = pd.read_csv(args.input1, delim_whitespace=True)
-  else:
-    print("Invalid first input file specified: " + args.input1)
-    print("Please provide either .csv (comma seperated) or .dat (space seperated) file")
-    sys.exit()
-
-  if (os.path.splitext(args.input2)[1] == ".csv"):
-    df2 = pd.read_csv(args.input2, sep=',')
-  elif (os.path.splitext(args.input2)[1] == ".dat"):
-    df2 = pd.read_csv(args.input2, delim_whitespace=True)
-  else:
-    print("Invalid second input file specified: " + args.input2)
-    print("Please provide either .csv (comma seperated) or .dat (space seperated) file")
-    sys.exit()  
+  validate_output(parser, args, [args.input1, args.input2])
+  try:
+    df = read_trace(args.input1)
+    df2 = read_trace(args.input2)
+    validate_subset(df, args.subset)
+  except (OSError, ValueError) as exc:
+    parser.error(str(exc))
 
   fig = stacked_layout(df, df2, args.subset)
 
@@ -58,7 +46,7 @@ def main():
   else:
     print("Invalid plot color specified: " + args.color)
     print("Please provide either light, dark or presentation as color theme")
-    sys.exit()
+    sys.exit(2)
     
   if(args.title == None):
     title=os.path.splitext(os.path.basename(args.input1))[0] + " vs. " + os.path.splitext(os.path.basename(args.input2))[0]
@@ -75,15 +63,10 @@ def main():
     'displaylogo': False
   })
 
-  if(args.output == None and args.html == None):
-    fig.show(config=config)
-  elif(args.html != None and args.output == None):
-    fig.write_html(args.html)
-  elif(args.html == None and os.path.splitext(args.output)[1] in outformats):
-    fig.write_image(args.output, width=3508, height=2480)
-  else:
-    print("Unknown file format for output file specified.")
-    print("Please use: png, jpeg, webp, svg, eps or pdf")  
+  try:
+    write_plot(fig, args, config)
+  except Exception as exc:
+    parser.exit(2, f"Export failed: {exc}\n")
 
 # Function that sets the Y-axis title relevant to the data
 def y_axis_title(figLabel):
@@ -116,7 +99,7 @@ def stacked_layout(df, df2, subset):
     )
     if plots[i] in df2:
       fig.add_trace(go.Scatter(
-        x=df.iloc[:,0], y=df2.loc[:,plots[i]],
+        x=df2.iloc[:,0], y=df2.loc[:,plots[i]],
         mode='lines',
         name=plots[i]),
         row=i + 1,

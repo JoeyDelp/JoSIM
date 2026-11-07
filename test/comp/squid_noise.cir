@@ -1,0 +1,18 @@
+* Symmetric DC-SQUID in the zero-loop-inductance classical limit.
+* Model PHI offsets represent +/-pi*Phi_ext/Phi0 for Phi_ext=0.25 Phi0.
+* Each junction has a 1 mOhm shunt and 10 pF capacitance.
+.param TNOISE=4.2
+.param BW=200meg
+.param TINT=2p
+.param OUTPUTSTEP=20p
+I1 0 N DC 1.6m
+B1 N 0 JM1
+B2 N 0 JM2
+.model JM1 JJ(RTYPE=0 ICRIT=1m RN=1m CAP=10p PHI=0.7853981633974483)
+.model JM2 JJ(RTYPE=0 ICRIT=1m RN=1m CAP=10p PHI=-0.7853981633974483)
+.temp TNOISE
+.neb BW
+.option seed=101
+.tran TINT 5.1u 100n OUTPUTSTEP 0 DST
+.print V(N)
+.end

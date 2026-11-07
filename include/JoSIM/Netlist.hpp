@@ -26,6 +26,7 @@ struct pair_hash {
 class Subcircuit {
   public:
     tokens_t                                   io;
+    s_map                                      pinAliases;
     std::vector<std::pair<tokens_t, string_o>> lines;
     tokens_t                                   subckts;
     int64_t                                    jjCount, compCount, subcktCounter;
@@ -47,9 +48,10 @@ class Netlist {
                           std::string&                                       subcktName,
                           std::string&                                       label,
                           const std::unordered_map<std::string, Subcircuit>& subcircuits);
-    bool rename_io_nodes(std::string& node, const tokens_t& subIO, const tokens_t& parentIO);
-    void expand_io(Subcircuit& subc, s_map& params, const tokens_t& io, const std::string& label);
+    void expand_line(tokens_t& line, const tokens_t& formal, const tokens_t& actual,
+                     const std::string& label, const string_o& scope);
     void insert_parameter(tokens_t& t, s_map& params);
+    void expand_design(param_map& parameters, bool scoped);
 
     std::unordered_map<std::string, std::unordered_map<std::string, int32_t>> subcktNodeCounts;
     std::unordered_map<std::string, int32_t>                                  mainNodeCounts;
@@ -64,7 +66,8 @@ class Netlist {
     std::unordered_map<std::string, Subcircuit>                               subcircuits;
     std::unordered_map<std::string, int64_t>                                  subcktLookup;
     std::vector<tokens_t>                                                     maindesign;
-    bool                                                                      sanityCheck;
+    bool                                                                      sanityCheck = false;
+    s_map                                                                     nodeAliases;
     std::unordered_set<std::string>                                           sanityCheckSubckts;
     tokens_t                                                                  subckts;
     std::vector<std::pair<tokens_t, string_o>>                                expNetlist;
@@ -73,6 +76,7 @@ class Netlist {
     Netlist() : jjCount(0), compCount(0), subcktCounter(0), nestedSubcktCount(0), containsSubckt(false) {};
     void expand_subcircuits();
     void expand_maindesign();
+    void expand_maindesign(param_map& parameters);
     void sanity_check(Components components);
 };
 

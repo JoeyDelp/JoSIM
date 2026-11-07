@@ -1,0 +1,126 @@
+{
+  "reference_owner_sha256": "e156ffb44e74a892a66b732f427ad2890c7ed95e9a5f94dab04d5cff1882931c",
+  "python": "3.12.12",
+  "packages": {
+    "numpy": "2.4.1",
+    "scipy": "1.17.0"
+  },
+  "SI_sigma_V_s": 3.291059784754533e-16,
+  "text_hash_policy": "SHA-256 after CRLF-to-LF normalization",
+  "acceptance": {
+    "base_step_ps": 0.02,
+    "voltage_base_V": 8.2713e-07,
+    "current_base_A": 2e-06,
+    "phase_base_rad": 0.0006283185307179586,
+    "voltage_rounding_V": 1e-09,
+    "current_rounding_A": 1e-11,
+    "phase_rounding_rad": 6e-06,
+    "pulse_area_Phi0": 5e-06
+  },
+  "fixtures": {
+    "buffer-101-reverse.csv": {
+      "sha256": "41278a3cf520e98d4e8b12ff81e7b0b88225e985944eaa6095cad3af30d2d588",
+      "samples": 352,
+      "columns": [
+        "time_ps",
+        "vout_V",
+        "u1_V",
+        "u2_V",
+        "phi1_rad",
+        "phi2_rad",
+        "i1_A",
+        "i2_A"
+      ]
+    },
+    "buffer-101-reverse.cir": {
+      "sha256": "b647121d7dd449f3d18ddadca55e001e1f3127461c76c00fe71856616683f4bf"
+    },
+    "buffer-101-forward.csv": {
+      "sha256": "6501b8bb7d15754fabc45a06fb4e25535beec6227399688a5cc2f2a5f62bb3df",
+      "samples": 352,
+      "columns": [
+        "time_ps",
+        "vout_V",
+        "u1_V",
+        "u2_V",
+        "phi1_rad",
+        "phi2_rad",
+        "i1_A",
+        "i2_A"
+      ]
+    },
+    "buffer-101-forward.cir": {
+      "sha256": "24dcfc5de23a971dbe1f2a83ca8f4b4aa84966804a81dd15c5993124d01033ba"
+    }
+  },
+  "pulses": {
+    "reverse": [
+      {
+        "window_ps": [
+          290.0,
+          350.0
+        ],
+        "maximum_uV": 277.77296563815224,
+        "maximum_time_ps": 302.872,
+        "minimum_uV": -254.63164640599328,
+        "minimum_time_ps": 306.241,
+        "net_flux_Phi0": -1.3834922647551748e-06,
+        "voltage_integral_Phi0": -1.3834922648004786e-06,
+        "phase_changes_rad": [
+          -8.692738270553446e-06,
+          -6.283173716834606
+        ]
+      },
+      {
+        "window_ps": [
+          590.0,
+          650.0
+        ],
+        "maximum_uV": 277.7725687511254,
+        "maximum_time_ps": 602.872,
+        "minimum_uV": -254.63060155701007,
+        "minimum_time_ps": 606.241,
+        "net_flux_Phi0": -1.383492259001875e-06,
+        "voltage_integral_Phi0": -1.3834922603602046e-06,
+        "phase_changes_rad": [
+          -8.692738234427396e-06,
+          -6.283173716834459
+        ]
+      }
+    ],
+    "forward": [
+      {
+        "window_ps": [
+          290.0,
+          350.0
+        ],
+        "maximum_uV": 823.3330879756186,
+        "maximum_time_ps": 303.878,
+        "minimum_uV": -1.6388975485409851e-15,
+        "minimum_time_ps": 292.572,
+        "net_flux_Phi0": 0.9999975681788928,
+        "voltage_integral_Phi0": 0.9999975681788942,
+        "phase_changes_rad": [
+          6.283170027596953,
+          1.5990681001554208e-14
+        ]
+      },
+      {
+        "window_ps": [
+          590.0,
+          650.0
+        ],
+        "maximum_uV": 823.3297633566708,
+        "maximum_time_ps": 603.878,
+        "minimum_uV": 1.598328557855977e-15,
+        "minimum_time_ps": 599.42,
+        "net_flux_Phi0": 0.9999975681788235,
+        "voltage_integral_Phi0": 0.9999975681788229,
+        "phase_changes_rad": [
+          6.283170027596517,
+          1.6025375471073744e-14
+        ]
+      }
+    ]
+  }
+}

@@ -42,12 +42,25 @@ A current Linux distribution cannot establish the older glibc baseline.
 
 Each successful run must:
 
-1. Pass CTest, including all four regression groups and a fresh installed-library
+1. Pass CTest, including every required regression group and a fresh installed-library
    consumer. Skipped tests fail qualification.
 2. Match the requested architecture and runtime baseline.
 3. Install into a clean staging directory and hash every payload file.
 4. Extract the resulting archive, verify its hashes and run a numerical smoke
    test using the extracted executable.
+
+The workflow also requires default/shared library-mode qualification on all
+five native targets, including fresh consumers after installation relocation.
+`tools/verify_library.py` owns these checks. Released archives use the static
+JoSIM/runtime configuration stated above; shared-library source-build checks
+do not change the published binary format or runtime baseline.
+
+The separate Python-utility job installs its pinned direct dependencies into a
+fresh environment and tests data values, file safety and real headless exports
+with the runner's installed Chrome. It records Python/browser/package versions
+and pip's install report. Tagged publication also requires this job to pass.
+The documentation job builds the pinned manual in strict mode and checks local
+files/anchors and the local-context exclusion. It is also a release prerequisite.
 
 Archives include `MANIFEST.json`. A sidecar manifest records source identity,
 compiler versions, dependency hashes, configuration, test count and binary ABI
@@ -64,6 +77,55 @@ Before a release, review the changelog, set the intended version in
 declared version and a clean source tree. The tagged workflow publishes only
 after every target passes. A tag is a separate publication decision; passing
 tests does not authorize creating one.
+
+Commit reviewed notes at `docs/releases/v<version>.md` before creating the tag.
+The publisher uses that file and leaves existing assets intact on a rerun.
+
+After publication, `verify-release.yml` downloads the actual archive, checksum
+and sidecar manifest for each target. It checks the public tag's commit, archive
+and payload identities, then runs the CLI and independent numerical regressions
+against the downloaded executable. Linux execution uses the same pinned legacy
+userspaces, with downloads completed on the modern host before network isolation.
+Windows, Apple Silicon and Intel macOS use their native runners.
+
+Every target must have a `passed` execution receipt. `prepared` identifies a
+verified download awaiting native execution. The reports record public URLs,
+hashes, source/tool/test-owner identities, runtime, commands and measured cases;
+JSON and readable receipts appear in the job summary and retained artifacts.
+An optional read token applies only to API metadata; asset URLs are downloaded
+without credentials. Public download qualification is separate from the earlier
+prepublication extraction checks.
+
+The reusable workflow can also be dispatched manually with a published tag and
+full commit. This records the verification source separately, allowing later
+checks to identify which test/verification owners were used. For local native
+checks, `python3 -B tools/verify_release.py --help` lists the required paths and
+the two-phase Linux options. Use fresh download paths and retain failed evidence.
+
+Version 3.0.0 records the audited public C++ layout changes and explicit support
+boundaries. CMake package versions use `SameMajorVersion`; Unix shared libraries
+carry the major `SOVERSION`. Recompile applications with matching headers,
+libraries and compatible toolchains. Compatible fixes use patch versions;
+compatible interface additions use minor versions. Preserve existing tags and
+assets. See [compatibility and migration](compatibility.md) for the rationale.
+
+## Documentation publication
+
+Build and check the manual using [the development procedure](DEVELOPMENT.md#build-and-check-the-manual).
+The existing site is published from `gh-pages` with MkDocs. From a clean,
+integrated and qualified source commit, fetch the current branch and run:
+
+```bash
+git fetch origin gh-pages
+build/documentation-env/bin/mkdocs gh-deploy --strict \
+  --site-dir build/documentation --remote-name origin --remote-branch gh-pages
+```
+
+Keep normal branch history: do not use `--force` or `--no-history`. Retain any
+existing `CNAME` and `.nojekyll`; the current site has no custom domain. The
+configuration excludes local project context. Verify the deployed source,
+navigation, math rendering, examples, current version and download links after
+deployment. A successful push alone is not a website check.
 
 Source archives used outside Git require a sibling `bundle-manifest.json` with
 the full revision, source state and bundle hash. The script accepts this only

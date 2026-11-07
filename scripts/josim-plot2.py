@@ -11,45 +11,38 @@
 import os, math, sys, argparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import pandas as pd
 import numpy as np
-import plotly
+from plot_common import dimensions, read_trace, validate_output, validate_subset, write_plot
 
 # Main function
 def main():
   # Version info
-  vers = "JoSIM Trace Plotting Script - 1.3 - CSV/DAT plotting script"
+  vers = "JoSIM Trace Plotting Script - 1.4 - CSV/DAT plotting script"
 
   # Initiate the parser
   parser = argparse.ArgumentParser(description=vers)
 
   # Add possible parser arguments
   parser.add_argument("input", help="the CSV input file")
-  parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, webp, svg, eps, pdf")
-  parser.add_argument("-d", "--dimensions", help="the dimensions of the output file")
+  parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, jpg, webp, svg, pdf")
+  parser.add_argument("-d", "--dimensions", type=dimensions, help="image WIDTHxHEIGHT; default: 700x500")
   parser.add_argument("-x", "--html", help="save the output as an html file for later viewing")
   parser.add_argument("-t", "--type", help="type of plot: grid, stacked, combined, square, sep_comb. Default: grid", default="grid")
   parser.add_argument("-s", "--subset", nargs='+', help="subset of traces to plot. specify list of column names (as shown in csv file header), ie. \"V(1)\" \"V(2)\". Default: None")
   parser.add_argument("-c", "--color", help="set the output plot color scheme to one of the following: light, dark, presentation. Default: dark", default='dark')
   parser.add_argument("-w", "--title", help="set plot title to the provided string")
   parser.add_argument("-V", "--version", action='version', help="show script version", version=vers)
-  parser.add_argument("-j", "--jump", help="plot in phase jump units: 0.5pi, pi, 2pi", default="rad")
+  parser.add_argument("-j", "--jump", help="phase units", choices=("rad", "0.5pi", "pi", "2pi"), default="rad")
 
   # Read arguments from the command line
   args = parser.parse_args()
 
-  # List of possible output formats
-  outformats = [".png", ".jpeg", ".webp", ".svg", ".eps", ".pdf"]
-
-  # How to handle column seperation. CSV uses comma, DAT uses space.
-  if (os.path.splitext(args.input)[1].lower() == ".csv"):
-    df = pd.read_csv(args.input, sep=',')
-  elif (os.path.splitext(args.input)[1].lower() == ".dat"):
-    df = pd.read_csv(args.input, delim_whitespace=True)
-  else:
-    print("Invalid input file specified: " + args.input)
-    print("Please provide either .csv (comma seperated) or .dat (space seperated) file")
-    sys.exit()
+  validate_output(parser, args, [args.input])
+  try:
+    df = read_trace(args.input)
+    validate_subset(df, args.subset)
+  except (OSError, ValueError) as exc:
+    parser.error(str(exc))
 
   # Determine the plot layout.
   if(args.type == "grid"):
@@ -65,7 +58,7 @@ def main():
   else:
     print("Invalid plot type specified: " + args.type)
     print("Allowed plot type codes: grid, stacked, combined, square, sep_comb")
-    sys.exit()
+    sys.exit(2)
     
   # Determine the theme to plot with.
   if(args.color == 'light'):
@@ -77,7 +70,7 @@ def main():
   else:
     print("Invalid plot color specified: " + args.color)
     print("Please provide either light, dark or presentation as color theme")
-    sys.exit()
+    sys.exit(2)
     
   # Set the title of the plot
   if(args.title == None):
@@ -110,23 +103,17 @@ def main():
   })
 
   # Determine wether to show the plot or just dump to file
-  if(args.output == None and args.html == None):
-    fig.show(config=config)
-  elif(args.html != None and args.output == None):
-    fig.write_html(args.html)
-  elif(args.html == None and os.path.splitext(args.output)[1] in outformats):
-    w, h = args.dimensions.split("x")
-    fig.write_image(args.output, width=w, height=h)
-  else:
-    print("Unknown file format for output file specified.")
-    print("Please use: png, jpeg, webp, svg, eps or pdf")  
+  try:
+    write_plot(fig, args, config)
+  except Exception as exc:
+    parser.exit(2, f"Export failed: {exc}\n")
 
 # Function to provide the appropriate Y-axis title
 def y_axis_title(figLabel, args):
   if figLabel[0] == 'V':
     return "Voltage (V)"
   elif figLabel[0] == 'I':
-    return "Current (I)"
+    return "Current (A)"
   elif figLabel[0] == 'P':
     # Phase or phase jumps
     if args.jump == 'rad':
@@ -171,7 +158,7 @@ def grid_layout(df, args):
     col = 1 if (i%2 == 0) else 2
     row = int(math.floor(i / 2)) + 1
     fig.add_trace(go.Scatter(
-      x=df.iloc[:,0], y=df.loc[:,plots[i]],
+      x=df.iloc[:,0], y=df.loc[:,plots[i]] * (pfact(args.jump) if plots[i].startswith("P") else 1),
       mode='lines',
       name=plots[i]),
       row=row,
@@ -207,7 +194,7 @@ def square_layout(df, args):
     col = col_counter
     row = row_counter
     fig.add_trace(go.Scatter(
-      x=df.iloc[:,0], y=df.loc[:,plots[i]],
+      x=df.iloc[:,0], y=df.loc[:,plots[i]] * (pfact(args.jump) if plots[i].startswith("P") else 1),
       mode='lines',
       name=plots[i]),
       row=row,
@@ -236,7 +223,7 @@ def stacked_layout(df, args):
   # Add the traces
   for i in range(0, len(plots)):
     fig.add_trace(go.Scatter(
-      x=df.iloc[:,0], y=df.loc[:,plots[i]],
+      x=df.iloc[:,0], y=df.loc[:,plots[i]] * (pfact(args.jump) if plots[i].startswith("P") else 1),
       mode='lines',
       name=plots[i]),
       row=i + 1,

@@ -12,6 +12,12 @@ Each line follows similar syntax which uses the first non-blank space character 
 
 Identifiers that start with a letter relate to physical components in the design, e.g. L, C, R. Lines of this kind almost always follows the same syntax in that it requires a label and two nodes. These nodes can be alphanumeric with the restriction of **0** and **GND** which indicate a grounded node. Additionally, the use of period (**.**) or vertical bars (**|**) in label or node names are prohibited as these are reserved characters within JoSIM.
 
+Only the exact names `0` and `GND` indicate ground. `GNDREF`, `AGND` and other
+names containing those letters are ordinary nodes. Declared subcircuit pins are
+bound to their instance connections before physical nodes are classified. A pin
+named `GND` can therefore connect to a non-ground node; undeclared ground
+references inside the subcircuit still refer to global ground.
+
 Lines that start with a period (**.**) indicate that the line relates in some way to simulation control. In this case the command that follows the period identifies the control, e.g. .tran, .print, .end.
 
 Comments are lines that start with an asterisk (**\***) or a hash (**\#**). Comments are meant to be in a line of their own and will not work if placed at the end of a line.
@@ -47,7 +53,9 @@ The value of a resistor is in Ohms.
 
 Temperature used for noise analysis in  Kelvin. Units need to be excluded since **K** for Kelvin will be interpreted as Kilo by JoSIM, e.g. 4K will become 4000.
 
-Optional frequency parameter sets the noise effective bandwidth during noise analysis. Default is 1GHz.
+Optional `neb=` sets the thermal-noise effective bandwidth in Hz. The default
+is 1 THz. The [noise guide](noise_sources.md) defines the interpolated spectrum,
+timestep floor and classical thermal-noise assumptions.
 
 ### Inductor
 
@@ -55,17 +63,30 @@ Optional frequency parameter sets the noise effective bandwidth during noise ana
 
 The value of an inductor is in Henry.
 
+L is constant during simulation; a parameter expression is evaluated once.
+Current-dependent L(I) is not supported. See the
+[model boundary](model_limits.md#nonlinear-inductance) for flux-linkage
+semantics and the limits of constant-L approximations.
+
 ### Capacitor
 
 **C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
 
 The value of a capacitor is in Farad.
 
+Capacitor `IC=` is unsupported and produces an error. Prepare a nonzero voltage
+with an explicit charging interval before measurement. See the
+[tested precharge example](model_limits.md#capacitor-voltage).
+
 ### Josephson Junction (JJ)
 
 **B**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;*<PhaseNode\>*&emsp;**MODEL**&emsp;[area=<**AREA**\>]&emsp;[ic=<**IC**>]&emsp;[temp=<**TEMP**>]&emsp;[neb=<**FREQ**>]
 
-A Josephson junction is a two terminal device but could also be defined with a third non-connected node to allow compatibility with WRspice. This node is not used in any way in JoSIM.
+A Josephson junction has two electrical terminals. An optional third field is
+normally an unused WRspice phase-node placeholder. A model explicitly specifying
+`GWIDTH` can instead use it as a gate, or use the explicit `GC=node` field. See
+the [gate-controlled junction guide](gate_junctions.md) for unambiguous syntax
+and the physical gate-voltage convention in both modes.
 
 The Josephson junction requires specification of a model name which can be defined anywhere in the program using the control **.MODEL**.
 
@@ -88,16 +109,30 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | IC or ICRIT     | -$\infty$, $\infty$   | 1E-3            | Junction critical current                                    |
 | RN              | 0, $\infty$           | 5               | Junction normal resistance                                   |
 | R0              | 0, $\infty$           | 30              | Junction subgap resistance                                   |
-| C or CAP        | 0, $\infty$           | 2.5E-12         | Junction capacitance                                         |
-| T               | 0, $\infty$           | 4.2             | Junction temperature in K                                    |
+| C or CAP        | $0 \le C < \infty$   | 2.5E-12         | Junction capacitance                                         |
+| T               | $0 \le T < T_C$      | 4.2             | Temperature-dependent CPR temperature in K                    |
 | TC              | 0, $\infty$           | 9.1             | Critical temperature of superconducting material             |
 | DELV            | 0, $\infty$           | 0.1E-3          | Transitional voltage from subgap to normal                   |
 | D               | 0.0, 1                | 0.0             | Point of contact transparency affecting current phase relationship |
 | ICFCT or ICFACT | 0, 1                  | $\frac{\pi}{4}$ | Ratio of critical current to quasiparticle step height       |
 | PHI             | 0, $2\pi$             | 0               | Allows phi-junction capability such as the $\pi$-junction.   |
 | CPR             | {$-\infty$, $\infty$} | {1}             | Sets the Current Phase Relationship harmonic amplitudes.     |
+| GWIDTH          | $0 < GWIDTH < \infty$ | 0.1E-3          | Gate voltage for complete suppression; enable with `GC=node` or explicit third-field gate syntax |
 
-The *.model* line is unique to the subcircuit it falls under and can thus allow different models with the same name under separate subcircuits. If the model is not found under the subcircuit it will be searched for globally and if not found default values (default model) will be used instead.
+The `.model` line belongs to its containing subcircuit. Separate subcircuits can
+use the same model name. Lookup checks the current instance, its containing
+instances, then globals. A missing model is an error; it does not select a
+default model.
+
+For a Stewart–McCumber parameter, use the
+[tested parameter conversion](model_limits.md#beta-c).
+It defines which resistance enters beta_c; there is no direct `BETA_C=` field.
+
+All values must be finite. RN/R0/DELV/ICFCT/TC are strictly positive; D is in
+[0,1]. Temperature-dependent models require positive Ic; ordinary sinusoidal
+models retain signed/zero Ic support. D=1 uses its finite positive-temperature
+limit, while the zero-temperature cusp is singular. See
+[model domains](model_limits.md#model-domains) for the checked boundaries.
 
 The **AREA** and **IC** parameters act as modifiers to the model parameters. **AREA** is a critical current multiplier, where if **IC** is specified it replaces the **AREA** value by $AREA=\frac{IC_{jj}}{IC_{model}}$. 
 
@@ -161,7 +196,12 @@ The value is the coupling factor *k*.
 
 This source linearly interpolates amplitude values for every time point in the simulation between the specified amplitudes.
 
-The initial two values are required to be zero at the start of the simulation.
+Times must be finite, nonnegative and strictly increasing; amplitudes must be
+finite. The first amplitude can be nonzero. If the first time is positive,
+JoSIM prepends time zero with that same amplitude and reports a warning.
+Negative first times are rejected. The final amplitude is held after the last
+point. PWL returns zero before time zero during startup; PWS holds its first
+amplitude before the first point.
 
 #### Pulse
 
@@ -171,7 +211,12 @@ This source generates a pulse between two amplitudes ($A_{1}$ and $A_{2}$), star
 
 *PW* and *PER* refer to the pulse width and the period respectively. These values default to the transient simulation stop time when not specified.
 
-This source allows the continuous generation of a pulse at a set frequency.
+Amplitudes must be finite. Delay, rise time, fall time and width must be finite
+and nonnegative; the period must be finite and strictly positive. Zero rise/fall
+times give instantaneous edges. Zero width gives a triangular pulse when the
+edges are nonzero. At each period boundary, the waveform restarts from its rise.
+At most seven arguments are accepted. Resolve pulse edges and the period with
+the internal timestep; a finite sampled value does not establish adequate sampling.
 
 #### Sinusoidal
 
@@ -183,7 +228,8 @@ $T_{D}$ is a start delay: for $t<T_{D}$ the output is held at $A_{O}$.
 
 $\theta$ is an exponential damping factor (units $s^{-1}$). When $\theta=0$, no damping is applied.
 
-$\phi$ is a phase shift applied to the sine term. Internally it is treated as radians; if specified in degrees it is converted via $\phi=\phi_{\deg}\pi/180$.
+$\phi$ is supplied in degrees and converted internally by
+$\phi=\phi_{\deg}\pi/180$.
 
 If $N_{C}$ is provided and $N_{C}$ $>0$, the sinusoid runs for that many cycles and then stops, returning to the offset $A_{O}$ for all subsequent times.
 
@@ -205,16 +251,31 @@ Notes:
 
 - If $N_{C}$ is omitted (or $\le 0$), the sinusoid continues for the full simulation duration.
 - If $N_{C}$ $>0$, $f$ must be positive to define the stop time.
+- `SIN` and `SINE` are aliases. Positive fractional cycle counts specify the
+  corresponding fraction of a period. At the stop time output returns to the
+  offset, including when a nonzero phase makes that return discontinuous.
+- For `SINE(0 315u 4g 20p 0 0 4)`, the stop is 1020 ps. See the
+  [finite-cycle qualification](qualification/2026-11-06-sine.md).
 
 #### Custom Waveform
 
-**cus(** *wavefile*&emsp;$T_{S}$&emsp;*SF*&emsp;*IM*&emsp;[$T_{D}$&emsp;*PER]* **)**
+**cus(** *wavefile*&emsp;$T_S$&emsp;[*SF*&emsp;*IM*&emsp;$T_D$&emsp;*PER*] **)**
 
-This source allows the generates a function based on the points inside the plain text wave file. This file should contain a single line of space separated numbers. E.g 0 2 3 6 2 1 0
+The file contains one line of finite, space-separated amplitude samples. Relative
+paths use the input netlist's directory, or the current directory for a bare
+filename or standard input. Samples are multiplied by *SF* (default 1).
 
-Each number in this line represents an amplitude separated by time step $T_{S}$ and scaled using scale factor *SF*. The values between the points are interpolated using either no interpolation (0), linear (1) or cubic (2). The function can become periodic if PER is set to 1, whereby the pattern is repeated for the entire simulation.
+Sample $k$ occurs at $T_D+kT_S$. $T_S$ must be finite and positive; it is not
+stretched when the simulation uses a coarser step. Choose a simulation step small
+enough to resolve the input waveform. Before $T_D$ (default 0), the output is zero.
 
-The waveform only starts of $T_{D}$.
+*IM* selects a hold (0), linear interpolation (1, default), or a natural cubic
+spline (2, requiring at least three samples). Linear and cubic methods pass
+through the stored samples. The last sample is held for one final interval.
+For $N$ samples the duration is $NT_S$: at its end the waveform returns to zero,
+or repeats from its first sample when *PER*=1. Repetition is measured from $T_D$;
+it does not enforce derivative continuity at a period boundary. *PER* must be 0
+(default) or 1, and $T_D$ must be finite and non-negative.
 
 #### DC
 
@@ -226,13 +287,17 @@ A DC source that is always at $A$ at any given time during the simulation.
 
 **noise(**$A$&emsp;$T_{D}$&emsp;$T_{STEP}$**)**
 
-This source produces a noise value for the time step provided that it is after $T_{D}$. The $T_{STEP}$ is the inverse of the noise effective bandwidth set globally using `.neb` or locally for a resistor using `neb=`.
-
-The noise value returned is calculated using the following equation:
+The source is zero before $T_D$. $A$ is a one-sided amplitude spectral density
+in A/sqrt(Hz) or V/sqrt(Hz). $T_{STEP}$ is the Gaussian update interval, limited
+to at least the internal simulation timestep. If omitted, it is $1/(3NEB)$
+before that floor. The independent values at update points are
 
 $f(t) = A\frac{GRAND()}{\sqrt{2T_{STEP}}}$
 
-$GRAND()$ is a Gaussian random number generating function.
+$GRAND()$ is a unit-variance Gaussian sample. Values between update points are
+linearly interpolated, giving time-averaged variance $A^2/(3T_{STEP})$ and a
+smooth spectral rolloff. Grid-point variance differs. See the
+[noise guide](noise_sources.md) for sampling and bandwidth conventions.
 
 #### Exponential
 
@@ -243,9 +308,12 @@ $GRAND()$ is a Gaussian random number generating function.
 | ---------- | ----------------- |
 | $T_{D1}$   | 0.0               |
 | $T_{D2}$   | $T_{STEP}$        |
-| $\tau_{1}$ | $T_{D1}+T_{STEP}$ |
+| $\tau_{1}$ | $T_{STEP}$ |
 | $\tau_{2}$ | $T_{STEP}$        |
 
+The omitted delay/constant defaults above are independent. In particular, TD2
+remains TSTEP when TD1 is supplied. Specify both delays and positive time
+constants explicitly when preparing a delayed rise/fall waveform.
 
 Returns different values for the 3 different time segments.
 
@@ -255,11 +323,11 @@ $f(t)=A_{1}$
 
 For $T_{D1}\le t < T_{D2}$:
 
-$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})$
+$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{-\frac{t - T_{D1}}{\tau_{1}}})$
 
 For $T_{D2} \le t$:
 
-$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{\frac{t - T_{D2}}{\tau_{2}}})$
+$f(t) = A_{1}+(A_{2}-A_{1})(1-e^{-\frac{t - T_{D1}}{\tau_{1}}})+(A_{1}-A_{2})(1-e^{-\frac{t - T_{D2}}{\tau_{2}}})$
 
 #### Piecewise Sinusoidal (PWS)
 
@@ -298,11 +366,28 @@ The most important of these control commands is the transient simulation command
 
 **.tran**&emsp;$T_{STEP}$&emsp;$T_{STOP}$&emsp;[$P_{START}$&emsp;[$P_{STEP}$&emsp;[$P_{WINDOW}$]]]&emsp;DST
 
-This generates a simulation that runs from 0 until $T_{STOP}$. The amount simulation steps that will be performed is $n=\frac{T_{STOP}}{T_{STEP}}$.
+For effective step $h$, JoSIM computes $N=\lfloor T_{STOP}/h\rfloor$ samples at
+$t_k=kh$, $k=0,\ldots,N-1$. The stop time itself is not an extra sample. Step
+and stop time must be finite and positive, with at least one supported sample.
 
-$P_{START}$ indicates at what point output will start printing. $P_{STEP}$ sets the size of the print steps. This has to be larger or equal to $T_{STEP}$.
+$P_{START}$ selects the first output sample on or after that time. It must not
+exceed the last computed sample. $P_{STEP}$ is the print interval. If it is
+smaller than the requested simulation step, the CLI reduces the initial step
+to match it. Keep both settings fixed when comparing numerical or noise runs.
 
 If $P_{WINDOW}$ is specified and not 0, a Hanning FIR filter with a window width of $P_{WINDOW}$ seconds is applied to the output data before decimating as a post-processing step. This can be used to low-pass filter the output to prevent aliasing when decimating with $P_{STEP}$, e. g. to create an IV curve of the whole circuit.
+
+Print targets are $P_{START}+nP_{STEP}$, selecting the first available internal
+sample at or after each target. A few floating-point ulps at an exact grid tie
+are treated as equal. Integer step ratios therefore retain a uniform print
+grid without accumulated rounding jitter. A fractional ratio generally selects
+nonuniform internal samples; use the recorded timestamps for such data.
+Verbose mode (`-V 1` or higher) reports the effective internal timestep and
+computed sample count after any full-run timestep reduction.
+
+The FIR window must be finite and non-negative; widths longer than the run are
+clamped to its duration. An output window containing no computed samples is
+an error, including when $P_{START}<T_{STOP}$ but lies after the last grid point.
 
 DST disables the start-up time. The start-up time is a period calculated internally by the simulator in which components settle. This is equivalent to the few picoseconds from when a circuit initially receives power (power switch flipped).
 
@@ -326,7 +411,49 @@ A subcircuit can be used in the main netlist or another subcircuit (nesting) usi
 
 **X**Label&emsp;*IO Nodes*&emsp;*SubcktName*&emsp;(WRspice (normal SPICE) mode)
 
-Additionally, keywords in the form of **LABEL=VALUE** can be appended to the end of the subcircuit declaration line which when instantiated will replace the value of the **LABEL** component within the subcircuit with the associated **VALUE**. This allows for unique subcircuit instantiations which would prove useful in testing various parameters without altering the original subcircuit or having multiple instances of the same subcircuit definition. This could open the door for potential future margin and optimization software.
+Named parameters can be supplied on each instance, with optional defaults in
+its `.subckt` header. `PARAMS:` is optional. Spaces around `=` and expressions
+in braces are accepted.
+
+```cir
+.param BASE=10
+X1 CELL A 0 RES={BASE*2}
+X2 B 0 CELL RES=5
+I1 0 A 1
+I2 0 B 1
+.subckt CELL IN RET PARAMS: RES=10 SCALE=2
+.param TOTAL=RES*SCALE
+R1 IN RET TOTAL
+.ends
+```
+
+The two resistances are 40 ohm and 10 ohm. An instance override is evaluated in
+the caller's environment before binding the child; `RES={RES*2}` uses the
+caller's `RES`. Other assignments on the same instance are not visible while
+its override expressions are evaluated. The child's defaults and local `.param`
+expressions then resolve using the bound values. Lookup proceeds from that
+instance through its containing instances to global parameters. Local names
+shadow inherited names; each instance remains independent. Undefined names and
+parameter dependency cycles fail with a parsing diagnostic.
+
+An override can introduce a local name without a header default, as in
+`X1 CELL A 0 RES=10` with `R1 IN RET RES` in `CELL`. Prefer explicit defaults
+when a reusable circuit has a useful default value. Numeric local definitions
+are evaluated when instantiated or requested by a model IV command. Structural
+subcircuit cycles and unknown child types are rejected even in unused definitions.
+
+Legacy **component-label** overrides also remain available: `X1 CELL A 0 R1=5`
+replaces the value of resistor `R1`. A nested label uses inside-to-outside order,
+such as `R1|XCH=5`. This applies to R/L/C/K values, E/F/G/H gains, T delay, and
+an existing B `AREA=` or `IC=` assignment. An explicitly declared parameter of
+the same name takes precedence over this legacy shortcut. Duplicate assignments
+on one header or instance are errors; a later separate `.param` declaration
+replaces an earlier expression with a warning.
+
+Local JJ models are evaluated separately for each instance. Model lookup checks
+that instance, then containing instances, then globals. A local model always
+shadows a global model of the same name. Parameter values are never substituted
+into node names, filenames or model identifiers.
 
 ### Noise
 
@@ -335,6 +462,12 @@ As mentioned in the technical discussion, noise can be automatically inserted as
 **.temp**&emsp;*Temperature in Kelvin*
 
 **.neb**&emsp;*Bandwidth in Hertz*
+
+Temperature must be finite and non-negative; bandwidth must be finite and
+positive. Local `TEMP=`/`NEB=` settings override the globals. `TEMP=0` disables
+classical thermal noise for that component. The default bandwidth is 1 THz.
+Junction thermal noise uses the active resistive slope, with the explicit
+local-equilibrium limits described in the [noise guide](noise_sources.md).
 
 ### Spread
 
@@ -367,11 +500,27 @@ An example:
 
 JoSIM allows the user to output an IV curve for a specified JJ model within the netlist using the following command:
 
-**.iv**&emsp;*modelname*&emsp;*max_current*&emsp;*filepath*
+**.iv**&emsp;*modelname*&emsp;*max_current*&emsp;*filepath*&emsp;[STEP=*current*]&emsp;[GTJJ=*voltage*]&emsp;[TSTEP=*time*]&emsp;[TSTOP=*time*]&emsp;[TSTART=*time*]
 
 This command outputs a comma seperated value (CSV) at the *filepath* specified which contains the IV curve data for the *modelname* from negative *max_current* to positive *max_current*.
 
-Subcircuit models can be output using the `.`(period) or `|`(vertical bar) as separator between the *modelname* and the subcircuit NAME.
+Subcircuit models can be output using `.` or `|` between the model name and
+subcircuit **definition name**, for example `.iv JM.CELL 350u iv.csv STEP=175u`.
+This evaluates the definition's default parameters with global fallback. It
+uses no particular instance's overrides or caller environment; missing required
+defaults are errors. This command draws a model IV curve, rather than sweeping
+an arbitrary connected circuit.
+
+`STEP` (alias `ISTEP`) is the positive current increment, default 2.5 µA.
+`GTJJ` supplies a physical gate voltage. `TSTEP` selects the initial internal
+step (default 0.05 ps), `TSTOP` the duration (default 500 ps), and `TSTART` the
+averaging start (default half the selected duration). Timing values use seconds
+and engineering suffixes. Require `TSTEP > 0` and `TSTOP > TSTART >= 50 ps`,
+with at least two actual averaging samples. Every point starts with fresh device
+histories and its specified 0/10/50 ps bias ramp. The mean uses unfiltered internal
+samples from `TSTART`; retries may reduce the step. `-V 1` reports the effective
+grid. These finite transients require model-specific settling and convergence
+checks; see [model IV versus circuit sweeps](sweeps.md#circuit-iv-versus-model-iv).
 
 ### Output
 
@@ -404,6 +553,17 @@ Subcircuit parameters can be output using the `.`(period) or `|`(vertical bar) a
 i.e. **.print** v(14.X01) p(B01.X02)
 
 This method follows the path from inside to out when nested subcircuits are used. 
+
+Declared pin aliases are supported as well as internal nodes and components.
+For example, `V(IN.X1)` addresses pin `IN` of instance `X1`, and
+`V(IN.X2.X1)` addresses its nested instance `X2`. Ground pins produce a zero
+trace when connected to ground. `V(0,N)` is the negative of `V(N)`.
+
+Unknown devices, nodes, aliases and malformed output requests are errors.
+Requested traces are never silently discarded. `C(R1)` is an alias for
+`I(R1)`. Device differences such as `V(R1,R3)`, `P(B1,B2)` and `I(R1,R3)`
+subtract the two physical traces after applying the same output sampling/filter.
+General arithmetic expressions over output vectors remain unsupported.
 
 Subcircuits as mentioned before can also be nested almost indefinitely as they are expanded upon simulation.
 
@@ -442,7 +602,25 @@ The final control command that is of importance in JoSIM is the parameters comma
 
 Additionally, expressions can also contain other variables and parameters will be continuously evaluated until all variables are reduced to values. If variables are not defined the program will halt and produce an error.
 
-Expression parsing is exclusive to the *.param* control. This means that if expressions are loosely provided as values to components or as parameters to plot or model controls, JoSIM will error in *std::invalid_argument: stod: no conversion* as it tries to convert a string into a double. Please be mindful when using expressions and restrict them to *.param* controls.
+Numeric literals support decimal/scientific notation (`1E-3`, `1e-3`, `1.E-3`)
+and case-insensitive SPICE engineering suffixes. `M` or `m` means milli;
+`MEG` means mega. The remaining suffixes are `T`, `G`, `K`, `U`, `N`, `P` and
+`F`. ASCII unit labels may follow a suffix, such as `2mV`.
+
+Expressions support `+`, `-`, `*`, `/`, `^`, matching `()`, `[]` or `{}`,
+unary signs, and the documented mathematical functions. Exponentiation is right
+associative and precedes a leading unary sign: `2^3^2` is 512, `-2^2` is -4,
+and `2^-3` is 0.125. Function calls bind before a following power. `LOG` is the
+natural logarithm and `LOG10` is base ten. Evaluated expressions must produce
+finite real values; missing operands, invalid function arguments and mismatched
+brackets produce parsing errors.
+
+Parameter expressions resolve local names first and then global names for every
+operand. Undefined names and dependency cycles fail with a diagnostic. Component
+and source parsers that accept parameter expressions use the same evaluator;
+when an expression contains spaces, define it with `.param` and use its name so
+that component fields remain unambiguous. Hierarchical named overrides are
+tracked separately in the audit-resolution ledger.
 
 ### Control Block
 
@@ -490,5 +668,7 @@ JoSIM has a set of built in constants that when used expand to the corresponding
 | EPS0      | $\epsilon_{0}$                               | 8.854187817E-12         |
 | SIGMA     | $\sigma$ (short for $\frac{\Phi_{0}}{2\pi}$) | 3.291059757E-16         |
 
-[^1]: I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
-[^2]:S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.
+## Further reading
+
+- I. Salameh, E. G. Friedman and S. Kvatinsky, "Superconductive Logic Using 2ϕ—Josephson Junctions With Half Flux Quantum Pulses," in *IEEE Transactions on Circuits and Systems II: Express Briefs*, vol. 69, no. 5, pp. 2533-2537, May 2022, doi: 10.1109/TCSII.2022.3162723.
+-S. V. Bakurskiy et al., "Current-phase relations in SIsFS junctions in the vicinity of 0-$\pi$ Transition", *Phys. Rev. B Condens. Matter*, vol. 95, pp. 94522-94528, Mar. 2017.

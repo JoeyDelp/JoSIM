@@ -5,6 +5,11 @@ binaries, see [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases).
 Changes prepared for the next release are listed in the
 [changelog](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md).
 
+The 3.0.0 source line includes the completed branch consolidation and audit
+repairs. Read [compatibility and migration](compatibility.md) before reusing
+older results or C++ applications. JoSIM remains freely available under MIT;
+it is the open-source predecessor of JoSIM-Pro.
+
 ## Introduction
 
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.
@@ -29,7 +34,9 @@ The JoSIM repository has the following layout. A quick description shows the pur
     include/
         JoSIM			# JoSIM header files.
     scripts				# Some Python3 scripts to automate testing and plotting
-    site				# Where this documentation spawns from.
+    tools				# Build, qualification, sweep and documentation owners.
+    build/				# Generated builds and documentation (ignored).
+    artifacts/			# Local qualification results (ignored).
     src/
         ...				# JoSIM source files.
     test				# Folder containing various examples.
@@ -48,7 +55,7 @@ full path. The archive includes the C++ library and headers.
 For example, from the repository root with a local build:
 
 ```bash
-build/dev/josim-cli -o build/example.csv test/ex_jtl_basic.cir
+build/dev/josim-cli -o build/example.csv test/ex_dcsfq_jtl_sink.cir
 ```
 
 On multi-configuration Windows builds the executable is under

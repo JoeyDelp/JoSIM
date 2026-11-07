@@ -49,7 +49,7 @@ Resistor::Resistor(const std::pair<tokens_t, string_o>& s,
         }
     }
     if (!temp_ && iObj.globalTemp) { temp_ = iObj.globalTemp; }
-    if (!neb_ && iObj.neB) { neb_ = iObj.neB; }
+    if (!neb_) { neb_ = iObj.neB; }
     at_ = iObj.argAnal;
     // Check if the label has already been defined
     if (lm.count(s.first.at(0)) != 0) {
@@ -84,7 +84,7 @@ Resistor::Resistor(const std::pair<tokens_t, string_o>& s,
         spAmp_ = Noise::determine_spectral_amplitude(netlistInfo.value_, temp_.value());
         Function tnoise;
         tnoise.parse_function("NOISE(" + Misc::precise_to_string(spAmp_.value()) + ", 0.0, "
-                                      + Misc::precise_to_string(1.0 / (2 * neb_.value())) + ")",
+                                      + Misc::precise_to_string(Noise::determine_sampling_interval(neb_.value(), iObj.transSim.tstep())) + ")",
                               iObj,
                               s.second);
         thermalNoise = tnoise;

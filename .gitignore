@@ -335,3 +335,13 @@ __pycache__/
 *.pyc
 
 test_internal
+
+# Versioned independent numerical reference provenance.
+!test/reference/buffer-101-manifest.json
+
+# Reviewed first-party coverage requirements.
+!tools/coverage-policy.json
+
+# Reviewed release notes, not generated release archives.
+!/docs/releases/
+!/docs/releases/*.md

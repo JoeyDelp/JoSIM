@@ -11,42 +11,81 @@
 #include "JoSIM/ProgressBar.hpp"
 #include "JoSIM/Rng.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <limits>
+#include <new>
+#include <stdexcept>
 
 using namespace JoSIM;
 
+namespace {
+// Local ownership also covers exceptions and retries during construction.
+struct KluResources {
+    klu_l_symbolic*& symbolic;
+    klu_l_numeric*& numeric;
+    klu_l_common& common;
+    ~KluResources() {
+        klu_l_free_numeric(&numeric, &common);
+        klu_l_free_symbolic(&symbolic, &common);
+    }
+};
+
+[[noreturn]] void solver_failure(const klu_l_common& common) {
+    if (common.status == KLU_SINGULAR) {
+        Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR);
+    }
+    Errors::simulation_errors(SimulationErrors::SOLVER_FAILURE,
+                              "Status " + std::to_string(common.status));
+}
+
+void validate_matrix(const Matrix& matrix) {
+    const auto n = matrix.branchIndex;
+    if (n <= 0 || matrix.rp.size() != static_cast<size_t>(n) + 1
+        || matrix.ci.empty() || matrix.ci.size() != matrix.nz.size()
+        || matrix.rp.front() != 0 || matrix.rp.back() != static_cast<int64_t>(matrix.nz.size())) {
+        Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Inconsistent dimensions or empty circuit.");
+    }
+    for (size_t i = 1; i < matrix.rp.size(); ++i) {
+        if (matrix.rp[i] < matrix.rp[i - 1] || matrix.rp[i] > matrix.rp.back()) {
+            Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Invalid row offsets.");
+        }
+    }
+    for (size_t i = 0; i < matrix.ci.size(); ++i) {
+        if (matrix.ci[i] < 0 || matrix.ci[i] >= n || !std::isfinite(matrix.nz[i])) {
+            Errors::simulation_errors(SimulationErrors::INVALID_MATRIX, "Invalid column index or non-finite coefficient.");
+        }
+    }
+}
+
+void validate_solution(const std::vector<double>& solution) {
+    if (!std::all_of(solution.begin(), solution.end(), [](double value) { return std::isfinite(value); })) {
+        Errors::simulation_errors(SimulationErrors::SOLVER_FAILURE, "Non-finite solution; model or numerical range exceeded");
+    }
+}
+} // namespace
+
 Simulation::Simulation(Input& iObj, Matrix& mObj) {
     while (needsTR_) {
+        validate_matrix(mObj);
         // Do generic simulation setup for given step size
         setup(iObj, mObj);
         // Do solver setup
-#ifdef SLU
-        // SLU setup
-        lu.create_matrix(mObj.rp.size() - 1, mObj.nz, mObj.ci, mObj.rp);
-        lu.factorize();
-#else
         // KLU setup
         simOK_ = klu_l_defaults(&Common_);
-        assert(simOK_);
+        if (!simOK_) { solver_failure(Common_); }
+        KluResources resources{Symbolic_, Numeric_, Common_};
         Symbolic_ = klu_l_analyze(mObj.rp.size() - 1, &mObj.rp.front(), &mObj.ci.front(), &Common_);
+        if (!Symbolic_) { solver_failure(Common_); }
         Numeric_  = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
-#endif
+        if (!Numeric_) { solver_failure(Common_); }
 
         // Run transient simulation
         trans_sim(mObj);
         // If step size is too large, reduce and try again
         if (needsTR_) { reduce_step(iObj, mObj); }
 
-        // Do solver cleanup
-#ifdef SLU
-        // SLU cleanup
-        lu.free();
-#else
-        // KLU cleanup
-        klu_l_free_symbolic(&Symbolic_, &Common_);
-        klu_l_free_numeric(&Numeric_, &Common_);
-#endif
     }
 }
 
@@ -63,11 +102,57 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
     startup_  = iObj.transSim.startup();
     x_.clear();
     x_.resize(mObj.branchIndex, 0.0);
+    results.sourceCurrents.clear();
+    results.phaseBefore.clear();
+    const auto capture_source = [&](const RelevantTrace& trace) {
+        if (trace.storageType == StorageType::Current && trace.sourceIndex) {
+            if (results.sourceCurrents.empty()) { results.sourceCurrents.resize(mObj.sourcegen.size()); }
+            results.sourceCurrents.at(trace.sourceIndex.value()).emplace();
+        }
+    };
+    for (const auto& trace : mObj.relevantTraces) {
+        capture_source(trace);
+        if (trace.subtract) { capture_source(*trace.subtract); }
+    }
+    {
+        const auto converted = atyp_ == AnalysisType::Phase ? StorageType::Voltage : StorageType::Phase;
+        const auto capture_phase = [&](const RelevantTrace& trace) {
+            if (trace.storageType == converted && !trace.variableIndex) {
+                if (trace.index1) { results.phaseBefore.emplace(trace.index1.value(), std::array<double, 2>{}); }
+                if (trace.index2) { results.phaseBefore.emplace(trace.index2.value(), std::array<double, 2>{}); }
+            }
+        };
+        if (mObj.relevantTraces.empty()) {
+            // Preserve all nodal history with the default all-unknown result set.
+            for (const auto& node : mObj.nm) { results.phaseBefore.emplace(node.second, std::array<double, 2>{}); }
+        } else {
+            for (const auto& trace : mObj.relevantTraces) {
+                capture_phase(trace);
+                if (trace.subtract) { capture_phase(*trace.subtract); }
+            }
+        }
+    }
     if (!mObj.relevantTraces.empty()) {
         results.xVector.resize(mObj.branchIndex);
         for (const auto& i : mObj.relevantIndices) { results.xVector.at(i).emplace(); }
     } else {
         results.xVector.resize(mObj.branchIndex, std::vector<double>(0));
+    }
+    // The complete internal grid is retained, including when output is decimated.
+    // Reserve only histories that are actually requested (or the default full set).
+    try {
+        const auto samples = static_cast<size_t>(simSize_);
+        results.timeAxis.reserve(samples);
+        for (auto& history : results.xVector) {
+            if (history) { history.value().reserve(samples); }
+        }
+        for (auto& history : results.sourceCurrents) {
+            if (history) { history.value().reserve(samples); }
+        }
+    } catch (const std::bad_alloc&) {
+        Errors::simulation_errors(SimulationErrors::STORAGE_ALLOCATION_FAILED, std::to_string(simSize_));
+    } catch (const std::length_error&) {
+        Errors::simulation_errors(SimulationErrors::STORAGE_ALLOCATION_FAILED, std::to_string(simSize_));
     }
 }
 
@@ -76,34 +161,41 @@ void Simulation::trans_sim(Matrix& mObj) {
     results.timeAxis.clear();
     ProgressBar bar;
     if (!minOut_) {
-        bar.create_thread();
         bar.set_bar_width(30);
         bar.fill_bar_progress_with("O");
         bar.fill_bar_remainder_with(" ");
         bar.set_status_text("Simulating");
         bar.set_total((float) simSize_);
+        bar.create_thread();
     }
     // Initialize the b matrix
     b_.resize(mObj.rp.size(), 0.0);
     if (startup_) {
         // Stabilize the simulation before starting at t=0
-        int64_t startup = static_cast<int64_t>(2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1));
-        if (startup > 1000) { startup = 1000; }
+        const double proposed = 2 * pow(10, (abs(log10(stepSize_)) - 12) * 2 + 1);
+        const int64_t startup = proposed >= 1000 ? 1000 : static_cast<int64_t>(proposed);
+        if (!std::isfinite(static_cast<double>(startup) * stepSize_)) {
+            Errors::control_errors(ControlErrors::TRANS_ERROR, "Startup interval exceeds the supported range");
+        }
         for (int64_t i = -startup; i < 0; ++i) {
-            double step = i * stepSize_;
             // Setup the b matrix
             setup_b(mObj, i, i * stepSize_);
             if (needsTR_) { return; }
             // Assign x_prev the new b
             x_ = b_;
             // Solve Ax=b, storing the results in x_
-#ifdef SLU
-            lu.solve(x_);
-#else
             simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
             // If anything is a amiss, complain about it
             if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
-#endif
+            validate_solution(x_);
+            for (auto& history : results.phaseBefore) {
+                const auto node = x_.at(history.first);
+                const double phase = atyp_ == AnalysisType::Phase ? node
+                    : (2.0 * stepSize_ / (3.0 * Constants::SIGMA)) * node
+                      + (4.0 / 3.0) * history.second[0] - (1.0 / 3.0) * history.second[1];
+                history.second[1] = history.second[0];
+                history.second[0] = phase;
+            }
         }
     }
     // Start the simulation loop
@@ -117,13 +209,10 @@ void Simulation::trans_sim(Matrix& mObj) {
         // Assign x_prev the new b
         x_ = b_;
         // Solve Ax=b, storing the results in x_
-#ifdef SLU
-        lu.solve(x_);
-#else
         simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
         // If anything is a amiss, complain about it
         if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
-#endif
+        validate_solution(x_);
         // Store results (only requested, to prevent massive memory usage)
         for (auto j = 0; j < results.xVector.size(); ++j) {
             if (results.xVector.at(j)) { results.xVector.at(j).value().emplace_back(x_.at(j)); }
@@ -153,6 +242,8 @@ void Simulation::reduce_step(Input& iObj, Matrix& mObj) {
     // iObj.netlist.expNetlist.shrink_to_fit();
     if (!tempMinOut) { iObj.argMin = tempMinOut; }
     results.xVector.clear();
+    results.sourceCurrents.clear();
+    results.phaseBefore.clear();
     results.timeAxis.clear();
 }
 
@@ -166,12 +257,10 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
     // Re-factorize the LU if any jj transitions
     if (needsLU_) {
         mObj.create_nz();
-#ifdef SLU
-        lu.factorize(true);
-#else
+        validate_matrix(mObj);
         klu_l_free_numeric(&Numeric_, &Common_);
         Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
-#endif
+        if (!Numeric_) { solver_failure(Common_); }
         needsLU_ = false;
     }
     // Handle current sources
@@ -196,13 +285,17 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
 
 void Simulation::handle_cs(Matrix& mObj, double& step, const int64_t& i) {
     for (const auto& j : mObj.components.currentsources) {
+        const double value = mObj.sourcegen.at(j.sourceIndex_).value(step);
+        if (i >= 0 && !results.sourceCurrents.empty() && results.sourceCurrents.at(j.sourceIndex_)) {
+            results.sourceCurrents.at(j.sourceIndex_).value().emplace_back(value);
+        }
         if (j.indexInfo.nodeConfig_ == NodeConfig::POSGND) {
-            b_.at(j.indexInfo.posIndex_.value()) -= (mObj.sourcegen.at(j.sourceIndex_).value(step));
+            b_.at(j.indexInfo.posIndex_.value()) -= value;
         } else if (j.indexInfo.nodeConfig_ == NodeConfig::GNDNEG) {
-            b_.at(j.indexInfo.negIndex_.value()) += (mObj.sourcegen.at(j.sourceIndex_).value(step));
+            b_.at(j.indexInfo.negIndex_.value()) += value;
         } else if (j.indexInfo.nodeConfig_ == NodeConfig::POSNEG) {
-            b_.at(j.indexInfo.posIndex_.value()) -= (mObj.sourcegen.at(j.sourceIndex_).value(step));
-            b_.at(j.indexInfo.negIndex_.value()) += (mObj.sourcegen.at(j.sourceIndex_).value(step));
+            b_.at(j.indexInfo.posIndex_.value()) -= value;
+            b_.at(j.indexInfo.negIndex_.value()) += value;
         }
     }
 }
@@ -250,7 +343,7 @@ void Simulation::handle_inductors(Matrix& mObj, double factor) {
                               * x_.at(temp.indexInfo.currentIndex_.value())
                       + ((temp.netlistInfo.value_ / (2.0 * (stepSize_ * factor))) * temp.In2_);
             // -2M/h Im + M/2h Im2
-            for (const auto& m : temp.get_mutualInductance()) {
+            for (const auto& m : temp.mutualInductances_) {
                 Inductor& mi = std::get<Inductor>(mObj.components.devices.at(m.first));
                 b_.at(temp.indexInfo.currentIndex_.value())
                         += (-((2 * m.second) / (stepSize_ * factor)) * x_.at(mi.indexInfo.currentIndex_.value())
@@ -299,30 +392,23 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
 
         // ---- Node voltage/phase "pn1_" and add thermal noise (as current injection) ----
         if (temp.indexInfo.posIndex_ && !temp.indexInfo.negIndex_) {
-            if (temp.thermalNoise) { b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step); }
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()));
         } else if (!temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-            if (temp.thermalNoise) { b_.at(temp.indexInfo.negIndex_.value()) += temp.thermalNoise.value().value(step); }
             temp.pn1_ = (-x_.at(temp.indexInfo.negIndex_.value()));
         } else if (temp.indexInfo.posIndex_ && temp.indexInfo.negIndex_) {
-            if (temp.thermalNoise) {
-                b_.at(temp.indexInfo.posIndex_.value()) -= temp.thermalNoise.value().value(step);
-                b_.at(temp.indexInfo.negIndex_.value()) += temp.thermalNoise.value().value(step);
-            }
             temp.pn1_ = (x_.at(temp.indexInfo.posIndex_.value()) - x_.at(temp.indexInfo.negIndex_.value()));
         } else {
             temp.pn1_ = 0.0;
         }
 
-        // ---- History bookkeeping for vn/pn depending on analysis mode ----
-        if (i > 0) {
-            if (atyp_ == AnalysisType::Voltage) {
-                temp.vn1_ = temp.pn1_;
-                temp.pn1_ = x_.at(temp.variableIndex_);
-            } else if (atyp_ == AnalysisType::Phase) {
-                temp.vn1_ = x_.at(temp.variableIndex_);
-                // temp.pn1_ already holds the node phase difference
-            }
+        // Use the previous solved phase/voltage during startup and at t=0,
+        // as well as later samples. Zero-state runs already start with x_=0.
+        if (atyp_ == AnalysisType::Voltage) {
+            temp.vn1_ = temp.pn1_;
+            temp.pn1_ = x_.at(temp.variableIndex_);
+        } else if (atyp_ == AnalysisType::Phase) {
+            temp.vn1_ = x_.at(temp.variableIndex_);
+            // temp.pn1_ already holds the node phase difference
         }
 
         // ---- Guess voltage (V0) and phase (phi0) ----
@@ -362,6 +448,12 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
             const bool testLU = temp.update_value(v0);
             if (testLU && !needsLU_) { needsLU_ = true; }
         }
+        // Apply one sample using the conductance selected for this step.
+        if (temp.thermalNoise) {
+            const double noise = temp.thermalNoise.value().value(step);
+            if (temp.indexInfo.posIndex_) { b_.at(*temp.indexInfo.posIndex_) -= noise; }
+            if (temp.indexInfo.negIndex_) { b_.at(*temp.indexInfo.negIndex_) += noise; }
+        }
         double gateFactor = 1.0;
         if (temp.gateIndex_) {
             const double signal = x_.at(temp.gateIndex_.value());
@@ -380,13 +472,14 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
         if (temp.icNoise) { dIc = temp.icNoise.value().value(step); }
         if (dIc < -0.99) { dIc = -0.99; }
         const double Ic_eff = gateFactor * temp.model_.ic() * (1.0 + dIc);
+        const auto& harmonics = model.cpr_view();
 
         // ---- RHS2 (junction current equation row) ----
         if (!temp.model_.tDep()) {
             // sum_h CPR_h * sin((h+1)*(phi0 - phiOff))
             double s = 0.0;
-            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
-                s += temp.model_.cpr().at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
+            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+                s += harmonics.at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
             }
 
             // Josephson current with fractional critical-current noise
@@ -399,21 +492,46 @@ void Simulation::handle_jj(Matrix& mObj, int64_t& i, double& step, double factor
                          + ((model.c() / (2.0 * (stepSize_))) * temp.vn2_) + temp.it_);
         } else {
             double sin2_half_phi = 0.0;
-            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
-                sin2_half_phi += temp.model_.cpr().at(harm)
+            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+                sin2_half_phi += harmonics.at(harm)
                                  * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()) / 2.0);
             }
             sin2_half_phi  = sin2_half_phi * sin2_half_phi;
 
             double sin_phi = 0.0;
-            for (int harm = 0; harm < (int) temp.model_.cpr().size(); ++harm) {
-                sin_phi += temp.model_.cpr().at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
+            for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+                sin_phi += harmonics.at(harm) * std::sin((harm + 1) * (temp.phi0_ - temp.model_.phiOff()));
             }
 
-            const double sqrt_part = std::sqrt(1.0 - model.d() * sin2_half_phi);
-
-            double pref = ((Constants::PI * temp.del_) / (2.0 * Constants::EV * temp.model_.rn())) * (1.0 / sqrt_part)
-                          * std::tanh(temp.del_ / (2.0 * Constants::BOLTZMANN * model.t()) * sqrt_part);
+            const double term = model.d() * sin2_half_phi;
+            double radicand = 1.0 - term;
+            if (harmonics.size() == 1) {
+                const double beta = model.d() * harmonics.front() * harmonics.front();
+                if (std::isfinite(beta)) {
+                    const double cosine = std::cos((temp.phi0_ - model.phiOff()) / 2.0);
+                    // Equivalent form without loss of 1-sin^2 near the zero-T cusp.
+                    radicand = (1.0 - beta) + beta * cosine * cosine;
+                }
+            }
+            if (!std::isfinite(term)
+                || radicand < -8 * std::numeric_limits<double>::epsilon() * std::max(1.0, std::abs(term))) {
+                Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                    temp.netlistInfo.label_ + ": D and CPR give a negative square-root argument at this phase");
+            }
+            const double sqrt_part = std::sqrt(std::max(0.0, radicand));
+            double ratio;
+            if (model.t() == 0) {
+                if (sqrt_part <= 8 * std::numeric_limits<double>::epsilon()) {
+                    Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                        temp.netlistInfo.label_ + ": zero-temperature CPR is singular at this phase");
+                }
+                ratio = 1.0 / sqrt_part;
+            } else {
+                const double alpha = temp.del_ / (2.0 * Constants::BOLTZMANN * model.t());
+                // tanh(alpha*q)/q -> alpha as q -> 0. Avoid 0*infinity at D=1.
+                ratio = sqrt_part == 0 ? alpha : std::tanh(alpha * sqrt_part) / sqrt_part;
+            }
+            const double pref = ((Constants::PI * temp.del_) / (2.0 * Constants::EV * temp.model_.rn())) * ratio;
 
             const double scale = gateFactor * (1.0 + dIc);
 
@@ -464,27 +582,16 @@ void Simulation::handle_vs(Matrix& mObj, const int64_t& i, double& step, double 
 void Simulation::handle_ps(Matrix& mObj, const int64_t& i, double& step, double factor) {
     for (const auto& j : mObj.components.psIndices) {
         auto& temp = std::get<PhaseSource>(mObj.components.devices.at(j));
+        const double phase = mObj.sourcegen.at(temp.sourceIndex_).value(step);
         if (atyp_ == AnalysisType::Phase) {
             // φn
-            b_.at(temp.indexInfo.currentIndex_.value()) = (mObj.sourcegen.at(temp.sourceIndex_).value(step));
+            b_.at(temp.indexInfo.currentIndex_.value()) = phase;
         } else if (atyp_ == AnalysisType::Voltage) {
-            if (i == 0) {
-                b_.at(temp.indexInfo.currentIndex_.value())
-                        = (Constants::SIGMA / (stepSize_ * factor))
-                          * ((3.0 / 2.0) * (mObj.sourcegen.at(temp.sourceIndex_).value(step)));
-            } else if (i == 1) {
-                b_.at(temp.indexInfo.currentIndex_.value())
-                        = (Constants::SIGMA / (stepSize_ * factor))
-                          * ((3.0 / 2.0) * (mObj.sourcegen.at(temp.sourceIndex_).value(step))
-                             - 2.0 * (mObj.sourcegen.at(temp.sourceIndex_).value(step - (stepSize_ * factor))));
-            } else {
-                b_.at(temp.indexInfo.currentIndex_.value())
-                        = (Constants::SIGMA / (stepSize_ * factor))
-                          * ((3.0 / 2.0) * (mObj.sourcegen.at(temp.sourceIndex_).value(step))
-                             - 2.0 * (mObj.sourcegen.at(temp.sourceIndex_).value(step - (stepSize_ * factor)))
-                             + 0.5 * (mObj.sourcegen.at(temp.sourceIndex_).value(step - (2 * stepSize_ * factor))));
-            }
+            b_.at(temp.indexInfo.currentIndex_.value()) = (Constants::SIGMA / (stepSize_ * factor))
+                * (1.5 * phase - 2.0 * temp.pn1_ + 0.5 * temp.pn2_);
         }
+        temp.pn2_ = temp.pn1_;
+        temp.pn1_ = phase;
     }
 }
 

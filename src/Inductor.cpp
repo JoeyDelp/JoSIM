@@ -7,6 +7,7 @@
 #include "JoSIM/Errors.hpp"
 #include "JoSIM/Misc.hpp"
 
+#include <algorithm>
 #include <utility>
 
 using namespace JoSIM;
@@ -90,5 +91,12 @@ void Inductor::add_mutualInductance(const double& m, const AnalysisType& at, con
 
 // Update timestep based on a scalar factor i.e 0.5 for half the timestep
 void Inductor::update_timestep(const double& factor) {
-    if (at_ == AnalysisType::Voltage) { matrixInfo.nonZeros_.back() = (1.0 / factor) * matrixInfo.nonZeros_.back(); }
+    if (at_ == AnalysisType::Voltage) {
+        const auto own = std::find(matrixInfo.columnIndex_.begin(), matrixInfo.columnIndex_.end(),
+                                   indexInfo.currentIndex_.value());
+        // The own-current coefficient is followed by every mutual-current term.
+        for (size_t i = own - matrixInfo.columnIndex_.begin(); i < matrixInfo.nonZeros_.size(); ++i) {
+            matrixInfo.nonZeros_.at(i) = (1.0 / factor) * matrixInfo.nonZeros_.at(i);
+        }
+    }
 }

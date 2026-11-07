@@ -13,15 +13,19 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <limits>
 
 using namespace JoSIM;
 
 Output::Output(Input& iObj, Matrix& mObj, Simulation& sObj) {
+    if (iObj.cli_output_file) { iObj.ensure_safe_output(iObj.cli_output_file.value().name()); }
+    for (auto& output : iObj.output_files) { iObj.ensure_safe_output(output.name()); }
     // Write the output in type agnostic format
     write_output(iObj, mObj, sObj);
     // Format the output into the relevant type
@@ -53,9 +57,17 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     auto&   x           = sObj.results.xVector;
     auto&   t           = sObj.results.timeAxis;
     auto&   tran        = iObj.transSim;
+    tran.validate_output();
+    if (t.empty()) { Errors::control_errors(ControlErrors::TRANS_ERROR, "Output contains no simulation samples"); }
+    const auto phase_at = [&](int64_t index, int64_t sample) {
+        if (index < 0) { return 0.0; }
+        if (sample >= 0) { return x.at(index).value().at(sample); }
+        return sObj.results.phaseBefore.at(index).at(static_cast<size_t>(-sample - 1));
+    };
     // Create downsampling FIR window, use Hanning function with odd number of taps.
     // The FIR filter is centered around the requested point in time, i. e. looks into the past and future.
-    int64_t halffirsize = static_cast<int64_t>(tran.prfirwindow() <= 0. ? 0 : .5 * tran.prfirwindow() / tran.tstep());
+    const double window = std::min(tran.prfirwindow(), tran.tstop());
+    int64_t halffirsize = static_cast<int64_t>(window <= 0. ? 0 : .5 * window / tran.tstep());
     int64_t firsize     = halffirsize * 2 + 1; // Guarantees odd number of taps or 1 in case of disabled filter.
     std::vector<double> firwindow;
     firwindow.reserve(firsize);
@@ -72,17 +84,28 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     for (auto& hanning : firwindow) { hanning = firscale * hanning; }
     // Indices to print
     std::vector<int64_t> result_indices;
+    const auto reaches_print_point = [&](double sample, double requested) {
+        // Treat roundoff at an exact grid tie consistently. The tolerance is
+        // a few ulps of time, not a fraction of the physical timestep.
+        const double scale = std::max({std::abs(sample), std::abs(requested), tran.tstep()});
+        return sample >= requested - 8 * std::numeric_limits<double>::epsilon() * scale;
+    };
     for (auto i = 0; i < t.size(); ++i) {
-        if (t.at(i) >= tran.prstart()) {
+        if (reaches_print_point(t.at(i), tran.prstart())) {
             result_indices.emplace_back(i);
             break;
         }
     }
-    double next_print_point = tran.prstart() + tran.prstep();
-    for (auto i = static_cast<size_t>(result_indices.back()); i < t.size(); ++i) {
-        if (t.at(i) >= next_print_point) {
+    if (result_indices.empty()) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR, "Output window contains no simulation samples");
+    }
+    int64_t print_point = 1;
+    double next_print_point = std::fma(static_cast<double>(print_point), tran.prstep(), tran.prstart());
+    for (auto i = static_cast<size_t>(result_indices.back()) + 1; i < t.size(); ++i) {
+        if (reaches_print_point(t.at(i), next_print_point)) {
             result_indices.emplace_back(i);
-            next_print_point += tran.prstep();
+            ++print_point;
+            next_print_point = std::fma(static_cast<double>(print_point), tran.prstep(), tran.prstart());
         }
     }
     // Create the time trace
@@ -93,25 +116,30 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     // Print only the indices of the relevant traces
     int64_t cc = 0;
     if (mObj.relevantTraces.size() != 0) {
+        std::vector<std::pair<RelevantTrace, bool>> requests;
+        for (const auto& trace : mObj.relevantTraces) {
+            requests.emplace_back(trace, false);
+            if (trace.subtract) { requests.emplace_back(*trace.subtract, true); }
+        }
         // Create progress bar
         ProgressBar bar;
         if (!iObj.argMin) {
-            bar.create_thread();
             bar.set_bar_width(30);
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Formatting Output");
-            bar.set_total((float) mObj.relevantTraces.size());
+            bar.set_total((float) requests.size());
+            bar.create_thread();
         }
         // Reset progress counter
         cc = 0;
-        for (const auto& i : mObj.relevantTraces) {
+        for (const auto& request : requests) {
+            const auto& i = request.first;
             auto& st = i.storageType;
             if (!iObj.argMin) { bar.update(static_cast<float>(cc)); }
             // Shorthand for the optional value
             auto i1    = i.index1.has_value() ? i.index1.value() : -1;
             auto i2    = i.index2.has_value() ? i.index2.value() : -1;
-            auto si    = i.sourceIndex.has_value() ? i.sourceIndex.value() : -1;
             auto vi    = i.variableIndex.has_value() ? i.variableIndex.value() : -1;
             // Size of original data vectors available to FIR filter
             auto xsize = t.size();
@@ -150,20 +178,8 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                             if (i.deviceLabel.value().at(3) == 'B' && vi != -1) {
                                 value = x.at(vi).value().at(jk);
                             } else {
-                                double valin1n1, valin1n2;
-                                double valin2n1, valin2n2;
-                                if (jk >= 2) {
-                                    valin1n2 = i1 != -1 ? x.at(i1).value().at(jk - 2) : 0;
-                                    valin1n1 = i1 != -1 ? x.at(i1).value().at(jk - 1) : 0;
-                                    valin2n2 = i2 != -1 ? x.at(i2).value().at(jk - 2) : 0;
-                                    valin2n1 = i2 != -1 ? x.at(i2).value().at(jk - 1) : 0;
-                                } else if (jk == 1) {
-                                    valin1n2 = valin1n1 = i1 != -1 ? x.at(i1).value().at(jk - 1) : 0;
-                                    valin2n2 = valin2n1 = i2 != -1 ? x.at(i2).value().at(jk - 1) : 0;
-                                } else {
-                                    valin1n2 = valin1n1 = valin1;
-                                    valin2n2 = valin2n1 = valin2;
-                                }
+                                const double valin1n1 = phase_at(i1, jk - 1), valin1n2 = phase_at(i1, jk - 2);
+                                const double valin2n1 = phase_at(i2, jk - 1), valin2n2 = phase_at(i2, jk - 2);
                                 value = ((3.0 * Constants::SIGMA) / (2.0 * iObj.transSim.tstep()))
                                         * ((valin1 - valin2) - (4.0 / 3.0) * (valin1n1 - valin2n1)
                                            + (1.0 / 3.0) * (valin1n2 - valin2n2));
@@ -228,8 +244,9 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                         // It takes extra memory and time, so do it only if necessary.
                         std::vector<double> vectphase;
                         vectphase.reserve(xsize);
-                        double phaseN1 = 0., phaseN2 = phaseN1;
-                        for (auto j = 0; j < xsize; j++) {
+                        double phaseN1 = phase_at(i1, -1) - phase_at(i2, -1);
+                        double phaseN2 = phase_at(i1, -2) - phase_at(i2, -2);
+                        for (size_t j = 0; j < xsize; j++) {
                             auto valin1 = i1 != -1 ? x.at(i1).value().at(j) : 0;
                             auto valin2 = i2 != -1 ? x.at(i2).value().at(j) : 0;
                             auto value  = ((2.0 * iObj.transSim.tstep()) / (3.0 * Constants::SIGMA)) * (valin1 - valin2)
@@ -278,15 +295,21 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
                         }
                         // Get individual current sample
                         double value;
-                        if (i.deviceLabel.value().at(3) != 'I') {
+                        if (!i.sourceIndex) {
                             value = x.at(i1).value().at(jk);
                         } else {
-                            value = mObj.sourcegen.at(i.sourceIndex.value()).value(t.at(jk));
+                            value = sObj.results.sourceCurrents.at(i.sourceIndex.value()).value().at(jk);
                         }
                         accumulator += firwindow.at(k) * value;
                     }
                     traces.back().data_.emplace_back(accumulator);
                 }
+            }
+            if (request.second) {
+                auto& first = traces.at(traces.size() - 2).data_;
+                const auto& second = traces.back().data_;
+                for (size_t sample = 0; sample < first.size(); ++sample) { first.at(sample) -= second.at(sample); }
+                traces.pop_back();
             }
             ++cc;
         }
@@ -297,12 +320,12 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
     } else {
         ProgressBar bar;
         if (!iObj.argMin) {
-            bar.create_thread();
             bar.set_bar_width(30);
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Formatting Output");
             bar.set_total((float) mObj.nm.size());
+            bar.create_thread();
         }
         int64_t cc = 0;
         for (const auto& i : mObj.nm) {
@@ -338,6 +361,16 @@ void Output::write_output(const Input& iObj, Matrix& mObj, Simulation& sObj) {
             std::cout << "\n";
         }
     }
+    // Finite solved unknowns can overflow during conversion, filtering or subtraction.
+    // Reject the complete result before any destination is opened or truncated.
+    for (const auto& trace : traces) {
+        for (size_t sample = 0; sample < trace.data_.size(); ++sample) {
+            if (!std::isfinite(trace.data_.at(sample))) {
+                Errors::output_errors(OutputErrors::NONFINITE_TRACE,
+                    trace.name_ + " at output sample " + std::to_string(sample));
+            }
+        }
+    }
 }
 
 void Output::format_csv_or_dat(const std::string& filename, const char& delimiter, bool argmin, int64_t fIndex) {
@@ -352,12 +385,12 @@ void Output::format_csv_or_dat(const std::string& filename, const char& delimite
         outfile << traces.at(tIndices.at(tIndices.size() - 1)).name_ << "\n";
         ProgressBar bar;
         if (!argmin) {
-            bar.create_thread();
             bar.set_bar_width(30);
             bar.fill_bar_progress_with("O");
             bar.fill_bar_remainder_with(" ");
             bar.set_status_text("Writing Output");
             bar.set_total((float) traces.at(0).data_.size());
+            bar.create_thread();
         }
         for (auto j = 0; j < traces.at(0).data_.size(); ++j) {
             if (!argmin) { bar.update(static_cast<float>(j)); }
@@ -368,6 +401,8 @@ void Output::format_csv_or_dat(const std::string& filename, const char& delimite
             outfile << std::scientific << std::setprecision(6)
                     << traces.at(tIndices.at(tIndices.size() - 1)).data_.at(j) << "\n";
         }
+        outfile.close();
+        if (!outfile) { Errors::output_errors(OutputErrors::WRITE_FAILED, filename); }
         if (!argmin) {
             bar.complete();
             std::cout << "\n\n";
@@ -431,12 +466,12 @@ void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex
             int64_t     pointSizeSpacing = std::to_string(loopsize).length() + 1;
             ProgressBar bar;
             if (!argmin) {
-                bar.create_thread();
                 bar.set_bar_width(30);
                 bar.fill_bar_progress_with("O");
                 bar.fill_bar_remainder_with(" ");
                 bar.set_status_text("Writing Output");
                 bar.set_total((float) loopsize);
+                bar.create_thread();
             }
             for (int64_t i = 0; i < loopsize; ++i) {
                 if (!argmin) { bar.update(static_cast<float>(i)); }
@@ -458,6 +493,7 @@ void Output::format_raw(const std::string& filename, bool argmin, int64_t fIndex
             Errors::output_errors(OutputErrors::NOTHING_SPECIFIED);
         }
         outfile.close();
+        if (!outfile) { Errors::output_errors(OutputErrors::WRITE_FAILED, filename); }
         // If the file could not be opened for writing
     } else {
         // Complain about it
@@ -477,5 +513,7 @@ void Output::format_cout(const bool& argMin) {
             std::cout << std::setw(15) << std::scientific << std::setprecision(6)
                       << traces.at(traces.size() - 1).data_.at(j) << "\n";
         }
+        std::cout.flush();
+        if (!std::cout) { Errors::output_errors(OutputErrors::WRITE_FAILED, "standard output"); }
     }
 }

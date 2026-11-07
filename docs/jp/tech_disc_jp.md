@@ -7,6 +7,11 @@
 
 <div style="text-align:center;"><img src="../../img/josim_macro.svg" alt="JoSIM Macro Overview" style="width:600px;" /></div>
 
+計算は各試行内で固定ステップ幅を使用します。接合の予測位相増分が制限を超えると、
+ステップ幅を半分にして行列・履歴・乱数系列を再構築し、最初から再実行します。
+局所誤差を制御する通常の可変ステップ積分ではありません。精度は別途収束試験で確認してください。
+詳細は [現在の技術解説](../tech_disc.md#start-simulation) を参照してください。
+
 ## 回路の入力ファイル
 
 JoSIMの入力ファイルは [文法ガイド](syntax_jp.md)に規定されている文法に沿っていることが必要です。この入力ファイルはさらに、シミュレーションエンジンにこのファイルは何をするファイルなのかを教えるための[トランジェント解析](syntax_jp.md#transient-analysis)に書かれているコマンドが必要です。
@@ -27,7 +32,8 @@ CLIのオプションオブジェクトが処理されたコマンドライン�
 `-h`を実行すると次のように出力されます：
 
 
-<div style="text-align:center;"><img src="../../img/josim_help.png" alt="JoSIM Help" style="zoom:100%;" /></div>
+現在のオプション一覧は `josim-cli -h` で確認してください。長いオプション名は小文字で、
+`--analysis=0`、`--verbose=1`、`--sanity` のように指定します。短い詳細表示は大文字の `-V` です。
 
 ### Analysis (-a):
 
@@ -55,12 +61,14 @@ JoSIMが進捗バーなどの不必要な出力をコマンドラインインタ
 
 ### Parallel (-p):
 
-バージョン2.5からは今のところJoSIMで並列実行される部分はありません。このオプションが有効化されるとCMakeのスイッチでJoSIMが`--DUSING_OPENMP=1`でコンパイルされているかどうかをチェックします。このオプションは将来的に非常に大規模な回路を実装する時のために用意されています。現在のところ、このオプションは何もしておらずパフォーマンスに害を与えることもありません。
-
+廃止されています。並列シミュレーションは実装されておらず、`-p` と
+`-DUSING_OPENMP=ON` はエラーになります。独立した計算には別プロセスを使用してください。
 
 ### Verbose (-V):
 
-シミュレータによるログ出力レベルを設定できます。レベル`1`ではシミュレーションされている回路の統計情報だけを表示します。レベル`2`ではレベル1の全てと、回路中で評価された`.param` 記述部分全てを表示します。レベル3ではレベル2とシミュレーションされているメインの回路を全て展開して表示します。この出力は`-m`によってミュートされません。
+レベル `1` は回路統計、有効な乱数シード、最終内部ステップ幅・サンプル数を表示します。
+レベル `2` は評価した `.param`、レベル `3` は展開済み回路も表示します。
+レベル `0` は詳細表示を無効にします。これらの表示は `-m` では抑制されません。
 
 ### Version (-v):
 
@@ -68,7 +76,8 @@ JoSIMが進捗バーなどの不必要な出力をコマンドラインインタ
 
 ### Solver (-x):
 
-このオプションでLUソルバと切り替えることが出来ます。デフォルトはKLUソルバです。`1`を設定することでSuperLUを有効化出来ます。
+KLU のみをサポートします。`-x`、`-DSLU=ON`、`SLU` マクロはエラーになります。
+以前のビルド設定は、動作する別ソルバーを選択していませんでした。
 
 ## 入力のパース {#parse-input}
 
@@ -228,7 +237,7 @@ $$
 
 回路中の電圧または電流について解くための一次方程式を用意する方法はいくつもあります。よく知られている方法の一つは回路のネットリスト中で定義された各ノードに対して式を作成する節点解析法を用いる方法です。この方法は元々のBerkeley SPICE[^3] が出来たことを基礎とする方法です。一方、この方法ではただ全てのノードの電圧を計算しているだけなのでインダクタやJJのような電圧依存素子を取り扱うのが難しくなります。
 
-この欠点より、ノード電圧に加えブランチ電流を計算できるようにした、先の発展形のとしてのmodified nodal analysis (MNA)が作られました。したがってインダクタや超伝導のジョセフソン接合を大規模に使用するため我々はJoSIM中で一次方程式の集合を作ってMNA法を使用しています。
+この欠点より、ノード電圧に加えブランチ電流を計算できるようにした、先の発展形のとしてのmodified nodal analysis (MNA)[^4]が作られました。したがってインダクタや超伝導のジョセフソン接合を大規模に使用するため我々はJoSIM中で一次方程式の集合を作ってMNA法を使用しています。
 
 MNA法の便利な特徴は全ての素子をスタンプと呼ばれる部分行列によって表せることです。全てのスタンプの総和は**A**となり、一次方程式を解くためには**x**と**b**行列も必要です。スタンプについては今後のサブセクションで議論されます。
 
@@ -482,53 +491,16 @@ CSVファイルに非常に似ていますがカンマではなく、空白が�
 
 ## プロットのインターフェース
 
-前のバージョンのJoSIMではFLTKとMatplotlibという2つのプロットウインドウが存在しました。しかし、このインターフェースは最終的にはメンテナンス性やクロスプラットフォームの互換性の問題から破棄されました。ユーザは各自が一番いいと思うプロットシステムを使って頂くことになりました。
+JoSIM の出力を外部ツールで描画します。[Python ユーティリティーガイド](../python_utilities.md)
+に従って環境を準備し、リポジトリのルートから実行してください。
 
-以下に全ての結果が*.csv*となっているファイルをプロットする簡単なPython 3スクリプトを示します。これは非常にシンプルなので必要に応じて修正してください。このスクリプトはPython 3の**Numpy**と**Matplotlib**パッケージのインストールを必要とします。オプションとして、**Qt5**プロットのバックエンドとして使用した場合の行をコメントにしてあります。**PyQt5**パッケージがインストールされている場合有効化できます。
-
-よりエレガントな方法で結果を可視化する**Plotly**や **Pandas**というスクリプトはGitHubリポジトリの[scripts](https://github.com/JoeyDelp/JoSIM/tree/master/scripts)フォルダに用意されており、より多くの設定をユーザが調整できるようになっています。
-
-```python
-#!/usr/bin/env python
-import math
-# import matplotlib
-# matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as pl
-from matplotlib import gridspec
-import numpy as np
-import csv
-import sys
-
-time = []
-data = []
-labels = set()
-with open(sys.argv[1], 'r') as csvFile:
-    reader = csv.DictReader(csvFile)
-    labels = reader.fieldnames
-    data.append([])
-    for row in reader:
-        time.append(float(row[labels[0]]))
-        for var in range(1,len(labels)):
-            data.append([])
-            data[var].append(float(row[labels[var]]))
-csvFile.close()
-
-N = len(labels) - 1
-cols = int(math.ceil(N / 4))
-rows = int(math.ceil(N / cols))
-
-gs = gridspec.GridSpec(rows, cols)
-fig = pl.figure()
-for var in range(1,len(labels)):
-    ax = fig.add_subplot(gs[var - 1])
-    ax.plot(time, data[var])
-    ax.set_xlabel(labels[0])
-    ax.set_ylabel(labels[var])
-
-fig.set_tight_layout(True)
-fig.show()
-input()
+```bash
+build/python-utilities/bin/python scripts/josim-plot.py build/example.csv \
+  -t stacked -x build/example.html
 ```
+
+HTML 出力は Plotly を埋め込み、Chrome を必要としません。画像出力のブラウザー要件と
+各形式・オプションは上記ガイドを参照してください。
 
 [^1]:E. W. Dijkstra, "Algol 60 translation : An Algol 60 translator for the x1 and Making a translator for Algol 60" in *MR35, Mathematisch Centrum, Amsterdam*, 1961
 [^2]:J. Satchell, "Limitations on HTS single flux quantum logic," in *IEEE Transactions on Applied Superconductivity*, vol. 9, no. 2, pp. 3841-3844, June 1999, doi: 10.1109/77.783865

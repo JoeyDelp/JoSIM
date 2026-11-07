@@ -36,6 +36,14 @@ class Parameter {
 // Shorthand for long type
 using param_map = std::unordered_map<ParameterName, Parameter>;
 
+// First header/instance token belonging to PARAMS: or NAME=EXPRESSION.
+size_t parameter_start(const tokens_t& tokens, size_t first);
+
+std::vector<std::pair<std::string, std::string>> parameter_assignments(const tokens_t& tokens, size_t first);
+
+// Instance scopes begin with '|'; ordinary subcircuit-definition scopes do not.
+string_o parent_parameter_scope(const string_o& scope);
+
 void    expand_inline_parameters(std::vector<tokens_t, string_o>& s, param_map& parameters);
 
 void    create_parameter(const tokens_t& s, param_map& parameters, string_o subc = std::nullopt);
@@ -47,6 +55,8 @@ int64_t precedence_lvl(const std::string& op);
 double  parse_operator(const std::string& op, double val1, double val2, int64_t& popCount);
 
 void    parse_parameters(param_map& parameters);
+
+void    parse_parameters(param_map& parameters, const std::vector<ParameterName>& names);
 
 void    update_parameters(param_map& parameters);
 

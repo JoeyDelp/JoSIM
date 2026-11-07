@@ -23,12 +23,10 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
         case CLIErrors::UNKNOWN_SWITCH:
             formattedMessage
                     += "Unknown option '" + message.value_or("") + "' specified. Please refer to the help menu.";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case CLIErrors::UNKNOWN_OUTPUT_TYPE:
-            formattedMessage += "Unknown output type " + message.value_or("") + " specified. CSV will be used instead.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Unknown output type " + message.value_or("") + ". Use CSV, DAT or RAW.";
+            throw std::runtime_error(formattedMessage);
         case CLIErrors::TOO_FEW_ARGUMENTS:
             formattedMessage += "Missing input arguments\n";
             formattedMessage += "Usage: josim [options] input_netlist\n\n";
@@ -40,7 +38,7 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
         case CLIErrors::INVALID_SOLVER:
-            formattedMessage += "Invalid solver type specified. 0 - KLU, 1 - SLU.\n";
+            formattedMessage += "Solver selection has been retired. KLU is the supported solver.\n";
             formattedMessage += "Usage: josim [options] input_netlist\n\n";
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
@@ -50,12 +48,11 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
         case CLIErrors::NO_ANALYSIS:
-            formattedMessage += "No analysis was specified. Reverting to default (0 - Voltage).\n";
+            formattedMessage += "No analysis value specified. Use -a 0 (voltage) or -a 1 (phase).\n";
             formattedMessage +=
           "Please refer to the help menu (-h) or manual for further "
           "information.";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case CLIErrors::NO_SOLVER:
             formattedMessage += "No solver was specified. Reverting to default (0 - KLU).\n";
             formattedMessage +=
@@ -79,8 +76,12 @@ void Errors::cli_errors(CLIErrors errorCode, string_o message) {
         case CLIErrors::INPUT_SAME_OUTPUT:
             formattedMessage += "Output file name is the same as input file name.\n";
             formattedMessage += "This will cause irreversible changes to input file.\n";
-            formattedMessage += "Please choose a different output file name.";
+            formattedMessage += "Please choose a different output file name. " + message.value_or("");
             throw std::runtime_error(formattedMessage);
+        case CLIErrors::INVALID_ARGUMENT:
+            throw std::runtime_error(formattedMessage + "Invalid argument. " + message.value_or(""));
+        case CLIErrors::UNSUPPORTED_PARALLEL:
+            throw std::runtime_error(formattedMessage + "Parallel simulation is unsupported. Use separate processes for independent runs.");
         case CLIErrors::NO_CONVENTION:
             formattedMessage += "No convention was specified. Reverting to default (0 - JSIM).\n";
             formattedMessage +=
@@ -109,10 +110,14 @@ void Errors::input_errors(InputErrors errorCode, string_o message) {
             formattedMessage += "For further help use the -h switch";
             throw std::runtime_error(formattedMessage);
         case InputErrors::CYCLIC_INCLUDE:
-            formattedMessage += "Attempting to include file " + message.value_or("") + ".\n";
-            formattedMessage += "This is the same file as input file.\n\n";
-            formattedMessage += "Preventing cyclic includes.";
+            formattedMessage += "Cyclic include: " + message.value_or("") + ".\n";
+            formattedMessage += "This file is already active in the include chain.";
             throw std::runtime_error(formattedMessage);
+        case InputErrors::INVALID_INCLUDE:
+            formattedMessage += "Include requires exactly one filename: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
+        case InputErrors::INVALID_CONTINUATION:
+            throw std::runtime_error(formattedMessage + "Continuation has no preceding line: " + message.value_or(""));
         case InputErrors::MISSING_SUBCKT_IO:
             formattedMessage += "Missing subcircuit io.\n";
             formattedMessage += "Please recheck the netlist and try again.";
@@ -308,9 +313,8 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
         case ControlErrors::UNKNOWN_DEVICE:
             formattedMessage += "Unknown device/node " + message.value_or("") + "\n";
             formattedMessage += "Cannot store results for this device/node.\n";
-            formattedMessage += "Ignoring this store request.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Cannot fulfill the requested trace.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::CURRENT_THROUGH_VOLT:
             formattedMessage += "Requesting current through a voltage source.\n";
             formattedMessage += "Line: " + message.value_or("") + "\n";
@@ -338,13 +342,11 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
         case ControlErrors::NODECURRENT:
             formattedMessage += "Request for current of " + message.value_or("") + " is invalid.\n";
             formattedMessage += "Cannot find device or cannot store current of a node.";
-            warning_message(formattedMessage);
-            break;
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::UNKNOWN_NODE:
             formattedMessage += "Node " + message.value_or("") + " was not found in the circuit.\n";
-            formattedMessage += "This request for store will be ignored.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Cannot fulfill the requested trace.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::NODEPHASE_WHEN_VOLT:
             formattedMessage += "Request to store nodal phase for " + message.value_or("") + "\n";
             formattedMessage += "Voltage mode simulation performed.\n";
@@ -388,26 +390,22 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
             break;
         case ControlErrors::MATHOPS:
             formattedMessage += "Mathematical operations on output vectors are not yet supported.\n";
-            formattedMessage += "Ignoring plotting of " + message.value_or("");
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Invalid output expression: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::UNKNOWN_PLOT:
             formattedMessage += "Unknown plot type " + message.value_or("") + "\n";
-            formattedMessage += "Ignoring request to plot.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Cannot fulfill the requested trace.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::INVALID_OUTPUT_COMMAND:
             formattedMessage += "Invalid request for output found.\n";
             formattedMessage += message.value_or("") + "\n";
-            formattedMessage += "Ignoring request and continuing.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Please correct the control command.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::INVALID_FILE_COMMAND:
             formattedMessage += "Invalid request for file output found.\n";
             formattedMessage += message.value_or("") + "\n";
-            formattedMessage += "Ignoring request and continuing.";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "Please correct the control command.";
+            throw std::runtime_error(formattedMessage);
         case ControlErrors::INVALID_IV_COMMAND:
             formattedMessage += "Invalid request for IV curve generation found.\n";
             formattedMessage += message.value_or("") + "\n";
@@ -417,7 +415,7 @@ void Errors::control_errors(ControlErrors errorCode, string_o message) {
             formattedMessage += "The requested model was not found.\n";
             formattedMessage += message.value_or("") + "\n";
             formattedMessage += "Please ensure the model exists in the netlist.\n";
-            error_message(formattedMessage);
+            throw std::runtime_error(formattedMessage);
         default:
             formattedMessage += "Unknown control error: " + message.value_or("") + "\n";
             formattedMessage += "Please contact the developer.";
@@ -498,6 +496,12 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "PWL(0 V0 T1 V1 T2 V2 ... Tn Vn)";
             warning_message(formattedMessage);
             break;
+        case FunctionErrors::INVALID_PWL_PARAMETERS:
+            formattedMessage += "Invalid PWL/PWS parameters. " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
+        case FunctionErrors::INVALID_PULSE_PARAMETERS:
+            formattedMessage += "Invalid PULSE parameters. " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::TOO_FEW_TIMESTEPS:
             formattedMessage += "Total timesteps specified do not match the values specified.\n";
             formattedMessage += message.value_or("") + " specified.\n";
@@ -541,13 +545,13 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "Total arguments specified do not match the required for SIN.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the SIN definition:\n";
-            formattedMessage += "SIN(VO VA FREQ TD THETA)";
+            formattedMessage += "SIN(VO VA [FREQ [TD [THETA [PHASE_DEG [NCYCLES]]]]])";
             throw std::runtime_error(formattedMessage);
         case FunctionErrors::SIN_TOO_MANY_ARGUMENTS:
             formattedMessage += "Total arguments specified do not match the required for SIN.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the SIN definition:\n";
-            formattedMessage += "SIN(VO VA FREQ TD THETA)";
+            formattedMessage += "SIN(VO VA [FREQ [TD [THETA [PHASE_DEG [NCYCLES]]]]])";
             throw std::runtime_error(formattedMessage);
         case FunctionErrors::SIN_VA_ZERO:
             formattedMessage += "SIN amplitude is 0.0, this renders the function redundant.\n";
@@ -558,16 +562,14 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "Total arguments specified do not match the required for CUS.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the CUS definition:\n";
-            formattedMessage += "CUS(WaveFile.dat TS SF IM <TD PER>)";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "CUS(WaveFile.dat TS [SF [IM [TD [PER]]]])";
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::CUS_TOO_MANY_ARGUMENTS:
             formattedMessage += "Total arguments specified do not match the required for CUS.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Please refer to the CUS definition:\n";
-            formattedMessage += "CUS(WaveFile.dat TS SF IM <TD PER>)";
-            warning_message(formattedMessage);
-            break;
+            formattedMessage += "CUS(WaveFile.dat TS [SF [IM [TD [PER]]]])";
+            throw std::runtime_error(formattedMessage);
         case FunctionErrors::CUS_SF_ZERO:
             formattedMessage += "CUS scale factor is 0.0, this renders the function redundant.\n";
             formattedMessage += "Program will continue but SIN command is redundant.";
@@ -582,6 +584,10 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
             formattedMessage += "CUS waveform has unknown interpolation method.\n";
             formattedMessage += message.value_or("") + " specified.\n";
             formattedMessage += "Program will terminate.";
+            throw std::runtime_error(formattedMessage);
+        case FunctionErrors::INVALID_CUS_PARAMETERS:
+            formattedMessage += "Invalid CUS waveform.\n";
+            formattedMessage += message.value_or("");
             throw std::runtime_error(formattedMessage);
         case FunctionErrors::NOISE_TOO_FEW_ARGUMENTS:
             formattedMessage += "Total arguments specified do not match the required for NOISE.\n";
@@ -659,12 +665,21 @@ void Errors::function_errors(FunctionErrors errorCode, string_o message) {
         case SimulationErrors::MATRIX_SINGULAR:
             formattedMessage += "Matrix is singular. Matrix will have no solution.\n";
             formattedMessage += "Please check the components in the netlist.\n";
-            formattedMessage += "The program will abort.";
+            formattedMessage += "Simulation stopped.";
             throw std::runtime_error(formattedMessage);
+        case SimulationErrors::INVALID_MATRIX:
+            throw std::runtime_error(formattedMessage + "Invalid sparse matrix. " + message.value_or(""));
+        case SimulationErrors::SOLVER_FAILURE:
+            throw std::runtime_error(formattedMessage + "KLU solver failed. " + message.value_or(""));
         case SimulationErrors::PHASEGUESS_TOO_LARGE:
             formattedMessage += "Junction " + message.value_or("") + " has gone too far.\n";
             formattedMessage += "This is a result of integration error.\n";
             formattedMessage += "Please reduce the timestep and try again.";
+            throw std::runtime_error(formattedMessage);
+        case SimulationErrors::STORAGE_ALLOCATION_FAILED:
+            formattedMessage += "Cannot allocate transient result storage.\n";
+            formattedMessage += "Requested samples per retained history: " + message.value_or("") + "\n";
+            formattedMessage += "Reduce retained traces or run size.";
             throw std::runtime_error(formattedMessage);
         default:
             formattedMessage += "Unknown simulation error: " + message.value_or("") + "\n";
@@ -691,11 +706,8 @@ void Errors::parsing_errors(ParsingErrors errorCode, string_o message) {
             formattedMessage += "Please correct the expression before trying again.";
             throw std::runtime_error(formattedMessage);
         case ParsingErrors::INVALID_RPN:
-            formattedMessage += "Invalid RPN detected.\n";
-            formattedMessage +=
-          "This might be an algorithm fault or an incorrect expression "
-          "parse.\n";
-            formattedMessage += "The expression in question: " + message.value_or("");
+            formattedMessage += "Invalid or incomplete expression: " + message.value_or("") + "\n";
+            formattedMessage += "Check the operands, operators and function arguments.";
             throw std::runtime_error(formattedMessage);
         case ParsingErrors::INVALID_DECLARATION:
             formattedMessage += "Missing parameter declaration in: " + message.value_or("") + "\n";
@@ -737,6 +749,12 @@ void Errors::output_errors(OutputErrors errorCode, string_o message) {
         case OutputErrors::CANNOT_OPEN_FILE:
             formattedMessage += "Cannot open the requested file for output.\n";
             formattedMessage += "Please ensure write permission for the file: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
+        case OutputErrors::WRITE_FAILED:
+            formattedMessage += "Failed to write or close output: " + message.value_or("");
+            throw std::runtime_error(formattedMessage);
+        case OutputErrors::NONFINITE_TRACE:
+            formattedMessage += "Non-finite output sample: " + message.value_or("");
             throw std::runtime_error(formattedMessage);
         case OutputErrors::NOTHING_SPECIFIED:
             formattedMessage += "Nothing specified to output.\n";

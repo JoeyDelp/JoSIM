@@ -8,12 +8,15 @@
 #include "JoSIM/Input.hpp"
 #include "JoSIM/Matrix.hpp"
 #include "JoSIM/Model.hpp"
+#include "JoSIM/Misc.hpp"
 #include "JoSIM/Noise.hpp"
 #include "JoSIM/Output.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "JoSIM/Simulation.hpp"
 #include "JoSIM/Transient.hpp"
 #include "JoSIM/Verbose.hpp"
+
+#include <iostream>
 
 using namespace JoSIM;
 
@@ -27,16 +30,8 @@ int main(int argc, const char** argv) {
         Input iObj(cli_options);
         // Parse input file as specified by the cli arguments
         iObj.parse_input(cli_options.cir_file_name);
-        // Parse any identified parameter values
-        if (iObj.parameters.size() > 0) { parse_parameters(iObj.parameters); }
-        // Parse any identified models
-        for (const auto& i : iObj.netlist.models) {
-            Model::parse_model(std::make_pair(i.second, i.first.second), iObj.netlist.models_new, iObj.parameters);
-        }
-        // Expand nested subcircuits
-        iObj.netlist.expand_subcircuits();
-        // Expand main design using expanded subcircuits
-        iObj.netlist.expand_maindesign();
+        // Bind parameters and models separately for each subcircuit instance.
+        iObj.netlist.expand_maindesign(iObj.parameters);
         // Simulate IV curves if need be
         IV ivObj(iObj);
         // Identify the simulation parameters
@@ -53,6 +48,10 @@ int main(int argc, const char** argv) {
         find_relevant_traces(iObj, mObj);
         // Create a simulation object
         Simulation sObj(iObj, mObj);
+        if (iObj.argVerb) {
+            std::cout << "Effective timestep (s): " << Misc::precise_to_string(iObj.transSim.tstep())
+                      << "\nComputed samples: " << sObj.results.timeAxis.size() << "\n";
+        }
         // Create an output object
         Output     oObj(iObj, mObj, sObj);
         // Finish

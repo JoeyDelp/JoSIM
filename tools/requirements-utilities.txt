@@ -1,0 +1,7 @@
+# Python 3.11+; pinned direct dependencies for the maintained plotting/data tools.
+# Static Plotly images also need Chrome/Chromium; HTML export does not.
+numpy==2.4.1
+pandas==3.0.0
+plotly==7.1.0
+kaleido==1.5.0
+tabulate==0.10.0

@@ -1,0 +1,12 @@
+* Fresh-state circuit IV; zero-L symmetric SQUID with fixed Phi_ext=0.25 Phi0.
+* This sweeps the complete circuit, unlike the junction-model .iv command.
+.param BIAS=@VALUE@
+.option seed=123
+I1 0 N DC BIAS
+B1 N 0 JM1
+B2 N 0 JM2
+.model JM1 JJ(RTYPE=0 ICRIT=100u RN=16 CAP=0 PHI=0.7853981633974483)
+.model JM2 JJ(RTYPE=0 ICRIT=100u RN=16 CAP=0 PHI=-0.7853981633974483)
+.tran .01p 1n DST
+.print V(N)
+.end

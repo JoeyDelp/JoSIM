@@ -10,7 +10,26 @@
 
 using namespace JoSIM;
 
+namespace {
+tokens_t trace_operands(const std::string& s) {
+    const auto operands = Misc::tokenize(s, " ,\t");
+    const auto comma = s.find(',');
+    if (operands.empty() || operands.size() > 2
+        || (comma != std::string::npos && (s.find(',', comma + 1) != std::string::npos
+            || Misc::tokenize(s.substr(0, comma)).empty() || Misc::tokenize(s.substr(comma + 1)).empty()))) {
+        Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, s);
+    }
+    return operands;
+}
+
+void voltage_or_phase(const std::string& s, bool voltage, Matrix& matrix, int64_t file,
+                      const s_map* aliases);
+}
+
 void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
+    const auto node_trace = [&](const std::string& s, bool voltage, Matrix& matrix, int64_t file) {
+        voltage_or_phase(s, voltage, matrix, file, &iObj.netlist.nodeAliases);
+    };
     // Temporary trace to store in known traces
     RelevantTrace          temp;
     int64_t                fIndex = -1;
@@ -28,16 +47,35 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
             for (auto& l : t) {
                 if (l.find('.') != std::string::npos) { std::replace(l.begin(), l.end(), '.', '|'); }
             }
-            // Remove any "TRAN" tokens. We don't do that here.
-            for (auto j = 0; j < t.size(); ++j) {
-                if (t.at(j) == "TRAN") { t.erase(t.begin() + j); }
+            // TRAN is an optional analysis selector directly after PRINT/PLOT.
+            if (t.size() > 1 && t[1] == "TRAN") { t.erase(t.begin() + 1); }
+            if (t.size() < 2 && t.front() != "SAVE") {
+                Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, Misc::vector_to_string(t));
             }
             // Determine the type of plot
             for (size_t j = 1; j < t.size(); ++j) {
+                if (t[j].empty()) { Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND); }
+                const auto suffix = t[j].back();
+                if (suffix == ')' && (t[j].size() < 4 || t[j][1] != '(')) {
+                    Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, t[j]);
+                }
+                if (suffix != ')' && suffix != ']' && suffix != 'H') {
+                    const auto& command = t[j];
+                    if (command != "DEVV" && command != "NODEV" && command != "DEVI"
+                        && command != "PHASE" && command != "NODEP" && command != "DEVP") {
+                        Errors::control_errors(ControlErrors::UNKNOWN_PLOT, command);
+                    }
+                    if (j + 1 >= t.size()) { Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, command); }
+                    const auto operands = t.size() - j - 1;
+                    if (operands > 2 || ((command == "DEVI" || command == "PHASE") && operands > 1)) {
+                        Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, Misc::vector_to_string(t));
+                    }
+                }
                 switch (t.at(j).back()) {
                     case ')':
                         switch (t.at(j).at(0)) {
                             case 'I':
+                            case 'C':
                                 t.at(j).erase(0, 2);
                                 t.at(j).erase(t.at(j).size() - 1, t.at(j).size());
                                 handle_current(t.at(j), mObj, fIndex);
@@ -45,32 +83,33 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
                             case 'V':
                                 t.at(j).erase(0, 2);
                                 t.at(j).erase(t.at(j).size() - 1, t.at(j).size());
-                                handle_voltage_or_phase(t.at(j), true, mObj, fIndex);
+                                node_trace(t.at(j), true, mObj, fIndex);
                                 break;
                             case 'P':
                                 t.at(j).erase(0, 2);
                                 t.at(j).erase(t.at(j).size() - 1, t.at(j).size());
-                                handle_voltage_or_phase(t.at(j), false, mObj, fIndex);
+                                node_trace(t.at(j), false, mObj, fIndex);
                                 break;
+                            default: Errors::control_errors(ControlErrors::UNKNOWN_PLOT, t[j]);
                         }
                         break;
                     case 'V':
-                        if (t.size() < 4) {
-                            handle_voltage_or_phase(t.at(j + 1), true, mObj, fIndex);
+                        if (t.size() - j < 3) {
+                            node_trace(t.at(j + 1), true, mObj, fIndex);
                         } else {
-                            handle_voltage_or_phase(t.at(j + 1) + " " + t.at(j + 2), true, mObj, fIndex);
+                            node_trace(t.at(j + 1) + " " + t.at(j + 2), true, mObj, fIndex);
                         }
                         j = t.size();
                         break;
                     case 'E':
-                        handle_voltage_or_phase(t.at(j + 1), false, mObj, fIndex);
+                        node_trace(t.at(j + 1), false, mObj, fIndex);
                         j = t.size();
                         break;
                     case 'P':
-                        if (t.size() < 4) {
-                            handle_voltage_or_phase(t.at(j + 1), false, mObj, fIndex);
+                        if (t.size() - j < 3) {
+                            node_trace(t.at(j + 1), false, mObj, fIndex);
                         } else {
-                            handle_voltage_or_phase(t.at(j + 1) + " " + t.at(j + 2), false, mObj, fIndex);
+                            node_trace(t.at(j + 1) + " " + t.at(j + 2), false, mObj, fIndex);
                         }
                         j = t.size();
                         break;
@@ -89,7 +128,7 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
                             break;
                         }
                     case ']':
-                        if (t.at(j).at(0) == '@') {
+                        if (t.at(j).size() >= 4 && t.at(j).at(0) == '@') {
                             switch (t.at(j).at(t.at(j).size() - 2)) {
                                 case 'C':
                                     t.at(j).erase(0, 1);
@@ -99,13 +138,14 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
                                 case 'V':
                                     t.at(j).erase(0, 1);
                                     t.at(j).erase(t.at(j).size() - 3, t.at(j).size());
-                                    handle_voltage_or_phase(t.at(j), true, mObj, fIndex);
+                                    node_trace(t.at(j), true, mObj, fIndex);
                                     break;
                                 case 'P':
                                     t.at(j).erase(0, 1);
                                     t.at(j).erase(t.at(j).size() - 3, t.at(j).size());
-                                    handle_voltage_or_phase(t.at(j), false, mObj, fIndex);
+                                    node_trace(t.at(j), false, mObj, fIndex);
                                     break;
+                                default: Errors::control_errors(ControlErrors::UNKNOWN_PLOT, t[j]);
                             }
                             break;
                         } else {
@@ -125,10 +165,14 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
         }
     }
     // Store the indices of the identified traces
-    for (const auto& i : mObj.relevantTraces) {
+    const auto store_indices = [&](const RelevantTrace& i) {
         if (i.index1) { mObj.relevantIndices.emplace_back(i.index1.value()); }
         if (i.index2) { mObj.relevantIndices.emplace_back(i.index2.value()); }
         if (i.variableIndex) { mObj.relevantIndices.emplace_back(i.variableIndex.value()); }
+    };
+    for (const auto& i : mObj.relevantTraces) {
+        store_indices(i);
+        if (i.subtract) { store_indices(*i.subtract); }
     }
     // Store the indices of all the transmission lines
     for (const auto& i : mObj.components.txIndices) {
@@ -146,6 +190,19 @@ void JoSIM::find_relevant_traces(Input& iObj, Matrix& mObj) {
 }
 
 void JoSIM::handle_current(const std::string& s, Matrix& mObj, int64_t fIndex) {
+    if (s.empty()) { Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, s); }
+    const auto operands = trace_operands(s);
+    if (operands.size() == 2) {
+        const auto start = mObj.relevantTraces.size();
+        handle_current(operands[0], mObj, fIndex);
+        handle_current(operands[1], mObj, fIndex);
+        auto first = mObj.relevantTraces[start];
+        first.subtract = std::make_shared<RelevantTrace>(mObj.relevantTraces[start + 1]);
+        first.deviceLabel = "\"I(" + s + ")\"";
+        mObj.relevantTraces.resize(start);
+        mObj.relevantTraces.emplace_back(std::move(first));
+        return;
+    }
     RelevantTrace temp;
     temp.fIndex      = fIndex;
     temp.storageType = StorageType::Current;
@@ -179,10 +236,23 @@ void JoSIM::handle_current(const std::string& s, Matrix& mObj, int64_t fIndex) {
             }
         }
     }
+    if (!temp.deviceLabel) { Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, s); }
 }
 
-void JoSIM::handle_voltage_or_phase(const std::string& s, bool voltage, Matrix& mObj, int64_t fIndex) {
-    std::vector<std::string> tokens = Misc::tokenize(s, " ,");
+namespace {
+void voltage_or_phase(const std::string& s, bool voltage, Matrix& mObj, int64_t fIndex, const s_map* aliases) {
+    const auto tokens = trace_operands(s);
+    if (tokens.size() == 2 && (mObj.lm.count(tokens[0]) || mObj.lm.count(tokens[1]))) {
+        const auto start = mObj.relevantTraces.size();
+        voltage_or_phase(tokens[0], voltage, mObj, fIndex, aliases);
+        voltage_or_phase(tokens[1], voltage, mObj, fIndex, aliases);
+        auto first = mObj.relevantTraces[start];
+        first.subtract = std::make_shared<RelevantTrace>(mObj.relevantTraces[start + 1]);
+        first.deviceLabel = "\"" + std::string(voltage ? "V(" : "P(") + s + ")\"";
+        mObj.relevantTraces.resize(start);
+        mObj.relevantTraces.emplace_back(std::move(first));
+        return;
+    }
     RelevantTrace            temp;
     temp.fIndex = fIndex;
     if (voltage) {
@@ -195,7 +265,7 @@ void JoSIM::handle_voltage_or_phase(const std::string& s, bool voltage, Matrix& 
                 [](const auto& device) noexcept -> const std::string& { return device.netlistInfo.label_; },
                 mObj.components.devices.at(j));
 
-        if (l == tokens.at(0)) {
+        if (l == tokens.at(0) && tokens.size() == 1) {
             if (tokens.size() < 1) {
                 Errors::control_errors(ControlErrors::MATHOPS, s);
             } else {
@@ -236,40 +306,41 @@ void JoSIM::handle_voltage_or_phase(const std::string& s, bool voltage, Matrix& 
             }
         }
     }
-    if (!temp.deviceLabel) {
-        if (tokens.size() > 1) {
-            if (mObj.nm.count(tokens.at(0)) != 0) {
-                temp.index1 = mObj.nm.at(tokens.at(0));
-                if (mObj.nm.count(tokens.at(1)) != 0) {
-                    temp.index2 = mObj.nm.at(tokens.at(1));
-                } else {
-                    if (tokens.at(1) != "0" && tokens.at(1).find("GND") == std::string::npos) {
-                        Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens.at(1));
-                    }
-                }
-                if (voltage) {
-                    temp.deviceLabel = "\"V(" + tokens.at(0) + "," + tokens.at(1) + ")\"";
-                } else {
-                    temp.deviceLabel = "\"P(" + tokens.at(0) + "," + tokens.at(1) + ")\"";
-                }
+    if (!temp.deviceLabel && tokens.size() == 1) {
+        for (const auto& source : mObj.components.currentsources) {
+            if (source.netlistInfo.label_ == tokens[0]) {
+                temp.device = true;
+                temp.index1 = source.indexInfo.posIndex_;
+                temp.index2 = source.indexInfo.negIndex_;
+                temp.deviceLabel = "\"" + std::string(voltage ? "V(" : "P(") + s + ")\"";
                 mObj.relevantTraces.emplace_back(temp);
-            } else {
-                if (tokens.at(0) != "0" && tokens.at(0).find("GND") == std::string::npos) {
-                    Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, tokens.at(0));
-                }
-            }
-        } else {
-            if (mObj.nm.count(s) != 0) {
-                temp.index1 = mObj.nm.at(s);
-                if (voltage) {
-                    temp.deviceLabel = "\"V(" + tokens.at(0) + ")\"";
-                } else {
-                    temp.deviceLabel = "\"P(" + tokens.at(0) + ")\"";
-                }
-                mObj.relevantTraces.emplace_back(temp);
-            } else {
-                Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, s);
+                break;
             }
         }
     }
+    if (!temp.deviceLabel) {
+        if (tokens.empty() || tokens.size() > 2) {
+            Errors::control_errors(ControlErrors::INVALID_OUTPUT_COMMAND, s);
+        }
+        const auto node_index = [&](std::string node) -> int_o {
+            if (aliases) {
+                const auto alias = aliases->find(node);
+                if (alias != aliases->end()) { node = alias->second; }
+            }
+            if (node == "0" || node == "GND") { return std::nullopt; }
+            const auto found = mObj.nm.find(node);
+            if (found == mObj.nm.end()) { Errors::control_errors(ControlErrors::UNKNOWN_DEVICE, node); }
+            return found->second;
+        };
+        temp.index1 = node_index(tokens[0]);
+        if (tokens.size() == 2) { temp.index2 = node_index(tokens[1]); }
+        temp.deviceLabel = "\"" + std::string(voltage ? "V(" : "P(") + tokens[0]
+                         + (tokens.size() == 2 ? "," + tokens[1] : "") + ")\"";
+        mObj.relevantTraces.emplace_back(temp);
+    }
+}
+} // namespace
+
+void JoSIM::handle_voltage_or_phase(const std::string& s, bool voltage, Matrix& mObj, int64_t fIndex) {
+    voltage_or_phase(s, voltage, mObj, fIndex, nullptr);
 }

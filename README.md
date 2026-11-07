@@ -1,5 +1,5 @@
 # JoSIM
-### Superconductor Circuit Simulator
+### Superconducting circuit simulator
 
 ---
 
@@ -12,17 +12,34 @@ Please see full documentation here:
 
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120).
 
-JoSIM is a SPICE syntax circuit simulator specifically created to handle superconducting elements such as the Josephson junction. It reads in a standard SPICE deck, creates an A matrix and solves the linear algebra problem *Ax=b*. The linear algebra package KLU by [Tim Davis](http://faculty.cse.tamu.edu/davis/suitesparse.html) is used to solve the system of equations.
+JoSIM is an open-source transient circuit simulator for superconducting
+electronics, including Josephson junctions. It reads SPICE-style netlists and
+solves the resulting sparse system with KLU. Voltage and phase analysis are
+available through a command-line executable and a C++ library.
 
-A two stage distribution platform is implemented in JoSIM with the first being a command line interface (CLI) binary that is always built as standard during compilation. This is accompanied by a C++ library (*libjosim*).
-
-JoSIM allows output of results in various formats such as comma seperated value (CSV) or raw SPICE output. JoSIM has inherent support for .PARAM commands that allow components to have variable values as well as expression parsing. JoSIM implements the RCSJ model of the Josephson junction and only supports transient analysis at present.
+JoSIM implements the RCSJ junction model, parameter expressions and hierarchical
+subcircuits. Results can be written as CSV, DAT or raw SPICE output. Gate-controlled
+junctions and white/colored noise have separate documented model and sampling limits.
 
 JoSIM takes a *.cir* file as input and produces a *.dat/.csv* file as output.
 
 Prebuilt binaries can be found here:
 
-https://github.com/JoeyDelp/JoSIM/releases
+[GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases)
+
+Source builds require C++17, C11 and CMake/CTest 3.21 or newer:
+
+```bash
+cmake -S . -B build/dev -DCMAKE_BUILD_TYPE=Release
+cmake --build build/dev --config Release --parallel 4
+ctest --test-dir build/dev -C Release --output-on-failure --timeout 90
+build/dev/josim-cli -o build/example.csv test/ex_dcsfq_jtl_sink.cir
+```
+
+Windows uses `build/dev/Release/josim-cli.exe` with a multi-configuration
+generator. See the [build instructions](docs/DEVELOPMENT.md) for dependencies
+and installed-library consumers, and [compatibility guidance](docs/compatibility.md)
+for runtime baselines, changed results and recompiling C++ applications.
 
 Referencing:
 

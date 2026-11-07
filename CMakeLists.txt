@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
   set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 endif()
 
-project(JoSIM VERSION 2.7)
+project(JoSIM VERSION 3.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,10 +15,20 @@ endif()
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-option(SLU "Enable SuperLU instead of KLU")
-option(USING_OPENMP "Allow parallel processing in JoSIM" OFF)
+option(SLU "Retired SuperLU selection (ON is unsupported)" OFF)
+if(SLU)
+  message(FATAL_ERROR "SuperLU backend has been retired. KLU is the supported solver; remove -DSLU=ON.")
+endif()
+option(USING_OPENMP "Retired parallel-processing placeholder (ON is unsupported)" OFF)
+if(USING_OPENMP)
+  message(FATAL_ERROR "Parallel processing is unsupported. JoSIM has no OpenMP simulation path; remove -DUSING_OPENMP=ON.")
+endif()
+option(BUILD_SHARED_LIBS "Build shared JoSIM (KLU dependencies remain static)" OFF)
 option(MAKING_STATIC_BUILD "Build josim to be as static as possible" OFF)
 if(MAKING_STATIC_BUILD)
+  if(BUILD_SHARED_LIBS)
+    message(FATAL_ERROR "BUILD_SHARED_LIBS and MAKING_STATIC_BUILD are mutually exclusive.")
+  endif()
   set(BUILD_SHARED_LIBS OFF)
   if(MSVC)
     if(CMAKE_VERSION VERSION_LESS 3.15)
@@ -28,7 +38,18 @@ if(MAKING_STATIC_BUILD)
   endif()
 endif()
 
+include(${PROJECT_SOURCE_DIR}/cmake/verification.cmake)
+# KLU is linked statically into either form of JoSIM. The legacy wrappers do
+# not implement portable shared solver libraries (duplicate DLONG symbols).
+set(josim_build_shared "${BUILD_SHARED_LIBS}")
+set(BUILD_SHARED_LIBS OFF)
 include(${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake)
+set(BUILD_SHARED_LIBS "${josim_build_shared}")
+if(BUILD_SHARED_LIBS)
+  foreach(component config amd btf colamd klu)
+    set_target_properties(${component} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  endforeach()
+endif()
 include(${PROJECT_SOURCE_DIR}/cmake/make_static_target.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/warnings.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/commit_hash.cmake)
@@ -76,8 +97,7 @@ add_library(
   src/VoltageSource.cpp
   src/Noise.cpp
   src/Spread.cpp
-  src/IV.cpp
-  src/LUSolve.cpp)
+  src/IV.cpp)
 
 # Alias for projects including JoSIM
 add_library(josim::josim ALIAS josim)
@@ -90,26 +110,33 @@ target_include_directories(
 # Dependencies
 target_link_libraries(josim PUBLIC suitesparse::klu)
 target_compile_features(josim PUBLIC cxx_std_17)
-target_link_libraries(josim PRIVATE superlu)
-target_link_libraries(josim PRIVATE cblas)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(josim PRIVATE Threads::Threads)
 if(NOT MSVC AND NOT APPLE)
-  target_link_libraries(josim PRIVATE stdc++fs)
+  include(CheckCXXSourceCompiles)
+  include(CMakePushCheckState)
+  cmake_push_check_state(RESET)
+  set(filesystem_probe "#include <filesystem>\nint main() { return std::filesystem::exists(\".\") ? 0 : 1; }")
+  check_cxx_source_compiles("${filesystem_probe}" JOSIM_FILESYSTEM_IN_STDLIB)
+  if(NOT JOSIM_FILESYSTEM_IN_STDLIB)
+    set(CMAKE_REQUIRED_LIBRARIES stdc++fs)
+    check_cxx_source_compiles("${filesystem_probe}" JOSIM_FILESYSTEM_WITH_STDCXXFS)
+    if(NOT JOSIM_FILESYSTEM_WITH_STDCXXFS)
+      message(FATAL_ERROR "C++17 filesystem support could not be linked with this toolchain.")
+    endif()
+    target_link_libraries(josim PUBLIC stdc++fs)
+  endif()
+  cmake_pop_check_state()
 endif()
 
 # Properties
-set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set_target_properties(josim PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 make_target_static(josim)
 target_add_warnings(josim)
+josim_instrument_target(josim)
 # target_compile_features(josim PUBLIC cxx_std_20)
-
-# OpenMP usage
-if(USING_OPENMP)
-  find_package(OpenMP REQUIRED)
-  target_link_libraries(josim PUBLIC OpenMP::OpenMP_CXX)
-endif()
 
 # JoSIM command line interface
 # ----------------------------
@@ -119,12 +146,11 @@ add_executable(josim-cli src/josim.cpp)
 # Dependencies
 target_link_libraries(josim-cli PRIVATE josim)
 target_link_libraries(josim-cli PRIVATE suitesparse::klu)
-target_link_libraries(josim-cli PRIVATE superlu)
-target_link_libraries(josim-cli PRIVATE cblas)
 
 # Properties
 make_target_static(josim-cli)
 target_add_warnings(josim-cli)
+josim_instrument_target(josim-cli)
 
 # Testing
 # -------
@@ -144,6 +170,13 @@ add_subdirectory(test)
 
 # Get install locations
 include(GNUInstallDirs)
+if(BUILD_SHARED_LIBS)
+  if(APPLE)
+    set_target_properties(josim-cli PROPERTIES INSTALL_RPATH "@loader_path/../${CMAKE_INSTALL_LIBDIR}")
+  elseif(UNIX)
+    set_target_properties(josim-cli PROPERTIES INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+  endif()
+endif()
 
 # Install headers
 install(DIRECTORY include/JoSIM/
@@ -155,14 +188,9 @@ foreach(component config amd btf colamd klu)
   install(DIRECTORY "${CMakeSuiteSparse_SOURCE_DIR}/${component}/include/"
           DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endforeach()
-foreach(dependency CMakeSuperLU CMakeCBLAS)
-  install(DIRECTORY "${${dependency}_SOURCE_DIR}/include/"
-          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-endforeach()
 
 install(FILES LICENSE README.md CHANGELOG.md DESTINATION .)
-install(FILES docs/gate_junctions.md docs/noise_sources.md
-              docs/DEVELOPMENT.md docs/RELEASE_POLICY.md DESTINATION docs)
+install(DIRECTORY docs/ DESTINATION docs PATTERN "context" EXCLUDE)
 
 # Install targets
 install(

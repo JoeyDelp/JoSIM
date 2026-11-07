@@ -142,14 +142,20 @@ double Misc::modifier(const std::string& value) {
     } catch (const std::invalid_argument&) {
         Errors::misc_errors(MiscErrors::STOD_ERROR, value);
     } catch (std::exception&) { Errors::misc_errors(MiscErrors::STOD_ERROR, value); }
-    switch (value.substr(sz)[0]) {
+    std::string suffix = value.substr(sz);
+    std::transform(suffix.begin(), suffix.end(), suffix.begin(), [](unsigned char c) { return std::toupper(c); });
+    if (std::any_of(suffix.begin(), suffix.end(), [](unsigned char c) { return !std::isalpha(c); })
+        || (!suffix.empty() && suffix[0] == 'E')) {
+        Errors::misc_errors(MiscErrors::STOD_ERROR, value);
+    }
+    switch (suffix.empty() ? '\0' : suffix[0]) {
             /* mega */
         case 'X':
             return number * 1E6;
             /* mega or milli */
         case 'M':
             /* mega */
-            if (value.substr(sz)[1] == 'E' && value.substr(sz)[2] == 'G') {
+            if (suffix.rfind("MEG", 0) == 0) {
                 return number * 1E6;
             }
             /* milli */

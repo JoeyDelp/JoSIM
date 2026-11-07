@@ -4,9 +4,11 @@
 #include "JoSIM/Function.hpp"
 
 #include "JoSIM/Misc.hpp"
+#include "JoSIM/Noise.hpp"
 #include "JoSIM/Parameters.hpp"
 #include "spline.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <filesystem>
@@ -135,6 +137,10 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s
     // Parse first pair using parse_param (NOT stod)
     double t0 = parse_param(t.at(0), iObj.parameters, s);
     double v0 = parse_param(t.at(1), iObj.parameters, s);
+    if (!std::isfinite(t0) || t0 < 0.0 || !std::isfinite(v0)) {
+        Errors::function_errors(FunctionErrors::INVALID_PWL_PARAMETERS,
+                                "First time must be finite and non-negative; amplitudes must be finite");
+    }
 
     // If first time isn't 0, prepend (0, v0) instead of (0,0)
     if (t0 != 0.0) {
@@ -151,6 +157,9 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s
     for (size_t i = 2; i < t.size(); i += 2) {
         double ti = parse_param(t.at(i), iObj.parameters, s);
         double vi = parse_param(t.at(i + 1), iObj.parameters, s);
+        if (!std::isfinite(ti) || !std::isfinite(vi)) {
+            Errors::function_errors(FunctionErrors::INVALID_PWL_PARAMETERS, "Time/value pairs must be finite");
+        }
 
         // Enforce strictly increasing time
         if (ti <= timesteps.back()) {
@@ -181,10 +190,13 @@ void Function::parse_pwl(const tokens_t& t, const Input& iObj, const string_o& s
 void Function::parse_pulse(const tokens_t& t, const Input& iObj, const string_o& s) {
     /* PULSE(A1 A2 TD[0.0] TR[TSTEP] TF[TSTEP] PW[TSTOP] PER[TSTOP])*/
     if (t.size() < 2) { Errors::function_errors(FunctionErrors::PULSE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
+    if (t.size() > 7) { Errors::function_errors(FunctionErrors::INVALID_PULSE_PARAMETERS, "Expected at most 7 arguments"); }
     // Step and stop time shorthand
     const double& tstop = iObj.transSim.tstop();
     const double& tstep = iObj.transSim.tstep();
     // Set the 2 amplitudes
+    ampValues_.clear();
+    timeValues_.clear();
     ampValues_.emplace_back(parse_param(t.at(0), iObj.parameters, s));
     ampValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
     // Set default values for optional arguments
@@ -199,11 +211,11 @@ void Function::parse_pulse(const tokens_t& t, const Input& iObj, const string_o&
     if (t.size() >= 5) { timeValues_.at(2) = parse_param(t.at(4), iObj.parameters, s); }
     if (t.size() >= 6) { timeValues_.at(3) = parse_param(t.at(5), iObj.parameters, s); }
     if (t.size() >= 7) { timeValues_.at(4) = parse_param(t.at(6), iObj.parameters, s); }
-    if (iObj.argVerb) {
-        // If pulse width is 0.0 then there is no pulse, then useless so warn
-        if (timeValues_.at(3) == 0.0) { Errors::function_errors(FunctionErrors::PULSE_WIDTH_ZERO, t.at(5)); }
-        // If repeat time is 0.0 then impossible, so warn
-        if (timeValues_.at(4) == 0.0) { Errors::function_errors(FunctionErrors::PULSE_REPEAT, t.at(6)); }
+    if (!std::isfinite(ampValues_.at(0)) || !std::isfinite(ampValues_.at(1))
+        || std::any_of(timeValues_.begin(), timeValues_.end(), [](double time) { return !std::isfinite(time) || time < 0; })
+        || timeValues_.at(4) == 0) {
+        Errors::function_errors(FunctionErrors::INVALID_PULSE_PARAMETERS,
+                                "Amplitudes must be finite; TD/TR/TF/PW must be finite and nonnegative; PER must be finite and positive");
     }
     // Store the stop time
     timeValues_.emplace_back(tstop);
@@ -215,6 +227,9 @@ void Function::parse_sin(const tokens_t& t, const Input& iObj, const string_o& s
     if (t.size() < 2) {
         Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS, std::to_string(t.size()));
         return;
+    }
+    if (t.size() > 7) {
+        Errors::function_errors(FunctionErrors::SIN_TOO_MANY_ARGUMENTS, std::to_string(t.size()));
     }
 
     const double tstop = iObj.transSim.tstop();
@@ -252,48 +267,56 @@ void Function::parse_sin(const tokens_t& t, const Input& iObj, const string_o& s
     if (t.size() >= 7) { timeValues_.at(4) = parse_param(t.at(6), iObj.parameters, s); }
 
     // Basic sanity (avoid div-by-zero when using NCYCLES)
-    if (iObj.argVerb && timeValues_.at(4) > 0.0 && timeValues_.at(0) <= 0.0) {
+    if (timeValues_.at(4) > 0.0 && timeValues_.at(0) <= 0.0) {
         Errors::function_errors(FunctionErrors::SIN_TOO_FEW_ARGUMENTS, "NCYCLES requires positive FREQ");
     }
 }
 
 void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* CUS(WaveFile.dat TS[TSTEP] SF[1.0] IM[1] TD[0.0] PER[0]) */
+    /* CUS(WaveFile.dat TS SF[1.0] IM[1] TD[0.0] PER[0]) */
     if (t.size() < 2) { Errors::function_errors(FunctionErrors::CUS_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
+    if (t.size() > 6) { Errors::function_errors(FunctionErrors::CUS_TOO_MANY_ARGUMENTS, std::to_string(t.size())); }
+    timeValues_.clear();
+    ampValues_.clear();
+    miscValues_.clear();
     // First argument is required and is the wave file name
     std::filesystem::path WFline(t.at(0));
-    if (!WFline.has_parent_path()) {
-        WFline = std::filesystem::path(iObj.fileParentPath.value());
-        WFline.append(t.at(0));
+    if (WFline.is_relative()) {
+        WFline = std::filesystem::path(iObj.fileParentPath.value_or(".")) / WFline;
     }
     if (!std::filesystem::exists(WFline)) {
         auto pp   = WFline.parent_path();
         auto stem = WFline.filename().string();
         std::transform(stem.begin(), stem.end(), stem.begin(), ::tolower);
         WFline = std::filesystem::path(pp.append(stem));
-        if (!std::filesystem::exists(WFline)) { Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, t.at(0)); }
+        if (!std::filesystem::exists(WFline)) {
+            Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND,
+                                    WFline.string() + " (requested " + t.at(0) + ")");
+        }
     }
-    std::vector<std::string> WF;
-    const double&            tstep = iObj.transSim.tstep();
     // Default values for the arguments
-    miscValues_.emplace_back(tstep);
+    miscValues_.emplace_back(parse_param(t.at(1), iObj.parameters, s));
     miscValues_.emplace_back(1.0);
     miscValues_.emplace_back(1);
     miscValues_.emplace_back(0.0);
     miscValues_.emplace_back(0);
     // Test if optional values exist
-    if (t.size() >= 2) { miscValues_.at(0) = parse_param(t.at(1), iObj.parameters, s); }
     if (t.size() >= 3) { miscValues_.at(1) = parse_param(t.at(2), iObj.parameters, s); }
     if (t.size() >= 4) { miscValues_.at(2) = parse_param(t.at(3), iObj.parameters, s); }
     if (t.size() >= 5) { miscValues_.at(3) = parse_param(t.at(4), iObj.parameters, s); }
     if (t.size() >= 6) { miscValues_.at(4) = parse_param(t.at(5), iObj.parameters, s); }
 
-    if (iObj.argVerb) {
-        if (miscValues_.at(1) == 0.0) { Errors::function_errors(FunctionErrors::CUS_SF_ZERO, t.at(1)); }
+    const double ts = miscValues_.at(0), scale = miscValues_.at(1);
+    const double method = miscValues_.at(2), delay = miscValues_.at(3), periodic = miscValues_.at(4);
+    if (!std::isfinite(ts) || ts <= 0.0 || !std::isfinite(scale) || !std::isfinite(delay) || delay < 0.0
+        || !(delay + ts > delay) || !std::isfinite(periodic) || (periodic != 0.0 && periodic != 1.0)) {
+        Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS,
+                                "TS must be finite and positive, SF finite, TD finite and non-negative, and PER either 0 or 1");
     }
-    if (miscValues_.at(2) > 2 || miscValues_.at(2) < 0) {
+    if (!std::isfinite(method) || std::floor(method) != method || method > 2.0 || method < 0.0) {
         Errors::function_errors(FunctionErrors::CUS_UNKNOWN_IM, Misc::vector_to_string(t));
     }
+    if (iObj.argVerb && scale == 0.0) { Errors::function_errors(FunctionErrors::CUS_SF_ZERO, "0"); }
     std::ifstream wffile(std::filesystem::absolute(WFline));
     std::string   line;
     if (wffile.good()) {
@@ -301,18 +324,29 @@ void Function::parse_cus(const tokens_t& t, const Input& iObj, const string_o& s
     } else {
         Errors::function_errors(FunctionErrors::CUS_WF_NOT_FOUND, line);
     }
-    wffile.close();
-    WF = Misc::tokenize(line, " ,;");
-    for (auto i = 0; i < WF.size(); ++i) { ampValues_.emplace_back(Misc::modifier(WF.at(i)) * miscValues_.at(1)); }
-    if (miscValues_.at(0) < tstep) { miscValues_.at(0) = tstep; }
-    for (int i = 0; i < ampValues_.size(); ++i) { timeValues_.emplace_back(miscValues_.at(3) + i * miscValues_.at(0)); }
-    // Store the stop time
-    miscValues_.emplace_back(iObj.transSim.tstop());
+    const auto values = Misc::tokenize(line, " ,;\t\r\n");
+    if (values.empty() || (method == 2.0 && values.size() < 3)) {
+        Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS,
+                                "Waveform " + t.at(0) + " needs at least one sample, or three samples for cubic interpolation");
+    }
+    const double duration = values.size() * ts;
+    if (!std::isfinite(duration) || !std::isfinite(delay + duration)) {
+        Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS, "Waveform duration is not finite: " + t.at(0));
+    }
+    for (size_t i = 0; i < values.size(); ++i) {
+        const double value = Misc::modifier(values.at(i)) * scale;
+        if (!std::isfinite(value)) {
+            Errors::function_errors(FunctionErrors::INVALID_CUS_PARAMETERS, "Waveform samples must be finite: " + t.at(0));
+        }
+        ampValues_.emplace_back(value);
+        timeValues_.emplace_back(i * ts);
+    }
 }
 
 void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* NOISE(VA TD[0.0] TSTEP[1/(2*NEB) or sim tstep]) */
+    /* NOISE(VA TD[0.0] TSTEP[1/(3*NEB) or sim tstep]) */
 
+    if (t.size() > 3) { Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "NOISE accepts at most 3 arguments"); }
     if (t.size() < 1) { Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
 
     const double tstep_sim = iObj.transSim.tstep();
@@ -325,8 +359,8 @@ void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o&
     double tstep_noise = tstep_sim;
     if (t.size() >= 3) {
         tstep_noise = parse_param(t.at(2), iObj.parameters, s);
-    } else if (iObj.neB && iObj.neB > 0.0) {
-        tstep_noise = 1.0 / (2.0 * iObj.neB);
+    } else if (iObj.neB != 0.0) {
+        tstep_noise = Noise::determine_sampling_interval(iObj.neB, tstep_sim);
     }
 
     if (!std::isfinite(VA) || VA < 0.0 || !std::isfinite(td) || td < 0.0
@@ -351,13 +385,92 @@ void Function::parse_noise(const tokens_t& t, const Input& iObj, const string_o&
 
     // misc: y1, y2, x1, x2
     miscValues_.emplace_back(0.0);
-    miscValues_.emplace_back(VA * Misc::grand() / sqrt(2.0 * tstep_noise));
+    miscValues_.emplace_back(Misc::grand() / (std::sqrt(2.0) * std::sqrt(tstep_noise)));
     miscValues_.emplace_back(td);
     miscValues_.emplace_back(td + tstep_noise);
 
     if (iObj.argVerb) {
         if (VA == 0.0) { Errors::function_errors(FunctionErrors::NOISE_VA_ZERO, t.at(0)); }
     }
+}
+
+void Function::initialize_pnoise(PNoiseState& st) {
+    st.fL = 1.0 / st.tcorr;
+    st.fH = 0.5 / st.dt;
+    if (!std::isfinite(st.fL) || !std::isfinite(st.fH) || !(st.fL > 0) || !(st.fH > st.fL)
+        || !std::isfinite(st.td + st.dt) || !(st.td + st.dt > st.td)) {
+        Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS,
+                                "Colored noise requires finite positive band edges with TCORR>2*TSTEP");
+    }
+    st.tau.resize(st.N);
+    st.a.resize(st.N);
+    st.b.resize(st.N);
+    st.var.resize(st.N);
+    st.y.resize(st.N);
+
+    const double logTwoPi = std::log(2 * Constants::PI);
+    const double logFast = -logTwoPi - std::log(st.fH);
+    const double logSlow = -logTwoPi - std::log(st.fL);
+    const double logStep = (logSlow - logFast) / st.N;
+    const double logAmplitude = st.A1 > 0 ? 2 * std::log(st.A1) : 0;
+    // Integral identity: 4*C*integral(tau^alpha/(1+(2*pi*f*tau)^2), dlog(tau))
+    // equals A1^2/f^alpha, C=A1^2*(2*pi)^alpha*sin(pi*alpha/2)/(2*pi).
+    // Fold the missing fast/slow tails into the corresponding endpoint pole.
+    const double logC = st.alpha > 0 && st.alpha < 2
+        ? logAmplitude + (st.alpha - 1) * logTwoPi
+          + std::log(std::sin(Constants::PI * std::min(st.alpha, 2 - st.alpha) / 2)) : 0;
+    st.scale = 1; // Amplitude is already included in the stationary variances.
+    st.S1Hz = 0;
+    for (int k = 0; k < st.N; ++k) {
+        const double logTau = logFast + (k + .5) * logStep;
+        const double tau = std::exp(logTau);
+        if (!std::isfinite(tau) || tau <= 0) {
+            Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "Colored relaxation time is not representable");
+        }
+        st.tau[k] = tau;
+        const double ratio = st.dt / tau;
+        const double q = ratio / 2;
+        // Exact AR(1) sampling raises a continuous OU pole's DC PSD by q*coth(q).
+        // Compensate that gain before interpolation, rather than renormalizing
+        // an arbitrary reference frequency at a rolling band edge.
+        const double logCorrection = q == 0 ? 0 : std::log(std::tanh(q) / q);
+        double variance = 0;
+        if (st.A1 > 0) {
+            if (st.alpha == 0) {
+                if (k == 0) { variance = std::exp(logAmplitude - std::log(4.0) - logTau + logCorrection); }
+            } else if (st.alpha == 2) {
+                if (k == st.N - 1) { variance = std::exp(logAmplitude + 2 * std::log(Constants::PI) + logTau + logCorrection); }
+            } else {
+                variance = std::exp(logC + (st.alpha - 1) * logTau + std::log(logStep) + logCorrection);
+                if (k == 0) {
+                    variance += std::exp(logC + st.alpha * logFast - std::log(st.alpha) - logTau + logCorrection);
+                }
+                if (k == st.N - 1) {
+                    variance += std::exp(logC + (st.alpha - 2) * logSlow - std::log(2 - st.alpha) + logTau + logCorrection);
+                }
+            }
+        }
+        if (!std::isfinite(variance)) {
+            Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "Colored variance is not representable");
+        }
+        st.var[k] = variance;
+        st.a[k] = std::exp(-ratio);
+        st.b[k] = std::sqrt(variance) * std::sqrt(-std::expm1(-2 * ratio));
+        st.y[k] = std::sqrt(variance) * Misc::grand();
+        const double wTau = 2 * Constants::PI * tau;
+        const double shape = wTau <= 1 ? tau / (1 + wTau * wTau)
+            : ((1 / (2 * Constants::PI)) / wTau) / (1 + (1 / wTau) * (1 / wTau));
+        st.S1Hz += variance * (4 * shape);
+    }
+
+    double y1 = 0, y2 = 0;
+    for (int k = 0; k < st.N; ++k) {
+        y1 += st.y[k];
+        st.y[k] = st.a[k] * st.y[k] + st.b[k] * Misc::grand();
+        y2 += st.y[k];
+    }
+    miscValues_ = {y1, y2, st.td, st.td + st.dt};
+    pnoise_ = std::move(st);
 }
 
 void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
@@ -369,6 +482,7 @@ void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o
     // TCORR: correlation time (fL ~= 1/TCORR)
     // N: number of OU processes (log-spaced)
 
+    if (t.size() > 6) { Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "PNOISE/ICNOISE accepts at most 6 arguments"); }
     ampValues_.clear();
     timeValues_.clear();
     miscValues_.clear();
@@ -410,123 +524,9 @@ void Function::parse_pnoise(const tokens_t& t, const Input& iObj, const string_o
     if (st.N < 4) { st.N = 4; }
     if (st.N > 512) { st.N = 512; }
 
-    // Band edges
-    st.fL = 1.0 / st.tcorr;
-    st.fH = 1.0 / (2.0 * st.dt);
-
-    if (!(st.fL > 0.0) || !(st.fH > st.fL)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
-                                "PNOISE invalid band: fL=" + std::to_string(st.fL) + " fH=" + std::to_string(st.fH));
-        return;
-    }
-
-    double fref = 1.0;
-    if (fref < st.fL) { fref = st.fL; }
-    if (fref > st.fH) { fref = st.fH; }
-
-    // Optional warning
-    if (iObj.argVerb && std::abs(fref - 1.0) > 0.0) {
-        std::cerr << "Warning: PNOISE normalization: 1 Hz is outside band [" << st.fL << ", " << st.fH << "] Hz. "
-                  << "Using the 1 Hz power-law normalization at fref=" << fref << " Hz.\n";
-    }
-
-    // Store for debug/inspection
-    ampValues_.push_back(st.A1);
-    ampValues_.push_back(st.alpha);
-    timeValues_.push_back(st.td);
-    timeValues_.push_back(st.dt);
-    timeValues_.push_back(st.tcorr);
-
-    // Build OU bank
-    st.tau.resize(st.N);
-    st.a.resize(st.N);
-    st.b.resize(st.N);
-    st.var.resize(st.N);
-    st.y.resize(st.N);
-
-    const double        logfL = std::log(st.fL);
-    const double        logfH = std::log(st.fH);
-
-    // Base (unscaled) variances ~ tau^(alpha-1)
-    // Then scale all variances so Sx(1Hz) == A1^2 (one-sided).
-    std::vector<double> baseVar(st.N);
-
-    for (int k = 0; k < st.N; ++k) {
-        const double frac = (static_cast<double>(k) + 0.5) / static_cast<double>(st.N); // midpoints
-        const double fk   = std::exp(logfL + frac * (logfH - logfL));
-        st.tau.at(k)      = 1.0 / (2.0 * Constants::PI * fk);
-
-        // baseVar ~ tau^(alpha-1)
-        baseVar.at(k)     = std::pow(st.tau.at(k), st.alpha - 1.0);
-        if (!std::isfinite(baseVar.at(k)) || baseVar.at(k) < 0.0) { baseVar.at(k) = 0.0; }
-    }
-
-    // Analytic one-sided PSD at 1 Hz of the OU sum:
-    // Sx(f) = sum_k 4*var_k*tau_k / (1 + (2*pi*f*tau_k)^2)
-    auto Sx_analytic = [&](double f, const std::vector<double>& v) -> double {
-        const double w = 2.0 * Constants::PI * f;
-        double       S = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            const double tau    = st.tau.at(k);
-            const double denom  = 1.0 + (w * tau) * (w * tau);
-            S                  += (4.0 * v.at(k) * tau) / denom;
-        }
-        return S;
-    };
-
-    const double targetS1 = st.A1 * st.A1 * std::pow(fref, -st.alpha); // extrapolated power-law PSD at fref
-
-    const double S1_base  = Sx_analytic(fref, baseVar);
-    if (!(S1_base > 0.0) || !std::isfinite(S1_base)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, "PNOISE scaling failed (S1_base)");
-        return;
-    }
-
-    st.scale = targetS1 / S1_base;
-
-    for (int k = 0; k < st.N; ++k) {
-        st.var.at(k)              = st.scale * baseVar.at(k);
-
-        const double tau          = st.tau.at(k);
-        const double ak           = std::exp(-st.dt / tau);
-        st.a.at(k)                = ak;
-
-        const double one_minus_a2 = 1.0 - ak * ak;
-        st.b.at(k)                = (one_minus_a2 > 0.0) ? std::sqrt(st.var.at(k) * one_minus_a2) : 0.0;
-
-        // Start in stationarity to avoid long burn-in
-        st.y.at(k)                = std::sqrt(st.var.at(k)) * Misc::grand();
-    }
-
-    st.S1Hz        = Sx_analytic(1.0, st.var);
-
-    // Initialize interpolation state (miscValues_ = {y1,y2,x1,x2})
-    auto step_once = [&]() -> double {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            st.y.at(k)  = st.a.at(k) * st.y.at(k) + st.b.at(k) * Misc::grand();
-            sum        += st.y.at(k);
-        }
-        return sum;
-    };
-
-    const double x1 = st.td;
-    const double x2 = st.td + st.dt;
-
-    const double y1 = [&]() {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) { sum += st.y.at(k); }
-        return sum;
-    }();
-
-    const double y2 = step_once();
-
-    miscValues_.push_back(y1);
-    miscValues_.push_back(y2);
-    miscValues_.push_back(x1);
-    miscValues_.push_back(x2);
-
-    pnoise_ = std::move(st);
+    ampValues_ = {st.A1, st.alpha};
+    timeValues_ = {st.td, st.dt, st.tcorr};
+    initialize_pnoise(st);
 }
 
 void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
@@ -537,6 +537,7 @@ void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o
     // PHIDC : DC flux bias in Phi0
     // returns phase in radians: phi(t) = 2*pi*(PHIDC + dPhi(t))  with dPhi shaped as 1/f^alpha in-band
 
+    if (t.size() > 7) { Errors::function_errors(FunctionErrors::INVALID_NOISE_PARAMETERS, "FNOISE accepts at most 7 arguments"); }
     ampValues_.clear();
     timeValues_.clear();
     miscValues_.clear();
@@ -593,119 +594,10 @@ void Function::parse_fnoise(const tokens_t& t, const Input& iObj, const string_o
     if (st.N < 4) { st.N = 4; }
     if (st.N > 512) { st.N = 512; }
 
-    st.fL = 1.0 / st.tcorr;
-    st.fH = 1.0 / (2.0 * st.dt);
-
-    if (!(st.fL > 0.0) || !(st.fH > st.fL)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS,
-                                "FNOISE invalid band: fL=" + std::to_string(st.fL) + " fH=" + std::to_string(st.fH));
-        return;
-    }
-
-    double fref = 1.0;
-    if (fref < st.fL) { fref = st.fL; }
-    if (fref > st.fH) { fref = st.fH; }
-
-    // Optional warning
-    if (iObj.argVerb && std::abs(fref - 1.0) > 0.0) {
-        std::cerr << "Warning: FNOISE normalization: 1 Hz is outside band [" << st.fL << ", " << st.fH << "] Hz. "
-                  << "Using the 1 Hz power-law normalization at fref=" << fref << " Hz.\n";
-    }
-
-    // Store user-facing knobs for inspection/debug
-    // (Aphi0 in Phi0/sqrtHz, alpha, PHIDC in Phi0, plus timing)
-    ampValues_.push_back(Aphi0);
-    ampValues_.push_back(alpha);
-    ampValues_.push_back(phiDC); // store in radians for easy return
-
-    timeValues_.push_back(st.td);
-    timeValues_.push_back(st.dt);
-    timeValues_.push_back(st.tcorr);
-
-    // Build OU bank (identical to parse_pnoise)
-    st.tau.resize(st.N);
-    st.a.resize(st.N);
-    st.b.resize(st.N);
-    st.var.resize(st.N);
-    st.y.resize(st.N);
-
-    const double        logfL = std::log(st.fL);
-    const double        logfH = std::log(st.fH);
-
-    std::vector<double> baseVar(st.N);
-
-    for (int k = 0; k < st.N; ++k) {
-        const double frac = (static_cast<double>(k) + 0.5) / static_cast<double>(st.N);
-        const double fk   = std::exp(logfL + frac * (logfH - logfL));
-        st.tau.at(k)      = 1.0 / (2.0 * Constants::PI * fk);
-
-        baseVar.at(k)     = std::pow(st.tau.at(k), st.alpha - 1.0);
-        if (!std::isfinite(baseVar.at(k)) || baseVar.at(k) < 0.0) { baseVar.at(k) = 0.0; }
-    }
-
-    auto Sx_analytic = [&](double f, const std::vector<double>& v) -> double {
-        const double w = 2.0 * Constants::PI * f;
-        double       S = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            const double tau    = st.tau.at(k);
-            const double denom  = 1.0 + (w * tau) * (w * tau);
-            S                  += (4.0 * v.at(k) * tau) / denom; // one-sided
-        }
-        return S;
-    };
-
-    const double targetS1 = st.A1 * st.A1 * std::pow(fref, -st.alpha);
-    const double S1_base  = Sx_analytic(fref, baseVar);
-
-    if (!(S1_base > 0.0) || !std::isfinite(S1_base)) {
-        Errors::function_errors(FunctionErrors::NOISE_TOO_FEW_ARGUMENTS, "FNOISE scaling failed (S1_base)");
-        return;
-    }
-
-    st.scale = targetS1 / S1_base;
-
-    for (int k = 0; k < st.N; ++k) {
-        st.var.at(k)              = st.scale * baseVar.at(k);
-
-        const double tau          = st.tau.at(k);
-        const double ak           = std::exp(-st.dt / tau);
-        st.a.at(k)                = ak;
-
-        const double one_minus_a2 = 1.0 - ak * ak;
-        st.b.at(k)                = (one_minus_a2 > 0.0) ? std::sqrt(st.var.at(k) * one_minus_a2) : 0.0;
-
-        st.y.at(k)                = std::sqrt(st.var.at(k)) * Misc::grand();
-    }
-
-    st.S1Hz        = Sx_analytic(1.0, st.var);
-
-    auto step_once = [&]() -> double {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) {
-            st.y.at(k)  = st.a.at(k) * st.y.at(k) + st.b.at(k) * Misc::grand();
-            sum        += st.y.at(k);
-        }
-        return sum;
-    };
-
-    const double x1 = st.td;
-    const double x2 = st.td + st.dt;
-
-    const double y1 = [&]() {
-        double sum = 0.0;
-        for (int k = 0; k < st.N; ++k) { sum += st.y.at(k); }
-        return sum;
-    }();
-
-    const double y2 = step_once();
-
-    // Interpolation state: y1,y2,x1,x2
-    miscValues_.push_back(y1);
-    miscValues_.push_back(y2);
-    miscValues_.push_back(x1);
-    miscValues_.push_back(x2);
-
-    pnoise_ = std::move(st);
+    // Public amplitudes retain flux units; the process state uses radians.
+    ampValues_ = {Aphi0, alpha, phiDC};
+    timeValues_ = {st.td, st.dt, st.tcorr};
+    initialize_pnoise(st);
 }
 
 void Function::parse_icnoise(const tokens_t& t, const Input& iObj, const string_o& s) {
@@ -722,7 +614,7 @@ void Function::parse_dc(const tokens_t& t, const Input& iObj, const string_o& s)
 }
 
 void Function::parse_exp(const tokens_t& t, const Input& iObj, const string_o& s) {
-    /* EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TD1+TSTEP] TAU2[TSTEP]) */
+    /* EXP(V1 V2 TD1[0.0] TAU1[TSTEP] TD2[TSTEP] TAU2[TSTEP]) */
     if (t.size() < 2) { Errors::function_errors(FunctionErrors::EXP_TOO_FEW_ARGUMENTS, std::to_string(t.size())); }
     const double& tstep = iObj.transSim.tstep();
     // Set amplitudes
@@ -767,13 +659,15 @@ double Function::return_pulse(double& x) {
     double& tf    = timeValues_.at(2);
     double& pw    = timeValues_.at(3);
     double& per   = timeValues_.at(4);
-    double& tstop = timeValues_.at(5);
     double& alow  = ampValues_.at(0);
     double& ahigh = ampValues_.at(1);
     auto    val   = alow;
     if (x < td) { return (val); }
-    int64_t index = static_cast<int64_t>((x - td) / per);
-    auto    time  = x - td - index * per;
+    const double elapsed = x - td;
+    const double cycles = elapsed / per;
+    // Preserve ordinary pulse rounding; avoid an undefined cast for large cycle counts.
+    const double time = cycles < std::ldexp(1.0, 63)
+        ? elapsed - static_cast<int64_t>(cycles) * per : std::fmod(elapsed, per);
     if (time < tr) {
         val = alow + (ahigh - alow) * time / tr;
     } else if (time < tr + pw) {
@@ -815,31 +709,22 @@ double Function::return_sin(double& x) {
 }
 
 double Function::return_cus(double& x) {
-    auto&   ts    = miscValues_.at(0);
-    auto&   sf    = miscValues_.at(1);
-    int     im    = static_cast<int>(std::round(miscValues_.at(2)));
-    auto&   td    = miscValues_.at(3);
-    bool    per   = static_cast<bool>(std::round(miscValues_.at(4)));
-    double& tstop = miscValues_.at(5);
-    if (x < td) {
-        return 0.0;
-    } else {
-        double region = ampValues_.size() * ts;
-        double norm_x = (x - td);
-        if (per) { norm_x = (x - td) - (std::floor(x / region) * region); }
-        if (norm_x > region) { return 0.0; }
-        int idx = std::min(static_cast<int>(norm_x / ts), static_cast<int>(ampValues_.size() - 1));
-        if (im == 0) {
-            return ampValues_.at(idx);
-        } else if (im == 1) {
-            double& y2 = ampValues_.at(idx);
-            double  y1 = 0.0;
-            if (idx != 0) { y1 = ampValues_.at(idx - 1); }
-            return y1 + ((y2 - y1) / ts) * (norm_x - (idx * ts));
-        } else if (im == 2) {
-            tk::spline s(timeValues_, ampValues_);
-            return s(norm_x);
-        }
+    const double ts = miscValues_.at(0), delay = miscValues_.at(3);
+    const int method = static_cast<int>(miscValues_.at(2));
+    if (x < delay) { return 0.0; }
+    const double duration = ampValues_.size() * ts;
+    double local = x - delay;
+    if (miscValues_.at(4) != 0.0) { local = std::fmod(local, duration); }
+    else if (local >= duration) { return 0.0; }
+    const size_t index = std::min(static_cast<size_t>(local / ts), ampValues_.size() - 1);
+    if (method == 0 || index == ampValues_.size() - 1) { return ampValues_.at(index); }
+    if (method == 1) {
+        const double fraction = (local - timeValues_.at(index)) / ts;
+        return ampValues_.at(index) + fraction * (ampValues_.at(index + 1) - ampValues_.at(index));
+    }
+    if (method == 2) {
+        tk::spline spline(timeValues_, ampValues_);
+        return spline(local);
     }
     return 0.0;
 }
@@ -861,14 +746,14 @@ double Function::return_noise(double& x) {
     // Advance as many noise segments as needed (handles dt > T too)
     while (x >= x2) {
         y1 = y2;
-        y2 = ampValues_.at(0) * Misc::grand() / std::sqrt(2.0 * T);
+        y2 = Misc::grand() / (std::sqrt(2.0) * std::sqrt(T));
         x1 = x2;
         x2 = x1 + T;
     }
 
     // Linear interpolation within current segment
     const double u = (x - x1) / (x2 - x1); // 0..1
-    return y1 + (y2 - y1) * u;
+    return ampValues_.at(0) * (y1 + (y2 - y1) * u);
 }
 
 double Function::return_pnoise(double& x) {

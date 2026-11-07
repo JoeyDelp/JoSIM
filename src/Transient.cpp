@@ -12,6 +12,30 @@
 
 using namespace JoSIM;
 
+int64_t Transient::simsize() const {
+    if (!std::isfinite(tstep_) || tstep_ <= 0.0 || !std::isfinite(tstop_) || tstop_ <= 0.0) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR, "Step and stop time must be finite and positive");
+    }
+    const double points = tstop_ / tstep_;
+    if (!std::isfinite(points) || points < 1.0
+        || points >= static_cast<double>(std::numeric_limits<int64_t>::max())) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR, "Simulation point count is outside the supported range");
+    }
+    return static_cast<int64_t>(points);
+}
+
+void Transient::validate_output() const {
+    const auto points = simsize();
+    if (!std::isfinite(prstep_) || prstep_ <= 0.0 || !std::isfinite(prstart_) || prstart_ < 0.0
+        || !std::isfinite(prfirwindow_) || prfirwindow_ < 0.0) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR,
+                               "Print step must be finite and positive; start and FIR window finite and non-negative");
+    }
+    if (prstart_ > static_cast<double>(points - 1) * tstep_) {
+        Errors::control_errors(ControlErrors::TRANS_ERROR, "Print start is after the last simulation sample");
+    }
+}
+
 void Transient::identify_simulation(std::vector<tokens_t>& controls, Transient& tObj, param_map& params) {
     // Flag to store that a transient simulation was found
     bool transFound = false;
@@ -59,25 +83,13 @@ void Transient::identify_simulation(std::vector<tokens_t>& controls, Transient& 
                 // Set the print FIR window size in seconds (default 0 means no FIR filtering)
                 tObj.prfirwindow(parse_param(i.at(5), params));
             }
-            if (!std::isfinite(tObj.tstep()) || tObj.tstep() <= 0.0
-                || !std::isfinite(tObj.tstop()) || tObj.tstop() <= 0.0
-                || !std::isfinite(tObj.prstep()) || tObj.prstep() <= 0.0
-                || !std::isfinite(tObj.prstart()) || tObj.prstart() < 0.0 || tObj.prstart() >= tObj.tstop()
-                || !std::isfinite(tObj.prfirwindow()) || tObj.prfirwindow() < 0.0) {
-                Errors::control_errors(ControlErrors::TRANS_ERROR,
-                                       "Steps and stop time must be finite and positive; the print window must lie within the run");
-            }
             if (tObj.prfirwindow() > tObj.tstop()) { tObj.prfirwindow(tObj.tstop()); }
             //  Also if PSTEP is smaller than TSTEP
-            if (tObj.tstep() > tObj.prstep()) {
+            if (tObj.prstep() > 0.0 && tObj.tstep() > tObj.prstep()) {
                 // Reduce TSTEP to match PRSTEP
                 tObj.tstep(tObj.prstep());
             }
-            const double points = tObj.tstop() / tObj.tstep();
-            if (!std::isfinite(points) || points < 1.0
-                || points >= static_cast<double>(std::numeric_limits<int64_t>::max())) {
-                Errors::control_errors(ControlErrors::TRANS_ERROR, "Simulation point count is outside the supported range");
-            }
+            tObj.validate_output();
         }
     }
     // If no transient was found in the controls

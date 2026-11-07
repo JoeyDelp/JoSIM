@@ -3,21 +3,20 @@
 import os, math, sys, argparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import pandas as pd
-import plotly
+from plot_common import dimensions, read_trace, validate_output, validate_subset, write_plot
 
 # Main function
 def main():
   # Version info
-  vers = "JoSIM Trace Plotting Script - 1.3 - CSV/DAT plotting script"
+  vers = "JoSIM Trace Plotting Script - 1.4 - CSV/DAT plotting script"
 
   # Initiate the parser
   parser = argparse.ArgumentParser(description=vers)
 
   # Add possible parser arguments
   parser.add_argument("input", help="the CSV input file")
-  parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, webp, svg, eps, pdf")
-  parser.add_argument("-d", "--dimensions", help="the dimensions of the output file")
+  parser.add_argument("-o", "--output", help="the output file name with supported extensions: png, jpeg, jpg, webp, svg, pdf")
+  parser.add_argument("-d", "--dimensions", type=dimensions, help="image WIDTHxHEIGHT; default: 700x500")
   parser.add_argument("-x", "--html", help="save the output as an html file for later viewing")
   parser.add_argument("-t", "--type", help="type of plot: grid, stacked, combined, square, sep_comb. Default: grid", default="grid")
   parser.add_argument("-s", "--subset", nargs='+', help="subset of traces to plot. specify list of column names (as shown in csv file header), ie. \"V(1)\" \"V(2)\". Default: None")
@@ -28,18 +27,12 @@ def main():
   # Read arguments from the command line
   args = parser.parse_args()
 
-  # List of possible output formats
-  outformats = [".png", ".jpeg", ".webp", ".svg", ".eps", ".pdf"]
-
-  # How to handle column seperation. CSV uses comma, DAT uses space.
-  if (os.path.splitext(args.input)[1].lower() == ".csv"):
-    df = pd.read_csv(args.input, sep=',')
-  elif (os.path.splitext(args.input)[1].lower() == ".dat"):
-    df = pd.read_csv(args.input, delim_whitespace=True)
-  else:
-    print("Invalid input file specified: " + args.input)
-    print("Please provide either .csv (comma seperated) or .dat (space seperated) file")
-    sys.exit()
+  validate_output(parser, args, [args.input])
+  try:
+    df = read_trace(args.input)
+    validate_subset(df, args.subset)
+  except (OSError, ValueError) as exc:
+    parser.error(str(exc))
 
   # Determine the plot layout.
   if(args.type == "grid"):
@@ -55,7 +48,7 @@ def main():
   else:
     print("Invalid plot type specified: " + args.type)
     print("Please provide either grid, stacked or combined as type")
-    sys.exit()
+    sys.exit(2)
     
   # Determine the theme to plot with.
   if(args.color == 'light'):
@@ -67,7 +60,7 @@ def main():
   else:
     print("Invalid plot color specified: " + args.color)
     print("Please provide either light, dark or presentation as color theme")
-    sys.exit()
+    sys.exit(2)
     
   # Set the title of the plot
   if(args.title == None):
@@ -100,16 +93,10 @@ def main():
   })
 
   # Determine wether to show the plot or just dump to file
-  if(args.output == None and args.html == None):
-    fig.show(config=config)
-  elif(args.html != None and args.output == None):
-    fig.write_html(args.html)
-  elif(args.html == None and os.path.splitext(args.output)[1] in outformats):
-    w, h = args.dimensions.split("x")
-    fig.write_image(args.output, width=w, height=h)
-  else:
-    print("Unknown file format for output file specified.")
-    print("Please use: png, jpeg, webp, svg, eps or pdf")  
+  try:
+    write_plot(fig, args, config)
+  except Exception as exc:
+    parser.exit(2, f"Export failed: {exc}\n")
 
 # Function that sets the Y-axis title relevant to the data
 def y_axis_title(figLabel):

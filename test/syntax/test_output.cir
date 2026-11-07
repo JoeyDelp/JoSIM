@@ -5,7 +5,7 @@ R3  2 3 0.5
 R4  3 0 0.5
 .tran 0.25p 100p
 .print DEVV R1
-.print DEVI R2
+.print DEVI R3
 .print NODEV  1
 .print NODEV  1 2
 .print NODEP  1
