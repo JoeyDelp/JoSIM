@@ -1,0 +1,1280 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Johannes Delport">
+      
+      
+        <link rel="canonical" href="https://joeydelp.github.io/JoSIM/qualification/2026-11-06-runtime-storage/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Runtime and storage qualification — 6 November 2026 - JoSIM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#runtime-and-storage-qualification-6-november-2026" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JoSIM Documentation" class="md-header__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+      
+  <img src="../../img/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JoSIM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Runtime and storage qualification — 6 November 2026
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    JoeyDelp/JoSIM
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JoSIM Documentation" class="md-nav__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+      
+  <img src="../../img/favicon.ico" alt="logo">
+
+    </a>
+    JoSIM Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    JoeyDelp/JoSIM
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tech_disc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Discussion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ex_usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comp_stamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Stamps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Syntax Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_limits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Initial States and Model Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gate_junctions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate-Controlled Junctions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../noise_sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Noise Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../squid_noise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Floating Flux Lines and SQUID Noise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sweeps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameter Sweeps and Circuit IV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python_utilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python Plotting and Specifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime and Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility and Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../RELEASE_POLICY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Procedure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bugs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Schedule and Bugs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Japanese 日本語版
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Japanese 日本語版
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../jp/index_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../jp/tech_disc_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    技術的な議論
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../jp/ex_usage_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用例
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../jp/comp_stamps_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    素子のスタンプ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../jp/syntax_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文法ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../jp/bugs_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発スケジュール・バグ報告
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="runtime-and-storage-qualification-6-november-2026">Runtime and storage qualification — 6 November 2026</h1>
+<p>This study addresses D06 through measured changes. Separate stages reserve
+retained histories, remove profiled per-step vector copies and let progress
+workers wait between display updates. No simulation equation or operation
+order changes in these stages.</p>
+<h2 id="storage-change">Storage change</h2>
+<p><code>Simulation::setup</code> knows the complete positive-time sample count. It now
+reserves that count for time and each engaged matrix/source-current history.
+It does not instantiate unrequested histories. Output decimation, trace labels,
+history contents, retry reconstruction and public class layouts remain.</p>
+<p>The <a href="../../performance/">memory guide</a> derives the raw payload
+<code>8*N*(1+U+S)</code>. Vector growth can add transient copies and allocator overhead;
+unused capacity is not necessarily resident memory. The results below measure
+actual peak RSS rather than treating a capacity ratio as a RAM reduction.</p>
+<p><code>std::bad_alloc</code> and <code>std::length_error</code> from reservation become a recoverable
+<code>STORAGE_ALLOCATION_FAILED</code> diagnostic with the requested sample count. The enum
+value is appended, retaining existing values. A count of <code>8e18</code> fits <code>int64</code>
+but exceeds any supported <code>vector&lt;double&gt;::max_size()</code>; CLI and repeated C++
+recovery tests reject it without attempting an enormous allocation or inducing
+physical-memory pressure. This check does not promise recovery from an OS OOM kill.</p>
+<h2 id="method">Method</h2>
+<p>The clean source baseline is <code>8e9515ec5c1cac7e5c2d7e3cfbd81f8dfe67e503</code>.
+The local Linux run uses GCC 16.2.1, C++17, Release <code>-O3 -DNDEBUG</code>, default
+static JoSIM/KLU libraries and the host's dynamic C++ runtime. Cache, compiler,
+kernel, available CPU set, binary hash and candidate diff identity are recorded.</p>
+<p>Eight fixtures exercise:</p>
+<ul>
+<li>64 independent DC nodes with 1/8/32 retained voltages, 600,000 internal samples.</li>
+<li>The same source network with eight requested applied-current histories.</li>
+<li>The qualified zero-loop-inductance noisy SQUID: 5.1 million samples at 1 ps,
+  fixed seed 1729, 200 MHz bandwidth and 20 ps output sampling.</li>
+<li>128 mutually coupled RL pairs, 128 RLC cells and 128 parallel JJs, each with
+  100,000 internal samples. Dyadic synthetic timesteps make grid counts exact.</li>
+</ul>
+<p>Each binary gets a warmup, followed by <strong>seven paired repetitions per fixture</strong>,
+with baseline/candidate order reversed on alternate pairs. All use minimal CLI
+mode and the same selected CPU. No builds or profiles run concurrently with
+the final timed campaign. Monotonic time surrounds the child command; captured
+pipe EOF wakes the supervisor promptly. GNU time independently records wall,
+user/system CPU and peak RSS. The archive retains medians, quartiles and ranges.</p>
+<p>A provisional wrapper used timeout polling with file-directed stdout, which
+quantized its supervisor wall time by up to 50 ms. Those wall results are
+excluded. The final campaign was repeated with the corrected method; its
+owner hashes distinguish it from the preserved provisional evidence.</p>
+<p>The owner validates finite, strictly increasing samples, exact grids/seeds,
+analytic DC voltages/source currents, RL/RLC equilibria and symmetric-JJ KCL.
+The noisy mean has a 3 nV allowance around the independently derived weak-noise
+RSJ mean; the longer scientific study establishes its model/statistical scope.
+Every paired CSV hash must match exactly. All <strong>112 timed runs</strong> pass these
+unchanged assertions and all paired outputs are byte-identical.</p>
+<h2 id="reservation-results">Reservation results</h2>
+<p>Median wall time and peak resident memory:</p>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th style="text-align: right;">Baseline seconds</th>
+<th style="text-align: right;">Reserved seconds</th>
+<th style="text-align: right;">Baseline MiB</th>
+<th style="text-align: right;">Reserved MiB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>128 JJs</td>
+<td style="text-align: right;">0.3098</td>
+<td style="text-align: right;">0.3110</td>
+<td style="text-align: right;">10.13</td>
+<td style="text-align: right;">10.05</td>
+</tr>
+<tr>
+<td>128 coupled RL pairs</td>
+<td style="text-align: right;">0.6166</td>
+<td style="text-align: right;">0.6166</td>
+<td style="text-align: right;">11.66</td>
+<td style="text-align: right;">10.71</td>
+</tr>
+<tr>
+<td>128 RLC cells</td>
+<td style="text-align: right;">0.3868</td>
+<td style="text-align: right;">0.3866</td>
+<td style="text-align: right;">9.94</td>
+<td style="text-align: right;">9.70</td>
+</tr>
+<tr>
+<td>Eight applied-source histories</td>
+<td style="text-align: right;">0.4318</td>
+<td style="text-align: right;">0.4141</td>
+<td style="text-align: right;">59.63</td>
+<td style="text-align: right;">47.66</td>
+</tr>
+<tr>
+<td>Long noisy SQUID</td>
+<td style="text-align: right;">0.5219</td>
+<td style="text-align: right;">0.5115</td>
+<td style="text-align: right;">102.77</td>
+<td style="text-align: right;">89.45</td>
+</tr>
+<tr>
+<td>One voltage history</td>
+<td style="text-align: right;">0.4055</td>
+<td style="text-align: right;">0.4002</td>
+<td style="text-align: right;">18.97</td>
+<td style="text-align: right;">15.15</td>
+</tr>
+<tr>
+<td>32 voltage histories</td>
+<td style="text-align: right;">0.4780</td>
+<td style="text-align: right;">0.4453</td>
+<td style="text-align: right;">199.77</td>
+<td style="text-align: right;">159.49</td>
+</tr>
+<tr>
+<td>Eight voltage histories</td>
+<td style="text-align: right;">0.4220</td>
+<td style="text-align: right;">0.4132</td>
+<td style="text-align: right;">56.80</td>
+<td style="text-align: right;">47.68</td>
+</tr>
+</tbody>
+</table>
+<p>Peak memory falls about <strong>13%</strong> for the noisy run and <strong>20%</strong> for 32 voltages
+or eight applied-current histories. The widest case's wall median falls 6.8%;
+the worst median wall change is +0.4%. Baseline allocator-dependent RSS varies
+across repetitions, particularly the eight-history cases; full quartiles are
+retained rather than presenting one favorable run.</p>
+<p>The initial engineering heuristic sought a 15% noisy-run RSS reduction. That
+single-workload heuristic was <strong>not met</strong>. The change is retained for the
+measured broader 20% storage benefit, 13% noisy-run benefit and negligible
+runtime cost. The decision receipt states the missed heuristic explicitly;
+no numerical assertion or performance-regression limit was relaxed. This is a
+bounded engineering result, not a universal speed or memory guarantee.</p>
+<h2 id="per-step-vector-copies">Per-step vector copies</h2>
+<p>Callgrind 3.25.1 identified two allocation sites in otherwise read-only loops.
+For 2,048 steps, a 128-JJ profile performed 262,144 allocations/frees inside
+<code>handle_jj</code>; a 256-inductor profile performed 524,288 inside <code>handle_inductors</code>.
+These counts equal one vector copy per device per step. Parser/setup allocations
+are separate. Removing these copies makes both hot-function allocation counts
+zero; the profiled CSV outputs remain byte-identical.</p>
+<p>The engine borrows CPR coefficients through <code>Model::cpr_view()</code> and reads the
+inductor's existing public coupling vector directly. Existing copying getters
+retain their signatures and behavior. The new CPR accessor returns a const
+reference tied to its live Model; no class layout or numerical formula changes.
+The engine does not mutate either collection while using it.</p>
+<p>A separate seven-pair campaign holds reservation constant on both sides,
+using clean source <code>ca3c516</code> as its baseline. It repeats the same eight fixtures
+and assertions with the corrected clock. All 112 timed runs pass and all paired
+CSVs match exactly:</p>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th style="text-align: right;">Before seconds</th>
+<th style="text-align: right;">Borrowed-read seconds</th>
+<th style="text-align: right;">Wall reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>128 JJs</td>
+<td style="text-align: right;">0.3089</td>
+<td style="text-align: right;">0.2616</td>
+<td style="text-align: right;">15.3%</td>
+</tr>
+<tr>
+<td>128 coupled RL pairs</td>
+<td style="text-align: right;">0.6164</td>
+<td style="text-align: right;">0.4877</td>
+<td style="text-align: right;">20.9%</td>
+</tr>
+<tr>
+<td>Long noisy SQUID</td>
+<td style="text-align: right;">0.5174</td>
+<td style="text-align: right;">0.4780</td>
+<td style="text-align: right;">7.6%</td>
+</tr>
+</tbody>
+</table>
+<p>JJ/coupled-bank CPU medians fall about 17%/21%. The largest wall increase among
+the other fixtures is 1.4%, within the predeclared 5% regression limit. Peak RSS
+stays within 1.2% on every case. Both target banks exceed the predeclared 5%
+improvement requirement. These are separate measurements, not sums of percentage
+gains from different stages.</p>
+<p><code>artifacts/audit-resolution/performance/views/</code> retains the exact comparison
+owners, all per-run receipts, source/binary identities, profiles and annotated
+call trees. Its baseline already includes reservation, so these gains isolate
+the two copying sites through the pure-JJ and pure-inductor fixtures.</p>
+<h2 id="progress-workers">Progress workers</h2>
+<p>The clean baseline is <code>9de8d69a8ff4925ecd0256b5a1e50ecca63e5f7d</code>, which
+already includes both earlier stages. The old progress worker continually
+polled atomic values. It now waits up to 20 ms between updates; completion
+notifies it immediately, so finishing a short run does not require that delay.
+Internal callers configure text and total before starting the worker.</p>
+<p>Two public-helper defects were reproduced separately: including its header
+alone failed to compile because of missing includes, and creating two workers
+then destroying the bar aborted because only the last thread was joined.
+The header is now self-contained; completion/destruction joins all workers and
+repeated completion is safe. Installed-consumer and repeated embedding tests
+protect these contracts. Added synchronization state changes <code>ProgressBar</code>'s
+layout; consumers must recompile. This does not add simulation parallelism.</p>
+<p>A separate seven-pair campaign uses two available CPUs, default progress mode,
+the same CSV/numerical checks and the corrected clock above. All 42 timed runs
+pass with identical paired CSVs:</p>
+<table>
+<thead>
+<tr>
+<th>Workload</th>
+<th style="text-align: right;">Before wall seconds</th>
+<th style="text-align: right;">Waiting wall seconds</th>
+<th style="text-align: right;">Before CPU seconds</th>
+<th style="text-align: right;">Waiting CPU seconds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>128 coupled RL pairs</td>
+<td style="text-align: right;">0.5041</td>
+<td style="text-align: right;">0.4939</td>
+<td style="text-align: right;">0.97</td>
+<td style="text-align: right;">0.48</td>
+</tr>
+<tr>
+<td>128 RLC cells</td>
+<td style="text-align: right;">0.3923</td>
+<td style="text-align: right;">0.3853</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">0.37</td>
+</tr>
+<tr>
+<td>Five-sample DC run</td>
+<td style="text-align: right;">0.002405</td>
+<td style="text-align: right;">0.002070</td>
+<td style="text-align: right;">below timer resolution</td>
+<td style="text-align: right;">below timer resolution</td>
+</tr>
+</tbody>
+</table>
+<p>Both medium cases exceed the predeclared 40% CPU-reduction requirement and
+have no wall regression. The small-run median adds no latency, within its
+predeclared 5 ms absolute allowance; its millisecond result is not a general
+speed claim. Peak RSS changes by at most +0.33% in the medium cases.</p>
+<p>Minimal mode creates no progress worker but still constructs the helper.
+Another seven-pair campaign repeats all eight earlier fixtures in minimal
+mode: all 112 timed runs pass, every paired CSV is identical, and the largest
+median wall increase is 1.06%, within the predeclared 5% regression limit.
+Peak RSS changes by at most +0.59%. No numerical tolerance was changed.
+<code>artifacts/audit-resolution/performance/progress/</code> retains both summaries,
+per-run receipts, exact owners, fixtures, source/binary hashes and the
+independent header/lifetime red/green evidence.</p>
+<h2 id="verification-and-evidence">Verification and evidence</h2>
+<p>All four local GCC/Clang Debug/Release configurations pass 34/34 CTest groups,
+including new CLI and repeated embedding storage-limit checks. Full Clang Debug
+ASan/UBSan and leak detection pass <strong>34/34 in 229.86 s</strong>. Native-platform
+qualification remains required for the pushed revision; it is not inferred
+from the benchmark's Release runs.</p>
+<p>The vector-copy stage also passes all four local 34/34 suites. Its focused
+ASan/UBSan/leak campaign passes <strong>9/9 groups in 102.46 s</strong>, covering junction,
+coupling, noise, installed-consumer and recovery paths. Final integrated full
+sanitizer/native qualification remains required separately.</p>
+<p>The progress stage passes all four local 34/34 suites and full Clang Debug
+ASan/UBSan/leak detection, <strong>34/34 in 211.29 s</strong>. Its fresh installed consumer
+includes the progress header first and completes a worker twice. Repeated
+library runs also destroy two-worker bars with and without explicit completion.
+The preceding vector-copy source passes all ten native binary/library jobs
+and the utility job in <a href="https://github.com/JoeyDelp/JoSIM/actions/runs/42298764991">CI42298764991</a>.
+Each subsequent pushed revision still requires its own native checks.</p>
+<p><code>artifacts/audit-resolution/performance/reserve/</code> contains <code>summary.json</code>, the
+explicit <code>decision.json</code>, all per-repetition receipts, fixtures and exact
+<code>measure.py</code>/<code>paired_reserve.py</code> owners. Detailed timing logs and CSV witnesses
+remain under <code>build/audit-resolution/performance/paired-reserve-final/</code>.
+Baseline/candidate binary and source identities are retained separately.</p>
+<p>To reproduce the archived owner, run from a source checkout. Place the two
+corresponding Release executables at
+<code>build/audit-resolution/performance/bin/{baseline,reserve-candidate}</code>, copy its
+eight fixtures into <code>build/audit-resolution/performance/fixtures/</code>, and place
+the owners in that performance directory. Run:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-B<span class="w"> </span>build/audit-resolution/performance/paired_reserve.py
+</code></pre></div>
+<p>The result directory must be new; prior results are preserved. This task-owned
+Linux measurement owner uses GNU time and taskset. It is not part of portable
+CTest or a claim about runtime on other operating systems.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Johannes Delport
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/JoeyDelp" target="_blank" rel="noopener" title="JoeyDelp on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["toc.integrate", "header.autohide"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

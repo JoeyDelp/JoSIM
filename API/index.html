@@ -1,0 +1,1253 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Johannes Delport">
+      
+      
+        <link rel="canonical" href="https://joeydelp.github.io/JoSIM/API/">
+      
+      
+        <link rel="prev" href="../compatibility/">
+      
+      
+        <link rel="next" href="../RELEASE_POLICY/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>C++ API - JoSIM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#embedding-josim" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="JoSIM Documentation" class="md-header__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+      
+  <img src="../img/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JoSIM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              C++ API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    JoeyDelp/JoSIM
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="JoSIM Documentation" class="md-nav__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+      
+  <img src="../img/favicon.ico" alt="logo">
+
+    </a>
+    JoSIM Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/JoeyDelp/JoSIM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    JoeyDelp/JoSIM
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tech_disc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Discussion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ex_usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comp_stamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Component Stamps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Syntax Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_limits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Initial States and Model Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gate_junctions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate-Controlled Junctions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../noise_sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Noise Sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../squid_noise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Floating Flux Lines and SQUID Noise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sweeps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameter Sweeps and Circuit IV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python_utilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python Plotting and Specifications
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime and Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility and Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parsing-and-subcircuit-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing and subcircuit binding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-and-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors and recovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#random-state-and-concurrent-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Random state and concurrent runs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RELEASE_POLICY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Procedure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bugs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Schedule and Bugs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Japanese 日本語版
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Japanese 日本語版
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jp/index_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jp/tech_disc_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    技術的な議論
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jp/ex_usage_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    使用例
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jp/comp_stamps_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    素子のスタンプ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jp/syntax_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文法ガイド
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jp/bugs_jp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    開発スケジュール・バグ報告
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="embedding-josim">Embedding JoSIM</h1>
+<p>Link the installed CMake target <code>josim::josim</code>. Use a C++17 compiler and rebuild
+your application against the headers and libraries from the same installation.
+The interface exposes C++ standard-library types; a stable binary interface
+across compiler, standard-library or JoSIM versions is not promised.</p>
+<h2 id="parsing-and-subcircuit-binding">Parsing and subcircuit binding</h2>
+<p>After <code>Input::parse_input</code>, call
+<code>input.netlist.expand_maindesign(input.parameters)</code>. This resolves globals,
+then binds parameters and local models per instance before expanding its
+children. Do not pre-evaluate all local definitions: some need instance values.
+Continue with transient identification, matrix creation and simulation as in
+the CLI entry point. Overrides capture their caller-evaluated values at binding.
+To change caller/global parameters and rebind a circuit, create fresh Input and
+Netlist objects; reparsing an already expanded map does not reinstantiate it.</p>
+<p>The no-argument <code>expand_subcircuits()</code>/<code>expand_maindesign()</code> entry points remain
+for existing callers that pre-parse type-scoped parameters/models. They preserve
+that legacy lookup and component-value overrides; use the parameter-aware
+overload for named instance parameters. <code>expand_subcircuits()</code> now validates
+structural dependencies while retaining templates until main-design expansion.
+Callers inspecting partially expanded templates must adapt to this change.</p>
+<p>Resolved instance contexts in expanded lines, <code>ParameterName</code> and <code>models_new</code>
+begin with <code>|</code>, followed by the inside-to-outside instance path. Definition
+contexts retain their type names. Local template expressions can remain
+unevaluated; check <code>Parameter::get_value()</code> before accessing a numeric value.
+Model lookup prefers the nearest instance before globals. These changes add
+methods without adding class state; rebuild consumers with this release's
+headers and libraries.</p>
+<h2 id="errors-and-recovery">Errors and recovery</h2>
+<p><code>Function::parse_function</code> rejects invalid PULSE domains, including a zero period,
+independently of verbosity. Replacing a pulse replaces its stored amplitudes and
+timing. Finite cycle counts beyond <code>int64_t</code> use a floating remainder instead of
+an out-of-range cast. <code>INVALID_PULSE_PARAMETERS</code> is appended to <code>FunctionErrors</code>;
+existing enum values, signatures and class layouts are retained.</p>
+<p>Set finite, positive <code>tstep</code> and <code>tstop</code> before creating a matrix. <code>simsize()</code>
+checks the point count before integer conversion. <code>validate_output()</code> checks
+print settings against the actual grid; output also rejects empty result data.</p>
+<p>Input, model, matrix, simulation and output failures throw C++ exceptions. Catch
+<code>std::exception</code> around the complete operation; <code>std::runtime_error::what()</code>
+contains JoSIM's diagnostic. A failed simulation is not a result. Discard the
+failed run's Input, Matrix and Simulation objects, then create a fresh run.
+Solver allocations are released when construction fails or a timestep retry
+rebuilds the matrix.</p>
+<p>CSV/DAT/RAW and model-IV writers explicitly close their streams and check the
+final state. Standard-output formatting flushes and checks <code>std::cout</code>.
+A write/close failure throws with its destination; a partially written file
+may remain and must not be treated as a successful result. <code>WRITE_FAILED</code> is
+appended to <code>OutputErrors</code>, preserving its existing values and method signatures.
+If an embedding application redirects <code>std::cout</code> to a failing stream, it owns
+restoring that destination and clearing the stream's error state before reuse.</p>
+<p><code>Output::write_output</code> also checks every completed trace for finite values.
+Finite solved unknowns can overflow in unit conversion, filtering or subtraction.
+Such a result throws <code>NONFINITE_TRACE</code> with its trace label and output-sample
+index before the normal Output constructor opens any destination. Existing files
+remain intact. This enum is appended; existing values/layouts/signatures remain.
+Discard the failed Output object. Applications that populate public <code>traces</code>
+themselves remain responsible for the data passed directly to formatters.</p>
+<p>Model-IV helpers operate on the generated single-junction testbench. Each point
+rebuilds fresh device state from its bias declaration; timestep retries rebuild
+from the same Input. Existing signatures/layouts remain. <code>do_simulate</code> honors
+a positive <code>Input::transSim.prstart()</code> as its averaging start; the default zero
+retains the legacy latter-half convention for direct callers. At least two
+averaging samples are required. CLI <code>.IV</code> timing controls are described in the
+<a href="../sweeps/">sweep guide</a>. These finite transients do not imply converged DC or
+continuous state transfer between points.</p>
+<p>Transient storage reserves the complete internal sample count only for engaged
+histories. Allocation/size failures during reservation throw a recoverable
+<code>STORAGE_ALLOCATION_FAILED</code> diagnostic; the enum is appended without changing
+existing values or layouts. Output decimation does not shrink internal histories.
+See <a href="../performance/">memory planning</a> for payload scaling and OS memory limits.</p>
+<p><code>Model::cpr()</code> still returns an owned coefficient copy. <code>cpr_view()</code> adds a
+read-only reference for callers that keep the Model alive; changes to the Model
+can change its contents or invalidate element pointers/iterators. Do not mutate
+the model during simulation. The engine borrows these coefficients and the
+inductor's existing coupling vector without per-step allocations. Existing
+copying getters and public layouts remain unchanged.</p>
+<p><code>ProgressBar</code> waits between display updates instead of spinning. Configure its
+text and total before starting workers; call <code>update</code> while the worker runs,
+then <code>complete</code> from the owning thread. Repeated completion is safe and
+destruction joins every worker. Do not concurrently create/complete workers or
+change their text. The mutex/condition-variable state changes this public type's
+layout; recompile consumers. Existing stream parameters retain their previous
+behavior: asynchronous rendering uses <code>std::cout</code>.</p>
+<p><code>Input</code> records the main netlist and included files. Normal output and <code>.iv</code>
+generation reject destinations that refer to those inputs, including existing
+hard-link aliases. Keep this provenance when using the normal input parser.
+Applications that construct <code>expNetlist</code> directly should fill <code>inputFiles</code> if
+they also need protection for source files they loaded themselves. This adds
+state to <code>Input</code>; recompile existing embedding applications for this release.
+Hierarchical pin lookup adds alias state to <code>Netlist</code>/<code>Subcircuit</code>; device
+differences add a second primitive to <code>RelevantTrace</code>. Recompile consumers of
+these public C++ types as well. Existing trace-handler function signatures are
+retained.</p>
+<p><code>Results::sourceCurrents</code> contains only requested applied current-source
+histories, indexed by the matrix's <code>sourcegen</code> index. Each retained vector has
+the same length as <code>timeAxis</code>. Unrequested histories remain absent. This
+appended result state requires consumers of <code>Results</code>/<code>Simulation</code> to recompile.</p>
+<p><code>Results::phaseBefore</code> retains nodal phase at <code>-h</code> and <code>-2h</code> for output
+conversion. Phase mode retains its solved phases; voltage mode integrates the
+solved startup voltages with the same BDF2 relation used for subsequent output.
+The phase origin is zero before the first simulated step, including negative
+startup steps. Histories are zero when startup is disabled. Explicit selection
+retains only nodes needing conversion (voltage in phase mode, phase in voltage
+mode), including difference operands; direct JJ variables need no duplicate
+nodal history. Default all-unknown results retain every nodal history for later
+postprocessing. The map stores two doubles per retained node plus map overhead;
+it does not grow with run length. This changes the size of <code>Results</code> and
+requires recompilation.</p>
+<p><code>PhaseSource</code> retains two preceding applied phase samples. BDF2 voltage
+conversion uses these actual samples instead of asking an advanced random
+generator for past values. Warmup continues through t=0 without resetting
+history; a cold phase step retains its existing two-sample voltage impulse.
+Full timestep retries reconstruct the sources and clear all result history.
+The appended source fields also require consumers of component/Matrix types
+to recompile against matching headers and libraries.</p>
+<p>The command-line helpers <code>CliOptions::parse</code>, <code>display_help</code>, <code>Errors::oor</code> and
+<code>Errors::error_message</code> retain process-exit behaviour for the executable.
+Embedding applications should construct <code>Input</code> directly and handle exceptions,
+rather than calling these CLI entry points.</p>
+<p><code>Matrix</code> exposes its sparse arrays for existing C++ consumers. A simulation
+rejects empty/inconsistent arrays, invalid indices and non-finite coefficients
+before calling KLU. Changing public arrays is the caller's responsibility;
+normal applications should use <code>Matrix::create_matrix</code>.</p>
+<p>The legacy <code>Inductor::update_timestep(factor)</code> hook rescales the component's
+self and mutual voltage-mode stamp coefficients for a finite positive factor.
+Phase-mode coefficients do not depend on timestep. This edits component stamp
+storage only; it does not rebuild global CSR arrays or integration histories.
+Normal simulation retries reconstruct the complete Matrix from Input. Use that
+path for simulation timestep changes; this hook does not provide variable-step
+integration.</p>
+<p><code>Model::validate()</code> checks physical/numerical parameter domains. Parsing and
+junction construction call it, including after area/temperature scaling, so
+directly constructed models receive the same checks. This adds a nonvirtual
+method without changing object layout. See the <a href="../model_limits/#model-domains">model domains</a>.
+Updated matrices are checked before refactorization, and every solved unknown
+must be finite. Invalid models or unrepresentable solutions throw before
+output; discard the failed run as described above.</p>
+<p><code>Noise::determine_sampling_interval(bandwidth, simulation_step)</code> returns
+<code>max(simulation_step, 1/(3*bandwidth))</code>, rejecting invalid or unrepresentable
+intervals. It adds a static method without changing object layout. For legacy
+direct callers, <code>Input::neB=0</code> retains the omitted-<code>TSTEP</code> manual-NOISE fallback
+to the simulation step; <code>.NEB 0</code> in a netlist is rejected. Automatic thermal
+sources always require a positive bandwidth.</p>
+<p>White <code>Function</code> instances store unit-ASD interpolation samples and apply the
+current <code>ampValues()[0]</code> on evaluation. Changing that amplitude rescales the
+current realization immediately, without drawing another sample. Internal
+<code>miscValues</code> contents are implementation state. Existing signatures/layouts
+and explicit-interval grid variance remain; the corrected NEB interval changes
+seeded waveforms. See the <a href="../noise_sources/">noise conventions</a>.</p>
+<h2 id="random-state-and-concurrent-runs">Random state and concurrent runs</h2>
+<p>JoSIM currently has process-global random engines and a per-thread Gaussian
+cache. It is not reentrant or safe for concurrent simulations in one process.
+Use one designated thread for JoSIM operations and complete each run before
+starting another. Use separate processes for parallel circuit sweeps.</p>
+<p>Call <code>Rng::start_run(seed)</code> before constructing each run's matrix to select and
+replay its noise and spread streams. <code>Rng::rewind()</code> resets both streams and the
+calling thread's cached Gaussian sample; internal timestep retries use it.
+Drawing from these streams elsewhere changes subsequent samples. Do not
+interleave runs, reseed another run, or share references returned by <code>noise()</code>
+or <code>spread()</code> with another thread.</p>
+<p>Repeatability means replay with the same build, netlist, seed, timestep and
+sampling settings. Changing the timestep can change stochastic sample timing.
+Bit-identical floating-point output across platforms or toolchains is not a
+supported guarantee.</p>
+<p>PNOISE/FNOISE/ICNOISE share one OU-bank initializer. Corrected power-law weights,
+endpoint limits and sampled-pole gain change their seeded waveforms. This adds
+a private method without changing class/struct layouts or existing signatures.
+<code>PNoiseState::scale</code> is now 1 because the variances already include amplitude;
+<code>S1Hz</code> remains a continuous-OU diagnostic before sampling/interpolation. It is
+not the actual interpolated PSD or a normalization guarantee at an out-of-band
+frequency. See the <a href="../noise_sources/#power-law-noise">colored-noise conventions</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Johannes Delport
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/JoeyDelp" target="_blank" rel="noopener" title="JoeyDelp on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.integrate", "header.autohide"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../javascripts/config.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
