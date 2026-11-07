@@ -63,6 +63,13 @@ or via \
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list of recent changes.
 
+### v3.1.0
+
+- Added `BETA_C` for `RTYPE=0` junctions, capacitor initial voltages and quadratic nonlinear inductors.
+- Corrected voltage-mode mutual-inductor history ordering.
+- C++ applications must rebuild with matching 3.1 headers and libraries; the shared-library ABI is now 4.
+- See the [release notes](docs/releases/v3.1.0.md) for syntax, examples and model limits.
+
 ### v3.0.0
 - Added gate-controlled junctions, power-law and flux noise sources.
 - Added circuit parameter sweeps and model IV timing controls.

@@ -196,12 +196,15 @@ def execute(work, result, output):
     root = pathlib.Path(__file__).resolve().parent.parent
     result["verification_source"] = source_identity(root, None)
     result["owners_sha256"] = {name: sha256(root / name) for name in
-                              ("tools/verify_release.py", "test/regression_cli.py", "test/regression_numerics.py")}
+                              ("tools/verify_release.py", "test/regression_cli.py", "test/regression_numerics.py",
+                               "test/regression_capacitor_ic.py", "test/regression_nonlinear_inductor.py")}
     output.parent.mkdir(parents=True, exist_ok=True)
     commands = [("version", [str(binary), "-v"]),
                 ("cli", [sys.executable, "-B", str(root / "test/regression_cli.py"), str(binary)]),
                 ("numerics", [sys.executable, "-B", str(root / "test/regression_numerics.py"), str(binary),
-                              "--report", str(output.parent / "numerics.json")])]
+                              "--report", str(output.parent / "numerics.json")]),
+                ("capacitor_ic", [sys.executable, "-B", str(root / "test/regression_capacitor_ic.py"), str(binary)]),
+                ("nonlinear_inductor", [sys.executable, "-B", str(root / "test/regression_nonlinear_inductor.py"), str(binary)])]
     result["commands"] = []
     result["runtime"] = {"system": platform.system(), "machine": platform.machine(),
                          "release": platform.release(), "libc": platform.libc_ver(), "python": sys.version}

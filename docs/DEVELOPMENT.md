@@ -38,7 +38,7 @@ cmake --install build/dev --config Release --prefix build/install
 ```
 
 Set `CMAKE_PREFIX_PATH` to the installation directory in your application, then
-use `find_package(josim 3.0 CONFIG REQUIRED)` and link `josim::josim`. See
+use `find_package(josim 3.1 CONFIG REQUIRED)` and link `josim::josim`. See
 [Embedding JoSIM](API.md) for the calling sequence and error handling.
 
 | Option | Library and runtime |

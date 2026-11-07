@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.1.0
 
 - Added `BETA_C` model input for `RTYPE=0` junctions. It calculates RN from the
   nominal Stewart–McCumber parameter, Ic and C. See the
@@ -16,7 +16,8 @@
   reciprocal constant mutual coupling, with bounded Newton correction and
   timestep retries. See the [inductor guide](docs/model_limits.md#nonlinear-inductance).
 - Capacitor initialization and nonlinear inductors change public C++ component
-  layouts. Rebuild applications with matching updated headers and libraries.
+  layouts. Rebuild applications with matching 3.1 headers and libraries. Shared
+  libraries use ABI version 4.
 
 ## 3.0.0
 

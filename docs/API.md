@@ -5,13 +5,14 @@ JoSIM provides a C++17 library. Install it as described in the
 target `josim::josim`:
 
 ```cmake
-find_package(josim 3.0 CONFIG REQUIRED)
+find_package(josim 3.1 CONFIG REQUIRED)
 add_executable(my_simulator main.cpp)
 target_link_libraries(my_simulator PRIVATE josim::josim)
 ```
 
 Use headers and libraries from the same installation. Applications using an
-older release must be rebuilt for 3.0.
+older release, including 3.0, must be rebuilt for 3.1. Shared libraries use ABI
+version 4; it is independent of the JoSIM release version.
 
 ## Running a circuit
 
