@@ -9,8 +9,31 @@ unknown. It uses the second-order backward difference formula (BDF2):
 \]
 
 where `h` is the internal timestep. Nonlinear junction terms are predicted from
-previous samples, followed by one sparse linear solve per step. JoSIM does not
-perform Newton iteration within a step or provide SPICE RELTOL/ABSTOL controls.
+previous samples. Without nonlinear inductors, each step uses one sparse linear
+solve. Quadratic inductors add the correction described below. JoSIM does not
+provide general SPICE RELTOL/ABSTOL controls or a fully implicit junction solve.
+
+## Nonlinear inductors
+
+For the [quadratic inductor model](model_limits.md#nonlinear-inductance), voltage
+mode differentiates total flux linkage with BDF2. Phase mode imposes
+`SIGMA*(phi_positive-phi_negative)=Phi_total`. The solver corrects the inductor
+rows using damped Newton iteration, retaining KLU's symbolic analysis and
+refactorizing the numerical coefficients together for each iteration.
+
+The flux residual must be below `1e-26 Wb + 1e-12*S`, where S is the sum of
+the absolute node-derived flux, self flux, mutual flux terms and BDF2 history
+contribution in that row. Sources, noise samples, junction predictions and
+histories are evaluated once per attempted step and held fixed during correction.
+Junction terms retain their existing explicit predictor.
+
+Each step permits at most 40 Newton corrections and 16 damping halvings per
+correction. Failure restarts the complete run at half the timestep, restoring
+the initial state and random streams. Circuits with nonlinear inductors permit
+at most eight such timestep reductions, including junction phase-advance retries;
+failure then reports an error. These residual and iteration limits are not a
+local integration-error estimate. Check timestep refinement for the quantities
+of interest, especially large excursions and long ladders.
 
 ## Timestep and startup
 

@@ -1,0 +1,7 @@
+* Capacitor energy drives a quadratic differential-inductance model.
+.param KINETIC=1e8
+C1 N 0 1p IC=1m
+L1 N 0 100p ALPHA=KINETIC
+.tran 0.1p 100p DST
+.print V(N) I(L1) P(L1)
+.end

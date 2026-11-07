@@ -11,8 +11,12 @@
   See the [initial-state guide](docs/model_limits.md#capacitor-voltage).
 - Corrected voltage-mode mutual-inductor history ordering so coupled branches
   use the same preceding current samples.
-- Capacitor initialization changes public C++ component layouts. Rebuild
-  applications with matching updated headers and libraries.
+- Added quadratic nonlinear inductors with `ALPHA=`, using differential
+  `Ld(I)=L0*(1+ALPHA*I^2)`. Both modes solve the corresponding flux law, including
+  reciprocal constant mutual coupling, with bounded Newton correction and
+  timestep retries. See the [inductor guide](docs/model_limits.md#nonlinear-inductance).
+- Capacitor initialization and nonlinear inductors change public C++ component
+  layouts. Rebuild applications with matching updated headers and libraries.
 
 ## 3.0.0
 

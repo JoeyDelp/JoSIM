@@ -52,10 +52,11 @@ JoSIM の値は工学表記（Engineering Notation）またはサフィックス
 
 ### インダクタ
 
-**L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
+**L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**&emsp;[**ALPHA=**$a$]
 
-インダクタ値の単位はヘンリー（Henry）です。L は計算中一定で、電流依存 L(I) は未対応です。
-[モデル境界](../model_limits.md#nonlinear-inductance) を参照してください。
+インダクタ値 L0 の単位はヘンリー（Henry）です。`ALPHA=a` で微分インダクタンス `Ld(I)=L0*(1+a*I^2)` を指定できます。
+L0 は正、a は非負の有限値で、a の単位は A^-2 です。省略時または a=0 では L は一定です。
+磁束の定義と相互結合の制約は [非線形インダクタの説明](../model_limits.md#nonlinear-inductance) を参照してください。
 
 ### コンデンサ
 

@@ -333,6 +333,30 @@ void unrequested_source_history() {
     }
 }
 
+void nonlinear_inductor_models() {
+    const auto check = [](const std::string& value, const std::string& alpha, double current,
+                          double flux, double differential) {
+        auto run = input();
+        run.netlist.expNetlist = {{{"L1", "N", "0", value, "ALPHA=" + alpha}, std::nullopt}};
+        JoSIM::Matrix matrix;
+        matrix.create_matrix(run);
+        const auto& device = std::get<JoSIM::Inductor>(matrix.components.devices.front());
+        const double actualFlux = device.flux(current), actualDifferential = device.differential_inductance(current);
+        if (!std::isfinite(actualFlux) || !std::isfinite(actualDifferential)
+            || std::abs(actualFlux / flux - 1) > 1e-13
+            || std::abs(actualDifferential / differential - 1) > 1e-13) {
+            throw std::runtime_error("Nonlinear inductor flux law or derivative is incorrect");
+        }
+        if (device.flux(0) != 0 || device.differential_inductance(0) != device.netlistInfo.value_) {
+            throw std::runtime_error("Nonlinear inductor has an incorrect zero-current limit");
+        }
+    };
+    check("100P", "1E8", 1e-4, 4e-14 / 3, 2e-10);
+    check("100P", "1E8", -1e-4, -4e-14 / 3, 2e-10);
+    check("1E200", "1E200", 1e-100, 4e100 / 3, 2e200);
+    check("1E-200", "1E-200", 1e100, 4e-100 / 3, 2e-200);
+}
+
 void default_phase_history_for_postprocessing() {
     auto run = input();
     run.argAnal = JoSIM::AnalysisType::Phase;
@@ -433,6 +457,7 @@ int main(int argc, char** argv) {
         JoSIM::Rng::start_run(123);
         const std::string selected = argc > 1 ? argv[1] : "all";
         if (selected == "all" || selected == "model" || selected == "beta") { beta_c_models(); }
+        if (selected == "all" || selected == "nonlinear") { nonlinear_inductor_models(); }
         // Repeated failures exercise solver cleanup; sanitizers check allocations.
         for (int i = 0; i < 8; ++i) {
             if (selected == "all" || selected == "missing") { missing_model(); }

@@ -83,6 +83,7 @@ add_library(
   src/Misc.cpp
   src/Model.cpp
   src/Netlist.cpp
+  src/NonlinearInductor.cpp
   src/Output.cpp
   src/Parameters.cpp
   src/PhaseSource.cpp

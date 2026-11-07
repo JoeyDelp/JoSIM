@@ -59,11 +59,6 @@ void validate_matrix(const Matrix& matrix) {
     }
 }
 
-void validate_solution(const std::vector<double>& solution) {
-    if (!std::all_of(solution.begin(), solution.end(), [](double value) { return std::isfinite(value); })) {
-        Errors::simulation_errors(SimulationErrors::SOLVER_FAILURE, "Non-finite solution; model or numerical range exceeded");
-    }
-}
 } // namespace
 
 Simulation::Simulation(Input& iObj, Matrix& mObj) {
@@ -84,9 +79,24 @@ Simulation::Simulation(Input& iObj, Matrix& mObj) {
         // Run transient simulation
         trans_sim(mObj);
         // If step size is too large, reduce and try again
-        if (needsTR_) { reduce_step(iObj, mObj); }
+        if (needsTR_) {
+            if (!nonlinearInductors_.empty() && nonlinearRetries_++ >= 8) {
+                Errors::simulation_errors(SimulationErrors::SOLVER_FAILURE,
+                    "Nonlinear inductor timestep retry limit reached (8 reductions): " + nonlinearFailure_);
+            }
+            reduce_step(iObj, mObj);
+        }
 
     }
+}
+
+void Simulation::factorize(Matrix& mObj) {
+    mObj.create_nz();
+    validate_matrix(mObj);
+    klu_l_free_numeric(&Numeric_, &Common_);
+    Numeric_ = klu_l_factor(mObj.rp.data(), mObj.ci.data(), mObj.nz.data(), Symbolic_, &Common_);
+    if (!Numeric_) { solver_failure(Common_); }
+    needsLU_ = false;
 }
 
 void Simulation::setup(Input& iObj, Matrix& mObj) {
@@ -102,6 +112,11 @@ void Simulation::setup(Input& iObj, Matrix& mObj) {
     startup_  = iObj.transSim.startup();
     x_.clear();
     x_.resize(mObj.branchIndex, 0.0);
+    nonlinearInductors_.clear();
+    nonlinearFailure_ = "junction phase advance or nonlinear convergence";
+    for (auto index : mObj.components.inductorIndices) {
+        if (std::get<Inductor>(mObj.components.devices[index]).alpha_ > 0) { nonlinearInductors_.push_back(index); }
+    }
     results.sourceCurrents.clear();
     results.phaseBefore.clear();
     const auto capture_source = [&](const RelevantTrace& trace) {
@@ -182,13 +197,7 @@ void Simulation::trans_sim(Matrix& mObj) {
             // Setup the b matrix
             setup_b(mObj, i, i * stepSize_);
             if (needsTR_) { return; }
-            // Assign x_prev the new b
-            x_ = b_;
-            // Solve Ax=b, storing the results in x_
-            simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
-            // If anything is a amiss, complain about it
-            if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
-            validate_solution(x_);
+            if (!solve_step(mObj)) { return; }
             for (auto& history : results.phaseBefore) {
                 const auto node = x_.at(history.first);
                 const double phase = atyp_ == AnalysisType::Phase ? node
@@ -207,13 +216,7 @@ void Simulation::trans_sim(Matrix& mObj) {
         // Setup the b matrix
         setup_b(mObj, i, i * stepSize_);
         if (needsTR_) { return; }
-        // Assign x_prev the new b
-        x_ = b_;
-        // Solve Ax=b, storing the results in x_
-        simOK_ = klu_l_tsolve(Symbolic_, Numeric_, mObj.rp.size() - 1, 1, &x_.front(), &Common_);
-        // If anything is a amiss, complain about it
-        if (!simOK_) { Errors::simulation_errors(SimulationErrors::MATRIX_SINGULAR); }
-        validate_solution(x_);
+        if (!solve_step(mObj)) { return; }
         // Store results (only requested, to prevent massive memory usage)
         for (auto j = 0; j < results.xVector.size(); ++j) {
             if (results.xVector.at(j)) { results.xVector.at(j).value().emplace_back(x_.at(j)); }
@@ -252,24 +255,17 @@ void Simulation::setup_b(Matrix& mObj, int64_t i, double step, double factor) {
     // Clear b matrix and reset
     b_.clear();
     b_.resize(mObj.rp.size(), 0.0);
+    // Assemble flux histories before shifting any device state.
+    handle_inductors(mObj, factor);
+    if (needsTR_) { return; }
     // Handle jj
     handle_jj(mObj, i, step, factor);
     if (needsTR_) { return; }
-    // Re-factorize the LU if any jj transitions
-    if (needsLU_) {
-        mObj.create_nz();
-        validate_matrix(mObj);
-        klu_l_free_numeric(&Numeric_, &Common_);
-        Numeric_ = klu_l_factor(&mObj.rp.front(), &mObj.ci.front(), &mObj.nz.front(), Symbolic_, &Common_);
-        if (!Numeric_) { solver_failure(Common_); }
-        needsLU_ = false;
-    }
+    if (needsLU_) { factorize(mObj); }
     // Handle current sources
     handle_cs(mObj, step, i);
     // Handle resistors
     handle_resistors(mObj, step);
-    // Handle inductors
-    handle_inductors(mObj, factor);
     // Handle capacitors
     handle_capacitors(mObj);
     // Handle voltage sources
@@ -337,7 +333,29 @@ void Simulation::handle_resistors(Matrix& mObj, double& step) {
 void Simulation::handle_inductors(Matrix& mObj, double factor) {
     for (const auto& j : mObj.components.inductorIndices) {
         auto& temp = std::get<Inductor>(mObj.components.devices.at(j));
-        if (atyp_ == AnalysisType::Voltage) {
+        if (!nonlinearInductors_.empty()) {
+            const double current = x_.at(*temp.indexInfo.currentIndex_);
+            const double flux = temp.flux(current), slope = temp.differential_inductance(current);
+            temp.fluxHistory_ = 0.0;
+            if (atyp_ == AnalysisType::Voltage) {
+                double totalFlux = flux;
+                for (const auto& mutual : temp.mutualInductances_) {
+                    const auto& other = std::get<Inductor>(mObj.components.devices.at(mutual.first));
+                    totalFlux += mutual.second * x_.at(*other.indexInfo.currentIndex_);
+                }
+                temp.fluxHistory_ = -(4.0 / 3.0) * totalFlux + (1.0 / 3.0) * temp.previousFlux_;
+                temp.previousFlux_ = totalFlux;
+            }
+            const double scale = atyp_ == AnalysisType::Voltage ? 1.5 / (stepSize_ * factor) : 1.0 / Constants::SIGMA;
+            const double rhs = scale * (temp.fluxHistory_ + (temp.alpha_ > 0 ? flux - slope * current : 0.0));
+            if (!std::isfinite(rhs) || !std::isfinite(slope) || !std::isfinite(scale * slope)) {
+                nonlinearFailure_ = temp.netlistInfo.label_ + ": flux or differential inductance exceeds the numerical range";
+                needsTR_ = true;
+                return;
+            }
+            if (temp.alpha_ > 0) { needsLU_ = temp.linearize(current, stepSize_ * factor) || needsLU_; }
+            b_.at(*temp.indexInfo.currentIndex_) = rhs;
+        } else if (atyp_ == AnalysisType::Voltage) {
             // -2L/h Ip + L/2h Ip2
             b_.at(temp.indexInfo.currentIndex_.value())
                     = -(2.0 * temp.netlistInfo.value_ / (stepSize_ * factor))

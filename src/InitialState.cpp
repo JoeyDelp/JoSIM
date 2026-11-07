@@ -324,7 +324,10 @@ bool Simulation::initialize_capacitors(Matrix& matrix) {
         }
     }
     for (auto index : components.inductorIndices) {
-        std::get<Inductor>(components.devices[index]).In2_ = -state[inductorSlopes.at(index)];
+        auto& device = std::get<Inductor>(components.devices[index]);
+        device.In2_ = -state[inductorSlopes.at(index)];
+        device.previousFlux_ = Constants::SIGMA
+            * phase_difference(device.indexInfo.posIndex_, device.indexInfo.negIndex_, -1);
     }
     for (auto index : components.junctionIndices) {
         auto& device = std::get<JJ>(components.devices[index]);

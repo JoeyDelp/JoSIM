@@ -40,8 +40,11 @@ normal applications should use `Matrix::create_matrix`.
 Capacitor `IC=` also applies to library simulations. Disable settling with
 `input.transSim.startup(false)` before creating the matrix; parsed `.TRAN ... DST`
 does this automatically. The [initial-state guide](model_limits.md#capacitor-voltage)
-describes the supported circuits. The capacitor component layout has changed;
-rebuild applications with the updated matching headers and library.
+describes the supported circuits. Initial-state and nonlinear-inductor storage
+change public component layouts; rebuild applications with the updated matching
+headers and library. `Inductor::flux(current)` returns self flux, and
+`differential_inductance(current)` returns its derivative; mutual linkage is
+stored separately in the coupling entries.
 
 ## Handling errors
 

@@ -29,6 +29,7 @@ void Matrix::create_matrix(Input& iObj) {
     }
     // Handle mutual inductances
     handle_mutual_inductance(iObj);
+    validate_inductor_coupling();
     // Create the compressed storage row format required for simulation
     create_csr();
 }
@@ -271,6 +272,8 @@ void Matrix::create_components(Input& iObj) {
 }
 
 void Matrix::handle_mutual_inductance(Input& iObj) {
+    const bool nonlinear = std::any_of(components.inductorIndices.begin(), components.inductorIndices.end(),
+        [&](int64_t index) { return std::get<Inductor>(components.devices[index]).alpha_ > 0; });
     int64_t     cc = 0;
     ProgressBar bar2;
     if (!iObj.argMin && components.mutualinductances.size() != 0) {
@@ -316,7 +319,8 @@ void Matrix::handle_mutual_inductance(Input& iObj) {
         // Calculate the coupling factor
         double cf     = parse_param(s.first.at(3), iObj.parameters, s.second);
         // Calculate the mutual inductance for this pair
-        double mutual = cf * std::sqrt(ind1.netlistInfo.value_ * ind2.netlistInfo.value_);
+        double mutual = cf * (nonlinear ? std::sqrt(ind1.netlistInfo.value_) * std::sqrt(ind2.netlistInfo.value_)
+                                        : std::sqrt(ind1.netlistInfo.value_ * ind2.netlistInfo.value_));
         if (mutual != 0) {
             // Add the mutual inductance to each inductor respectively
             ind1.add_mutualInductance(

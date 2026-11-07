@@ -59,14 +59,16 @@ timestep floor and classical thermal-noise assumptions.
 
 ### Inductor
 
-**L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
+**L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**&emsp;[**ALPHA=**$a$]
 
 The value of an inductor is in Henry.
 
-L is constant during simulation; a parameter expression is evaluated once.
-Current-dependent L(I) is not supported. See the
-[model boundary](model_limits.md#nonlinear-inductance) for flux-linkage
-semantics and the limits of constant-L approximations.
+Without `ALPHA`, L is constant. `ALPHA=a` selects differential inductance
+`Ld(I)=L0*(1+a*I^2)`, with VALUE supplying L0. L0 must be finite and positive;
+a must be finite and non-negative, in A^-2. Both accept scoped parameter
+expressions evaluated once. `ALPHA=0` gives the constant-L model. See the
+[nonlinear-inductor guide](model_limits.md#nonlinear-inductance) for the flux law,
+mutual coupling and examples.
 
 ### Capacitor
 
