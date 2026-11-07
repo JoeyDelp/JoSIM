@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://joeydelp.github.io/JoSIM/API/">
       
       
-        <link rel="prev" href="../qualification/v3.0.0/">
+        <link rel="prev" href="../compatibility/">
       
       
         <link rel="next" href="../RELEASE_POLICY/">
@@ -267,6 +267,33 @@
     
   
     Technical Discussion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
   
 
     
@@ -590,34 +617,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -697,10 +697,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#parsing-and-subcircuit-binding" class="md-nav__link">
+  <a href="#running-a-circuit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Parsing and subcircuit binding
+        Running a circuit
       
     </span>
   </a>
@@ -708,10 +708,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#errors-and-recovery" class="md-nav__link">
+  <a href="#handling-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Errors and recovery
+        Handling errors
       
     </span>
   </a>
@@ -719,10 +719,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#random-state-and-concurrent-runs" class="md-nav__link">
+  <a href="#results-and-timestep-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Random state and concurrent runs
+        Results and timestep changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#random-numbers-and-concurrent-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Random numbers and concurrent runs
       
     </span>
   </a>
@@ -1031,175 +1042,70 @@
 
 
 <h1 id="embedding-josim">Embedding JoSIM</h1>
-<p>Link the installed CMake target <code>josim::josim</code>. Use a C++17 compiler and rebuild
-your application against the headers and libraries from the same installation.
-The interface exposes C++ standard-library types; a stable binary interface
-across compiler, standard-library or JoSIM versions is not promised.</p>
-<h2 id="parsing-and-subcircuit-binding">Parsing and subcircuit binding</h2>
+<p>JoSIM provides a C++17 library. Install it as described in the
+<a href="../DEVELOPMENT/#install-the-library">build instructions</a>, then link the CMake
+target <code>josim::josim</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">find_package</span><span class="p">(</span><span class="s">josim</span><span class="w"> </span><span class="s">3.0</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">add_executable</span><span class="p">(</span><span class="s">my_simulator</span><span class="w"> </span><span class="s">main.cpp</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_simulator</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">josim::josim</span><span class="p">)</span>
+</code></pre></div>
+<p>Use headers and libraries from the same installation. Applications using an
+older release must be rebuilt for 3.0.</p>
+<h2 id="running-a-circuit">Running a circuit</h2>
+<p>The command-line entry point in
+<a href="https://github.com/JoeyDelp/JoSIM/blob/master/src/josim.cpp">src/josim.cpp</a>
+shows the complete sequence: parse input, expand the main design, identify the
+transient settings, create the matrix and run the simulation.</p>
 <p>After <code>Input::parse_input</code>, call
-<code>input.netlist.expand_maindesign(input.parameters)</code>. This resolves globals,
-then binds parameters and local models per instance before expanding its
-children. Do not pre-evaluate all local definitions: some need instance values.
-Continue with transient identification, matrix creation and simulation as in
-the CLI entry point. Overrides capture their caller-evaluated values at binding.
-To change caller/global parameters and rebind a circuit, create fresh Input and
-Netlist objects; reparsing an already expanded map does not reinstantiate it.</p>
-<p>The no-argument <code>expand_subcircuits()</code>/<code>expand_maindesign()</code> entry points remain
-for existing callers that pre-parse type-scoped parameters/models. They preserve
-that legacy lookup and component-value overrides; use the parameter-aware
-overload for named instance parameters. <code>expand_subcircuits()</code> now validates
-structural dependencies while retaining templates until main-design expansion.
-Callers inspecting partially expanded templates must adapt to this change.</p>
-<p>Resolved instance contexts in expanded lines, <code>ParameterName</code> and <code>models_new</code>
-begin with <code>|</code>, followed by the inside-to-outside instance path. Definition
-contexts retain their type names. Local template expressions can remain
-unevaluated; check <code>Parameter::get_value()</code> before accessing a numeric value.
-Model lookup prefers the nearest instance before globals. These changes add
-methods without adding class state; rebuild consumers with this release's
-headers and libraries.</p>
-<h2 id="errors-and-recovery">Errors and recovery</h2>
-<p><code>Function::parse_function</code> rejects invalid PULSE domains, including a zero period,
-independently of verbosity. Replacing a pulse replaces its stored amplitudes and
-timing. Finite cycle counts beyond <code>int64_t</code> use a floating remainder instead of
-an out-of-range cast. <code>INVALID_PULSE_PARAMETERS</code> is appended to <code>FunctionErrors</code>;
-existing enum values, signatures and class layouts are retained.</p>
-<p>Set finite, positive <code>tstep</code> and <code>tstop</code> before creating a matrix. <code>simsize()</code>
-checks the point count before integer conversion. <code>validate_output()</code> checks
-print settings against the actual grid; output also rejects empty result data.</p>
-<p>Input, model, matrix, simulation and output failures throw C++ exceptions. Catch
-<code>std::exception</code> around the complete operation; <code>std::runtime_error::what()</code>
-contains JoSIM's diagnostic. A failed simulation is not a result. Discard the
-failed run's Input, Matrix and Simulation objects, then create a fresh run.
-Solver allocations are released when construction fails or a timestep retry
-rebuilds the matrix.</p>
-<p>CSV/DAT/RAW and model-IV writers explicitly close their streams and check the
-final state. Standard-output formatting flushes and checks <code>std::cout</code>.
-A write/close failure throws with its destination; a partially written file
-may remain and must not be treated as a successful result. <code>WRITE_FAILED</code> is
-appended to <code>OutputErrors</code>, preserving its existing values and method signatures.
-If an embedding application redirects <code>std::cout</code> to a failing stream, it owns
-restoring that destination and clearing the stream's error state before reuse.</p>
-<p><code>Output::write_output</code> also checks every completed trace for finite values.
-Finite solved unknowns can overflow in unit conversion, filtering or subtraction.
-Such a result throws <code>NONFINITE_TRACE</code> with its trace label and output-sample
-index before the normal Output constructor opens any destination. Existing files
-remain intact. This enum is appended; existing values/layouts/signatures remain.
-Discard the failed Output object. Applications that populate public <code>traces</code>
-themselves remain responsible for the data passed directly to formatters.</p>
-<p>Model-IV helpers operate on the generated single-junction testbench. Each point
-rebuilds fresh device state from its bias declaration; timestep retries rebuild
-from the same Input. Existing signatures/layouts remain. <code>do_simulate</code> honors
-a positive <code>Input::transSim.prstart()</code> as its averaging start; the default zero
-retains the legacy latter-half convention for direct callers. At least two
-averaging samples are required. CLI <code>.IV</code> timing controls are described in the
-<a href="../sweeps/">sweep guide</a>. These finite transients do not imply converged DC or
-continuous state transfer between points.</p>
-<p>Transient storage reserves the complete internal sample count only for engaged
-histories. Allocation/size failures during reservation throw a recoverable
-<code>STORAGE_ALLOCATION_FAILED</code> diagnostic; the enum is appended without changing
-existing values or layouts. Output decimation does not shrink internal histories.
-See <a href="../performance/">memory planning</a> for payload scaling and OS memory limits.</p>
-<p><code>Model::cpr()</code> still returns an owned coefficient copy. <code>cpr_view()</code> adds a
-read-only reference for callers that keep the Model alive; changes to the Model
-can change its contents or invalidate element pointers/iterators. Do not mutate
-the model during simulation. The engine borrows these coefficients and the
-inductor's existing coupling vector without per-step allocations. Existing
-copying getters and public layouts remain unchanged.</p>
-<p><code>ProgressBar</code> waits between display updates instead of spinning. Configure its
-text and total before starting workers; call <code>update</code> while the worker runs,
-then <code>complete</code> from the owning thread. Repeated completion is safe and
-destruction joins every worker. Do not concurrently create/complete workers or
-change their text. The mutex/condition-variable state changes this public type's
-layout; recompile consumers. Existing stream parameters retain their previous
-behavior: asynchronous rendering uses <code>std::cout</code>.</p>
-<p><code>Input</code> records the main netlist and included files. Normal output and <code>.iv</code>
-generation reject destinations that refer to those inputs, including existing
-hard-link aliases. Keep this provenance when using the normal input parser.
-Applications that construct <code>expNetlist</code> directly should fill <code>inputFiles</code> if
-they also need protection for source files they loaded themselves. This adds
-state to <code>Input</code>; recompile existing embedding applications for this release.
-Hierarchical pin lookup adds alias state to <code>Netlist</code>/<code>Subcircuit</code>; device
-differences add a second primitive to <code>RelevantTrace</code>. Recompile consumers of
-these public C++ types as well. Existing trace-handler function signatures are
-retained.</p>
-<p><code>Results::sourceCurrents</code> contains only requested applied current-source
-histories, indexed by the matrix's <code>sourcegen</code> index. Each retained vector has
-the same length as <code>timeAxis</code>. Unrequested histories remain absent. This
-appended result state requires consumers of <code>Results</code>/<code>Simulation</code> to recompile.</p>
-<p><code>Results::phaseBefore</code> retains nodal phase at <code>-h</code> and <code>-2h</code> for output
-conversion. Phase mode retains its solved phases; voltage mode integrates the
-solved startup voltages with the same BDF2 relation used for subsequent output.
-The phase origin is zero before the first simulated step, including negative
-startup steps. Histories are zero when startup is disabled. Explicit selection
-retains only nodes needing conversion (voltage in phase mode, phase in voltage
-mode), including difference operands; direct JJ variables need no duplicate
-nodal history. Default all-unknown results retain every nodal history for later
-postprocessing. The map stores two doubles per retained node plus map overhead;
-it does not grow with run length. This changes the size of <code>Results</code> and
-requires recompilation.</p>
-<p><code>PhaseSource</code> retains two preceding applied phase samples. BDF2 voltage
-conversion uses these actual samples instead of asking an advanced random
-generator for past values. Warmup continues through t=0 without resetting
-history; a cold phase step retains its existing two-sample voltage impulse.
-Full timestep retries reconstruct the sources and clear all result history.
-The appended source fields also require consumers of component/Matrix types
-to recompile against matching headers and libraries.</p>
-<p>The command-line helpers <code>CliOptions::parse</code>, <code>display_help</code>, <code>Errors::oor</code> and
-<code>Errors::error_message</code> retain process-exit behaviour for the executable.
-Embedding applications should construct <code>Input</code> directly and handle exceptions,
-rather than calling these CLI entry points.</p>
-<p><code>Matrix</code> exposes its sparse arrays for existing C++ consumers. A simulation
-rejects empty/inconsistent arrays, invalid indices and non-finite coefficients
-before calling KLU. Changing public arrays is the caller's responsibility;
+<code>input.netlist.expand_maindesign(input.parameters)</code>. This binds parameters and
+models for each subcircuit instance before expanding its children. Local
+expressions may depend on instance overrides, so do not evaluate all local
+definitions beforehand. To change parameters and expand the circuit again,
+start with fresh <code>Input</code> and <code>Netlist</code> objects.</p>
+<p>The no-argument expansion overloads remain available for callers using the
+older type-scoped parameter handling. Use the parameter-aware overload for
+named instance parameters. The <a href="../syntax/#subcircuits">syntax guide</a> describes
+defaults, overrides and model lookup.</p>
+<p>Set finite, positive transient times before constructing a matrix. Directly
+constructed models receive the same parameter checks as parsed models. If you
+modify the public sparse arrays, keep their dimensions and indices consistent;
 normal applications should use <code>Matrix::create_matrix</code>.</p>
-<p>The legacy <code>Inductor::update_timestep(factor)</code> hook rescales the component's
-self and mutual voltage-mode stamp coefficients for a finite positive factor.
-Phase-mode coefficients do not depend on timestep. This edits component stamp
-storage only; it does not rebuild global CSR arrays or integration histories.
-Normal simulation retries reconstruct the complete Matrix from Input. Use that
-path for simulation timestep changes; this hook does not provide variable-step
-integration.</p>
-<p><code>Model::validate()</code> checks physical/numerical parameter domains. Parsing and
-junction construction call it, including after area/temperature scaling, so
-directly constructed models receive the same checks. This adds a nonvirtual
-method without changing object layout. See the <a href="../model_limits/#model-domains">model domains</a>.
-Updated matrices are checked before refactorization, and every solved unknown
-must be finite. Invalid models or unrepresentable solutions throw before
-output; discard the failed run as described above.</p>
-<p><code>Noise::determine_sampling_interval(bandwidth, simulation_step)</code> returns
-<code>max(simulation_step, 1/(3*bandwidth))</code>, rejecting invalid or unrepresentable
-intervals. It adds a static method without changing object layout. For legacy
-direct callers, <code>Input::neB=0</code> retains the omitted-<code>TSTEP</code> manual-NOISE fallback
-to the simulation step; <code>.NEB 0</code> in a netlist is rejected. Automatic thermal
-sources always require a positive bandwidth.</p>
-<p>White <code>Function</code> instances store unit-ASD interpolation samples and apply the
-current <code>ampValues()[0]</code> on evaluation. Changing that amplitude rescales the
-current realization immediately, without drawing another sample. Internal
-<code>miscValues</code> contents are implementation state. Existing signatures/layouts
-and explicit-interval grid variance remain; the corrected NEB interval changes
-seeded waveforms. See the <a href="../noise_sources/">noise conventions</a>.</p>
-<h2 id="random-state-and-concurrent-runs">Random state and concurrent runs</h2>
-<p>JoSIM currently has process-global random engines and a per-thread Gaussian
-cache. It is not reentrant or safe for concurrent simulations in one process.
-Use one designated thread for JoSIM operations and complete each run before
-starting another. Use separate processes for parallel circuit sweeps.</p>
-<p>Call <code>Rng::start_run(seed)</code> before constructing each run's matrix to select and
-replay its noise and spread streams. <code>Rng::rewind()</code> resets both streams and the
-calling thread's cached Gaussian sample; internal timestep retries use it.
-Drawing from these streams elsewhere changes subsequent samples. Do not
-interleave runs, reseed another run, or share references returned by <code>noise()</code>
-or <code>spread()</code> with another thread.</p>
-<p>Repeatability means replay with the same build, netlist, seed, timestep and
-sampling settings. Changing the timestep can change stochastic sample timing.
-Bit-identical floating-point output across platforms or toolchains is not a
-supported guarantee.</p>
-<p>PNOISE/FNOISE/ICNOISE share one OU-bank initializer. Corrected power-law weights,
-endpoint limits and sampled-pole gain change their seeded waveforms. This adds
-a private method without changing class/struct layouts or existing signatures.
-<code>PNoiseState::scale</code> is now 1 because the variances already include amplitude;
-<code>S1Hz</code> remains a continuous-OU diagnostic before sampling/interpolation. It is
-not the actual interpolated PSD or a normalization guarantee at an out-of-band
-frequency. See the <a href="../noise_sources/#power-law-noise">colored-noise conventions</a>.</p>
+<h2 id="handling-errors">Handling errors</h2>
+<p>Catch <code>std::exception</code> around the complete operation. Parsing, model, solver
+and output errors throw with a diagnostic in <code>what()</code>. After a failed run,
+discard that run's objects and construct a fresh circuit before trying again.
+The command-line parsing/help functions still exit the process and should not
+be used as library entry points.</p>
+<p>Output errors include failed writes and non-finite converted traces. A failed
+write may leave a partial file. Applications redirecting <code>std::cout</code> must restore
+the stream and clear its error state before reusing it.</p>
+<p><code>Input</code> records the main netlist and its includes to prevent output from
+replacing them. If you fill <code>expNetlist</code> directly, also fill <code>inputFiles</code> for
+any source files that need this protection.</p>
+<h2 id="results-and-timestep-changes">Results and timestep changes</h2>
+<p><code>Simulation::results</code> contains the time axis and retained histories. Explicit
+trace selection retains the values needed for those traces; default output
+retains all matrix unknowns. <code>Results::sourceCurrents</code> stores requested source
+samples as they were applied during simulation. <code>phaseBefore</code> stores the two
+preceding phase values used when converting the first output samples.</p>
+<p>A timestep restart reconstructs the circuit and clears the previous results.
+For direct component users, <code>Inductor::update_timestep</code> changes its component
+stamps only; it does not rebuild the global matrix or integration histories.
+Use the normal reconstruction path to change a simulation's timestep.</p>
+<p>Model-IV helpers generate a single-junction test circuit. Each point starts
+with fresh device histories. See <a href="../sweeps/#circuit-iv-versus-model-iv">IV curves</a>
+for the timing controls and the difference from a continuous circuit sweep.</p>
+<h2 id="random-numbers-and-concurrent-runs">Random numbers and concurrent runs</h2>
+<p>Call <code>Rng::start_run(seed)</code> before creating each run's matrix. <code>Rng::rewind()</code>
+resets the noise and spread streams, including a cached Gaussian sample;
+JoSIM uses it when restarting at a smaller timestep.</p>
+<p>Random engines are shared within the process. Run JoSIM on one designated
+thread and finish one simulation before starting another. Use separate processes
+for parallel sweeps. Do not draw from, reseed or share the generator while a
+simulation is running.</p>
+<p>Reproducible runs require the same build, circuit, seed, timestep and sampling
+settings. Results are not guaranteed to be bit-identical across compilers or
+platforms.</p>
 
 
 

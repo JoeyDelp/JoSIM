@@ -392,6 +392,33 @@
   
   
     <li class="md-nav__item">
+      <a href="numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="ex_usage/" class="md-nav__link">
         
   
@@ -696,34 +723,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1057,14 +1057,9 @@
 
 
 <h1 id="josim-superconducting-circuit-simulator">JoSIM - Superconducting Circuit Simulator</h1>
-<p>User and developer documentation for the current source tree. For published
-binaries, see <a href="https://github.com/JoeyDelp/JoSIM/releases">GitHub Releases</a>.
-Fixes and compatibility changes are recorded in the
-<a href="https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md">changelog</a>.</p>
-<p>The 3.0.0 source line includes the completed branch consolidation and audit
-repairs. Read <a href="compatibility/">compatibility and migration</a> before reusing
-older results or C++ applications. JoSIM remains freely available under MIT;
-it is the open-source predecessor of JoSIM-Pro.</p>
+<p>Downloads are available from <a href="https://github.com/JoeyDelp/JoSIM/releases">GitHub Releases</a>.
+For source builds, see <a href="DEVELOPMENT/">Building JoSIM</a>. The
+<a href="https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md">changelog</a> lists the changes in each version.</p>
 <h2 id="introduction">Introduction</h2>
 <p>JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.</p>
 <p>JoSIM is meant to function as an alternative to the simulators such as JSIM<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> and WRspice<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>. JoSIM is written in modern C++ and is fully customizable and extendable to offer support for improved superconducting elements as well better approximations to the Josephson effect in superconducting materials.</p>
@@ -1081,9 +1076,9 @@ docs/
 include/
     JoSIM           # JoSIM header files.
 scripts             # Some Python3 scripts to automate testing and plotting
-tools               # Build, qualification, sweep and documentation owners.
+tools               # Build, test and circuit-sweep helpers.
 build/              # Generated builds and documentation (ignored).
-artifacts/          # Local qualification results (ignored).
+artifacts/          # Generated test results (ignored).
 src/
     ...             # JoSIM source files.
 test                # Folder containing various examples.
@@ -1105,8 +1100,8 @@ full path. The archive includes the C++ library and headers.</p>
 <a href="syntax/">Syntax Guide</a> for netlists, analysis modes and output options.</p>
 <p>To compile and test from source, follow <a href="DEVELOPMENT/">Developing JoSIM</a>.
 The <a href="RELEASE_POLICY/">release procedure</a> describes binary targets, runtime
-baselines and package verification.</p>
-<p>Current source additions have separate guides:</p>
+requirements and packaging.</p>
+<p>Further guides:</p>
 <ul>
 <li><a href="gate_junctions/">Gate-controlled junctions</a></li>
 <li><a href="noise_sources/">Noise sources</a></li>

@@ -10,27 +10,31 @@
         <meta name="author" content="Johannes Delport">
       
       
-        <link rel="canonical" href="https://joeydelp.github.io/JoSIM/qualification/2026-11-06-buffer/">
+        <link rel="canonical" href="https://joeydelp.github.io/JoSIM/numerics/">
       
       
+        <link rel="prev" href="../tech_disc/">
+      
+      
+        <link rel="next" href="../ex_usage/">
       
       
         
       
       
-      <link rel="icon" href="../../img/favicon.ico">
+      <link rel="icon" href="../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
-        <title>JJ buffer response (#101) — 6 November 2026 - JoSIM Documentation</title>
+        <title>Numerical Methods - JoSIM Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -49,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jj-buffer-response-101-6-november-2026" class="md-skip">
+        <a href="#numerical-methods" class="md-skip">
           Skip to content
         </a>
       
@@ -88,9 +92,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="JoSIM Documentation" class="md-header__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+    <a href=".." title="JoSIM Documentation" class="md-header__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
       
-  <img src="../../img/favicon.ico" alt="logo">
+  <img src="../img/favicon.ico" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -107,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              JJ buffer response (#101) — 6 November 2026
+              Numerical Methods
             
           </span>
         </div>
@@ -199,9 +203,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="JoSIM Documentation" class="md-nav__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
+    <a href=".." title="JoSIM Documentation" class="md-nav__button md-logo" aria-label="JoSIM Documentation" data-md-component="logo">
       
-  <img src="../../img/favicon.ico" alt="logo">
+  <img src="../img/favicon.ico" alt="logo">
 
     </a>
     JoSIM Documentation
@@ -228,7 +232,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -255,7 +259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tech_disc/" class="md-nav__link">
+      <a href="../tech_disc/" class="md-nav__link">
         
   
   
@@ -279,10 +283,128 @@
       
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#timestep-and-startup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timestep and startup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#junction-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Junction phase
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#buffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Buffer example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#noise-and-output-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Noise and output sampling
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../ex_usage/" class="md-nav__link">
+      <a href="../ex_usage/" class="md-nav__link">
         
   
   
@@ -309,7 +431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../comp_stamps/" class="md-nav__link">
+      <a href="../comp_stamps/" class="md-nav__link">
         
   
   
@@ -336,7 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../syntax/" class="md-nav__link">
+      <a href="../syntax/" class="md-nav__link">
         
   
   
@@ -363,7 +485,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../model_limits/" class="md-nav__link">
+      <a href="../model_limits/" class="md-nav__link">
         
   
   
@@ -390,7 +512,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../gate_junctions/" class="md-nav__link">
+      <a href="../gate_junctions/" class="md-nav__link">
         
   
   
@@ -417,7 +539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../noise_sources/" class="md-nav__link">
+      <a href="../noise_sources/" class="md-nav__link">
         
   
   
@@ -444,7 +566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../squid_noise/" class="md-nav__link">
+      <a href="../squid_noise/" class="md-nav__link">
         
   
   
@@ -471,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../sweeps/" class="md-nav__link">
+      <a href="../sweeps/" class="md-nav__link">
         
   
   
@@ -498,7 +620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_utilities/" class="md-nav__link">
+      <a href="../python_utilities/" class="md-nav__link">
         
   
   
@@ -525,7 +647,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../performance/" class="md-nav__link">
+      <a href="../performance/" class="md-nav__link">
         
   
   
@@ -552,7 +674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../DEVELOPMENT/" class="md-nav__link">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
         
   
   
@@ -579,14 +701,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../compatibility/" class="md-nav__link">
+      <a href="../compatibility/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
+    Updating to 3.0
   
 
     
@@ -606,34 +728,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../API/" class="md-nav__link">
+      <a href="../API/" class="md-nav__link">
         
   
   
@@ -660,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../RELEASE_POLICY/" class="md-nav__link">
+      <a href="../RELEASE_POLICY/" class="md-nav__link">
         
   
   
@@ -687,7 +782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../bugs/" class="md-nav__link">
+      <a href="../bugs/" class="md-nav__link">
         
   
   
@@ -761,7 +856,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../jp/index_jp/" class="md-nav__link">
+      <a href="../jp/index_jp/" class="md-nav__link">
         
   
   
@@ -789,7 +884,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../jp/tech_disc_jp/" class="md-nav__link">
+      <a href="../jp/tech_disc_jp/" class="md-nav__link">
         
   
   
@@ -817,7 +912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../jp/ex_usage_jp/" class="md-nav__link">
+      <a href="../jp/ex_usage_jp/" class="md-nav__link">
         
   
   
@@ -845,7 +940,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../jp/comp_stamps_jp/" class="md-nav__link">
+      <a href="../jp/comp_stamps_jp/" class="md-nav__link">
         
   
   
@@ -873,7 +968,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../jp/syntax_jp/" class="md-nav__link">
+      <a href="../jp/syntax_jp/" class="md-nav__link">
         
   
   
@@ -901,7 +996,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../jp/bugs_jp/" class="md-nav__link">
+      <a href="../jp/bugs_jp/" class="md-nav__link">
         
   
   
@@ -946,169 +1041,62 @@
 
 
 
-<h1 id="jj-buffer-response-101-6-november-2026">JJ buffer response (#101) — 6 November 2026</h1>
-<p>The supplied reverse-drive circuit produces a physical bipolar output. An
-independent continuous RCSJ calculation reproduces its positive and negative
-lobes. B02 undergoes a negative phase rotation; B01 makes an excursion and
-returns close to its original phase. The output therefore carries almost no
-net flux quantum. With the ports exchanged, B01 rotates and the output carries
-almost one positive flux quantum per input pulse.</p>
-<p>This investigation also exposed a separate startup-history defect, repaired in
-4bf3f47e12d19e8d86fc6cd4f80ed114ed531eab. See the
-<a href="../2026-11-06-junction-startup/">startup study</a>. That repair restores agreement
-between simulation modes; it does not remove the physical reverse lobes.</p>
-<h2 id="circuit-and-independent-equations">Circuit and independent equations</h2>
-<p>The <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/reference/buffer-101-reverse.cir">reverse input</a> preserves the
-active netlist in <a href="https://github.com/JoeyDelp/JoSIM/issues/101">issue #101</a>.
-The <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/reference/buffer-101-forward.cir">forward input</a> exchanges only
-the source and output-resistor ports. Both use the active two triangular pulses:
-0.82713 mV at 302.5 and 602.5 ps, each with 2.5 ps rise and fall times.
-The issue's commented forward source has a different first-pulse width; it is
-not used for this controlled comparison.</p>
-<p>Define i1 from N1 to N2, i2 from N3 to N4, u1=V(N2), u2=V(N2)-V(N3),
-and junction phases phi1/phi2. Kirchhoff's laws and the RCSJ equations give</p>
+<h1 id="numerical-methods">Numerical methods</h1>
+<p>JoSIM solves the transient circuit equations using voltage or phase as the nodal
+unknown. It uses the second-order backward difference formula (BDF2):</p>
 <div class="arithmatex">\[
-\begin{aligned}
-L\dot i_1&amp;=v_1-u_1,&amp;L\dot i_2&amp;=u_1-u_2-v_4,\\
-C\dot u_1&amp;=i_1-i_2-I_g-I_{c1}\sin\phi_1-u_1/R_0,\\
-C\dot u_2&amp;=i_2+I_g-I_{c2}\sin\phi_2-u_2/R_0,\\
-\sigma\dot\phi_1&amp;=u_1,&amp;\sigma\dot\phi_2&amp;=u_2.
-\end{aligned}
+\left.\frac{dx}{dt}\right|_n\approx
+\frac{3x_n-4x_{n-1}+x_{n-2}}{2h},
 \]</div>
-<p>Here L=0.125 pH, C=0.007 pF, R0=0.16 ohm, Ig=20 uA, Ic1=2 mA,
-Ic2=1.5 mA, Rport=2 ohm, and sigma=h/(4 pi e), using exact SI h and e.
-Reverse drive has v1=-Rport<em>i1 and v4=VIN; forward drive has v1=VIN and
-v4=Rport</em>i2. Output voltage is v1 in reverse and v4 in forward.</p>
-<p>The independent implementation uses ps/mA/mV/pH/pF internally and converts
-its fixtures to SI, apart from the explicitly labelled time column in ps.
-It does not call JoSIM, reuse its matrix stamps, or copy its integration scheme.
-The original RTYPE=1 models have a lower transition boundary of 2.75 mV.
-Reference maximum absolute junction voltages are 0.2784/0.3677 mV in reverse
-and 0.8547/0.0291 mV in forward. Thus the assumed R0 branch is self-consistent
-throughout this study; no normal-state approximation is being substituted.</p>
-<h2 id="reference-qualification">Reference qualification</h2>
-<p><code>tools/qualify_buffer.py</code> integrates the six-state system with an analytic
-Jacobian, splitting at every PWL breakpoint. It starts from zero at -10 ps,
-uses a maximum step of 0.2 ps, and compares:</p>
-<ul>
-<li>Radau with rtol=1e-10 against Radau with rtol=1e-12;</li>
-<li>the tighter Radau result against independently implemented BDF at rtol=1e-11;</li>
-<li>componentwise atol=rtol/100 in the scaled units above.</li>
-</ul>
-<p>The <a href="https://docs.scipy.org/doc/scipy-1.17.0/reference/generated/scipy.integrate.solve_ivp.html">SciPy solver documentation</a>
-defines these methods and tolerances. At over 70,000 dense validation points,
-the largest tolerance comparison is 8.25e-11 and method comparison 2.05e-10
-in scaled state units. The acceptance limit is 1e-8, well below the JoSIM
-comparison budgets. References contain 352 points per direction, concentrated
-around both pulses with additional quiet points. Text hashes in the manifest
-normalize CRLF to LF for native Windows checkouts.</p>
-<p>JoSIM's finite negative-time startup duration varies with timestep. All
-waveform comparisons start at 50 ps, after its bias transient has settled.
-Startup correctness has its own independent equilibrium tests. This study
-does not equate different finite warmup transients at t=0.</p>
-<h2 id="measured-response">Measured response</h2>
-<p>Each pulse uses a 60 ps integration window: 290–350 or 590–650 ps. Representative
-first-pulse values from the independent reference are:</p>
-<table>
-<thead>
-<tr>
-<th>Quantity</th>
-<th style="text-align: right;">Reverse</th>
-<th style="text-align: right;">Forward</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Positive output peak</td>
-<td style="text-align: right;">277.772966 uV at 302.872 ps</td>
-<td style="text-align: right;">823.333088 uV at 303.878 ps</td>
-</tr>
-<tr>
-<td>Negative output peak</td>
-<td style="text-align: right;">-254.631646 uV at 306.241 ps</td>
-<td style="text-align: right;">approximately zero</td>
-</tr>
-<tr>
-<td>Net output flux / Phi0</td>
-<td style="text-align: right;">-1.3834923e-6</td>
-<td style="text-align: right;">0.999997568179</td>
-</tr>
-<tr>
-<td>B01 phase change</td>
-<td style="text-align: right;">-8.6927383e-6 rad</td>
-<td style="text-align: right;">6.28317002760 rad</td>
-</tr>
-<tr>
-<td>B02 phase change</td>
-<td style="text-align: right;">-6.28317371683 rad</td>
-<td style="text-align: right;">approximately zero</td>
-</tr>
-</tbody>
-</table>
-<p>The second pulse gives the same response to the reported precision. Flux is
-checked independently through both voltage integration and endpoint linkage:</p>
+<p>where <code>h</code> is the internal timestep. Nonlinear junction terms are predicted from
+previous samples, followed by one sparse linear solve per step. JoSIM does not
+perform Newton iteration within a step or provide SPICE RELTOL/ABSTOL controls.</p>
+<h2 id="timestep-and-startup">Timestep and startup</h2>
+<p>Each attempt uses a fixed timestep. Transmission-line delays can require a
+smaller step when the matrix is built. During a run, a predicted junction phase
+increment above 0.2 cycles after the first 1% of samples causes the whole run
+to restart at half the timestep. The step is never increased automatically.</p>
+<p>This phase-advance check is not an estimate of integration error. Repeat the
+simulation with a smaller requested step and compare the quantities that matter
+for the circuit. Use <code>-V 1</code> to see the final step and sample count. Settling time,
+noise bandwidth and output sampling need their own checks.</p>
+<p>Default startup advances the circuit through a finite negative-time interval
+from zero stored histories. It does not calculate a DC operating point.
+<code>DST</code> disables this interval. For a nonzero capacitor voltage, include the
+<a href="../model_limits/#capacitor-voltage">charging circuit</a> before the event of interest.</p>
+<h2 id="junction-phase">Junction phase</h2>
+<p>The Josephson voltage relation is</p>
 <div class="arithmatex">\[
-\int v_{out}\,dt=
-\begin{cases}
-\sigma\Delta\phi_1+L\Delta i_1,&amp;\text{reverse},\\
-\sigma\Delta(\phi_1-\phi_2)-L\Delta i_2,&amp;\text{forward}.
-\end{cases}
+V=\sigma\frac{d\phi}{dt},\qquad \sigma=\frac{\Phi_0}{2\pi}.
 \]</div>
-<p>The two reference calculations agree within 1e-9 Phi0. The specified input area
-is 2.067825e-15 Wb, about 4.3 ppm below the
-<a href="https://physics.nist.gov/cgi-bin/cuu/Value?flxquhs2e">exact SI flux quantum</a>.
-Finite windows and stimulus precision explain the small noninteger residuals;
-the assertions do not require exact zero or exactly 2 pi.</p>
-<p>The issue's first screenshot reads +276.817 uV at 302.96 ps; its second is
-about +277.773 uV. The supplied netlist gives the latter peak for both pulses.
-The original binary/settings are unknown. This establishes the reported
-qualitative reverse response and its physical cause, not an exact recreation
-of every screenshot sample.</p>
-<h2 id="josim-checks-and-acceptance">JoSIM checks and acceptance</h2>
-<p>The scientific owner checks 16 cases: both directions, both modes, and
-0.02/0.01/0.005/0.0025 ps timesteps, against the reference at every output time
-from 50 ps. The standard-library-only CTest group checks 12 cases at the first
-three steps against the compact fixtures, plus fixture/generator provenance.</p>
-<p>At 0.01 ps, maximum output-voltage errors are 19.1501 nV in reverse and
-40.5556 nV in forward. Halving the step reduces voltage/current errors about
-fourfold until output rounding matters. Reverse output errors at the four
-steps are 72.7053/19.1501/4.88282/1.25925 nV; forward errors are
-161.557/40.5556/10.1845/2.56514 nV. Both modes pass.</p>
-<p>Bounds scale with (h/0.02 ps)^2. Their base values are 0.1% of input voltage,
-0.1% of the larger critical current, and 0.01% of a phase quantum:
-0.82713 uV, 2 uA, and 2 pi*1e-4 rad. Fixed allowances of 1 nV, 10 pA and
-6e-6 rad cover the existing CSV precision and SI-versus-legacy constants.
-The native check additionally requires voltage/current error after each
-halving to be below 0.4 times the previous error plus a rounding allowance.</p>
-<p>Other assertions cover finite output, increasing time, the prescribed input,
-KCL, the subgap bound, pulse areas within 5e-6 Phi0, phase changes within
-2e-5 rad in the full owner, and quiet loop flux within 1e-5 rad in CTest.
-KCL uses 3 ppm of the largest branch current plus 1 pA for CSV rounding;
-the measured full-owner maximum is about 1 nA.</p>
-<p>GCC16 and Clang23 Debug/Release pass all 33 CTest tests. The new buffer group
-passes ASan/UBSan with leak detection in 16.53 s; the unchanged production
-source also passed the previous full 32-test sanitizer suite in 182.98 s.
-All ten native binary/library jobs pass for descendant <a href="https://github.com/JoeyDelp/JoSIM/commit/7cbea62036df6e0c7a1e76180c894cf26fb23be5">7cbea62036df</a> in <a href="https://github.com/JoeyDelp/JoSIM/actions/runs/42255843921">CI 42255843921</a>. These
-bounded cases do not validate arbitrary junction models or noise spectra.</p>
-<h2 id="reproduction-and-evidence">Reproduction and evidence</h2>
-<p>Create the optional science environment as documented in
-<a href="../../DEVELOPMENT/">DEVELOPMENT.md</a>, then run:</p>
-<div class="highlight"><pre><span></span><code>build/science/bin/python<span class="w"> </span>-B<span class="w"> </span>tools/qualify_buffer.py<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--binary<span class="w"> </span>build/dev/josim-cli<span class="w"> </span>--output<span class="w"> </span>artifacts/buffer-101<span class="w"> </span>--plot
-ctest<span class="w"> </span>--test-dir<span class="w"> </span>build/dev<span class="w"> </span>-R<span class="w"> </span>regression::buffer<span class="w"> </span>--output-on-failure<span class="w"> </span>--no-tests<span class="o">=</span>error
-</code></pre></div>
-<p>The qualified environment was Python 3.12.12, NumPy 2.4.1, SciPy 1.17.0,
-Matplotlib 3.10.8. The optional <code>--write-references</code> command is documented in
-<a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/reference/README.md">the fixture guide</a>. It regenerates independent
-data; JoSIM output is never the oracle.</p>
-<p>Local full evidence: <code>artifacts/audit-resolution/buffer-101/report.json</code>,
-<code>buffer-101.png/.pdf</code>, and compiler/sanitizer logs under
-<code>build/audit-resolution/buffer-*</code>. The report records executable SHA-256
-<code>b8c07a4007f183cbac45a8fdb454751f01e7fb9b6ecc58179fc58faf2b6db647</code>.
-It was built with the F10 production change; its configure-time version banner
-still names the previous commit. The binary hash, source diff, build receipts
-and independent assertions establish this intermediate result. Final release
-qualification requires a clean build from its exact release source.</p>
+<p>Under constant voltage, phase should therefore increase linearly:</p>
+<div class="arithmatex">\[
+\phi(t)-\phi(t_a)=\frac{V}{\sigma}(t-t_a).
+\]</div>
+<p>This provides a simple check for long simulations. Earlier versions used
+slightly different constants in the junction matrix and history terms, which
+caused an accumulating phase error in voltage mode. Version 3.0 uses the same
+constant in both places. Phase is not wrapped, so accumulated cycles remain
+available in the output.</p>
+<h2 id="buffer">Buffer example</h2>
+<p>The circuit in <a href="https://github.com/JoeyDelp/JoSIM/issues/101">issue #101</a> has two
+junctions and two inductors. Its reverse response contains positive and negative
+voltage pulses, even though their net area is almost zero. B02 makes a negative
+phase excursion while B01 returns; the two voltage peaks need not coincide.</p>
+<p>A separate integration of the Kirchhoff and RCSJ equations gives the same
+response. For the supplied parameters, the reverse net pulse area is about
+<code>-1.38e-6 Phi0</code>, while the forward area is about <code>0.999998 Phi0</code>. The triangular
+input pulse is approximately 4.3 ppm below one flux quantum.</p>
+<p>The <a href="https://github.com/JoeyDelp/JoSIM/tree/master/test/reference">reference circuits and data</a>
+include both directions. They use the subgap resistance because the junction
+voltages stay below the model's transition region. Tests compare both JoSIM
+analysis modes with the reference and repeat them at smaller timesteps.</p>
+<h2 id="noise-and-output-sampling">Noise and output sampling</h2>
+<p>A resolved integration step does not by itself prevent output aliasing.
+Check the print interval and filtering against the frequencies present in the
+circuit. The <a href="../noise_sources/">noise guide</a> describes the interpolation and
+bandwidth conventions; the <a href="../squid_noise/">SQUID example</a> shows how to compare
+bandwidth, timestep and sample spacing.</p>
 
 
 
@@ -1175,12 +1163,12 @@ qualification requires a clean build from its exact release source.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["toc.integrate", "header.autohide"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["toc.integrate", "header.autohide"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
-        <script src="../../javascripts/config.js"></script>
+        <script src="../javascripts/config.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
       

@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -692,34 +719,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1127,9 +1127,7 @@ well below <span class="arithmatex">\(k_BT/h_{Planck}\)</span>.</p>
 constitutive device branch current, excluding its internal noise source. For
 example, with an ideal voltage source and one noisy junction across the same
 terminals, <code>-(I(Vdrive)+I(B))</code> recovers the injected thermal current. There is no
-separate named trace for an internal thermal source. See the
-<a href="../qualification/2026-11-06-white-thermal-noise/">bandwidth and thermal-noise study</a>
-for measured checks and statistical bounds.</p>
+separate named trace for an internal thermal source.</p>
 <h2 id="power-law-noise">Power-law noise</h2>
 <div class="highlight"><pre><span></span><code><span class="nx">I1</span><span class="w"> </span><span class="nx">out</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="nx">PNOISE</span><span class="p">(</span><span class="mi">1</span><span class="kd">p</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1u</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">64</span><span class="p">)</span>
 </code></pre></div>
@@ -1158,19 +1156,15 @@ interpolation. This avoids normalizing to the wrong part of a rolling band
 edge. It corrects earlier large interior amplitude errors and changes seeded
 PNOISE/FNOISE/ICNOISE waveforms.</p>
 <p>Use frequencies comfortably inside the band and verify refinement for the
-measurement of interest. With the default 48 processes, the documented analytic
-scan across 2–8 decades gives less than 2.5% interior PSD error between
-<code>10/TCORR</code> and <code>1/(20*TSTEP)</code>, for the tested exponents. A four-process bank can
+measurement of interest. With 48 processes over 2–8 decades, analytic comparisons give less than 2.5%
+interior PSD error between <code>10/TCORR</code> and <code>1/(20*TSTEP)</code> for the tested exponents. A four-process bank can
 have about 50% interior error over eight decades. Narrow bands may have no
-well-separated interior at all. These are quantified approximation boundaries,
-not a rectangular-band filter or a universal error bound.</p>
+well-separated interior at all. Choose enough processes for the frequency range and check the resulting spectrum.</p>
 <p>Changing <code>TSTEP</code> changes the upper turnover frequency and total variance;
 changing <code>TCORR</code> changes the low-frequency plateau. Moving the entire band by a
 factor <code>c</code>, at fixed <code>A1</code>, scales variance by <code>c^(1-ALPHA)</code>. In particular,
 1/f variance is unchanged. Linear interpolation, simulation sampling and output
-aliasing still matter near the upper edge. See the
-<a href="../qualification/2026-11-06-colored-noise/">colored-noise study</a> for the equations,
-statistical acceptance criteria and controlled-seed measurements.</p>
+aliasing still matter near the upper edge.</p>
 <h2 id="flux-noise">Flux noise</h2>
 <div class="highlight"><pre><span></span><code><span class="nx">PFLUX</span><span class="w"> </span><span class="nx">loop</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="nx">FNOISE</span><span class="p">(</span><span class="mi">1u</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="m m-Double">0.25</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1u</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">64</span><span class="p">)</span>
 </code></pre></div>

@@ -16,7 +16,7 @@
         <link rel="prev" href="../DEVELOPMENT/">
       
       
-        <link rel="next" href="../qualification/v3.0.0/">
+        <link rel="next" href="../API/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Compatibility and Migration - JoSIM Documentation</title>
+        <title>Updating to 3.0 - JoSIM Documentation</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#compatibility-and-migration" class="md-skip">
+        <a href="#updating-to-30" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Compatibility and Migration
+              Updating to 3.0
             
           </span>
         </div>
@@ -267,6 +267,33 @@
     
   
     Technical Discussion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
   
 
     
@@ -599,7 +626,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
+    Updating to 3.0
   
 
     
@@ -617,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
+    Updating to 3.0
   
 
     
@@ -664,48 +691,10 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#builds-and-binary-platforms" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Builds and binary platforms
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1030,90 +1019,37 @@
 
 
 
-<h1 id="compatibility-and-migration">Compatibility and migration</h1>
-<p>The 3.0.0 source line consolidates the public branches and the original noise
-research, repairs the audited numerical/parser/library defects, and qualifies
-the maintained workflows. The historical <code>v2.7</code> tag remains unchanged. Check
-<a href="https://github.com/JoeyDelp/JoSIM/releases">Releases</a> for published binaries;
-a branch artifact with <code>dev.&lt;revision&gt;</code> in its name is a development build.</p>
+<h1 id="updating-to-30">Updating to 3.0</h1>
+<p>Download the package for your operating system from
+<a href="https://github.com/JoeyDelp/JoSIM/releases">GitHub Releases</a>. Replace the old
+executable with the one in <code>bin/</code>.</p>
 <h2 id="existing-circuits">Existing circuits</h2>
-<p>The SPICE-style transient interface, voltage/phase modes, KLU solver and
-CSV/DAT/RAW formats remain. Correctness fixes can change previously incorrect
-results, particularly subcircuit binding, selected traces, startup/phase history,
-model-IV preparation and noise normalization. Compare scientific results using
-the same build, effective timestep, output sampling, model and seed. Repeat
-timestep and settling checks when migrating a circuit; a matching seed does not
-promise identical results across versions or standard libraries.</p>
-<p>Invalid timing, recursive subcircuits, missing models/nodes, unsupported output
-requests and failed writes now produce useful errors. A failed run is not a
-usable result. Output cannot overwrite a loaded netlist. See the
-<a href="../syntax/">syntax</a>, <a href="../noise_sources/">noise</a>, <a href="../sweeps/">sweep</a> and
-<a href="../model_limits/">model-boundary</a> guides for accepted inputs and tested examples.</p>
-<p><code>SLU=ON</code>, manual <code>SLU</code> definitions, <code>USING_OPENMP=ON</code>, CLI <code>-x</code> and <code>-p</code> fail
-explicitly. Earlier options did not provide a functioning alternate/parallel
-simulation path. KLU is the supported backend. Run independent simulations in
-separate processes. Capacitor <code>IC=</code>, a direct <code>BETA_C=</code> field and nonlinear
-inductors are not implemented; the model-boundary guide gives practical alternatives.</p>
+<p>Several fixes change simulation results, particularly phase accumulation,
+startup, subcircuit parameters, model IV curves and noise. Recheck timestep,
+settling time and output sampling when comparing older results with 3.0.
+A matching seed does not reproduce the same noise waveform across versions.
+The <a href="../noise_sources/">noise guide</a> explains the corrected bandwidth and
+junction thermal-noise calculations.</p>
+<p>Named subcircuit parameters and hierarchical pin outputs now work as described
+in the <a href="../syntax/#subcircuits">syntax guide</a>. Invalid trace requests, malformed
+waveforms and invalid model values produce errors. Output files cannot overwrite
+the main netlist or one of its includes.</p>
+<p>KLU is the supported solver. The old SuperLU and OpenMP options (<code>SLU=ON</code>,
+<code>USING_OPENMP=ON</code>, <code>-x</code> and <code>-p</code>) have been removed because they did not provide
+working alternative simulation modes. Run independent circuits in separate
+processes when parallel execution is needed.</p>
+<p>The old <code>ivcurve.py</code> and <code>noise_insert.py</code> scripts are retired. Use the
+<a href="../sweeps/">circuit-sweep helper</a> and native <code>.TEMP</code>/<code>.NEB</code> controls instead.</p>
 <h2 id="c-applications">C++ applications</h2>
-<p><strong>Recompile embedding applications against matching headers and libraries.</strong>
-Public layouts changed in Input, Netlist/Subcircuit, Results/Simulation,
-PhaseSource, RelevantTrace and ProgressBar. The package exposes C++ library
-types and does not promise a stable ABI across compilers, standard libraries
-or JoSIM versions. Installed static archives are not a portable C ABI.</p>
-<p>The installed CMake target remains <code>josim::josim</code>. Version selection uses
-<code>SameMajorVersion</code>: request <code>find_package(josim 3.0 CONFIG REQUIRED)</code> for this
-line. Shared Unix libraries carry major ABI version 3. The major version change
-makes the public layout and supported-behaviour changes explicit; it does not
-imply a new solver architecture. Patch releases repair compatible behaviour;
-new compatible interfaces use a minor version. A further incompatible public
-interface change requires another major version. See <a href="../API/">the API guide</a>
-for recoverable exceptions, legacy helpers and process-wide RNG ownership.</p>
-<h2 id="builds-and-binary-platforms">Builds and binary platforms</h2>
-<p>Source builds require C++17, C11 and CMake/CTest 3.21+. Qualification uses GCC
-and Clang Debug/Release, MSVC on Windows, and native binary plus default/shared
-library checks on all five targets. Dependencies have pinned archive hashes.
-Default/static and shared JoSIM both use static KLU dependencies. The portable
-release CLI uses the static configuration described in the release procedure.</p>
-<table>
-<thead>
-<tr>
-<th>Archive target</th>
-<th>Runtime requirement</th>
-<th>Qualification limit</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>linux-x64-rhel6</td>
-<td>x86_64, glibc 2.12</td>
-<td>CentOS 6.10 userspace on a modern kernel; no original RHEL6 kernel claim</td>
-</tr>
-<tr>
-<td>linux-arm64-rhel7</td>
-<td>AArch64, glibc 2.17</td>
-<td>Native ARM runner/container userspace</td>
-</tr>
-<tr>
-<td>windows-x64</td>
-<td>Windows 10+, x64, static MSVC runtime</td>
-<td>Native Windows CI and supplied Windows host; no separate MSVC runtime installation</td>
-</tr>
-<tr>
-<td>macos-arm64</td>
-<td>macOS 11+, arm64</td>
-<td>Native arm64 CI; deployment metadata does not test every older OS</td>
-</tr>
-<tr>
-<td>macos-x86_64</td>
-<td>macOS 10.15+, Intel</td>
-<td>Native Intel CI; local Rosetta checks are identified separately</td>
-</tr>
-</tbody>
-</table>
-<p><a href="../DEVELOPMENT/">Developing JoSIM</a> gives build/test/coverage commands.
-<a href="../RELEASE_POLICY/">Release procedures</a> define package checksums, manifests,
-installed consumers and public download verification. The <a href="../AUDIT_RESOLUTION/">audit ledger</a> links scientific studies that distinguish
-executed tests, independent references and remaining physical/numerical limits.</p>
+<p>Rebuild applications using the headers and libraries from the same 3.0
+installation. Several public types have changed size. JoSIM exposes C++ types,
+so the compiler and C++ runtime must also be compatible.</p>
+<p>The CMake target is <code>josim::josim</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">find_package</span><span class="p">(</span><span class="s">josim</span><span class="w"> </span><span class="s">3.0</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_simulator</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">josim::josim</span><span class="p">)</span>
+</code></pre></div>
+<p>Shared Unix libraries use ABI version 3. See <a href="../API/">Embedding JoSIM</a> for
+error handling, result storage and the restrictions on concurrent runs.</p>
 
 
 

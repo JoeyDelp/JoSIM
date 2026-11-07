@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -519,10 +546,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-bounded-noise-example" class="md-nav__link">
+  <a href="#a-noise-example" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A bounded noise example
+        A noise example
       
     </span>
   </a>
@@ -670,34 +697,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1053,7 +1053,7 @@ The independent flux/KCL equilibrium predicts 48.5021253 uA circulating current
 and junction phases <span class="arithmatex">\(\pm0.0485211620\)</span> rad. Both modes, both flux polarities,
 two timesteps and three reference resistances agree with that prediction.
 Mutual-inductor signs follow the inductor terminal order in the netlist.</p>
-<h2 id="a-bounded-noise-example">A bounded noise example</h2>
+<h2 id="a-noise-example">A noise example</h2>
 <p><code>test/comp/squid_noise.cir</code> uses a symmetric DC-SQUID's zero-loop-inductance
 limit. Opposite model <code>PHI</code> offsets represent a constant external flux of
 <span class="arithmatex">\(0.25\Phi_0\)</span>. This reduction is useful for a checkable noise example; use the
@@ -1070,18 +1070,16 @@ I_{c,eff}=2I_c\cos(\pi\Phi_{ext}/\Phi_0),\quad R_{eff}=R_N/2,\quad C_{eff}=2C,
 strongly overdamped. Its weak classical-noise approximation is checked against
 16 seeded runs at each <code>.NEB</code> of 20 MHz, 200 MHz and 2 GHz. The internal step
 is 2 ps; output spacing is 20 ps without FIR filtering. Discard 100 ns, then
-measure 5 us. The <a href="../qualification/2026-11-06-squid-noise/">qualification study</a>
-gives the independent noise equation, uncertainty and refinement results.</p>
+measure 5 us. The comparison script below calculates the voltage-noise spectra
+and compares them with the weak-noise approximation.</p>
 <p>From the repository root, with a built simulator:</p>
 <div class="highlight"><pre><span></span><code>build/dev/josim-cli<span class="w"> </span>-m<span class="w"> </span><span class="m">1</span><span class="w"> </span>-V<span class="w"> </span><span class="m">1</span><span class="w"> </span>-a<span class="w"> </span><span class="m">1</span><span class="w"> </span>-o<span class="w"> </span>build/squid-noise.csv<span class="w"> </span>test/comp/squid_noise.cir
 python3<span class="w"> </span>-B<span class="w"> </span>tools/qualify_squid_noise.py<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--binary<span class="w"> </span>build/dev/josim-cli<span class="w"> </span>--output<span class="w"> </span>artifacts/squid-noise
 </code></pre></div>
-<p>The optional scientific owner requires <code>tools/requirements-qualification.txt</code>
-and a new output directory. It records seeds, the effective timestep, source
-and binary hashes, per-run PSDs, statistical criteria and a plot. It preserves
-the input netlists and writes results into its new directory. Native CTest checks the floating-reference
-example; the longer scientific campaign is a separate qualification command.</p>
+<p>Install the optional scientific dependencies described in the
+<a href="../DEVELOPMENT/">development guide</a> before running the comparison script.
+Use a new output directory; it will contain the spectra, plots and run settings.</p>
 <h2 id="choosing-settings">Choosing settings</h2>
 <ul>
 <li><code>.TEMP</code> enables automatic thermal sources; local <code>TEMP=</code> overrides it.

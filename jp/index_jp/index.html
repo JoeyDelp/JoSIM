@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../ex_usage/" class="md-nav__link">
         
   
@@ -590,34 +617,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1078,11 +1078,11 @@
 
 
 <h1 id="josim-">JoSIM - 超伝導回路シミュレータ</h1>
-<p>現在のソース（3.0.0 系）のユーザー・開発者向け文書です。
-公開済みバイナリは <a href="https://github.com/JoeyDelp/JoSIM/releases">GitHub Releases</a>、
-変更点は <a href="https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md">CHANGELOG</a> を参照してください。</p>
-<p>日本語版は要点を更新しています。新しいモデル・検証条件の詳細は
-<a href="../../">英語版</a> と <a href="../../compatibility/">互換性・移行ガイド</a> を参照してください。</p>
+<p>JoSIM の使い方とビルド方法を説明します。
+<a href="https://github.com/JoeyDelp/JoSIM/releases">GitHub Releases</a> からダウンロードできます。
+変更点は <a href="https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md">CHANGELOG</a>、
+3.0 への更新については <a href="../../compatibility/">移行ガイド</a> を参照してください。
+新機能の詳しい説明は <a href="../../">英語版</a> にあります。</p>
 <h2 id="_1">はじめに</h2>
 <p>JoSIMはIARPA（助成金：U.S. Army Research Office grant W911NF-17-1-0120）のSuperToolsの下で開発されました。</p>
 <p>JoSIMはアナログ回路シミュレータであり、超伝導素子であるJosephson junctionを表現できる性質を持った、SPICEという文法を用いています。</p>
@@ -1113,7 +1113,7 @@ CMakeLists.txt      # コードをコンパイルするためのコンフィグ�
 <h2 id="_3">初期セットアップ</h2>
 <p><a href="https://github.com/JoeyDelp/JoSIM/releases">Releases</a> から OS と CPU に対応する
 アーカイブを展開し、<code>bin/</code> 内の実行ファイルを使用します。対象は Linux x86_64・
-AArch64、Windows x64、macOS arm64・Intel です。最低実行環境と実際の検証範囲は
+AArch64、Windows x64、macOS arm64・Intel です。必要な実行環境は
 <a href="../../RELEASE_POLICY/">リリース手順</a> を参照してください。</p>
 <h3 id="_4">ソースからのビルド</h3>
 <p>C++17、C11、CMake/CTest 3.21 以上、Python 3 が必要です。リポジトリのルートで実行します。

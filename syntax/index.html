@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -1152,34 +1179,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1808,8 +1808,7 @@ t \ge T_{D}\quad(\text{when $N_{C}$}\le 0\ \text{or omitted})
 <li><code>SIN</code> and <code>SINE</code> are aliases. Positive fractional cycle counts specify the
   corresponding fraction of a period. At the stop time output returns to the
   offset, including when a nonzero phase makes that return discontinuous.</li>
-<li>For <code>SINE(0 315u 4g 20p 0 0 4)</code>, the stop is 1020 ps. See the
-  <a href="../qualification/2026-11-06-sine/">finite-cycle qualification</a>.</li>
+<li>For <code>SINE(0 315u 4g 20p 0 0 4)</code>, the stop is 1020 ps.</li>
 </ul>
 <h4 id="custom-waveform">Custom Waveform</h4>
 <p><strong>cus(</strong> <em>wavefile</em>&emsp;<span class="arithmatex">\(T_S\)</span>&emsp;[<em>SF</em>&emsp;<em>IM</em>&emsp;<span class="arithmatex">\(T_D\)</span>&emsp;<em>PER</em>] <strong>)</strong></p>
@@ -2073,8 +2072,7 @@ brackets produce parsing errors.</p>
 operand. Undefined names and dependency cycles fail with a diagnostic. Component
 and source parsers that accept parameter expressions use the same evaluator;
 when an expression contains spaces, define it with <code>.param</code> and use its name so
-that component fields remain unambiguous. Hierarchical named overrides are
-tracked separately in the audit-resolution ledger.</p>
+that component fields remain unambiguous.</p>
 <h3 id="control-block">Control Block</h3>
 <p>Any of the above controls can be wrapped inside a control block with the following syntax</p>
 <p><strong>.control</strong></p>

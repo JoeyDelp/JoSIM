@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -606,10 +633,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#verification" class="md-nav__link">
+  <a href="#testing-the-tools" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verification
+        Testing the tools
       
     </span>
   </a>
@@ -692,34 +719,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1065,7 +1065,7 @@ build/python-utilities/bin/python<span class="w"> </span>-m<span class="w"> </sp
 </code></pre></div>
 <p>The manifest pins the direct dependencies: NumPy 2.4.1, Pandas 3.0.0,
 Plotly 7.1.0, Kaleido 1.5.0 and Tabulate 0.10.0. Transitive dependencies are
-resolved by pip; qualification records their installed versions and wheel hashes.
+resolved by pip.
 On Windows use <code>build\python-utilities\Scripts\python.exe</code> in place of
 <code>build/python-utilities/bin/python</code> below.</p>
 <p>Interactive plots open in a browser. HTML export embeds Plotly and needs no
@@ -1133,18 +1133,12 @@ counting the same resistor noise twice. See <a href="../noise_sources/">noise so
 for normalization, timestep limits and the classical physical assumptions.</p>
 <p>The old <code>ivcurve.py</code> prototype is also retired. Use the tested
 <a href="../sweeps/">model-IV and circuit-sweep workflows</a>.</p>
-<h2 id="verification">Verification</h2>
+<h2 id="testing-the-tools">Testing the tools</h2>
 <div class="highlight"><pre><span></span><code>build/python-utilities/bin/python<span class="w"> </span>-B<span class="w"> </span>test/regression_python_utilities.py<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--report<span class="w"> </span>artifacts/python-utilities/report.json
 </code></pre></div>
-<p>The suite requires a working image renderer. It checks all layouts, phase units,
-independent comparison timestamps, file preservation, nonuniform phase counts,
-invalid inputs, three HTML exports and actual exports in every advertised image
-format. The CI utility job installs a fresh environment and preserves the
-dependency, browser and test receipts. Release publication requires this job
-alongside native binary and library qualification. See the
-<a href="../qualification/2026-11-06-python-utilities/">qualification study</a> for the
-measured scope.</p>
+<p>The tests require a working image renderer and cover plotting layouts, phase
+units, comparison timestamps, file handling, phase counts and export formats.</p>
 
 
 

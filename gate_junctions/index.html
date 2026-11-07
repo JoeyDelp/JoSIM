@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -600,34 +627,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -990,13 +990,8 @@ are mapped through subcircuit ports and local node names.</p>
 <p><code>STEP</code> sets a positive current increment; <code>ISTEP</code> is an alias. The default is
 2.5 uA. Each sweep reaches its requested endpoint without overshooting, even
 when the increment does not divide the maximum current.</p>
-<p><code>TSTEP</code>, <code>TSTOP</code> and <code>TSTART</code> control the model-IV transient and averaging window;
-the <a href="../sweeps/">sweep guide</a> explains their limits. Independent slow-RSJ curves
-verify zero gate, both gate polarities and complete suppression at <code>GWIDTH</code>.
-For the qualified <code>RN=1mΩ</code>, <code>ICrit=100µA</code>, <code>CAP=0</code>, <code>I=150µA</code> model, the
-5 µs protocol gives means within 0.05% of
-<span class="arithmatex">\(R_N\sqrt{I^2-I_{c,\mathrm{eff}}^2}\)</span>; finite-window and timestep allowances
-are derived in the <a href="../qualification/2026-11-06-model-iv-physics/">model-IV study</a>.</p>
+<p><code>TSTEP</code>, <code>TSTOP</code> and <code>TSTART</code> control the model-IV transient and averaging window.
+See the <a href="../sweeps/">sweep guide</a> for choosing the timestep and settling interval.</p>
 
 
 

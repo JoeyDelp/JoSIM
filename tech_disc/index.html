@@ -16,7 +16,7 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../ex_usage/">
+        <link rel="next" href="../numerics/">
       
       
         
@@ -815,6 +815,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -1119,34 +1146,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1510,10 +1510,9 @@ to the main or an included netlist, including through a hard link. This also
 applies to <code>.file</code> and model <code>.iv</code> output. Bare <code>.file</code>/<code>.iv</code> names use the main
 input's directory; <code>-o</code> paths are relative to the working directory.</p>
 <h3 id="parallel-p">Parallel (-p):</h3>
-<p>Retired. JoSIM has no parallel simulation path. <code>-p</code> and <code>-DUSING_OPENMP=ON</code>
-now fail explicitly; the earlier switch only reported whether an OpenMP runtime
-was linked. Use separate processes for independent circuit sweeps. Do not run
-concurrent simulations in one embedding process; see <a href="../API/">the API guidance</a>.</p>
+<p>JoSIM runs one simulation at a time. The old <code>-p</code> option is no longer supported.
+Use separate processes for independent <a href="../sweeps/">circuit sweeps</a>; see the
+<a href="../API/">API guide</a> when embedding JoSIM.</p>
 <h3 id="sanity-s">Sanity (-s):</h3>
 <p><code>-s</code> / <code>--sanity</code> checks connection counts in the main design. Name a subcircuit
 with <code>-s CELL</code>; repeat the option for several definitions. This is an experimental
@@ -1527,8 +1526,7 @@ outputs are not muted by <code>-m</code>. Level <code>0</code> disables verbose 
 <h3 id="version-v">Version (-v):</h3>
 <p>Only displays the version string for <strong>josim-cli</strong> and then exits. This string is always displayed by default for any command. This command, however, only displays the version string.</p>
 <h3 id="solver-x">Solver (-x):</h3>
-<p>Retired. KLU is the supported solver. <code>-x</code>, <code>-DSLU=ON</code> and manual <code>SLU</code> macro
-definitions fail explicitly. Earlier builds accepted <code>SLU=ON</code> while running KLU.</p>
+<p>JoSIM uses KLU. The old <code>-x</code> option and <code>SLU</code> build selection are no longer supported.</p>
 <h2 id="parse-input">Parse Input</h2>
 <p>The input data received through any of the two means above is parsed in the following steps:</p>
 <div style="text-align:center;"><img src="../img/josim_parse_input.svg" alt="JoSIM Parse Input Overview" style="width:600px;" /></div>

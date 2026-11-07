@@ -282,6 +282,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../ex_usage/" class="md-nav__link">
         
   
@@ -586,34 +613,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -947,41 +947,42 @@
 
 
 <h1 id="josim-300">JoSIM 3.0.0</h1>
-<p>This release consolidates the public branches and original noise research,
-repairs the audited simulator and library defects, and updates the maintained
-builds, tools and documentation. JoSIM remains freely available under MIT.</p>
-<p><strong>Recompile C++ applications with matching 3.0.0 headers and libraries.</strong> Public
-type layouts changed. CMake package selection now uses major 3; shared Unix
-libraries carry ABI version 3. Existing <code>v2.7</code> remains unchanged.</p>
-<h2 id="changes">Changes</h2>
+<p>This release adds gate-controlled junctions, power-law and flux noise sources,
+and a script for sweeping circuit parameters. It also fixes several problems
+with subcircuits, junction phase, startup and noise calculations.</p>
+<h2 id="new-features">New features</h2>
 <ul>
-<li>Repair hierarchical parameters/models, pin aliases, requested traces and
-  startup/phase histories. Reject malformed input and failed output explicitly.</li>
-<li>Correct seeded replay, white/colored-noise normalization and state-dependent
-  thermal noise. Add controlled gate, flux and critical-current noise workflows.</li>
-<li>Rebuild device histories per model-IV point and preserve bias through retries.
-  Add explicit sweep timing, a safe external circuit-sweep owner and tested examples.</li>
-<li>Add analytic linear-network, junction, buffer, phase, stochastic and conservation
-  regressions. Protect first-party coverage and complete qualification inventories.</li>
-<li>Make supported embedding failures recoverable, qualify relocated installed
-  consumers, and retire nonfunctional SuperLU/parallel options explicitly.</li>
-<li>Reduce avoidable history allocation, per-step copies and progress polling.
-  Controlled studies show 13–20% lower peak memory and 15–21% lower wall time in
-  selected workloads; these are measured cases, not universal speed guarantees.</li>
-<li>Refresh English/Japanese manuals, packaged guides, plotting utilities and
-  build/release procedures. Fix PULSE cycle overflow and advertised CLI options.</li>
+<li>Gate-controlled junctions with <code>GC=</code> and <code>GWIDTH</code>.</li>
+<li>Power-law, flux and fractional critical-current noise sources.</li>
+<li>Circuit parameter sweeps using <code>tools/circuit_sweep.py</code>.</li>
+<li>Model IV timing controls: <code>TSTEP</code>, <code>TSTOP</code> and <code>TSTART</code>.</li>
+<li>Static and shared C++ library builds with CMake package support.</li>
 </ul>
-<p>The <a href="https://github.com/JoeyDelp/JoSIM/blob/v3.0.0/CHANGELOG.md">changelog</a> and
-<a href="https://github.com/JoeyDelp/JoSIM/blob/v3.0.0/docs/AUDIT_RESOLUTION.md">audit ledger</a>
-give the full changes, independent expectations, tolerances and evidence.</p>
+<h2 id="fixes">Fixes</h2>
+<ul>
+<li>Named subcircuit parameters, local models and hierarchical pin outputs.</li>
+<li>Phase error that accumulated in long voltage-mode junction simulations.</li>
+<li>Junction and phase-source histories during startup.</li>
+<li>Noise bandwidth, power-law normalization and junction thermal noise during switching.</li>
+<li>Seeded runs repeated in the same process.</li>
+<li>Model IV state and bias handling between points and after timestep restarts.</li>
+<li>Waveform parsing, output errors and plotting scripts.</li>
+<li>Excessive progress-display CPU use and avoidable result-storage allocations.</li>
+</ul>
+<p>The <a href="https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md">changelog</a>
+has the full list. See the <a href="https://joeydelp.github.io/JoSIM/">manual</a> for syntax
+and examples.</p>
+<p>C++ applications must be rebuilt with the 3.0.0 headers and libraries.
+The old SuperLU/OpenMP options and the <code>ivcurve.py</code>/<code>noise_insert.py</code> prototypes
+are no longer supported; the manual describes their replacements.</p>
 <h2 id="downloads">Downloads</h2>
-<p>Choose the archive matching your OS and CPU. Each archive has a <code>.sha256</code>
-sidecar and source/toolchain/payload manifest. The executable is in <code>bin/</code>.</p>
+<p>Choose the archive for your OS and CPU. The executable is in <code>bin/</code>; each
+archive has a <code>.sha256</code> checksum and a manifest with build details.</p>
 <table>
 <thead>
 <tr>
-<th>Target</th>
-<th>Runtime requirement</th>
+<th>Package</th>
+<th>Minimum runtime</th>
 </tr>
 </thead>
 <tbody>
@@ -995,31 +996,18 @@ sidecar and source/toolchain/payload manifest. The executable is in <code>bin/</
 </tr>
 <tr>
 <td><code>windows-x64</code></td>
-<td>Windows 10+, x64; static MSVC runtime</td>
+<td>Windows 10, x64</td>
 </tr>
 <tr>
 <td><code>macos-arm64</code></td>
-<td>macOS 11+, arm64</td>
+<td>macOS 11.0, Apple Silicon</td>
 </tr>
 <tr>
 <td><code>macos-x86_64</code></td>
-<td>macOS 10.15+, Intel</td>
+<td>macOS 10.15, Intel</td>
 </tr>
 </tbody>
 </table>
-<p>Linux qualification uses legacy userspaces on modern kernels. macOS deployment
-metadata does not establish execution on every older OS release. See
-<a href="https://github.com/JoeyDelp/JoSIM/blob/v3.0.0/docs/compatibility.md">compatibility</a>.
-The tagged workflow builds and checks all five targets before publication, then
-downloads the actual public assets and executes CLI/numerical regressions natively.</p>
-<h2 id="model-and-workflow-limits">Model and workflow limits</h2>
-<p>Each transient attempt uses a fixed step. A smaller-step retry restarts the
-whole run; this is not conventional adaptive error control. Validate timestep,
-settling and output sampling for your circuit. Noise replay requires the same
-build, seed and effective sampling settings. Model <code>.iv</code> is a finite single-JJ
-testbench, distinct from an arbitrary-circuit sweep. Capacitor <code>IC=</code>, a direct
-<code>BETA_C=</code> field and nonlinear inductors remain outside the supported model;
-documented preparation/conversion alternatives are provided.</p>
 
 
 

@@ -286,6 +286,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ex_usage/" class="md-nav__link">
         
   
@@ -681,34 +708,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -1054,16 +1054,13 @@ current limit at phase pi. At zero temperature, the fully transparent CPR has
 a discontinuous cusp. A point numerically at that cusp is rejected; finite
 positive temperature or a resolved point on either side has a defined value.
 Arbitrary harmonic/transparency combinations must keep their square-root
-argument nonnegative throughout the run. See the
-<a href="../qualification/2026-11-06-model-validity/">model-validity study</a> for equations,
-limits, tolerances and quantitative checks.</p>
+argument nonnegative throughout the run.</p>
 <p>The temperature-dependent superconducting expression does not model operation
 at or above Tc. For a prescribed normal-state RC junction, use <code>RTYPE=0 IC=0</code>
 with the chosen RN and C, without enabling that temperature-dependent CPR.
 Instance <code>TEMP=</code>/global <code>.temp</code> controls thermal noise separately; it does not
 create a temperature trajectory or automatically switch superconductivity at Tc.</p>
-<p>An invalid model or non-finite solved state fails the simulation. Discard a
-failed run's objects/results; a solver success flag is insufficient on its own.</p>
+<p>An invalid model or non-finite solved state stops the simulation with an error.</p>
 <h2 id="capacitor-voltage">Capacitor voltage (#109)</h2>
 <p>JoSIM does not implement capacitor <code>IC=</code> or general SPICE initial-condition
 semantics. Capacitor <code>IC=</code> is rejected explicitly; earlier builds silently
@@ -1086,12 +1083,9 @@ the physical preparation. This does not instantly assign voltage at t=0 or
 remove the charging circuit. Use the actual preparation network when it affects
 other circuit states. A later print-start value can omit preparation from the
 output while retaining it in the simulation.</p>
-<p>The <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_precharge.cir">tested netlist</a>
-is checked against the closed-form RC response in both modes at three steps.
-See <a href="../qualification/2026-11-06-model-boundaries/">qualification</a> for the
-equation, error bounds and measurements. Arbitrary initial voltage remains an
-optional solver feature: a future implementation must initialize the coupled
-state and all integration histories consistently in both modes and on retries.</p>
+<p>A <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_precharge.cir">complete charging example</a>
+is included in the source tree. Direct initial-voltage support is requested in
+<a href="https://github.com/JoeyDelp/JoSIM/issues/109">#109</a>.</p>
 <h2 id="beta-c">Stewart–McCumber parameter (#93)</h2>
 <p>For a sinusoidal RCSJ junction with constant shunt resistance R,</p>
 <div class="arithmatex">\[
@@ -1100,7 +1094,7 @@ R=\sqrt{\frac{\beta_c\sigma}{I_c C}},\qquad
 \sigma=\frac{h}{4\pi e}.
 \]</div>
 <p>R is in ohms, Ic in amperes and C in farads. Use ordinary <code>.param</code> expressions
-to choose R instead of adding another model field:</p>
+to calculate R:</p>
 <div class="highlight"><pre><span></span><code>.param BETA=1 ICVAL=1u CVAL=0.1p
 .param SIGMA_SI={6.62607015e-34/(4*PI*1.602176634e-19)}
 .param RSHUNT={SQRT(BETA*SIGMA_SI/(ICVAL*CVAL))}
@@ -1116,8 +1110,8 @@ transition and normal-state conductance. It has no single global damping
 resistance: a beta_c quoted with R0 describes a different operating assumption
 from one quoted with RN. Gate control, critical-current noise, temperature and
 a non-sinusoidal CPR can also change the effective damping/stiffness. JoSIM
-therefore does not accept an ambiguous <code>BETA_C=</code> model parameter. The explicit
-parameter conversion above is the supported convenience workflow.</p>
+does not currently accept <code>BETA_C=</code> as a model parameter; use the conversion above.
+Direct input is requested in <a href="https://github.com/JoeyDelp/JoSIM/issues/93">#93</a>.</p>
 <h2 id="nonlinear-inductance">Current-dependent inductance (#88)</h2>
 <p>JoSIM's L component is a constant inductance with flux linkage Phi=L*I.
 Its value expression is evaluated before simulation, not at each timestep.
@@ -1146,17 +1140,15 @@ that value. A static parameter expression does not create a nonlinear element.</
 </tbody>
 </table>
 <p>The factor of three matters. Substituting a time-varying number into the
-constant-L stamp does not define a consistent nonlinear flux law. A supported
-implementation would need that law, its derivative, bias/initial flux, mutual
-coupling semantics, nonlinear solution and convergence tests in both modes.</p>
+constant-L stamp does not define a consistent nonlinear flux law.</p>
 <p>For a bounded excursion where <code>abs(a*I^2)</code> is small, a constant-L approximation
 may be sufficient. In the first interpretation, choosing L0 changes the
 differential inductance by at most 1% when <code>abs(a*I^2)&lt;=0.01</code> over the entire
 excursion. This is an element-level bound, not a bound on accumulated circuit
 phase or amplifier gain. A local small-signal approximation around nonzero bias
-also needs consistent bias flux. The constant-L limit is covered by analytic
-RL/RLC regressions; large-signal nonlinear/JTWPA behaviour is outside the
-current supported model. Full L(I) support remains an optional solver extension.</p>
+also needs consistent bias flux. Large-signal nonlinear behaviour requires a
+model that JoSIM does not currently provide. Nonlinear inductors are requested
+in <a href="https://github.com/JoeyDelp/JoSIM/issues/88">#88</a>.</p>
 
 
 

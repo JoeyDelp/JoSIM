@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#building-and-publishing-josim-binaries" class="md-skip">
+        <a href="#building-releases" class="md-skip">
           Skip to content
         </a>
       
@@ -267,6 +267,33 @@
     
   
     Technical Discussion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../numerics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numerical Methods
   
 
     
@@ -590,34 +617,7 @@
   <span class="md-ellipsis">
     
   
-    Compatibility and Migration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../qualification/v3.0.0/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    3.0.0 Qualification
+    Updating to 3.0
   
 
     
@@ -724,10 +724,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-qualification" class="md-nav__link">
+  <a href="#build-a-package" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local qualification
+        Build a package
       
     </span>
   </a>
@@ -735,10 +735,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#publication" class="md-nav__link">
+  <a href="#publish-a-version" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Publication
+        Publish a version
       
     </span>
   </a>
@@ -746,10 +746,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#documentation-publication" class="md-nav__link">
+  <a href="#publish-the-manual" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Documentation publication
+        Publish the manual
       
     </span>
   </a>
@@ -1030,141 +1030,80 @@
 
 
 
-<h1 id="building-and-publishing-josim-binaries">Building and publishing JoSIM binaries</h1>
-<p><code>tools/build_release.py</code> owns configuration, compilation, tests, installation,
-binary inspection and packaging. GitHub Actions calls the same script used for
-local qualification.</p>
+<h1 id="building-releases">Building releases</h1>
+<p>The release workflow builds the command-line executable and C++ library for:</p>
 <table>
 <thead>
 <tr>
-<th>Artifact target</th>
-<th>Architecture</th>
-<th>Declared runtime baseline</th>
+<th>Package</th>
+<th>Minimum runtime</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>linux-x64-rhel6</code></td>
-<td>x86_64</td>
-<td>glibc 2.12</td>
+<td>x86_64, glibc 2.12</td>
 </tr>
 <tr>
 <td><code>linux-arm64-rhel7</code></td>
-<td>AArch64</td>
-<td>glibc 2.17</td>
+<td>AArch64, glibc 2.17</td>
 </tr>
 <tr>
 <td><code>windows-x64</code></td>
-<td>x86_64</td>
-<td>Windows 10; static MSVC runtime</td>
+<td>Windows 10, x64</td>
 </tr>
 <tr>
 <td><code>macos-arm64</code></td>
-<td>arm64</td>
-<td>macOS 11.0 deployment target</td>
+<td>macOS 11.0, Apple Silicon</td>
 </tr>
 <tr>
 <td><code>macos-x86_64</code></td>
-<td>x86_64</td>
-<td>macOS 10.15 deployment target</td>
+<td>macOS 10.15, Intel</td>
 </tr>
 </tbody>
 </table>
-<p>The Linux jobs use digest-pinned manylinux images. Dependencies are downloaded
-and verified on the modern runner before the legacy container runs without
-network access. Linux packages link the C++ runtime statically; macOS packages
-use system libraries. Windows packages must not require a separate MSVC runtime.</p>
-<p>These baselines are checked from binary metadata. RHEL6 qualification uses a
-CentOS 6.10 userspace on a modern kernel. It does not establish behavior on an
-original RHEL6 kernel. Intel macOS local tests run through Rosetta; CI uses an
-Intel runner. Deployment metadata alone does not establish execution on every
-older macOS release.</p>
-<h2 id="local-qualification">Local qualification</h2>
-<p>Run on the target operating system with CMake 3.21+, Python 3 and a supported
-compiler. For example, on the macOS testing host:</p>
+<p>Linux packages link the C++ runtime statically. Windows packages use the static
+MSVC runtime and do not need a separate runtime installation. macOS packages
+use system libraries. Linux tests run in CentOS-compatible userspaces on modern
+kernels; macOS tests run on the available native CI runners.</p>
+<h2 id="build-a-package">Build a package</h2>
+<p><code>tools/build_release.py</code> configures, compiles, tests and packages JoSIM. Run it
+on the target operating system. For example, on an Apple Silicon Mac:</p>
 <div class="highlight"><pre><span></span><code>python3<span class="w"> </span>-B<span class="w"> </span>tools/build_release.py<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--target<span class="w"> </span>macos-arm64<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--build-dir<span class="w"> </span>build/macos-arm64<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--dependencies<span class="w"> </span>build/dependencies<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-dir<span class="w"> </span>build/macos-arm64<span class="w"> </span>--dependencies<span class="w"> </span>build/dependencies<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--artifacts<span class="w"> </span>artifacts
 </code></pre></div>
-<p>Use <code>--generator "Visual Studio 17 2022"</code> for Windows. Run the Linux targets in
-their exact images and mount paths from <code>.github/workflows/build-release.yml</code>.
-A current Linux distribution cannot establish the older glibc baseline.</p>
-<p>Each successful run must:</p>
-<ol>
-<li>Pass CTest, including every required regression group and a fresh installed-library
-   consumer. Skipped tests fail qualification.</li>
-<li>Match the requested architecture and runtime baseline.</li>
-<li>Install into a clean staging directory and hash every payload file.</li>
-<li>Extract the resulting archive, verify its hashes and run a numerical smoke
-   test using the extracted executable.</li>
-</ol>
-<p>The workflow also requires default/shared library-mode qualification on all
-five native targets, including fresh consumers after installation relocation.
-<code>tools/verify_library.py</code> owns these checks. Released archives use the static
-JoSIM/runtime configuration stated above; shared-library source-build checks
-do not change the published binary format or runtime baseline.</p>
-<p>The separate Python-utility job installs its pinned direct dependencies into a
-fresh environment and tests data values, file safety and real headless exports
-with the runner's installed Chrome. It records Python/browser/package versions
-and pip's install report. Tagged publication also requires this job to pass.
-The documentation job builds the pinned manual in strict mode and checks local
-files/anchors and the local-context exclusion. It is also a release prerequisite.</p>
-<p>Archives include <code>MANIFEST.json</code>. A sidecar manifest records source identity,
-compiler versions, dependency hashes, configuration, test count and binary ABI
-inspection. A <code>.sha256</code> file identifies the archive itself.</p>
-<h2 id="publication">Publication</h2>
-<p>Branch builds and pull requests upload development artifacts. They do not
-publish a release. Development names include the Git revision and mark dirty
-source trees explicitly.</p>
-<p>Before a release, review the changelog, set the intended version in
-<code>CMakeLists.txt</code>, and qualify all five targets. A <code>v&lt;version&gt;</code> tag must match the
-declared version and a clean source tree. The tagged workflow publishes only
-after every target passes. A tag is a separate publication decision; passing
-tests does not authorize creating one.</p>
-<p>Commit reviewed notes at <code>docs/releases/v&lt;version&gt;.md</code> before creating the tag.
-The publisher uses that file and leaves existing assets intact on a rerun.</p>
-<p>After publication, <code>verify-release.yml</code> downloads the actual archive, checksum
-and sidecar manifest for each target. It checks the public tag's commit, archive
-and payload identities, then runs the CLI and independent numerical regressions
-against the downloaded executable. Linux execution uses the same pinned legacy
-userspaces, with downloads completed on the modern host before network isolation.
-Windows, Apple Silicon and Intel macOS use their native runners.</p>
-<p>Every target must have a <code>passed</code> execution receipt. <code>prepared</code> identifies a
-verified download awaiting native execution. The reports record public URLs,
-hashes, source/tool/test-owner identities, runtime, commands and measured cases;
-JSON and readable receipts appear in the job summary and retained artifacts.
-An optional read token applies only to API metadata; asset URLs are downloaded
-without credentials. Public download qualification is separate from the earlier
-prepublication extraction checks.</p>
-<p>The reusable workflow can also be dispatched manually with a published tag and
-full commit. This records the verification source separately, allowing later
-checks to identify which test/verification owners were used. For local native
-checks, <code>python3 -B tools/verify_release.py --help</code> lists the required paths and
-the two-phase Linux options. Use fresh download paths and retain failed evidence.</p>
-<p>Version 3.0.0 records the audited public C++ layout changes and explicit support
-boundaries. CMake package versions use <code>SameMajorVersion</code>; Unix shared libraries
-carry the major <code>SOVERSION</code>. Recompile applications with matching headers,
-libraries and compatible toolchains. Compatible fixes use patch versions;
-compatible interface additions use minor versions. Preserve existing tags and
-assets. See <a href="../compatibility/">compatibility and migration</a> for the rationale.</p>
-<h2 id="documentation-publication">Documentation publication</h2>
-<p>Build and check the manual using <a href="../DEVELOPMENT/#build-and-check-the-manual">the development procedure</a>.
-The existing site is published from <code>gh-pages</code> with MkDocs. From a clean,
-integrated and qualified source commit, fetch the current branch and run:</p>
+<p>On Windows, add <code>--generator "Visual Studio 17 2022"</code>. The Linux builds use the
+container images and commands in
+<a href="https://github.com/JoeyDelp/JoSIM/blob/master/.github/workflows/build-release.yml">build-release.yml</a>.
+Dependencies are downloaded before entering the Linux containers.</p>
+<p>Each package is installed into a clean directory, checked against its target
+architecture and runtime, extracted and run. Library tests also build external
+applications against static and shared installations.</p>
+<p>The archive contains <code>MANIFEST.json</code>, which lists its files and hashes. The
+release includes a separate manifest with source and compiler details, and a
+<code>.sha256</code> checksum for each archive.</p>
+<h2 id="publish-a-version">Publish a version</h2>
+<p>Update the version in <code>CMakeLists.txt</code>, the changelog and the corresponding
+notes under <code>docs/releases/</code>. Compatible bug fixes use a patch version;
+compatible additions use a minor version. Changes to the public C++ interface
+that require rebuilding applications use a major version.</p>
+<p>A <code>v&lt;version&gt;</code> tag must match the version in CMake. GitHub Actions builds and
+tests all targets before publishing their archives. It then downloads the
+published files and runs the CLI and numerical tests on each platform.
+Existing release files are not overwritten on a rerun.</p>
+<p>To repeat the download checks locally, use <code>python3 -B tools/verify_release.py --help</code>. Linux can download the files first and execute them separately inside
+the appropriate container.</p>
+<h2 id="publish-the-manual">Publish the manual</h2>
+<p>Build and check the manual using the <a href="../DEVELOPMENT/#build-the-manual">development instructions</a>,
+then publish it with MkDocs:</p>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>fetch<span class="w"> </span>origin<span class="w"> </span>gh-pages
 build/documentation-env/bin/mkdocs<span class="w"> </span>gh-deploy<span class="w"> </span>--strict<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--site-dir<span class="w"> </span>build/documentation<span class="w"> </span>--remote-name<span class="w"> </span>origin<span class="w"> </span>--remote-branch<span class="w"> </span>gh-pages
 </code></pre></div>
-<p>Keep normal branch history: do not use <code>--force</code> or <code>--no-history</code>. Retain any
-existing <code>CNAME</code> and <code>.nojekyll</code>; the current site has no custom domain. The
-configuration excludes local project context. Verify the deployed source,
-navigation, math rendering, examples, current version and download links after
-deployment. A successful push alone is not a website check.</p>
-<p>Source archives used outside Git require a sibling <code>bundle-manifest.json</code> with
-the full revision, source state and bundle hash. The script accepts this only
-with a matching <code>--revision</code>; it never silently assigns a release identity.</p>
+<p>Use the existing <code>gh-pages</code> history. A custom domain, if used, is set by <code>CNAME</code>.
+After deployment, check the live pages and download links.</p>
 
 
 
