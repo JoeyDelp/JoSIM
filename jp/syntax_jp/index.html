@@ -617,7 +617,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1596,13 +1596,14 @@
 <p>ノイズ解析で用いる温度はケルビン（Kelvin）です。単位は付けないでください。ケルビンの <code>K</code> を付けると、JoSIM では Kilo と解釈されるためです（例: <code>4K</code> は <code>4000</code> になります）。</p>
 <p>任意の周波数パラメータは、ノイズ解析時の有効ノイズ帯域幅（noise effective bandwidth）を設定します。既定値は 1THz です。</p>
 <h3 id="_5">インダクタ</h3>
-<p><strong>L</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
-<p>インダクタ値の単位はヘンリー（Henry）です。L は計算中一定で、電流依存 L(I) は未対応です。
-<a href="../../model_limits/#nonlinear-inductance">モデル境界</a> を参照してください。</p>
+<p><strong>L</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong>&emsp;[<strong>ALPHA=</strong><span class="arithmatex">\(a\)</span>]</p>
+<p>インダクタ値 L0 の単位はヘンリー（Henry）です。<code>ALPHA=a</code> で微分インダクタンス <code>Ld(I)=L0*(1+a*I^2)</code> を指定できます。
+L0 は正、a は非負の有限値で、a の単位は A^-2 です。省略時または a=0 では L は一定です。
+磁束の定義と相互結合の制約は <a href="../../model_limits/#nonlinear-inductance">非線形インダクタの説明</a> を参照してください。</p>
 <h3 id="_6">コンデンサ</h3>
 <p><strong>C</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
-<p>コンデンサ値の単位はファラド（Farad）です。<code>IC=</code> は未対応でエラーになります。
-非零初期電圧には <a href="../../model_limits/#capacitor-voltage">明示的な充電区間</a> を使用してください。</p>
+<p>コンデンサ値の単位はファラド（Farad）です。<code>IC=</code> で時刻 t=0 の端子間電圧をボルト単位で指定できます。
+<code>.TRAN ... DST</code> が必要です。対応する回路と制約は <a href="../../model_limits/#capacitor-voltage">初期状態の説明</a> を参照してください。</p>
 <h3 id="josephson-junction-jj">ジョセフソン接合（JJ）</h3>
 <p><strong>B</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<em>&lt;PhaseNode&gt;</em>&emsp;<strong>MODEL</strong>&emsp;[area=&lt;<strong>AREA</strong>&gt;]&emsp;[ic=&lt;<strong>IC</strong>&gt;]&emsp;[temp=&lt;<strong>TEMP</strong>&gt;]&emsp;[neb=&lt;<strong>FREQ</strong>&gt;]</p>
 <p>ジョセフソン接合は 2 端子デバイスです。3 番目のフィールドは通常、未使用の WRspice 位相ノードです。

@@ -708,7 +708,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1062,14 +1062,40 @@ Instance <code>TEMP=</code>/global <code>.temp</code> controls thermal noise sep
 create a temperature trajectory or automatically switch superconductivity at Tc.</p>
 <p>An invalid model or non-finite solved state stops the simulation with an error.</p>
 <h2 id="capacitor-voltage">Capacitor voltage (#109)</h2>
-<p>JoSIM does not implement capacitor <code>IC=</code> or general SPICE initial-condition
-semantics. Capacitor <code>IC=</code> is rejected explicitly; earlier builds silently
-ignored it. <code>DST</code> disables negative-time startup and begins with zero stored
-histories. Default startup advances the circuit from that zero state for a
-finite settling interval; it does not calculate a DC operating point or set
-an arbitrary capacitor voltage.</p>
-<p>To prepare a nonzero capacitor voltage, include the charging circuit and a
-long enough charging interval before the event of interest. For example:</p>
+<p>Set <code>IC=</code> on a capacitor to specify its voltage at physical time zero, in volts.
+The sign is <code>V(positive terminal)-V(negative terminal)</code>. Use <code>DST</code> on <code>.TRAN</code>
+to disable automatic settling, which would otherwise change the requested state:</p>
+<div class="highlight"><pre><span></span><code>R1 N 0 10
+C1 N 0 1p IC=1m
+.tran 0.1p 100p DST
+.print V(C1) I(C1) I(R1)
+.end
+</code></pre></div>
+<p>The first sample has V(C1)=1 mV and I(C1)=-100 uA. With tau=RC=10 ps,
+the ideal discharge is <code>V(t)=1m*exp(-t/10p)</code>. The
+<a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_initial_voltage.cir">complete example</a>
+is included in the source tree.</p>
+<p><code>IC=</code> accepts finite signed values and scoped parameter expressions, including
+subcircuit instance parameters. Capacitance must be finite and positive. The
+initializer solves the coupled node voltages, branch currents and voltage
+derivatives, then constructs consistent integration histories in both analysis
+modes. A timestep restart reapplies the same initial conditions. A later print
+start omits samples from the output, without moving the physical initial time.</p>
+<p>Unspecified independent capacitor voltages start at zero. Constraints already
+imposed by other capacitors or ideal voltage sources take precedence, so parallel
+capacitors share their voltage and derivative. Conflicting capacitor loops or
+source voltages are errors. Inductor currents and junction phases start at zero;
+transmission lines start without incoming waves. The circuit still needs enough
+connections to determine its node voltages; IC does not supply a ground reference.</p>
+<p>This initial-voltage path currently rejects circuits containing phase sources
+or controlled sources. It does not provide a DC operating-point solve or general
+SPICE <code>.IC</code>/<code>UIC</code> semantics. <code>UIC</code> retains its existing behavior; <code>DST</code> is required.
+The request is tracked in <a href="https://github.com/JoeyDelp/JoSIM/issues/109">#109</a>.</p>
+<p>Without explicit capacitor IC, startup keeps its existing zero-history behavior.
+Default startup advances that state for a finite negative-time settling interval;
+<code>DST</code> disables the interval.</p>
+<p>If other circuit states need physical preparation, include the charging circuit
+and a long enough interval before the event of interest. For example:</p>
 <div class="highlight"><pre><span></span><code>V1 IN 0 PWL(0 1m 200p 1m 202p 0 300p 0)
 R1 IN OUT 10
 C1 OUT 0 1p
@@ -1084,8 +1110,7 @@ remove the charging circuit. Use the actual preparation network when it affects
 other circuit states. A later print-start value can omit preparation from the
 output while retaining it in the simulation.</p>
 <p>A <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_precharge.cir">complete charging example</a>
-is included in the source tree. Direct initial-voltage support is requested in
-<a href="https://github.com/JoeyDelp/JoSIM/issues/109">#109</a>.</p>
+is included in the source tree.</p>
 <h2 id="beta-c">Stewart–McCumber parameter (#93)</h2>
 <p>For a sinusoidal RCSJ junction with constant shunt resistance R,</p>
 <div class="arithmatex">\[
@@ -1093,62 +1118,83 @@ is included in the source tree. Direct initial-voltage support is requested in
 R=\sqrt{\frac{\beta_c\sigma}{I_c C}},\qquad
 \sigma=\frac{h}{4\pi e}.
 \]</div>
-<p>R is in ohms, Ic in amperes and C in farads. Use ordinary <code>.param</code> expressions
-to calculate R:</p>
+<p>R is in ohms, Ic in amperes and C in farads. For <code>RTYPE=0</code>, set <code>BETA_C</code>
+directly; JoSIM calculates RN once after parsing the model:</p>
 <div class="highlight"><pre><span></span><code>.param BETA=1 ICVAL=1u CVAL=0.1p
-.param SIGMA_SI={6.62607015e-34/(4*PI*1.602176634e-19)}
-.param RSHUNT={SQRT(BETA*SIGMA_SI/(ICVAL*CVAL))}
-.model JM JJ(RTYPE=0 IC=ICVAL CAP=CVAL RN=RSHUNT)
+.model JM JJ(RTYPE=0 IC=ICVAL CAP=CVAL BETA_C=BETA)
 </code></pre></div>
-<p>This gives R=57.3677591 ohm for beta_c=1. The conversion requires positive,
-finite beta_c, Ic and C. For C=0, beta_c=0 does not determine R; choose R
-separately. The <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/jj_beta_c.cir">complete example</a>
-is checked through the physical current relation
-<code>I=Ic*sin(phi)+V/R+C*dV/dt</code> for beta_c=0.2, 1 and 5 in both modes.</p>
-<p><code>RTYPE=0</code> uses RN as its constant resistance. <code>RTYPE=1</code> has different subgap,
-transition and normal-state conductance. It has no single global damping
+<p>This gives R approximately 57.36776 ohms for beta_c=1, using JoSIM's
+Josephson constant <code>SIGMA=3.291059757e-16 V*s</code>. <code>BETA_C</code> accepts parameter
+expressions in the model's scope. Model defaults for Ic and C apply when omitted;
+all three values must be finite and positive, and the calculated RN must be
+finite and nonzero. For zero or negative Ic, or C=0, specify RN instead.</p>
+<p>Specify <code>RTYPE=0</code> explicitly: the default is 1. An explicit RN alongside
+<code>BETA_C</code>, duplicate <code>BETA_C</code> assignments, and temperature-dependent model
+parameters <code>T</code>, <code>TC</code> or <code>D</code> are errors. The temperature-dependent model derives
+its own RN, so it cannot also use this conversion. Instance <code>TEMP=</code> and global
+<code>.TEMP</code> control thermal noise separately and are compatible with <code>BETA_C</code>.</p>
+<p>Normal AREA and instance IC scaling still apply: Ic and C scale with area,
+while RN scales inversely. Their product <code>Ic*C*RN^2</code>, and hence nominal beta_c,
+is preserved. <code>RTYPE=0</code> uses RN throughout, including in place of R0.</p>
+<p>The <a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/jj_beta_c.cir">complete example</a>
+is checked against explicit RN and the physical current relation
+<code>I=Ic*sin(phi)+V/R+C*dV/dt</code> for beta_c=0.2, 1 and 5 in both modes, including
+AREA and instance IC overrides. To calculate RN in a parameter expression,
+use <code>SQRT(BETA*3.291059757e-16/(ICVAL*CVAL))</code>.</p>
+<p><code>RTYPE=1</code> has different subgap, transition and normal-state conductance.
+It has no single global damping
 resistance: a beta_c quoted with R0 describes a different operating assumption
 from one quoted with RN. Gate control, critical-current noise, temperature and
-a non-sinusoidal CPR can also change the effective damping/stiffness. JoSIM
-does not currently accept <code>BETA_C=</code> as a model parameter; use the conversion above.
-Direct input is requested in <a href="https://github.com/JoeyDelp/JoSIM/issues/93">#93</a>.</p>
+a non-sinusoidal CPR can also change the effective damping/stiffness. <code>BETA_C</code>
+therefore describes nominal damping based on the model Ic scale. Direct input
+for <code>RTYPE=1</code> remains unsupported; choose its resistances explicitly. The request
+is tracked in <a href="https://github.com/JoeyDelp/JoSIM/issues/93">#93</a>.</p>
 <h2 id="nonlinear-inductance">Current-dependent inductance (#88)</h2>
-<p>JoSIM's L component is a constant inductance with flux linkage Phi=L*I.
-Its value expression is evaluated before simulation, not at each timestep.
-There is no supported L(I) constitutive model or branch-current expression in
-that value. A static parameter expression does not create a nonlinear element.</p>
-<p>For the requested <code>L(I)=L0*(1+a*I^2)</code>, the intended meaning must first be chosen:</p>
-<table>
-<thead>
-<tr>
-<th>Meaning of L(I)</th>
-<th>Flux linkage Phi(I)</th>
-<th>Differential inductance dPhi/dI</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Differential inductance in V=L(I)*dI/dt</td>
-<td>L0<em>(I+a</em>I^3/3), plus initial flux</td>
-<td>L0<em>(1+a</em>I^2)</td>
-</tr>
-<tr>
-<td>Flux/current quotient Phi(I)/I</td>
-<td>L0<em>(I+a</em>I^3), plus initial flux</td>
-<td>L0<em>(1+3</em>a*I^2)</td>
-</tr>
-</tbody>
-</table>
-<p>The factor of three matters. Substituting a time-varying number into the
-constant-L stamp does not define a consistent nonlinear flux law.</p>
-<p>For a bounded excursion where <code>abs(a*I^2)</code> is small, a constant-L approximation
-may be sufficient. In the first interpretation, choosing L0 changes the
-differential inductance by at most 1% when <code>abs(a*I^2)&lt;=0.01</code> over the entire
-excursion. This is an element-level bound, not a bound on accumulated circuit
-phase or amplifier gain. A local small-signal approximation around nonzero bias
-also needs consistent bias flux. Large-signal nonlinear behaviour requires a
-model that JoSIM does not currently provide. Nonlinear inductors are requested
-in <a href="https://github.com/JoeyDelp/JoSIM/issues/88">#88</a>.</p>
+<p>Add <code>ALPHA=</code> to an L component for a quadratic kinetic-inductance approximation:</p>
+<div class="highlight"><pre><span></span><code>.param KINETIC=1e8
+L1 IN OUT 100p ALPHA=KINETIC
+</code></pre></div>
+<p>VALUE is the zero-current inductance L0 in H. ALPHA is a in A^-2. JoSIM uses
+<strong>differential inductance</strong>, with the self-flux law</p>
+<div class="arithmatex">\[
+L_d(I)=\frac{d\Phi_s}{dI}=L_0(1+aI^2),\qquad
+\Phi_s(I)=L_0\left(I+\frac{aI^3}{3}\right),\qquad
+V=\frac{d\Phi_s}{dt}.
+\]</div>
+<p>For the example, Ld is 200 pH at 100 uA, while Phi_s/I is about 133.3 pH.
+The distinction matters: interpreting <code>L0*(1+a*I^2)</code> as Phi/I would give a
+different flux law and three times the nonlinear contribution to Ld.</p>
+<p>L0 must be finite and positive; a must be finite and non-negative. Both accept
+scoped parameter expressions, resolved once before the run. <code>SPREAD=</code> scales
+L0 through the existing inductor spread rules. The polynomial is evaluated
+numerically during solving; <code>ALPHA=0</code> or omission retains constant L. This is
+a prescribed constitutive law, not a general runtime expression or microscopic
+material model. Flux, differential inductance and matrix coefficients must stay
+within the numerical range.</p>
+<p>For coupled inductors, the total linkage is</p>
+<div class="arithmatex">\[
+\Phi_i=\Phi_{s,i}(I_i)+\sum_{j\ne i}M_{ij}I_j,\qquad
+M_{ij}=M_{ji}=k_{ij}\sqrt{L_{0i}L_{0j}}.
+\]</div>
+<p>M is constant and uses the zero-current inductances. A connected coupling group
+containing a nonlinear inductor must have a positive-definite base inductance
+matrix at numerical precision. Pairwise <code>|k|&lt;1</code> alone does not establish this
+for three or more coils. Perfect coupling, nearly singular groups and
+self-coupling are rejected. With a&gt;=0, the additional diagonal differential
+inductance preserves positivity as current changes.</p>
+<p>The stored energy of one uncoupled element is</p>
+<div class="arithmatex">\[
+W(I)=L_0\left(\frac{I^2}{2}+\frac{aI^4}{4}\right).
+\]</div>
+<p>For a coupled group, sum those energies and add <code>Mij*Ii*Ij</code> once per pair.
+Initial currents follow the existing startup or capacitor-initial-voltage
+procedure. No inductor <code>IC=</code> option is provided. A
+<a href="https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/nonlinear_inductor.cir">nonlinear LC example</a>
+starts with capacitor energy and zero inductor current.</p>
+<p>Voltage mode applies BDF2 to total flux linkage. Phase mode solves the
+corresponding flux/phase constraint. Both use bounded Newton correction for
+the nonlinear inductor equations; see <a href="../numerics/#nonlinear-inductors">numerical methods</a>.
+The request is tracked in <a href="https://github.com/JoeyDelp/JoSIM/issues/88">#88</a>.</p>
 
 
 

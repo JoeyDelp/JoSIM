@@ -796,7 +796,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1193,7 +1193,10 @@ I_{R_{1}}
 <h3 id="inductor">Inductor</h3>
 <center><img src="../img/josim_inductor.svg" alt="Basic Inductor Element" style="width:400px;" /></center>
 
-<p>A inductor is defined in terms of voltage and current as:</p>
+<p>For constant L, the inductor is defined in terms of voltage and current as
+shown below. With <code>ALPHA=</code>, use the
+<a href="../model_limits/#nonlinear-inductance">nonlinear flux law</a>; substituting L(I)
+into the constant-L stamp does not give that model.</p>
 <div class="arithmatex">\[
 v(t)=L_{1}\frac{di}{dt}
 \]</div>

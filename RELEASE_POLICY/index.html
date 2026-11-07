@@ -617,7 +617,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1087,11 +1087,14 @@ release includes a separate manifest with source and compiler details, and a
 <h2 id="publish-a-version">Publish a version</h2>
 <p>Update the version in <code>CMakeLists.txt</code>, the changelog and the corresponding
 notes under <code>docs/releases/</code>. Compatible bug fixes use a patch version;
-compatible additions use a minor version. Changes to the public C++ interface
-that require rebuilding applications use a major version.</p>
+compatible additions use a minor version. Incompatible changes to the public
+C++ source interface use a major version. Public type-layout changes require
+applications to rebuild and increment the separate shared-library ABI version
+in <code>CMakeLists.txt</code>. State this requirement in the release notes and compatibility
+guide. JoSIM 3.1.0 uses shared-library ABI version 4.</p>
 <p>A <code>v&lt;version&gt;</code> tag must match the version in CMake. GitHub Actions builds and
 tests all targets before publishing their archives. It then downloads the
-published files and runs the CLI and numerical tests on each platform.
+published files and runs the CLI, numerical and feature tests on each platform.
 Existing release files are not overwritten on a rerun.</p>
 <p>To repeat the download checks locally, use <code>python3 -B tools/verify_release.py --help</code>. Linux can download the files first and execute them separately inside
 the appropriate container.</p>

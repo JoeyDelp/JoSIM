@@ -1179,7 +1179,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1600,18 +1600,22 @@ references inside the subcircuit still refer to global ground.</p>
 is 1 THz. The <a href="../noise_sources/">noise guide</a> defines the interpolated spectrum,
 timestep floor and classical thermal-noise assumptions.</p>
 <h3 id="inductor">Inductor</h3>
-<p><strong>L</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
+<p><strong>L</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong>&emsp;[<strong>ALPHA=</strong><span class="arithmatex">\(a\)</span>]</p>
 <p>The value of an inductor is in Henry.</p>
-<p>L is constant during simulation; a parameter expression is evaluated once.
-Current-dependent L(I) is not supported. See the
-<a href="../model_limits/#nonlinear-inductance">model boundary</a> for flux-linkage
-semantics and the limits of constant-L approximations.</p>
+<p>Without <code>ALPHA</code>, L is constant. <code>ALPHA=a</code> selects differential inductance
+<code>Ld(I)=L0*(1+a*I^2)</code>, with VALUE supplying L0. L0 must be finite and positive;
+a must be finite and non-negative, in A^-2. Both accept scoped parameter
+expressions evaluated once. <code>ALPHA=0</code> gives the constant-L model. See the
+<a href="../model_limits/#nonlinear-inductance">nonlinear-inductor guide</a> for the flux law,
+mutual coupling and examples.</p>
 <h3 id="capacitor">Capacitor</h3>
-<p><strong>C</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong></p>
+<p><strong>C</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<strong>VALUE</strong>&emsp;[<strong>IC=</strong><span class="arithmatex">\(V_0\)</span>]</p>
 <p>The value of a capacitor is in Farad.</p>
-<p>Capacitor <code>IC=</code> is unsupported and produces an error. Prepare a nonzero voltage
-with an explicit charging interval before measurement. See the
-<a href="../model_limits/#capacitor-voltage">tested precharge example</a>.</p>
+<p><code>IC=</code> specifies the signed terminal voltage at t=0, in volts. It accepts
+parameter expressions and requires <code>.TRAN ... DST</code> and positive capacitance.
+The initial-voltage path supports RLC/junction circuits and unenergized lines;
+phase sources and controlled sources are currently rejected. See the
+<a href="../model_limits/#capacitor-voltage">initial-state guide</a> for constraints and examples.</p>
 <h3 id="josephson-junction-jj">Josephson Junction (JJ)</h3>
 <p><strong>B</strong>Label&emsp;<span class="arithmatex">\(N^{+}\)</span>&emsp;<span class="arithmatex">\(N^{-}\)</span>&emsp;<em>&lt;PhaseNode&gt;</em>&emsp;<strong>MODEL</strong>&emsp;[area=&lt;<strong>AREA</strong>&gt;]&emsp;[ic=&lt;<strong>IC</strong>&gt;]&emsp;[temp=&lt;<strong>TEMP</strong>&gt;]&emsp;[neb=&lt;<strong>FREQ</strong>&gt;]</p>
 <p>A Josephson junction has two electrical terminals. An optional third field is
@@ -1659,6 +1663,12 @@ and the physical gate-voltage convention in both modes.</p>
 <td>0, <span class="arithmatex">\(\infty\)</span></td>
 <td>5</td>
 <td>Junction normal resistance</td>
+</tr>
+<tr>
+<td>BETA_C</td>
+<td><span class="arithmatex">\(0 &lt; \beta_c &lt; \infty\)</span></td>
+<td>unset</td>
+<td>Dimensionless nominal damping; calculates RN for <code>RTYPE=0</code></td>
 </tr>
 <tr>
 <td>R0</td>
@@ -1726,9 +1736,10 @@ and the physical gate-voltage convention in both modes.</p>
 use the same model name. Lookup checks the current instance, its containing
 instances, then globals. A missing model is an error; it does not select a
 default model.</p>
-<p>For a Stewart–McCumber parameter, use the
-<a href="../model_limits/#beta-c">tested parameter conversion</a>.
-It defines which resistance enters beta_c; there is no direct <code>BETA_C=</code> field.</p>
+<p>For <code>RTYPE=0</code>, <code>BETA_C=</code> calculates the constant resistance RN from the
+Stewart–McCumber parameter, Ic and C. Ic and C must be positive. Do not also
+specify RN or enable temperature-dependent model parameters <code>T</code>, <code>TC</code> or <code>D</code>.
+See the <a href="../model_limits/#beta-c">damping guide</a> for the equation and example.</p>
 <p>All values must be finite. RN/R0/DELV/ICFCT/TC are strictly positive; D is in
 [0,1]. Temperature-dependent models require positive Ic; ordinary sinusoidal
 models retain signed/zero Ic support. D=1 uses its finite positive-temperature

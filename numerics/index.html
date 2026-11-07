@@ -346,6 +346,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#nonlinear-inductors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nonlinear inductors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#timestep-and-startup" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -708,7 +719,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1049,8 +1060,27 @@ unknown. It uses the second-order backward difference formula (BDF2):</p>
 \frac{3x_n-4x_{n-1}+x_{n-2}}{2h},
 \]</div>
 <p>where <code>h</code> is the internal timestep. Nonlinear junction terms are predicted from
-previous samples, followed by one sparse linear solve per step. JoSIM does not
-perform Newton iteration within a step or provide SPICE RELTOL/ABSTOL controls.</p>
+previous samples. Without nonlinear inductors, each step uses one sparse linear
+solve. Quadratic inductors add the correction described below. JoSIM does not
+provide general SPICE RELTOL/ABSTOL controls or a fully implicit junction solve.</p>
+<h2 id="nonlinear-inductors">Nonlinear inductors</h2>
+<p>For the <a href="../model_limits/#nonlinear-inductance">quadratic inductor model</a>, voltage
+mode differentiates total flux linkage with BDF2. Phase mode imposes
+<code>SIGMA*(phi_positive-phi_negative)=Phi_total</code>. The solver corrects the inductor
+rows using damped Newton iteration, retaining KLU's symbolic analysis and
+refactorizing the numerical coefficients together for each iteration.</p>
+<p>The flux residual must be below <code>1e-26 Wb + 1e-12*S</code>, where S is the sum of
+the absolute node-derived flux, self flux, mutual flux terms and BDF2 history
+contribution in that row. Sources, noise samples, junction predictions and
+histories are evaluated once per attempted step and held fixed during correction.
+Junction terms retain their existing explicit predictor.</p>
+<p>Each step permits at most 40 Newton corrections and 16 damping halvings per
+correction. Failure restarts the complete run at half the timestep, restoring
+the initial state and random streams. Circuits with nonlinear inductors permit
+at most eight such timestep reductions, including junction phase-advance retries;
+failure then reports an error. These residual and iteration limits are not a
+local integration-error estimate. Check timestep refinement for the quantities
+of interest, especially large excursions and long ladders.</p>
 <h2 id="timestep-and-startup">Timestep and startup</h2>
 <p>Each attempt uses a fixed timestep. Transmission-line delays can require a
 smaller step when the matrix is built. During a run, a predicted junction phase
@@ -1062,8 +1092,12 @@ for the circuit. Use <code>-V 1</code> to see the final step and sample count. S
 noise bandwidth and output sampling need their own checks.</p>
 <p>Default startup advances the circuit through a finite negative-time interval
 from zero stored histories. It does not calculate a DC operating point.
-<code>DST</code> disables this interval. For a nonzero capacitor voltage, include the
-<a href="../model_limits/#capacitor-voltage">charging circuit</a> before the event of interest.</p>
+<code>DST</code> disables this interval. With explicit capacitor <code>IC=</code>, a coupled initial
+solve supplies the voltages, currents and voltage derivatives at t=0. These
+give linear voltage and quadratic phase histories for starting BDF2; the actual
+initial state is output before the first advance to h. Each timestep restart
+reconstructs that state. See the <a href="../model_limits/#capacitor-voltage">initial-state guide</a>
+for supported circuits and the alternative of a physical charging interval.</p>
 <h2 id="junction-phase">Junction phase</h2>
 <p>The Josephson voltage relation is</p>
 <div class="arithmatex">\[

@@ -27,7 +27,7 @@
     
     
       
-        <title>Updating to 3.0 - JoSIM Documentation</title>
+        <title>Updating to 3.1 - JoSIM Documentation</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#updating-to-30" class="md-skip">
+        <a href="#updating-to-31" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Updating to 3.0
+              Updating to 3.1
             
           </span>
         </div>
@@ -626,7 +626,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -644,7 +644,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -670,10 +670,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#existing-circuits" class="md-nav__link">
+  <a href="#changes-from-30" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Existing circuits
+        Changes from 3.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changes-from-releases-before-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changes from releases before 3.0
       
     </span>
   </a>
@@ -1019,11 +1030,21 @@
 
 
 
-<h1 id="updating-to-30">Updating to 3.0</h1>
+<h1 id="updating-to-31">Updating to 3.1</h1>
 <p>Download the package for your operating system from
 <a href="https://github.com/JoeyDelp/JoSIM/releases">GitHub Releases</a>. Replace the old
 executable with the one in <code>bin/</code>.</p>
-<h2 id="existing-circuits">Existing circuits</h2>
+<h2 id="changes-from-30">Changes from 3.0</h2>
+<p>JoSIM 3.1 adds <a href="../model_limits/#capacitor-voltage">capacitor initial voltages</a>,
+<a href="../model_limits/#beta-c">BETA_C for RTYPE=0 junctions</a> and
+<a href="../model_limits/#nonlinear-inductance">quadratic nonlinear inductors</a>.
+Capacitor <code>IC=</code> requires <code>.TRAN ... DST</code>; those runs do not support phase or
+controlled sources. <code>ALPHA=</code> specifies differential inductance, so its cubic
+self-flux term includes a factor of one third.</p>
+<p>Voltage-mode mutual inductors now use the same preceding current samples for
+all coupled branches. This correction can change results in existing coupled
+circuits. Recheck timestep convergence when comparing them with 3.0.</p>
+<h2 id="changes-from-releases-before-30">Changes from releases before 3.0</h2>
 <p>Several fixes change simulation results, particularly phase accumulation,
 startup, subcircuit parameters, model IV curves and noise. Recheck timestep,
 settling time and output sampling when comparing older results with 3.0.
@@ -1041,14 +1062,16 @@ processes when parallel execution is needed.</p>
 <p>The old <code>ivcurve.py</code> and <code>noise_insert.py</code> scripts are retired. Use the
 <a href="../sweeps/">circuit-sweep helper</a> and native <code>.TEMP</code>/<code>.NEB</code> controls instead.</p>
 <h2 id="c-applications">C++ applications</h2>
-<p>Rebuild applications using the headers and libraries from the same 3.0
-installation. Several public types have changed size. JoSIM exposes C++ types,
+<p>Rebuild applications, including those built for 3.0, using the headers and
+libraries from the same 3.1 installation. Capacitor initialization and nonlinear
+inductors change public type layouts. JoSIM exposes C++ types,
 so the compiler and C++ runtime must also be compatible.</p>
 <p>The CMake target is <code>josim::josim</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">find_package</span><span class="p">(</span><span class="s">josim</span><span class="w"> </span><span class="s">3.0</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="nb">find_package</span><span class="p">(</span><span class="s">josim</span><span class="w"> </span><span class="s">3.1</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
 <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_simulator</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">josim::josim</span><span class="p">)</span>
 </code></pre></div>
-<p>Shared Unix libraries use ABI version 3. See <a href="../API/">Embedding JoSIM</a> for
+<p>Shared libraries use ABI version 4, independently of the release version.
+Unix applications linked to ABI version 3 must be rebuilt. See <a href="../API/">Embedding JoSIM</a> for
 error handling, result storage and the restrictions on concurrent runs.</p>
 
 

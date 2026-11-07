@@ -617,7 +617,7 @@
   <span class="md-ellipsis">
     
   
-    Updating to 3.0
+    Updating to 3.1
   
 
     
@@ -1045,12 +1045,13 @@
 <p>JoSIM provides a C++17 library. Install it as described in the
 <a href="../DEVELOPMENT/#install-the-library">build instructions</a>, then link the CMake
 target <code>josim::josim</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">find_package</span><span class="p">(</span><span class="s">josim</span><span class="w"> </span><span class="s">3.0</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="nb">find_package</span><span class="p">(</span><span class="s">josim</span><span class="w"> </span><span class="s">3.1</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
 <span class="nb">add_executable</span><span class="p">(</span><span class="s">my_simulator</span><span class="w"> </span><span class="s">main.cpp</span><span class="p">)</span>
 <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_simulator</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">josim::josim</span><span class="p">)</span>
 </code></pre></div>
 <p>Use headers and libraries from the same installation. Applications using an
-older release must be rebuilt for 3.0.</p>
+older release, including 3.0, must be rebuilt for 3.1. Shared libraries use ABI
+version 4; it is independent of the JoSIM release version.</p>
 <h2 id="running-a-circuit">Running a circuit</h2>
 <p>The command-line entry point in
 <a href="https://github.com/JoeyDelp/JoSIM/blob/master/src/josim.cpp">src/josim.cpp</a>
@@ -1070,6 +1071,14 @@ defaults, overrides and model lookup.</p>
 constructed models receive the same parameter checks as parsed models. If you
 modify the public sparse arrays, keep their dimensions and indices consistent;
 normal applications should use <code>Matrix::create_matrix</code>.</p>
+<p>Capacitor <code>IC=</code> also applies to library simulations. Disable settling with
+<code>input.transSim.startup(false)</code> before creating the matrix; parsed <code>.TRAN ... DST</code>
+does this automatically. The <a href="../model_limits/#capacitor-voltage">initial-state guide</a>
+describes the supported circuits. Initial-state and nonlinear-inductor storage
+change public component layouts; rebuild applications with the updated matching
+headers and library. <code>Inductor::flux(current)</code> returns self flux, and
+<code>differential_inductance(current)</code> returns its derivative; mutual linkage is
+stored separately in the coupling entries.</p>
 <h2 id="handling-errors">Handling errors</h2>
 <p>Catch <code>std::exception</code> around the complete operation. Parsing, model, solver
 and output errors throw with a diagnostic in <code>what()</code>. After a failed run,
