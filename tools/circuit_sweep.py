@@ -177,7 +177,7 @@ def main():
             step = re.search(r"Effective timestep \(s\):\s*(\S+)", log)
             count = re.search(r"Computed samples:\s*(\d+)", log)
             if not seed or not step or not count:
-                raise ValueError("Simulator must report its effective seed and grid; use the qualified JoSIM version")
+                raise ValueError("The simulator did not report its seed and timestep; use JoSIM 3.0 or newer")
             with csv_path.open(newline="", encoding="utf-8") as stream:
                 reader = csv.reader(stream)
                 header = next(reader)

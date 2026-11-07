@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify JoSIM library modes, including fresh relocated CMake consumers."""
+"""Test JoSIM library builds and applications using a relocated installation."""
 
 import argparse
 import datetime
@@ -80,7 +80,7 @@ def main():
                                   "installation": "Moved to a path with spaces before fresh consumer discovery; original prefix absent"}
         save()
     if source_identity(source, args.revision) != identity or sha256(pathlib.Path(__file__)) != report["owner_sha256"]:
-        fail("Source or verification owner changed during library qualification")
+        fail("The source or test script changed while the library tests were running")
     report["status"] = "passed"
     save()
     print("Library modes passed:", ", ".join(args.modes))

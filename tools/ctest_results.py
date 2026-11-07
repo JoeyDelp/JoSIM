@@ -1,4 +1,4 @@
-"""Require complete, unskipped JoSIM CTest qualification results."""
+"""Check that every JoSIM CTest test ran and passed."""
 
 import json
 import xml.etree.ElementTree as ET
@@ -23,8 +23,8 @@ def verify_ctest(inventory, junit):
         raise RuntimeError("Declared and executed CTest results differ or contain duplicates")
     missing = REQUIRED_TESTS - set(executed)
     if missing:
-        raise RuntimeError("Required qualification tests are absent: " + ", ".join(sorted(missing)))
+        raise RuntimeError("Required tests are missing: " + ", ".join(sorted(missing)))
     if any(case.find(tag) is not None for case in cases for tag in ("skipped", "failure", "error")):
-        raise RuntimeError("A qualification test failed or was skipped")
+        raise RuntimeError("A test failed or was skipped")
     return {"status": "passed", "entries": len(cases), "declared": sorted(declared),
             "executed": sorted(executed), "required": sorted(REQUIRED_TESTS)}
