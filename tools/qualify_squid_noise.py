@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Qualify one weak-noise, zero-loop-inductance DC-SQUID example.
+"""Compare a DC-SQUID noise simulation with an overdamped RSJ calculation.
 
-Requires tools/requirements-qualification.txt. This bounded reference compares
-low-frequency voltage noise with the independently derived overdamped RSJ
-phase-response formula; it is not a general SQUID or quantum-noise solver.
+Requires tools/requirements-qualification.txt. The comparison uses the classical
+weak-noise approximation for a SQUID with zero loop inductance.
 """
 
 import argparse
@@ -100,7 +99,7 @@ def main():
                                "beta_c": IC * R * R * C / SIGMA, "Gamma": KB * TEMP / (IC * SIGMA),
                                "classical_frequency_scale_Hz": KB * TEMP / 6.62607015e-34},
               "acceptance": ACCEPTANCE, "seeds": SEEDS, "frequencies_Hz": FREQUENCIES.tolist(),
-              "scope": "Classical weak-noise overdamped zero-L SQUID limit; finite-L reference has a separate owner",
+              "scope": "Classical weak-noise approximation for an overdamped SQUID with zero loop inductance",
               "runs": [], "bands": [], "failures": [], "passed": False}
 
     def checkpoint():

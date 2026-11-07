@@ -90,9 +90,7 @@ The Norton source enters node KCL separately. `I(R)` and `I(B)` report the
 constitutive device branch current, excluding its internal noise source. For
 example, with an ideal voltage source and one noisy junction across the same
 terminals, `-(I(Vdrive)+I(B))` recovers the injected thermal current. There is no
-separate named trace for an internal thermal source. See the
-[bandwidth and thermal-noise study](qualification/2026-11-06-white-thermal-noise.md)
-for measured checks and statistical bounds.
+separate named trace for an internal thermal source.
 
 ## Power-law noise
 
@@ -127,20 +125,16 @@ edge. It corrects earlier large interior amplitude errors and changes seeded
 PNOISE/FNOISE/ICNOISE waveforms.
 
 Use frequencies comfortably inside the band and verify refinement for the
-measurement of interest. With the default 48 processes, the documented analytic
-scan across 2–8 decades gives less than 2.5% interior PSD error between
-`10/TCORR` and `1/(20*TSTEP)`, for the tested exponents. A four-process bank can
+measurement of interest. With 48 processes over 2–8 decades, analytic comparisons give less than 2.5%
+interior PSD error between `10/TCORR` and `1/(20*TSTEP)` for the tested exponents. A four-process bank can
 have about 50% interior error over eight decades. Narrow bands may have no
-well-separated interior at all. These are quantified approximation boundaries,
-not a rectangular-band filter or a universal error bound.
+well-separated interior at all. Choose enough processes for the frequency range and check the resulting spectrum.
 
 Changing `TSTEP` changes the upper turnover frequency and total variance;
 changing `TCORR` changes the low-frequency plateau. Moving the entire band by a
 factor `c`, at fixed `A1`, scales variance by `c^(1-ALPHA)`. In particular,
 1/f variance is unchanged. Linear interpolation, simulation sampling and output
-aliasing still matter near the upper edge. See the
-[colored-noise study](qualification/2026-11-06-colored-noise.md) for the equations,
-statistical acceptance criteria and controlled-seed measurements.
+aliasing still matter near the upper edge.
 
 ## Flux noise
 

@@ -41,10 +41,5 @@ For model IV curves, add `GTJJ=voltage`:
 2.5 uA. Each sweep reaches its requested endpoint without overshooting, even
 when the increment does not divide the maximum current.
 
-`TSTEP`, `TSTOP` and `TSTART` control the model-IV transient and averaging window;
-the [sweep guide](sweeps.md) explains their limits. Independent slow-RSJ curves
-verify zero gate, both gate polarities and complete suppression at `GWIDTH`.
-For the qualified `RN=1mΩ`, `ICrit=100µA`, `CAP=0`, `I=150µA` model, the
-5 µs protocol gives means within 0.05% of
-\(R_N\sqrt{I^2-I_{c,\mathrm{eff}}^2}\); finite-window and timestep allowances
-are derived in the [model-IV study](qualification/2026-11-06-model-iv-physics.md).
+`TSTEP`, `TSTOP` and `TSTART` control the model-IV transient and averaging window.
+See the [sweep guide](sweeps.md) for choosing the timestep and settling interval.

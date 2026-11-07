@@ -14,9 +14,7 @@ current limit at phase pi. At zero temperature, the fully transparent CPR has
 a discontinuous cusp. A point numerically at that cusp is rejected; finite
 positive temperature or a resolved point on either side has a defined value.
 Arbitrary harmonic/transparency combinations must keep their square-root
-argument nonnegative throughout the run. See the
-[model-validity study](qualification/2026-11-06-model-validity.md) for equations,
-limits, tolerances and quantitative checks.
+argument nonnegative throughout the run.
 
 The temperature-dependent superconducting expression does not model operation
 at or above Tc. For a prescribed normal-state RC junction, use `RTYPE=0 IC=0`
@@ -24,8 +22,7 @@ with the chosen RN and C, without enabling that temperature-dependent CPR.
 Instance `TEMP=`/global `.temp` controls thermal noise separately; it does not
 create a temperature trajectory or automatically switch superconductivity at Tc.
 
-An invalid model or non-finite solved state fails the simulation. Discard a
-failed run's objects/results; a solver success flag is insufficient on its own.
+An invalid model or non-finite solved state stops the simulation with an error.
 
 ## Capacitor voltage (#109) {#capacitor-voltage}
 
@@ -55,12 +52,9 @@ remove the charging circuit. Use the actual preparation network when it affects
 other circuit states. A later print-start value can omit preparation from the
 output while retaining it in the simulation.
 
-The [tested netlist](https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_precharge.cir)
-is checked against the closed-form RC response in both modes at three steps.
-See [qualification](qualification/2026-11-06-model-boundaries.md) for the
-equation, error bounds and measurements. Arbitrary initial voltage remains an
-optional solver feature: a future implementation must initialize the coupled
-state and all integration histories consistently in both modes and on retries.
+A [complete charging example](https://github.com/JoeyDelp/JoSIM/blob/master/test/comp/capacitor_precharge.cir)
+is included in the source tree. Direct initial-voltage support is requested in
+[#109](https://github.com/JoeyDelp/JoSIM/issues/109).
 
 ## Stewart–McCumber parameter (#93) {#beta-c}
 
@@ -73,7 +67,7 @@ R=\sqrt{\frac{\beta_c\sigma}{I_c C}},\qquad
 \]
 
 R is in ohms, Ic in amperes and C in farads. Use ordinary `.param` expressions
-to choose R instead of adding another model field:
+to calculate R:
 
 ```text
 .param BETA=1 ICVAL=1u CVAL=0.1p
@@ -93,8 +87,8 @@ transition and normal-state conductance. It has no single global damping
 resistance: a beta_c quoted with R0 describes a different operating assumption
 from one quoted with RN. Gate control, critical-current noise, temperature and
 a non-sinusoidal CPR can also change the effective damping/stiffness. JoSIM
-therefore does not accept an ambiguous `BETA_C=` model parameter. The explicit
-parameter conversion above is the supported convenience workflow.
+does not currently accept `BETA_C=` as a model parameter; use the conversion above.
+Direct input is requested in [#93](https://github.com/JoeyDelp/JoSIM/issues/93).
 
 ## Current-dependent inductance (#88) {#nonlinear-inductance}
 
@@ -111,15 +105,13 @@ For the requested `L(I)=L0*(1+a*I^2)`, the intended meaning must first be chosen
 | Flux/current quotient Phi(I)/I | L0*(I+a*I^3), plus initial flux | L0*(1+3*a*I^2) |
 
 The factor of three matters. Substituting a time-varying number into the
-constant-L stamp does not define a consistent nonlinear flux law. A supported
-implementation would need that law, its derivative, bias/initial flux, mutual
-coupling semantics, nonlinear solution and convergence tests in both modes.
+constant-L stamp does not define a consistent nonlinear flux law.
 
 For a bounded excursion where `abs(a*I^2)` is small, a constant-L approximation
 may be sufficient. In the first interpretation, choosing L0 changes the
 differential inductance by at most 1% when `abs(a*I^2)<=0.01` over the entire
 excursion. This is an element-level bound, not a bound on accumulated circuit
 phase or amplifier gain. A local small-signal approximation around nonzero bias
-also needs consistent bias flux. The constant-L limit is covered by analytic
-RL/RLC regressions; large-signal nonlinear/JTWPA behaviour is outside the
-current supported model. Full L(I) support remains an optional solver extension.
+also needs consistent bias flux. Large-signal nonlinear behaviour requires a
+model that JoSIM does not currently provide. Nonlinear inductors are requested
+in [#88](https://github.com/JoeyDelp/JoSIM/issues/88).

@@ -115,7 +115,7 @@ def verify_payload(payload, manifest_bytes, tag, revision, target):
     if (manifest.get("project") != "JoSIM" or manifest.get("version") != tag[1:]
             or manifest.get("target") != target or source.get("revision") != revision
             or source.get("dirty") is not False or manifest.get("tests", {}).get("status") != "passed"):
-        raise RuntimeError("Package manifest does not identify the qualified clean source/target/version")
+        raise RuntimeError("Package manifest does not match the clean source, target and version")
     expected = {}
     for item in manifest["files"]:
         name = relative_path(item["path"]).as_posix()
@@ -267,7 +267,7 @@ def main():
     summary = "# Public release verification\n\nTarget: `{}`. Status: **{}**.\n\n".format(args.target, result["status"])
     if result["status"] == "prepared":
         summary += "Download identified; native execution has not run.\n\n"
-    summary += "<details><summary>Machine-readable receipt</summary>\n\n```json\n" + encoded + "```\n</details>\n"
+    summary += "<details><summary>Test details (JSON)</summary>\n\n```json\n" + encoded + "```\n</details>\n"
     output.with_suffix(".md").write_text(summary, encoding="utf-8")
     print("Public release verification:", result["status"])
     raise SystemExit(0 if result["status"] in ("prepared", "passed") else 1)

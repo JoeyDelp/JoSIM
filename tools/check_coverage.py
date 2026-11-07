@@ -27,7 +27,7 @@ def evaluate(summary, policy, source):
     if (tests["status"] != "passed" or tests["exit"] or len(set(executed)) != len(executed)
             or tests["entries"] != len(executed) or sorted(tests["declared"]) != sorted(executed)
             or not REQUIRED_TESTS.issubset(executed)):
-        raise RuntimeError("Coverage requires complete, unskipped qualification tests")
+        raise RuntimeError("Every test must run and pass before checking coverage")
     majors = {match.group(1) for tool in summary["tools"].values()
               if (match := re.search(r"(?:clang|LLVM) version (\d+)", "\n".join(tool["version"])))}
     if len(majors) != 1:

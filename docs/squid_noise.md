@@ -27,7 +27,7 @@ and junction phases \(\pm0.0485211620\) rad. Both modes, both flux polarities,
 two timesteps and three reference resistances agree with that prediction.
 Mutual-inductor signs follow the inductor terminal order in the netlist.
 
-## A bounded noise example
+## A noise example
 
 `test/comp/squid_noise.cir` uses a symmetric DC-SQUID's zero-loop-inductance
 limit. Opposite model `PHI` offsets represent a constant external flux of
@@ -48,8 +48,8 @@ The Josephson frequency is 180.946 MHz. The effective plasma frequency is
 strongly overdamped. Its weak classical-noise approximation is checked against
 16 seeded runs at each `.NEB` of 20 MHz, 200 MHz and 2 GHz. The internal step
 is 2 ps; output spacing is 20 ps without FIR filtering. Discard 100 ns, then
-measure 5 us. The [qualification study](qualification/2026-11-06-squid-noise.md)
-gives the independent noise equation, uncertainty and refinement results.
+measure 5 us. The comparison script below calculates the voltage-noise spectra
+and compares them with the weak-noise approximation.
 
 From the repository root, with a built simulator:
 
@@ -59,11 +59,9 @@ python3 -B tools/qualify_squid_noise.py \
   --binary build/dev/josim-cli --output artifacts/squid-noise
 ```
 
-The optional scientific owner requires `tools/requirements-qualification.txt`
-and a new output directory. It records seeds, the effective timestep, source
-and binary hashes, per-run PSDs, statistical criteria and a plot. It preserves
-the input netlists and writes results into its new directory. Native CTest checks the floating-reference
-example; the longer scientific campaign is a separate qualification command.
+Install the optional scientific dependencies described in the
+[development guide](DEVELOPMENT.md) before running the comparison script.
+Use a new output directory; it will contain the spectra, plots and run settings.
 
 ## Choosing settings
 

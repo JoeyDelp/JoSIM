@@ -175,8 +175,8 @@ def main():
                   for key in ("lines", "functions", "branches")] if measured_summary else ["no mapping"] * 3
         text.append("| " + item["path"] + " | " + " | ".join(values) + " |")
     text += ["", "Overall: " + ", ".join("{} {:.2f}%".format(key, data["totals"][key]["percent"]) for key in ("lines", "functions", "branches")) + ".", "",
-             "Collection does not adopt thresholds. Run tools/check_coverage.py against the reviewed policy; see docs/qualification/2026-11-07-coverage.md for risks and limits.",
-             "See `coverage.json` for LLVM counters, `summary.json` for inventory/tool identities, and `html/index.html` for annotated source.", ""]
+             "Run tools/check_coverage.py to check the coverage requirements described in docs/DEVELOPMENT.md.",
+             "See `coverage.json` for LLVM counters, `summary.json` for the test list and tool versions, and `html/index.html` for annotated source.", ""]
     (output / "README.md").write_text("\n".join(text))
     print(text[-5])
     print("Coverage report:", output / "README.md")

@@ -25,7 +25,7 @@ the main template and starts a fresh simulator process for each point.
 
 The output directory must be new. It contains a summary `sweep.csv`, a JSON
 report, and each point's effective netlist, log and raw traces. Effective seeds,
-internal timesteps, computed counts and source/binary/output hashes are recorded.
+internal timesteps and computed sample counts are recorded.
 Source templates, includes, custom waveform files and existing result directories
 are preserved. Relative includes/custom files resolve from the template context.
 Include/custom filenames must be fixed; continuations must stay within a file.
@@ -34,7 +34,7 @@ Remove `.FILE` and `.IV` controls when using this isolated workflow. The helper
 checks reachable includes and rejects those controls before running anything;
 it does not silently redirect or discard them. Custom files and netlists must
 remain unchanged throughout the sweep. Simulator errors/timeouts stop the sweep,
-retain a failed report and witnesses, and never reuse an earlier point's CSV.
+retain the logs, and do not reuse an earlier point's CSV.
 This helper uses Python's standard library; plotting dependencies are optional.
 
 ## Circuit IV versus model IV
@@ -68,9 +68,9 @@ uA and \(R_{eff}=8\) ohms. For \(|I_b|>I_c^{eff}\),
 
 At +/-200 uA the reference is +/-1.13137085 mV. Both analysis modes give
 +/-1.13153468 mV with the supplied finite measurement window. The 0.015%
-difference is below the 1% budget, which includes finite endpoint-phase and
-timestep error. Zero bias gives zero voltage. This example does not imply that
-fresh points reproduce hysteresis from a continuously swept underdamped circuit.
+difference comes from the finite measurement window and timestep. Zero bias
+gives zero voltage. To study hysteresis in an underdamped circuit, use a continuous
+bias ramp so that the circuit retains its state between bias values.
 
 The mean is a time-weighted trapezoidal integral over the explicit window, with
 linear interpolation at its boundaries. This handles nonuniform output samples;
@@ -85,9 +85,6 @@ voltage over the second half. Returning branches first visit +/-Imax. Every
 point starts from fresh zero-state device histories with its specified ramp;
 it does not carry the preceding point's final state. It does not sweep an
 arbitrary circuit or provide conventional DC/Newton tolerance control.
-The generated bias declaration is kept in sync with each point's active source,
-so a timestep retry retains the requested point rather than restoring a stale
-testbench current.
 
 Use `TSTEP`, `TSTOP` and `TSTART` to refine the initial internal step, run duration
 and averaging start, all in seconds. Defaults remain 0.05 ps, 500 ps and half
@@ -109,25 +106,15 @@ point's effective timestep and averaging sample count.
 In this example, the Josephson period is about 18.5 ns: the default 500 ps run
 does not estimate its DC mean accurately. The longer protocol gives 111.7475 nV
 against the independent RSJ mean 111.8034 nV; halving the step changes it by
-0.0002 nV. These are bounded checks, not a universal timing prescription.
-Refine both timestep and settling/measurement duration for the model. The
-timestep guard alone does not guarantee accuracy. Use explicit circuit
-transients for another preparation waveform or continuous hysteresis protocol.
-See the [model-IV study](qualification/2026-11-06-model-iv-physics.md).
+0.0002 nV. Choose the settling and measurement duration for the model, then
+check that reducing the timestep and extending the duration give stable results.
+Use an explicit circuit transient for a different preparation waveform or a
+continuous hysteresis curve.
 
-The main transient solver uses BDF2 with nonlinear junction terms predicted
-from prior samples and one sparse linear solve per accepted step. It does not
-iterate Newton within a step or expose SPICE RELTOL/ABSTOL error control. After
-the initial 1% of the positive-time grid, a predicted junction phase increment
-above 0.2 cycles triggers a complete restart at half the internal step. It
-never increases that step; the final run has a uniform internal grid. This
-phase-advance guard is not a local truncation-error bound. Explicit timestep
-and measurement-window convergence checks remain necessary.
+The [numerical methods guide](numerics.md) explains timestep retries and how to
+check convergence.
 
 ## Retired prototype
 
-`scripts/ivcurve.py` is retired (#82). Its positional netlist edits overwrote
-existing temporary files, ignored simulator failures and reused stale CSVs. It
-now exits with an explanation and changes no files. Use `.IV` for its model
-testbench purpose, or the fresh circuit workflow above. The
-[qualification study](qualification/2026-11-06-sweeps.md) records tests and limits.
+`scripts/ivcurve.py` is retired. Use `.IV` for a single-junction model curve,
+or the circuit-sweep helper above for a complete circuit.

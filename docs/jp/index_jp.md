@@ -1,11 +1,10 @@
 # JoSIM - 超伝導回路シミュレータ
 
-現在のソース（3.0.0 系）のユーザー・開発者向け文書です。
-公開済みバイナリは [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases)、
-変更点は [CHANGELOG](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md) を参照してください。
-
-日本語版は要点を更新しています。新しいモデル・検証条件の詳細は
-[英語版](../index.md) と [互換性・移行ガイド](../compatibility.md) を参照してください。
+JoSIM の使い方とビルド方法を説明します。
+[GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases) からダウンロードできます。
+変更点は [CHANGELOG](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md)、
+3.0 への更新については [移行ガイド](../compatibility.md) を参照してください。
+新機能の詳しい説明は [英語版](../index.md) にあります。
 
 ## はじめに
 
@@ -49,7 +48,7 @@ JoSIMリポジトリは次のような構成になっています。ファイル
 
 [Releases](https://github.com/JoeyDelp/JoSIM/releases) から OS と CPU に対応する
 アーカイブを展開し、`bin/` 内の実行ファイルを使用します。対象は Linux x86_64・
-AArch64、Windows x64、macOS arm64・Intel です。最低実行環境と実際の検証範囲は
+AArch64、Windows x64、macOS arm64・Intel です。必要な実行環境は
 [リリース手順](../RELEASE_POLICY.md) を参照してください。
 
 ### ソースからのビルド

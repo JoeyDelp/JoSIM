@@ -1,19 +1,16 @@
 # Independent numerical references
 
-`buffer-101-*.cir` preserves the active reverse circuit from issue #101 and a
-controlled forward comparison with the same drive and exchanged ports.
-`buffer-101-*.csv` contains independent continuous Kirchhoff/RCSJ solutions,
-not JoSIM output. Column names specify units. The manifest records generator
-and fixture hashes, reference dependencies, pulse metrics and acceptance limits.
-Hashes normalize CRLF to LF so Windows text checkout preserves provenance.
+`buffer-101-*.cir` contains the reverse buffer circuit from issue #101 and a
+forward comparison with the same drive and exchanged ports. The CSV files
+contain independent Kirchhoff/RCSJ solutions, calculated with Radau and BDF
+integration. Column names specify units. The JSON manifest records the generator,
+dependencies, fixture hashes and comparison tolerances; hashes normalize CRLF
+to LF for Windows checkouts.
 
-The [buffer study](../../docs/qualification/2026-11-06-buffer.md) derives the
-equations, verifies the subgap assumption, checks two integration methods and
-tolerances, and explains comparison budgets and startup scope.
-
-Native `regression::buffer` needs only Python's standard library. To regenerate
-the references, use the optional pinned science environment from
-[DEVELOPMENT.md](../../docs/DEVELOPMENT.md), then run from the repository root:
+The [buffer example](../../docs/numerics.md#buffer) explains the bipolar response
+and pulse areas. The CTest `regression::buffer` comparison uses Python's standard
+library. To regenerate the reference data, install the optional scientific
+dependencies from [DEVELOPMENT.md](../../docs/DEVELOPMENT.md), then run:
 
 ```bash
 build/science/bin/python -B tools/qualify_buffer.py \
@@ -21,8 +18,5 @@ build/science/bin/python -B tools/qualify_buffer.py \
 ctest --test-dir build/dev -R regression::buffer --output-on-failure --no-tests=error
 ```
 
-Review generator, independent convergence, manifest and fixture changes together.
-Changing tolerances to accept a failing JoSIM result is not reference validation.
-Add `--binary build/dev/josim-cli --plot` for full-waveform comparison and
-headless PNG/PDF plots. A reference-only run explicitly records that no JoSIM
-binary was qualified; failed/interrupted runs retain an incomplete status.
+Add `--binary build/dev/josim-cli --plot` to compare JoSIM waveforms and produce
+PNG/PDF plots. Review changes to the generator, data and tolerances together.
