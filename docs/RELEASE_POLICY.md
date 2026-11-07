@@ -59,6 +59,8 @@ The separate Python-utility job installs its pinned direct dependencies into a
 fresh environment and tests data values, file safety and real headless exports
 with the runner's installed Chrome. It records Python/browser/package versions
 and pip's install report. Tagged publication also requires this job to pass.
+The documentation job builds the pinned manual in strict mode and checks local
+files/anchors and the local-context exclusion. It is also a release prerequisite.
 
 Archives include `MANIFEST.json`. A sidecar manifest records source identity,
 compiler versions, dependency hashes, configuration, test count and binary ABI
@@ -75,6 +77,30 @@ Before a release, review the changelog, set the intended version in
 declared version and a clean source tree. The tagged workflow publishes only
 after every target passes. A tag is a separate publication decision; passing
 tests does not authorize creating one.
+
+Commit reviewed notes at `docs/releases/v<version>.md` before creating the tag.
+The publisher uses that file and leaves existing assets intact on a rerun.
+
+After publication, `verify-release.yml` downloads the actual archive, checksum
+and sidecar manifest for each target. It checks the public tag's commit, archive
+and payload identities, then runs the CLI and independent numerical regressions
+against the downloaded executable. Linux execution uses the same pinned legacy
+userspaces, with downloads completed on the modern host before network isolation.
+Windows, Apple Silicon and Intel macOS use their native runners.
+
+Every target must have a `passed` execution receipt. `prepared` identifies a
+verified download awaiting native execution. The reports record public URLs,
+hashes, source/tool/test-owner identities, runtime, commands and measured cases;
+JSON and readable receipts appear in the job summary and retained artifacts.
+An optional read token applies only to API metadata; asset URLs are downloaded
+without credentials. Public download qualification is separate from the earlier
+prepublication extraction checks.
+
+The reusable workflow can also be dispatched manually with a published tag and
+full commit. This records the verification source separately, allowing later
+checks to identify which test/verification owners were used. For local native
+checks, `python3 -B tools/verify_release.py --help` lists the required paths and
+the two-phase Linux options. Use fresh download paths and retain failed evidence.
 
 Version 3.0.0 records the audited public C++ layout changes and explicit support
 boundaries. CMake package versions use `SameMajorVersion`; Unix shared libraries

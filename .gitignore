@@ -341,3 +341,7 @@ test_internal
 
 # Reviewed first-party coverage requirements.
 !tools/coverage-policy.json
+
+# Reviewed release notes, not generated release archives.
+!/docs/releases/
+!/docs/releases/*.md

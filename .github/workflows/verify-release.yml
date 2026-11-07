@@ -1,0 +1,156 @@
+name: Verify downloaded public JoSIM release
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+      revision:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published version tag, for example v3.0.0
+        type: string
+        required: true
+      revision:
+        description: Full source commit identified by the public tag
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Download and execute (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x64-rhel6
+            runner: ubuntu-24.04
+            image: quay.io/pypa/manylinux2010_x86_64@sha256:3b5eb5ab9bc73b93740ae4eda9962078951cd3bb7efe837b770360e78c7366fb
+          - target: linux-arm64-rhel7
+            runner: ubuntu-24.04-arm
+            image: quay.io/pypa/manylinux2014_aarch64@sha256:db68ee9e5e879da5945dfbc8cab446f02245da6522aca0a9e4cda9256c911d2f
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_REVISION: ${{ inputs.revision }}
+      RELEASE_TARGET: ${{ matrix.target }}
+      BUILD_IMAGE: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download and identify public assets on the modern host
+        shell: bash
+        env:
+          JOSIM_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_release.py --tag "$RELEASE_TAG" --revision "$RELEASE_REVISION" \
+            --target "$RELEASE_TARGET" --work-dir build/public-release \
+            --output artifacts/public-release/download.json --download-only
+      - name: Execute the downloaded package in the declared Linux userspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$BUILD_IMAGE"
+          docker run --rm --network none --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e RELEASE_TAG -e RELEASE_REVISION -e RELEASE_TARGET \
+            -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" \
+            "$BUILD_IMAGE" bash -c '
+              set -euo pipefail
+              export PATH="/opt/python/cp310-cp310/bin:$PATH"
+              python3 -B tools/verify_release.py --tag "$RELEASE_TAG" --revision "$RELEASE_REVISION" \
+                --target "$RELEASE_TARGET" --work-dir build/public-release \
+                --output artifacts/public-release/summary.json --execute-only
+            '
+      - name: Show public verification receipt
+        if: always()
+        shell: bash
+        run: |
+          if test -f artifacts/public-release/summary.md; then
+            cat artifacts/public-release/summary.md >> "$GITHUB_STEP_SUMMARY"
+          elif test -f artifacts/public-release/download.md; then
+            cat artifacts/public-release/download.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain public download and execution receipts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: public-release-${{ matrix.target }}
+          path: artifacts/public-release
+          if-no-files-found: error
+
+  native:
+    name: Download and execute (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows-x64
+            runner: windows-2022
+          - target: macos-arm64
+            runner: macos-15
+          - target: macos-x86_64
+            runner: macos-15-intel
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_REVISION: ${{ inputs.revision }}
+      RELEASE_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify and execute the public Windows download
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          JOSIM_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -B tools/verify_release.py --tag $env:RELEASE_TAG --revision $env:RELEASE_REVISION `
+            --target $env:RELEASE_TARGET --work-dir build/public-release `
+            --output artifacts/public-release/summary.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify and execute the public macOS download
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          JOSIM_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -B tools/verify_release.py --tag "$RELEASE_TAG" --revision "$RELEASE_REVISION" \
+            --target "$RELEASE_TARGET" --work-dir build/public-release \
+            --output artifacts/public-release/summary.json
+      - name: Show Windows public verification receipt
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (Test-Path artifacts/public-release/summary.md) {
+            Get-Content artifacts/public-release/summary.md | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
+      - name: Show macOS public verification receipt
+        if: always() && runner.os == 'macOS'
+        shell: bash
+        run: |
+          if test -f artifacts/public-release/summary.md; then
+            cat artifacts/public-release/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain public download and execution receipts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: public-release-${{ matrix.target }}
+          path: artifacts/public-release
+          if-no-files-found: error

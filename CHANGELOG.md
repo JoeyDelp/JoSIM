@@ -5,12 +5,14 @@ published binaries; see GitHub Releases for qualified downloads.
 
 ## 3.0.0
 
-This source line is undergoing release qualification. The historical `v2.7`
-tag is unchanged. Recompile C++ applications against matching headers and
-libraries: public type layouts changed. See [migration guidance](docs/compatibility.md).
+The historical `v2.7` tag is unchanged. Recompile C++ applications against
+matching headers and libraries: public type layouts changed. See [migration guidance](docs/compatibility.md).
 
 ### Added
 
+- Qualification of actual public release downloads on all five targets, including
+  tag/checksum/payload identity, CLI and independent numerical regressions. Add a
+  required documentation job, reviewed release notes and preserved-asset reruns.
 - Major-version CMake package selection and Unix shared-library ABI version 3,
   with explicit migration, runtime and reproducibility boundaries.
 - First-party line/function/branch coverage with reviewed risk floors, per-LLVM

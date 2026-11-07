@@ -557,7 +557,10 @@ Baseline commands and logs are recorded under `build/audit-resolution/baseline/<
 - **Required outcome:** Select justified new version after audit, build exact commit, publish and verify downloaded assets on relevant platforms.
 - **Implementation/owner:** CMakeLists.txt; tools/build_release.py; docs/RELEASE_POLICY.md.
 - **Verification:** five-platform release gates and download checksums/execution.
-- **Measurements/tolerances/evidence:** Initial 27/27 tests pass under GCC16.2.1/Clang23.1.4 Debug and Release. Item-specific acceptance and durable evidence remain pending unless stated above.
+- **Preparation:** [public-download owner and checks](qualification/2026-11-07-public-download.md)
+  add the documentation gate, reviewed notes, preserved-asset publishing and
+  native verification of actual downloads. Synthetic contracts/live metadata
+  pass; actual release/integration/native download results remain pending.
 
 ## D09 — Published GitHub Pages
 
