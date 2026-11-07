@@ -69,7 +69,7 @@ CTest runs the existing circuit examples and focused regression groups:
 - `regression::build_options`: retired solver/parallel configuration and macro rejection.
 - `regression::library`: repeated recoverable errors followed by valid runs.
 - `regression::installed_package`: installs the library, then builds and runs a
-  fresh external C++ consumer using `find_package(josim 2.7 CONFIG REQUIRED)`.
+  fresh external C++ consumer using `find_package(josim 3.0 CONFIG REQUIRED)`.
 
 The tests establish these bounded contracts. They do not establish general
 SPICE compatibility or explain every undocumented long-run artifact.
@@ -162,7 +162,7 @@ cmake --install build/dev --config Release --prefix build/install
 ```
 
 Consumers set `CMAKE_PREFIX_PATH` to that prefix, call
-`find_package(josim 2.7 CONFIG REQUIRED)`, and link `josim::josim`. The package
+`find_package(josim 3.0 CONFIG REQUIRED)`, and link `josim::josim`. The package
 loads its solver dependencies and propagates C++17 and public headers.
 See [embedding guidance](API.md) for error recovery and random-state ownership.
 
