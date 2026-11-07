@@ -1,0 +1,7 @@
+* A 1 mV initial capacitor voltage discharges with RC=10 ps.
+.param START=1m
+R1 N 0 10
+C1 N 0 1p IC=START
+.tran 0.1p 100p DST
+.print V(C1) I(C1) I(R1)
+.end

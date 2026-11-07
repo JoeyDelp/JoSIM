@@ -703,14 +703,14 @@ class CliRegression(unittest.TestCase):
                                 tolerance = 3e-6 * max(abs(a), abs(b)) + (1e-9 if column < 2 else 1e-13)
                                 self.assertAlmostEqual(a, b, delta=tolerance)
 
-    def test_unsupported_capacitor_initial_voltage_is_explicit(self):
+    def test_capacitor_initial_voltage_requires_dst(self):
         for assignment in ("IC=1m", "IC = 1m", "IC={2*0.5m}"):
             for mode in (0, 1):
                 with self.subTest(assignment=assignment, mode=mode):
-                    deck = f"R1 N 0 10\nC1 N 0 1p {assignment}\n.tran 0.1p 2p DST\n.print V(N)\n.end\n"
+                    deck = f"R1 N 0 10\nC1 N 0 1p {assignment}\n.tran 0.1p 2p\n.print V(N)\n.end\n"
                     result, rows = self.run_deck(deck, extra=("-a", str(mode)))
                     self.assertIn(result.returncode, (1, 255, 4294967295), result.stdout + result.stderr)
-                    self.assertIn("Capacitor IC is not supported", result.stdout + result.stderr)
+                    self.assertIn("capacitor IC requires .TRAN ... DST", result.stdout + result.stderr)
                     self.assertIsNone(rows)
         # IC remains a valid node name; the diagnostic applies to trailing options.
         result, rows = self.run_deck("R1 IC 0 10\nC1 IC 0 1p\n.tran 0.1p 2p DST\n.print V(IC)\n.end\n")

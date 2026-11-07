@@ -28,3 +28,9 @@ sampling alone.
 JoSIM reserves storage for the known sample count and avoids storing
 unrequested histories. Allocation failures produce an error with the requested
 size. An operating-system out-of-memory termination cannot be caught by JoSIM.
+
+Nonlinear inductors require additional sparse solves and numerical
+factorizations during Newton correction. The cost depends on current excursion,
+timestep and matrix sparsity. Source samples and full waveform histories are
+not duplicated for each iteration. Constant-L circuits keep the single-solve
+path, including when `ALPHA=0` is written explicitly.

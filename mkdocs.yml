@@ -24,7 +24,7 @@ nav:
   - Python Plotting and Specifications: 'python_utilities.md'
   - Runtime and Memory: 'performance.md'
   - Development: 'DEVELOPMENT.md'
-  - Updating to 3.0: 'compatibility.md'
+  - Updating to 3.1: 'compatibility.md'
   - C++ API: 'API.md'
   - Release Procedure: 'RELEASE_POLICY.md'
   - Development Schedule and Bugs: 'bugs.md'

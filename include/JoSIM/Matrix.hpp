@@ -19,6 +19,7 @@ class Matrix {
   private:
     std::vector<NodeConfig> nodeConfig, nodeConfig2;
     bool                    needsTR_ = true;
+    void validate_inductor_coupling() const;
 
   public:
     AnalysisType                             analysisType = AnalysisType::Phase;

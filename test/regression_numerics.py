@@ -202,22 +202,31 @@ class NumericalRegression(unittest.TestCase):
         original = (ROOT / "test/comp/jj_beta_c.cir").read_text()
         for beta in (.2, 1., 5.):
             resistance = math.sqrt(beta * sigma / (ic * capacitance))
-            deck = original.replace("BETA=1", f"BETA={beta}")
-            for mode in (0, 1):
-                with self.subTest(beta=beta, mode=mode):
-                    rows = self.run_example(deck, mode)
-                    error = kcl = 0.0
-                    for t, voltage, phase, current, source in rows:
-                        if t < 1e-12:
-                            continue
-                        expected = ic * math.sin(phase) + voltage / resistance + capacitance * ramp
-                        error = max(error, abs(current - expected))
-                        kcl = max(kcl, abs(current + source))
-                    self.assertLess(error, 1e-10)
-                    self.assertLess(kcl, 1e-15)
-                    MEASUREMENTS.append({"kind": "JJ_BETA_C", "mode": mode, "beta_c": beta, "deck": deck,
-                                         "resistance_ohm": resistance, "maximum_constitutive_error_A": error,
-                                         "maximum_KCL_residual_A": kcl})
+            equivalent_resistance = math.sqrt(beta * 3.291059757e-16 / (ic * capacitance))
+            for attributes, area in (("", 1), (" AREA={2}", 2), (" IC={3*ICVAL}", 3)):
+                deck = original.replace("BETA=1", f"BETA={beta}").replace("B1 N 0 JM", "B1 N 0 JM" + attributes)
+                explicit = deck.replace("BETA_C=BETA", f"RN={equivalent_resistance:.17g}")
+                for mode in (0, 1):
+                    with self.subTest(beta=beta, mode=mode, attributes=attributes):
+                        rows = self.run_example(deck, mode)
+                        reference = self.run_example(explicit, mode)
+                        self.assertEqual(len(rows), len(reference))
+                        for direct, converted in zip(rows, reference):
+                            for actual, expected in zip(direct, converted):
+                                # CSV traces retain seven significant digits.
+                                self.assertAlmostEqual(actual, expected, delta=1e-6 * abs(expected) + 1e-18)
+                        error = kcl = 0.0
+                        for t, voltage, phase, current, source in rows:
+                            if t < 1e-12:
+                                continue
+                            expected = area * (ic * math.sin(phase) + voltage / resistance + capacitance * ramp)
+                            error = max(error, abs(current - expected))
+                            kcl = max(kcl, abs(current + source))
+                        self.assertLess(error, area * 1e-10)
+                        self.assertLess(kcl, 1e-15)
+                        MEASUREMENTS.append({"kind": "JJ_BETA_C", "mode": mode, "beta_c": beta, "deck": deck,
+                                             "area": area, "resistance_ohm": resistance / area,
+                                             "maximum_constitutive_error_A": error, "maximum_KCL_residual_A": kcl})
 
     def simulate(self, kind, mode, h, startup):
         parts = "R1 IN OUT 10\n"

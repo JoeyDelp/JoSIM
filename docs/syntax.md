@@ -59,24 +59,28 @@ timestep floor and classical thermal-noise assumptions.
 
 ### Inductor
 
-**L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
+**L**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**&emsp;[**ALPHA=**$a$]
 
 The value of an inductor is in Henry.
 
-L is constant during simulation; a parameter expression is evaluated once.
-Current-dependent L(I) is not supported. See the
-[model boundary](model_limits.md#nonlinear-inductance) for flux-linkage
-semantics and the limits of constant-L approximations.
+Without `ALPHA`, L is constant. `ALPHA=a` selects differential inductance
+`Ld(I)=L0*(1+a*I^2)`, with VALUE supplying L0. L0 must be finite and positive;
+a must be finite and non-negative, in A^-2. Both accept scoped parameter
+expressions evaluated once. `ALPHA=0` gives the constant-L model. See the
+[nonlinear-inductor guide](model_limits.md#nonlinear-inductance) for the flux law,
+mutual coupling and examples.
 
 ### Capacitor
 
-**C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**
+**C**Label&emsp;$N^{+}$&emsp;$N^{-}$&emsp;**VALUE**&emsp;[**IC=**$V_0$]
 
 The value of a capacitor is in Farad.
 
-Capacitor `IC=` is unsupported and produces an error. Prepare a nonzero voltage
-with an explicit charging interval before measurement. See the
-[tested precharge example](model_limits.md#capacitor-voltage).
+`IC=` specifies the signed terminal voltage at t=0, in volts. It accepts
+parameter expressions and requires `.TRAN ... DST` and positive capacitance.
+The initial-voltage path supports RLC/junction circuits and unenergized lines;
+phase sources and controlled sources are currently rejected. See the
+[initial-state guide](model_limits.md#capacitor-voltage) for constraints and examples.
 
 ### Josephson Junction (JJ)
 
@@ -108,6 +112,7 @@ The only junction model currently supported by JoSIM is the RCSJ model and thus 
 | VG or VGAP      | -$\infty$, $\infty$   | 2.8E-3          | Junction gap voltage                                         |
 | IC or ICRIT     | -$\infty$, $\infty$   | 1E-3            | Junction critical current                                    |
 | RN              | 0, $\infty$           | 5               | Junction normal resistance                                   |
+| BETA_C          | $0 < \beta_c < \infty$ | unset           | Dimensionless nominal damping; calculates RN for `RTYPE=0`    |
 | R0              | 0, $\infty$           | 30              | Junction subgap resistance                                   |
 | C or CAP        | $0 \le C < \infty$   | 2.5E-12         | Junction capacitance                                         |
 | T               | $0 \le T < T_C$      | 4.2             | Temperature-dependent CPR temperature in K                    |
@@ -124,9 +129,10 @@ use the same model name. Lookup checks the current instance, its containing
 instances, then globals. A missing model is an error; it does not select a
 default model.
 
-For a Stewart–McCumber parameter, use the
-[tested parameter conversion](model_limits.md#beta-c).
-It defines which resistance enters beta_c; there is no direct `BETA_C=` field.
+For `RTYPE=0`, `BETA_C=` calculates the constant resistance RN from the
+Stewart–McCumber parameter, Ic and C. Ic and C must be positive. Do not also
+specify RN or enable temperature-dependent model parameters `T`, `TC` or `D`.
+See the [damping guide](model_limits.md#beta-c) for the equation and example.
 
 All values must be finite. RN/R0/DELV/ICFCT/TC are strictly positive; D is in
 [0,1]. Temperature-dependent models require positive Ic; ordinary sinusoidal

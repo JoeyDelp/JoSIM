@@ -389,3 +389,62 @@ bool JJ::update_value(const double& v) {
     // This should never happen, only here to appease the return type
     return false;
 }
+
+double JJ::supercurrent(double phase, double scale) const {
+    const auto& model = model_;
+    const auto& harmonics = model.cpr_view();
+    if (!model.tDep()) {
+        double s = 0.0;
+        for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+            s += harmonics.at(harm) * std::sin((harm + 1) * (phase - model.phiOff()));
+        }
+        return scale * model.ic() * s;
+    }
+    double sin2_half_phi = 0.0;
+    for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+        sin2_half_phi += harmonics.at(harm)
+                         * std::sin((harm + 1) * (phase - model_.phiOff()) / 2.0);
+    }
+    sin2_half_phi  = sin2_half_phi * sin2_half_phi;
+
+    double sin_phi = 0.0;
+    for (int harm = 0; harm < (int) harmonics.size(); ++harm) {
+        sin_phi += harmonics.at(harm) * std::sin((harm + 1) * (phase - model_.phiOff()));
+    }
+
+    const double term = model.d() * sin2_half_phi;
+    double radicand = 1.0 - term;
+    if (harmonics.size() == 1) {
+        const double beta = model.d() * harmonics.front() * harmonics.front();
+        if (std::isfinite(beta)) {
+            const double cosine = std::cos((phase - model.phiOff()) / 2.0);
+            // Equivalent form without loss of 1-sin^2 near the zero-T cusp.
+            radicand = (1.0 - beta) + beta * cosine * cosine;
+        }
+    }
+    if (!std::isfinite(term)
+        || radicand < -8 * std::numeric_limits<double>::epsilon() * std::max(1.0, std::abs(term))) {
+        Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+            netlistInfo.label_ + ": D and CPR give a negative square-root argument at this phase");
+    }
+    const double sqrt_part = std::sqrt(std::max(0.0, radicand));
+    double ratio;
+    if (model.t() == 0) {
+        if (sqrt_part <= 8 * std::numeric_limits<double>::epsilon()) {
+            Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION,
+                netlistInfo.label_ + ": zero-temperature CPR is singular at this phase");
+        }
+        ratio = 1.0 / sqrt_part;
+    } else {
+        const double alpha = del_ / (2.0 * Constants::BOLTZMANN * model.t());
+        // tanh(alpha*q)/q -> alpha as q -> 0. Avoid 0*infinity at D=1.
+        ratio = sqrt_part == 0 ? alpha : std::tanh(alpha * sqrt_part) / sqrt_part;
+    }
+    const double pref = ((Constants::PI * del_) / (2.0 * Constants::EV * model_.rn())) * ratio;
+    return scale * (pref * sin_phi);
+}
+
+double JJ::conductance() const {
+    if (model_.rtype() == 0 || state_ == 2) { return 1.0 / model_.rn(); }
+    return state_ == 1 ? gLarge_ : 1.0 / model_.r0();
+}

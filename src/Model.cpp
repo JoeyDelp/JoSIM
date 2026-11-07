@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <regex>
 
 using namespace JoSIM;
@@ -119,6 +120,8 @@ void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
 
     // Split into KEY=VALUE items at top-level only
     const auto items = split_top_level_kv_items(inside);
+    std::optional<double> betaC;
+    bool rnSpecified = false;
 
     for (const auto& kv : items) {
         const auto eq = kv.find('=');
@@ -160,6 +163,10 @@ void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
             temp.rtype(static_cast<int64_t>(value));
         } else if (key == "RN") {
             temp.rn(value);
+            rnSpecified = true;
+        } else if (key == "BETA_C") {
+            if (betaC) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, "Duplicate BETA_C"); }
+            betaC = value;
         } else if (key == "R0") {
             temp.r0(value);
         } else if (key == "CAP" || key == "C") {
@@ -189,6 +196,23 @@ void JoSIM::Model::parse_model(const std::pair<tokens_t, string_o>& s,
                     ModelErrors::PARAM_TYPE_ERROR,
                     Misc::vector_to_string(tokens_t{Misc::vector_to_string(s.first), "\nThe parameter: ", key}));
         }
+    }
+
+    if (betaC) {
+        const auto require = [&](bool valid, const char* diagnostic) {
+            if (!valid) { Errors::model_errors(ModelErrors::BAD_MODEL_DEFINITION, temp.modelName() + ": " + diagnostic); }
+        };
+        require(temp.rtype() == 0, "BETA_C requires RTYPE=0");
+        require(!rnSpecified, "BETA_C and RN cannot both be specified");
+        require(!temp.tDep(), "BETA_C is not supported with temperature-dependent model parameters T, TC or D");
+        require(std::isfinite(*betaC) && *betaC > 0, "BETA_C must be finite and positive");
+        require(std::isfinite(temp.ic()) && temp.ic() > 0, "BETA_C requires finite positive IC");
+        require(std::isfinite(temp.c()) && temp.c() > 0, "BETA_C requires finite positive CAP");
+        // Compute sqrt(beta_c*SIGMA/(Ic*C)) without overflowing intermediate products.
+        const double resistance = std::exp(0.5 * (std::log(*betaC) + std::log(Constants::SIGMA)
+                                                 - std::log(temp.ic()) - std::log(temp.c())));
+        require(std::isfinite(resistance) && resistance > 0, "BETA_C produces an unrepresentable RN");
+        temp.rn(resistance);
     }
 
     temp.validate();

@@ -5,7 +5,7 @@ if(POLICY CMP0091)
   set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 endif()
 
-project(JoSIM VERSION 3.0.0)
+project(JoSIM VERSION 3.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -76,12 +76,14 @@ add_library(
   src/Errors.cpp
   src/Function.cpp
   src/Inductor.cpp
+  src/InitialState.cpp
   src/Input.cpp
   src/JJ.cpp
   src/Matrix.cpp
   src/Misc.cpp
   src/Model.cpp
   src/Netlist.cpp
+  src/NonlinearInductor.cpp
   src/Output.cpp
   src/Parameters.cpp
   src/PhaseSource.cpp
@@ -132,7 +134,8 @@ endif()
 
 # Properties
 set_target_properties(josim PROPERTIES POSITION_INDEPENDENT_CODE ON WINDOWS_EXPORT_ALL_SYMBOLS ON)
-set_target_properties(josim PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+set(JOSIM_ABI_VERSION 4)
+set_target_properties(josim PROPERTIES VERSION ${JOSIM_ABI_VERSION}.0.0 SOVERSION ${JOSIM_ABI_VERSION})
 make_target_static(josim)
 target_add_warnings(josim)
 josim_instrument_target(josim)

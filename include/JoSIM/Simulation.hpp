@@ -42,12 +42,19 @@ class Simulation {
     bool                needsLU_;
     bool                needsTR_ = true;
     bool                startup_;
+    bool                capacitorIC_ = false;
+    std::vector<int64_t> nonlinearInductors_;
+    int                 nonlinearRetries_ = 0;
+    std::string         nonlinearFailure_;
     double              stepSize_, prstep_, prstart_;
     int64_t         simOK_;
     klu_l_symbolic* Symbolic_ = nullptr;
     klu_l_common    Common_{};
     klu_l_numeric*  Numeric_ = nullptr;
 
+    bool initialize_capacitors(Matrix& mObj);
+    void factorize(Matrix& mObj);
+    bool solve_step(Matrix& mObj);
     void setup(Input& iObj, Matrix& mObj);
     void trans_sim(Matrix& mObj);
     void setup_b(Matrix& mObj, int64_t i, double step, double factor = 1);

@@ -44,12 +44,15 @@ release includes a separate manifest with source and compiler details, and a
 
 Update the version in `CMakeLists.txt`, the changelog and the corresponding
 notes under `docs/releases/`. Compatible bug fixes use a patch version;
-compatible additions use a minor version. Changes to the public C++ interface
-that require rebuilding applications use a major version.
+compatible additions use a minor version. Incompatible changes to the public
+C++ source interface use a major version. Public type-layout changes require
+applications to rebuild and increment the separate shared-library ABI version
+in `CMakeLists.txt`. State this requirement in the release notes and compatibility
+guide. JoSIM 3.1.0 uses shared-library ABI version 4.
 
 A `v<version>` tag must match the version in CMake. GitHub Actions builds and
 tests all targets before publishing their archives. It then downloads the
-published files and runs the CLI and numerical tests on each platform.
+published files and runs the CLI, numerical and feature tests on each platform.
 Existing release files are not overwritten on a rerun.
 
 To repeat the download checks locally, use `python3 -B tools/verify_release.py --help`. Linux can download the files first and execute them separately inside

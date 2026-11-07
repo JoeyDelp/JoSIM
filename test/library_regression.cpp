@@ -5,6 +5,7 @@
 #include <JoSIM/IV.hpp>
 #include <JoSIM/Input.hpp>
 #include <JoSIM/Matrix.hpp>
+#include <JoSIM/Model.hpp>
 #include <JoSIM/Output.hpp>
 #include <JoSIM/Rng.hpp>
 #include <JoSIM/Simulation.hpp>
@@ -236,11 +237,12 @@ void invalid_transient() {
     must_throw([&] { matrix.create_matrix(run); }, "Invalid transient analysis");
 }
 
-void unsupported_capacitor_ic() {
+void capacitor_ic_requires_dst() {
     auto run = input();
+    run.transSim.startup(true);
     run.netlist.expNetlist = {{{"R1", "N", "0", "10"}, std::nullopt},
                              {{"C1", "N", "0", "1P", "IC=1M"}, std::nullopt}};
-    must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, "Capacitor IC is not supported");
+    must_throw([&] { JoSIM::Matrix matrix; matrix.create_matrix(run); }, "capacitor IC requires .TRAN ... DST");
 }
 
 void invalid_models() {
@@ -264,6 +266,61 @@ void invalid_models() {
     model = {}; model.ic(1e308); rejects(model, "IC must be finite", {"AREA=1E308"});
 }
 
+void beta_c_models() {
+    const auto parse = [](const std::string& fields) {
+        JoSIM::vector_pair_t<JoSIM::Model, JoSIM::string_o> models;
+        JoSIM::Model::parse_model({{".MODEL", "JM", "JJ(" + fields + ")"}, std::nullopt}, models, {});
+        return models.front().first;
+    };
+    const auto check_resistance = [](const JoSIM::Model& model, double expected) {
+        if (!std::isfinite(model.rn()) || std::abs(model.rn() / expected - 1) > 1e-12) {
+            throw std::runtime_error("BETA_C produced the wrong resistance");
+        }
+    };
+    const double expected = std::sqrt(JoSIM::Constants::SIGMA / (1e-6 * 1e-13));
+    check_resistance(parse("RTYPE=0 IC=1U CAP=0.1P BETA_C=1"), expected);
+    check_resistance(parse("beta_c = 1, c = 0.1P, icrit = 1U, rtype = 0"), expected);
+    check_resistance(parse("RTYPE=0 BETA_C=1"),
+                     std::sqrt(JoSIM::Constants::SIGMA / (1e-3 * 2.5e-12)));
+    // A finite result must survive intermediate products outside double range.
+    check_resistance(parse("RTYPE=0 BETA_C=1E300 IC=1E150 CAP=1E150"),
+                     std::sqrt(JoSIM::Constants::SIGMA));
+    check_resistance(parse("RTYPE=0 BETA_C=1E-300 IC=1E-150 CAP=1E-150"),
+                     std::sqrt(JoSIM::Constants::SIGMA));
+
+    JoSIM::param_map params;
+    JoSIM::create_parameter({".PARAM", "BETA=2", "CRIT=1U", "CAPVAL=0.1P"}, params, "CELL");
+    JoSIM::parse_parameters(params);
+    JoSIM::vector_pair_t<JoSIM::Model, JoSIM::string_o> models;
+    JoSIM::Model::parse_model({{".MODEL", "JM", "JJ(RTYPE=0 IC=CRIT CAP=CAPVAL BETA_C={BETA/2})"}, "CELL"},
+                             models, params);
+    check_resistance(models.front().first, expected);
+
+    const auto rejects = [&](const std::string& fields, const std::string& diagnostic) {
+        must_throw([&] { parse(fields); }, diagnostic);
+    };
+    rejects("BETA_C=1", "BETA_C requires RTYPE=0");
+    rejects("BETA_C=1 RTYPE=1", "BETA_C requires RTYPE=0");
+    rejects("RN=10 BETA_C=1 RTYPE=0", "BETA_C and RN");
+    rejects("RTYPE=0 BETA_C=1 RN=10", "BETA_C and RN");
+    for (const auto& field : {"T=4.2", "TC=9.1", "D=0"}) {
+        rejects("RTYPE=0 BETA_C=1 " + std::string(field), "temperature-dependent");
+        rejects(std::string(field) + " BETA_C=1 RTYPE=0", "temperature-dependent");
+    }
+    for (const auto& value : {"0", "-1"}) {
+        rejects("RTYPE=0 BETA_C=" + std::string(value), "BETA_C must be finite and positive");
+        rejects("RTYPE=0 BETA_C=1 IC=" + std::string(value), "BETA_C requires finite positive IC");
+        rejects("RTYPE=0 BETA_C=1 C=" + std::string(value), "BETA_C requires finite positive CAP");
+    }
+    rejects("RTYPE=0 BETA_C=1 BETA_C=2", "Duplicate BETA_C");
+    rejects("RTYPE=0 BETA_C=1E308 IC=1E-300 CAP=1E-300", "unrepresentable RN");
+    rejects("RTYPE=0 BETA_C=1E-300 IC=1E308 CAP=1E308", "unrepresentable RN");
+    rejects("RTYPE=0 BETA_C={EXP(1000)}", "EXP");
+    // Without BETA_C, existing signed/zero-Ic and zero-C models remain valid.
+    check_resistance(parse("RTYPE=0 IC=0 CAP=0 RN=12"), 12);
+    check_resistance(parse("RTYPE=0 IC=-1U CAP=0 RN=12"), 12);
+}
+
 void unrequested_source_history() {
     auto run = input();
     run.netlist.expNetlist = {{{"I1", "0", "N", "NOISE(1P", "0", "1P)"}, std::nullopt},
@@ -274,6 +331,30 @@ void unrequested_source_history() {
     if (!simulation.results.sourceCurrents.empty()) {
         throw std::runtime_error("Unrequested source histories were retained");
     }
+}
+
+void nonlinear_inductor_models() {
+    const auto check = [](const std::string& value, const std::string& alpha, double current,
+                          double flux, double differential) {
+        auto run = input();
+        run.netlist.expNetlist = {{{"L1", "N", "0", value, "ALPHA=" + alpha}, std::nullopt}};
+        JoSIM::Matrix matrix;
+        matrix.create_matrix(run);
+        const auto& device = std::get<JoSIM::Inductor>(matrix.components.devices.front());
+        const double actualFlux = device.flux(current), actualDifferential = device.differential_inductance(current);
+        if (!std::isfinite(actualFlux) || !std::isfinite(actualDifferential)
+            || std::abs(actualFlux / flux - 1) > 1e-13
+            || std::abs(actualDifferential / differential - 1) > 1e-13) {
+            throw std::runtime_error("Nonlinear inductor flux law or derivative is incorrect");
+        }
+        if (device.flux(0) != 0 || device.differential_inductance(0) != device.netlistInfo.value_) {
+            throw std::runtime_error("Nonlinear inductor has an incorrect zero-current limit");
+        }
+    };
+    check("100P", "1E8", 1e-4, 4e-14 / 3, 2e-10);
+    check("100P", "1E8", -1e-4, -4e-14 / 3, 2e-10);
+    check("1E200", "1E200", 1e-100, 4e100 / 3, 2e200);
+    check("1E-200", "1E-200", 1e100, 4e-100 / 3, 2e-200);
 }
 
 void default_phase_history_for_postprocessing() {
@@ -375,6 +456,8 @@ int main(int argc, char** argv) {
     try {
         JoSIM::Rng::start_run(123);
         const std::string selected = argc > 1 ? argv[1] : "all";
+        if (selected == "all" || selected == "model" || selected == "beta") { beta_c_models(); }
+        if (selected == "all" || selected == "nonlinear") { nonlinear_inductor_models(); }
         // Repeated failures exercise solver cleanup; sanitizers check allocations.
         for (int i = 0; i < 8; ++i) {
             if (selected == "all" || selected == "missing") { missing_model(); }
@@ -387,7 +470,7 @@ int main(int argc, char** argv) {
             if (selected == "all" || selected == "progress") { progress_worker_lifetime(); }
             if (selected == "all" || selected == "inductor") { inductor_timestep_stamp(); }
             if (selected == "all" || selected == "transient") { invalid_transient(); }
-            if (selected == "all" || selected == "transient") { unsupported_capacitor_ic(); }
+            if (selected == "all" || selected == "transient") { capacitor_ic_requires_dst(); }
             if (selected == "all" || selected == "model") { invalid_models(); }
             if (selected == "all" || selected == "source") { unrequested_source_history(); }
             if (selected == "all" || selected == "parameters") { scoped_and_legacy_expansion(); }

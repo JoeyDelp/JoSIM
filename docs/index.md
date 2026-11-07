@@ -4,6 +4,11 @@ Downloads are available from [GitHub Releases](https://github.com/JoeyDelp/JoSIM
 For source builds, see [Building JoSIM](DEVELOPMENT.md). The
 [changelog](https://github.com/JoeyDelp/JoSIM/blob/master/CHANGELOG.md) lists the changes in each version.
 
+Version 3.1 adds capacitor initial voltages, `BETA_C` for constant-resistance
+junctions and quadratic nonlinear inductors. The
+[release notes](releases/v3.1.0.md) describe the new inputs and their limits.
+C++ applications must rebuild with matching 3.1 headers and libraries.
+
 ## Introduction
 
 JoSIM was developed under IARPA contract SuperTools(via the U.S. Army Research Office grant W911NF-17-1-0120). JoSIM is a analogue circuit simulator with SPICE syntax input that has inherent support for the superconducting Josephson junction element.

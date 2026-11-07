@@ -9,8 +9,31 @@ unknown. It uses the second-order backward difference formula (BDF2):
 \]
 
 where `h` is the internal timestep. Nonlinear junction terms are predicted from
-previous samples, followed by one sparse linear solve per step. JoSIM does not
-perform Newton iteration within a step or provide SPICE RELTOL/ABSTOL controls.
+previous samples. Without nonlinear inductors, each step uses one sparse linear
+solve. Quadratic inductors add the correction described below. JoSIM does not
+provide general SPICE RELTOL/ABSTOL controls or a fully implicit junction solve.
+
+## Nonlinear inductors
+
+For the [quadratic inductor model](model_limits.md#nonlinear-inductance), voltage
+mode differentiates total flux linkage with BDF2. Phase mode imposes
+`SIGMA*(phi_positive-phi_negative)=Phi_total`. The solver corrects the inductor
+rows using damped Newton iteration, retaining KLU's symbolic analysis and
+refactorizing the numerical coefficients together for each iteration.
+
+The flux residual must be below `1e-26 Wb + 1e-12*S`, where S is the sum of
+the absolute node-derived flux, self flux, mutual flux terms and BDF2 history
+contribution in that row. Sources, noise samples, junction predictions and
+histories are evaluated once per attempted step and held fixed during correction.
+Junction terms retain their existing explicit predictor.
+
+Each step permits at most 40 Newton corrections and 16 damping halvings per
+correction. Failure restarts the complete run at half the timestep, restoring
+the initial state and random streams. Circuits with nonlinear inductors permit
+at most eight such timestep reductions, including junction phase-advance retries;
+failure then reports an error. These residual and iteration limits are not a
+local integration-error estimate. Check timestep refinement for the quantities
+of interest, especially large excursions and long ladders.
 
 ## Timestep and startup
 
@@ -26,8 +49,12 @@ noise bandwidth and output sampling need their own checks.
 
 Default startup advances the circuit through a finite negative-time interval
 from zero stored histories. It does not calculate a DC operating point.
-`DST` disables this interval. For a nonzero capacitor voltage, include the
-[charging circuit](model_limits.md#capacitor-voltage) before the event of interest.
+`DST` disables this interval. With explicit capacitor `IC=`, a coupled initial
+solve supplies the voltages, currents and voltage derivatives at t=0. These
+give linear voltage and quadratic phase histories for starting BDF2; the actual
+initial state is output before the first advance to h. Each timestep restart
+reconstructs that state. See the [initial-state guide](model_limits.md#capacitor-voltage)
+for supported circuits and the alternative of a physical charging interval.
 
 ## Junction phase {#junction-phase}
 

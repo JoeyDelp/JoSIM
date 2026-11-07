@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.1.0
+
+- Added `BETA_C` model input for `RTYPE=0` junctions. It calculates RN from the
+  nominal Stewart–McCumber parameter, Ic and C. See the
+  [damping guide](docs/model_limits.md#beta-c) for requirements and examples.
+- Added capacitor `IC=` for `.TRAN ... DST`, with consistent initial voltages,
+  currents and histories in both analysis modes and after timestep restarts.
+  Phase sources and controlled sources are not yet supported in these IC runs.
+  See the [initial-state guide](docs/model_limits.md#capacitor-voltage).
+- Corrected voltage-mode mutual-inductor history ordering so coupled branches
+  use the same preceding current samples.
+- Added quadratic nonlinear inductors with `ALPHA=`, using differential
+  `Ld(I)=L0*(1+ALPHA*I^2)`. Both modes solve the corresponding flux law, including
+  reciprocal constant mutual coupling, with bounded Newton correction and
+  timestep retries. See the [inductor guide](docs/model_limits.md#nonlinear-inductance).
+- Capacitor initialization and nonlinear inductors change public C++ component
+  layouts. Rebuild applications with matching 3.1 headers and libraries. Shared
+  libraries use ABI version 4.
+
 ## 3.0.0
 
 This release adds gate-controlled junctions, additional noise sources and

@@ -5,13 +5,14 @@ JoSIM provides a C++17 library. Install it as described in the
 target `josim::josim`:
 
 ```cmake
-find_package(josim 3.0 CONFIG REQUIRED)
+find_package(josim 3.1 CONFIG REQUIRED)
 add_executable(my_simulator main.cpp)
 target_link_libraries(my_simulator PRIVATE josim::josim)
 ```
 
 Use headers and libraries from the same installation. Applications using an
-older release must be rebuilt for 3.0.
+older release, including 3.0, must be rebuilt for 3.1. Shared libraries use ABI
+version 4; it is independent of the JoSIM release version.
 
 ## Running a circuit
 
@@ -36,6 +37,15 @@ Set finite, positive transient times before constructing a matrix. Directly
 constructed models receive the same parameter checks as parsed models. If you
 modify the public sparse arrays, keep their dimensions and indices consistent;
 normal applications should use `Matrix::create_matrix`.
+
+Capacitor `IC=` also applies to library simulations. Disable settling with
+`input.transSim.startup(false)` before creating the matrix; parsed `.TRAN ... DST`
+does this automatically. The [initial-state guide](model_limits.md#capacitor-voltage)
+describes the supported circuits. Initial-state and nonlinear-inductor storage
+change public component layouts; rebuild applications with the updated matching
+headers and library. `Inductor::flux(current)` returns self flux, and
+`differential_inductance(current)` returns its derivative; mutual linkage is
+stored separately in the coupling entries.
 
 ## Handling errors
 

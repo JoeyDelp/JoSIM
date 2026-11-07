@@ -42,6 +42,7 @@ class Capacitor : public BasicComponent {
     JoSIM::AnalysisType at_;
 
   public:
+    std::optional<double> initialVoltage_;
     double pn1_ = 0.0, pn2_ = 0.0, pn3_ = 0.0, pn4_ = 0.0, pn5_ = 0.0, pn6_ = 0.0, pn7_ = 0.0;
     Capacitor(const std::pair<tokens_t, string_o>& s,
               const NodeConfig&                    ncon,

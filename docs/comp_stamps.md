@@ -89,7 +89,10 @@ $$
 
 <center><img src="../img/josim_inductor.svg" alt="Basic Inductor Element" style="width:400px;" /></center>
 
-A inductor is defined in terms of voltage and current as:
+For constant L, the inductor is defined in terms of voltage and current as
+shown below. With `ALPHA=`, use the
+[nonlinear flux law](model_limits.md#nonlinear-inductance); substituting L(I)
+into the constant-L stamp does not give that model.
 
 
 $$

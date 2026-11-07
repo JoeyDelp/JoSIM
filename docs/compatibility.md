@@ -1,10 +1,23 @@
-# Updating to 3.0
+# Updating to 3.1
 
 Download the package for your operating system from
 [GitHub Releases](https://github.com/JoeyDelp/JoSIM/releases). Replace the old
 executable with the one in `bin/`.
 
-## Existing circuits
+## Changes from 3.0
+
+JoSIM 3.1 adds [capacitor initial voltages](model_limits.md#capacitor-voltage),
+[BETA_C for RTYPE=0 junctions](model_limits.md#beta-c) and
+[quadratic nonlinear inductors](model_limits.md#nonlinear-inductance).
+Capacitor `IC=` requires `.TRAN ... DST`; those runs do not support phase or
+controlled sources. `ALPHA=` specifies differential inductance, so its cubic
+self-flux term includes a factor of one third.
+
+Voltage-mode mutual inductors now use the same preceding current samples for
+all coupled branches. This correction can change results in existing coupled
+circuits. Recheck timestep convergence when comparing them with 3.0.
+
+## Changes from releases before 3.0
 
 Several fixes change simulation results, particularly phase accumulation,
 startup, subcircuit parameters, model IV curves and noise. Recheck timestep,
@@ -28,16 +41,18 @@ The old `ivcurve.py` and `noise_insert.py` scripts are retired. Use the
 
 ## C++ applications
 
-Rebuild applications using the headers and libraries from the same 3.0
-installation. Several public types have changed size. JoSIM exposes C++ types,
+Rebuild applications, including those built for 3.0, using the headers and
+libraries from the same 3.1 installation. Capacitor initialization and nonlinear
+inductors change public type layouts. JoSIM exposes C++ types,
 so the compiler and C++ runtime must also be compatible.
 
 The CMake target is `josim::josim`:
 
 ```cmake
-find_package(josim 3.0 CONFIG REQUIRED)
+find_package(josim 3.1 CONFIG REQUIRED)
 target_link_libraries(my_simulator PRIVATE josim::josim)
 ```
 
-Shared Unix libraries use ABI version 3. See [Embedding JoSIM](API.md) for
+Shared libraries use ABI version 4, independently of the release version.
+Unix applications linked to ABI version 3 must be rebuilt. See [Embedding JoSIM](API.md) for
 error handling, result storage and the restrictions on concurrent runs.
