@@ -78,8 +78,8 @@ The value of a capacitor is in Farad.
 
 `IC=` specifies the signed terminal voltage at t=0, in volts. It accepts
 parameter expressions and requires `.TRAN ... DST` and positive capacitance.
-The initial-voltage path supports RLC/junction circuits and unenergized lines;
-phase sources and controlled sources are currently rejected. See the
+The initial-voltage path supports RLC/junction circuits and unenergized lines.
+Source builds after 3.1.0 also support phase and linear controlled sources. See the
 [initial-state guide](model_limits.md#capacitor-voltage) for constraints and examples.
 
 ### Josephson Junction (JJ)

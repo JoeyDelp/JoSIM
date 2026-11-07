@@ -9,9 +9,10 @@ executable with the one in `bin/`.
 JoSIM 3.1 adds [capacitor initial voltages](model_limits.md#capacitor-voltage),
 [BETA_C for RTYPE=0 junctions](model_limits.md#beta-c) and
 [quadratic nonlinear inductors](model_limits.md#nonlinear-inductance).
-Capacitor `IC=` requires `.TRAN ... DST`; those runs do not support phase or
-controlled sources. `ALPHA=` specifies differential inductance, so its cubic
-self-flux term includes a factor of one third.
+Capacitor `IC=` requires `.TRAN ... DST`. The 3.1.0 binaries reject phase and
+controlled sources in IC runs; source builds after 3.1.0 support these sources
+with consistent initial constraints. `ALPHA=` specifies differential inductance,
+so its cubic self-flux term includes a factor of one third.
 
 Voltage-mode mutual inductors now use the same preceding current samples for
 all coupled branches. This correction can change results in existing coupled

@@ -207,12 +207,140 @@ class CapacitorInitialVoltage(unittest.TestCase):
             (base.replace("1p IC", "0 IC"), "positive capacitance"),
             ("V1 N 0 DC 0\n" + base, "inconsistent initial voltage"),
             ("C2 N 0 1p IC=2m\n" + base, "inconsistent initial voltage"),
-            ("P1 Q 0 DC 0\nR2 Q 0 10\n" + base, "phase sources or controlled sources"),
-            ("G1 Q 0 N 0 1\nR2 Q 0 10\n" + base, "phase sources or controlled sources"),
+            ("E1 N 0 Q 0 2\nV1 Q 0 DC 1m\n" + base, "inconsistent initial voltage"),
+            ("P1 N 0 DC 0.7\n" + base, "inconsistent initial voltage"),
+            ("P1 Q 0 DC 0.7\nL1 Q 0 100p\n" + base, "zero initial inductor current"),
         )
         for deck, diagnostic in cases:
             with self.subTest(diagnostic=diagnostic):
                 self.assertIn(diagnostic, self.run_deck(deck, 0, succeeds=False))
+
+    def test_phase_ramp_preserves_offset_and_rc_state(self):
+        deck = (".param SIGMA=3.291059757e-16 PHI0=0.7 DRIVE=1m\n"
+                ".param PHIEND={PHI0+DRIVE*100p/SIGMA}\nP1 IN 0 PWL(0 PHI0 100p PHIEND)\n"
+                "E1 DRIVE 0 IN 0 2\nR1 DRIVE N 10\nC1 N 0 1p IC=0.5m\n.tran 0.1p 30p DST\n"
+                ".print V(IN) P(IN) V(N) I(C1) I(R1)\n.end\n")
+        for mode in (0, 1):
+            rows, _ = self.run_deck(deck, mode)
+            for t, vin, phase, voltage, current, resistor in rows:
+                expected = 2e-3 - 1.5e-3 * math.exp(-t / 10e-12)
+                self.assertAlmostEqual(vin, 1e-3, delta=2e-9)
+                self.assertAlmostEqual(phase, 0.7 + 1e-3 * t / SIGMA, delta=3e-5)
+                self.assertAlmostEqual(voltage, expected, delta=8e-8)
+                self.assertAlmostEqual(current, (2e-3 - expected) / 10, delta=8e-9)
+                self.assertAlmostEqual(current, resistor, delta=1e-10)
+
+    def test_phase_curvature_and_junction_initial_phase(self):
+        amplitude, omega, angle = 0.2, 2 * math.pi * 1e10, math.pi / 3
+        initial_voltage = SIGMA * amplitude * omega * math.cos(angle)
+        deck = (f"P1 N 0 SIN(0.7 {amplitude} 10G 0 0 60)\n"
+                f"C1 N 0 1p IC={initial_voltage:.17g}\n"
+                "B1 N 0 JM\n.model JM JJ(RTYPE=0 IC=1u RN=100 C=0.2p)\n"
+                ".tran 0.1p 10p DST\n.print V(N) P(B1) I(C1) I(B1) I(P1)\n.end\n")
+        for mode in (0, 1):
+            previous = None
+            for h in (0.1e-12, 0.05e-12):
+                rows, _ = self.run_deck(deck.replace(".tran 0.1p", f".tran {h:.17g}"), mode)
+                error = 0.0
+                for t, voltage, phase, current, junction, source in rows:
+                    expected_phase = 0.7 + amplitude * math.sin(omega * t + angle)
+                    expected_voltage = SIGMA * amplitude * omega * math.cos(omega * t + angle)
+                    derivative = -SIGMA * amplitude * omega ** 2 * math.sin(omega * t + angle)
+                    self.assertAlmostEqual(phase, expected_phase, delta=2e-6)
+                    self.assertAlmostEqual(voltage, expected_voltage, delta=2e-10)
+                    current_error = abs(current - 1e-12 * derivative)
+                    if t == 0:
+                        self.assertLess(current_error, 5e-12)
+                    error = max(error, current_error)
+                    expected_junction = 1e-6 * math.sin(expected_phase) + expected_voltage / 100 + 0.2e-12 * derivative
+                    self.assertAlmostEqual(junction, expected_junction, delta=5e-10)
+                    self.assertAlmostEqual(current + junction + source, 0, delta=1e-11)
+                # Quadratic phase prehistory gives an O(h) current error at the
+                # first differentiated sample; its initial value is constrained.
+                self.assertLess(error, 0.5e-12 * SIGMA * amplitude * omega ** 3 * h + 3e-12)
+                if previous is not None:
+                    self.assertLess(error, 0.6 * previous + 3e-12)
+                previous = error
+
+    def test_controlled_sources_with_ramped_drive(self):
+        cases = (
+            ("E1 DRIVE 0 IN 0 -2\nR1 DRIVE N 10\n", "", -2, 10),
+            ("G1 N 0 IN 0 0.01\nR1 N 0 100\n", "", -1, 100),
+            ("F1 N 0 S 0 -2\nR1 N 0 100\n", "RC IN S 10\n", 20, 100),
+            ("H1 DRIVE 0 S 0 20\nR1 DRIVE N 10\n", "RC IN S 10\n", 2, 10),
+        )
+        for mode in (0, 1):
+            for circuit, control, gain, resistance in cases:
+                with self.subTest(mode=mode, source=circuit[0]):
+                    deck = ("V1 IN 0 PWL(0 1m 100p 3m)\n" + circuit + control
+                            + "C1 N 0 1p IC=0.5m\n.tran 0.1p 30p DST\n"
+                              ".print V(N) I(C1)\n.end\n")
+                    rows, _ = self.run_deck(deck, mode)
+                    tau, a, b = resistance * 1e-12, gain * 1e-3, gain * 2e7
+                    for t, voltage, current in rows:
+                        expected = a + b * (t - tau) + (0.5e-3 - a + b * tau) * math.exp(-t / tau)
+                        self.assertAlmostEqual(voltage, expected, delta=8e-8)
+                        self.assertAlmostEqual(current, (a + b * t - expected) / resistance, delta=8e-9)
+
+    def test_controlled_feedback_and_implied_capacitor_voltage(self):
+        deck = ("C1 N 0 1p IC=1m\nC2 A 0 2p\nR1 N A 10\nE1 A 0 N 0 -1\n"
+                ".tran 0.1p 20p DST\n.print V(N) V(A) I(C1) I(C2) I(R1)\n.end\n")
+        for mode in (0, 1):
+            previous = None
+            for h in (0.1e-12, 0.05e-12):
+                rows, _ = self.run_deck(deck.replace(".tran 0.1p", f".tran {h:.17g}"), mode)
+                self.assertAlmostEqual(rows[0][2], -1e-3, delta=1e-12)
+                error = 0.0
+                for t, voltage, inverted, ic, other, resistor in rows:
+                    error = max(error, abs(voltage - 1e-3 * math.exp(-t / 5e-12)))
+                    self.assertAlmostEqual(inverted, -voltage, delta=1e-12)
+                    self.assertAlmostEqual(other, -2 * ic, delta=1e-9)
+                    self.assertAlmostEqual(ic + resistor, 0, delta=1e-10)
+                self.assertLess(error, 1e-3 * (h / 5e-12) ** 2 + 1e-10)
+                if previous is not None:
+                    self.assertLess(error, 0.4 * previous + 1e-10)
+                previous = error
+            gm = ("C1 N 0 1p IC=1m\nG1 N 0 N 0 0.1\n.tran 0.1p 20p DST\n"
+                  ".print V(N) I(C1) I(G1)\n.end\n")
+            rows, _ = self.run_deck(gm, mode)
+            for t, voltage, ic, controlled in rows:
+                self.assertAlmostEqual(voltage, 1e-3 * math.exp(-t / 10e-12), delta=3e-8)
+                self.assertAlmostEqual(ic + controlled, 0, delta=1e-10)
+
+    def test_phase_and_controlled_sources_restart(self):
+        deck = (".option seed=42\nP1 CTRL 0 PWL(0 0.7 200p 30)\n"
+                "E1 E 0 CTRL 0 2\nG1 N 0 E 0 0.001\n"
+                "F1 F 0 S 0 -2\nIS 0 S DC 1u\nRF F 0 100\n"
+                "H1 H 0 T 0 10\nIT 0 T DC 1u\nRH H 0 100\n"
+                "C1 N 0 1p IC=1m\nB1 N 0 JM\n"
+                ".model JM JJ(RTYPE=0 IC=0 RN=100 CAP=0)\n"
+                "I1 0 N NOISE(1e-13 0 0.5p)\n.tran 5p 100p 0 5p 0 DST\n"
+                ".print V(C1) P(B1) I(C1) I(B1) I(I1) V(E) P(CTRL) V(F) V(H)\n.end\n")
+        for mode in (0, 1):
+            coarse, log = self.run_deck(deck, mode)
+            h = float(re.search(r"Effective timestep \(s\):\s*(\S+)", log)[1])
+            self.assertLess(h, 5e-12)
+            fine, _ = self.run_deck(deck.replace(".tran 5p", f".tran {h:.17g}"), mode)
+            self.assertEqual(coarse, fine)
+
+    def test_controlled_voltage_constraints_and_sensing_ports(self):
+        for mode in (0, 1):
+            for source in ("V1 IN 0 DC 0.5m\nE1 N 0 IN 0 2\n",
+                           "I1 0 S DC 1u\nH1 N 0 S 0 1k\nC2 S 0 2p IC=0\n"):
+                deck = (source + "C1 N 0 1p IC=1m\nR1 N 0 10\n"
+                        ".tran 0.1p 2p DST\n.print V(N) I(C1)\n.end\n")
+                rows, _ = self.run_deck(deck, mode)
+                self.assertTrue(all(abs(v - 1e-3) < 1e-12 and abs(i) < 1e-12 for _, v, i in rows))
+            invalid = (
+                ("P1 N 0 DC 0.7\nP2 N 0 DC 0.8\n", "Matrix is singular"),
+                ("V1 IN 0 DC 0.5m\nE1 N 0 IN 0 3\n", "Capacitor IC:"),
+                ("I1 0 S DC 2u\nH1 N 0 S 0 1k\n", "Capacitor IC:"),
+                ("E1 A B N 0 2\nR2 A B 10\n", "Matrix is singular"),  # Floating output reference.
+            )
+            for source, diagnostic in invalid:
+                deck = (source + "C1 N 0 1p IC=1m\nR1 N 0 10\n"
+                        ".tran 0.1p 2p DST\n.print V(N)\n.end\n")
+                self.assertIn(diagnostic, self.run_deck(deck, mode, succeeds=False))
 
 
 if __name__ == "__main__":

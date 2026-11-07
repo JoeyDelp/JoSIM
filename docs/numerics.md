@@ -56,6 +56,17 @@ initial state is output before the first advance to h. Each timestep restart
 reconstructs that state. See the [initial-state guide](model_limits.md#capacitor-voltage)
 for supported circuits and the alternative of a physical charging interval.
 
+For phase and controlled sources, the initializer selects independent sparse
+constraints from the circuit equations, their derivatives and capacitor initial
+voltages before solving with KLU. Prescribed phase offsets are included in the
+histories and junction currents. Phase-source derivatives use right-hand waveform
+probes within h/2; known source curvature also constrains capacitor-current
+derivatives where needed. These are initial-state tangents, rather than a
+negative-time simulation of the waveform. Quadratic phase prehistory can give
+an O(h) capacitor-current error at the first subsequent sample of a curved
+phase source; its value at t=0 is constrained separately. Check timestep
+refinement when that startup current matters.
+
 ## Junction phase {#junction-phase}
 
 The Josephson voltage relation is

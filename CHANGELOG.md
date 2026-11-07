@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Extended capacitor `IC=` initialization to phase sources and all four linear
+  controlled sources (`E`, `F`, `G`, `H`) in both analysis modes. Initial source
+  constraints, derivatives and phase offsets now supply consistent histories,
+  including after timestep restarts. Inconsistent or underdetermined states
+  produce an error. See the [initial-state guide](docs/model_limits.md#capacitor-voltage).
+
 ## 3.1.0
 
 - Added `BETA_C` model input for `RTYPE=0` junctions. It calculates RN from the

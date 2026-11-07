@@ -51,16 +51,66 @@ modes. A timestep restart reapplies the same initial conditions. A later print
 start omits samples from the output, without moving the physical initial time.
 
 Unspecified independent capacitor voltages start at zero. Constraints already
-imposed by other capacitors or ideal voltage sources take precedence, so parallel
-capacitors share their voltage and derivative. Conflicting capacitor loops or
-source voltages are errors. Inductor currents and junction phases start at zero;
-transmission lines start without incoming waves. The circuit still needs enough
-connections to determine its node voltages; IC does not supply a ground reference.
+imposed by other capacitors or ideal sources take precedence, so parallel
+capacitors share their voltage and derivative. Controlled-source relations can
+also imply a nonzero initial voltage on a capacitor without `IC=`. Conflicting
+capacitor loops or source constraints are errors. Inductor currents start at
+zero; transmission lines start without incoming waves. Junction phases start
+at zero unless phase-source or controlled-source constraints impose another
+value. The circuit still needs enough connections to determine its node
+voltages; IC does not supply a ground reference.
 
-This initial-voltage path currently rejects circuits containing phase sources
-or controlled sources. It does not provide a DC operating-point solve or general
-SPICE `.IC`/`UIC` semantics. `UIC` retains its existing behavior; `DST` is required.
+### Phase and controlled sources
+
+Source builds after 3.1.0 support phase sources (`P`) and the four linear
+controlled sources (`E`, `F`, `G`, `H`) in this initial-voltage path. The published
+3.1.0 binaries reject these combinations.
+
+For example, a phase ramp can drive a voltage amplifier and an initialized RC
+circuit:
+
+```text
+.param SIGMA=3.291059757e-16 PHI0=0.7 DRIVE=1m
+.param PHIEND={PHI0+DRIVE*100p/SIGMA}
+P1 IN 0 PWL(0 PHI0 100p PHIEND)
+E1 AMP 0 IN 0 2
+R1 AMP OUT 10
+C1 OUT 0 1p IC=0.5m
+.tran 0.1p 30p DST
+.print P(IN) V(IN) V(OUT) I(C1)
+.end
+```
+
+Here the initial source phase is 0.7 rad, V(IN)=1 mV and V(AMP)=2 mV.
+The capacitor starts at 0.5 mV with 150 uA charging current; its ideal voltage
+is `2m-1.5m*exp(-t/10p)`.
+
+The phase source supplies its initial phase and the right-hand derivatives
+`V=SIGMA*dphi/dt` and `dV/dt=SIGMA*d²phi/dt²`. The initializer uses forward
+waveform probes within the first half-timestep, on copies of the source state.
+It also uses source curvature where an ideal source fixes a capacitor's current
+derivative, using `d²V/dt²` or `d³phi/dt³`. Waveform variation near zero must be
+resolved by the timestep; check refinement for rapidly changing sources. Random streams and waveform
+cursors are restored on a timestep restart.
+
+Controlled sources retain their existing terminal and gain conventions. Their
+voltage/current relations and differentiated KCL determine the initial currents
+and node derivatives. `F` and `H` use JoSIM's zero-voltage sensing port; any
+capacitor across that port has zero voltage and current. Initial phase offsets
+obey `phi_out=gain*phi_control` for `E` and zero phase across sensing ports.
+These relations must be compatible with the phase sources and zero initial
+inductor currents. An incompatible imposed inductor flux is an error.
+
+All initial voltages, branch currents and node-voltage derivatives must be
+determined by the circuit and its initial constraints. An underdetermined state
+is rejected. Auxiliary capacitor-current derivatives that do not affect those
+quantities need not be unique.
+
+This does not provide a DC operating-point solve or general SPICE `.IC`/`UIC`
+semantics. `UIC` retains its existing behavior; `DST` is required.
 The request is tracked in [#109](https://github.com/JoeyDelp/JoSIM/issues/109).
+
+### Startup without IC
 
 Without explicit capacitor IC, startup keeps its existing zero-history behavior.
 Default startup advances that state for a finite negative-time settling interval;
